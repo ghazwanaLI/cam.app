@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>وحدة كاميرات المراقبة</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:#0a0f1e;color:#e2e8f0;direction:rtl;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+.wrap{width:100%;max-width:380px}
+.logo-box{text-align:center;margin-bottom:28px}
+.logo-icon{width:76px;height:76px;border-radius:22px;background:linear-gradient(135deg,#1a6ef5,#0ea5e9);display:flex;align-items:center;justify-content:center;font-size:38px;margin:0 auto 14px;box-shadow:0 8px 30px rgba(26,110,245,.45)}
+.logo-title{font-size:20px;font-weight:900;color:#f1f5f9}
+.logo-sub{font-size:13px;color:#64748b;margin-top:4px}
+.card{background:#0d1530;border:1px solid #1e3a5f;border-radius:20px;padding:24px}
+.tabs{display:flex;gap:6px;background:#0a0f1e;border-radius:12px;padding:4px;margin-bottom:20px}
+.tab{flex:1;padding:9px 0;border-radius:10px;border:none;cursor:pointer;font-family:inherit;font-size:13px;font-weight:700}
+.tab.active{background:linear-gradient(135deg,#1a6ef5,#0ea5e9);color:#fff}
+.tab:not(.active){background:transparent;color:#64748b}
+.field{margin-bottom:12px}
+label{font-size:12px;font-weight:700;color:#64748b;display:block;margin-bottom:5px}
+input,select{width:100%;background:#0a0f1e;border:1px solid #1e3a5f;color:#e2e8f0;padding:11px 12px;border-radius:10px;font-size:14px;font-family:inherit;direction:rtl;outline:none}
+input:focus,select:focus{border-color:#1a6ef5}
+.btn{width:100%;background:linear-gradient(135deg,#1a6ef5,#0ea5e9);color:#fff;border:none;padding:14px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;margin-top:6px}
+.alert{padding:10px 14px;border-radius:10px;font-size:13px;margin-bottom:14px;display:none}
+.alert.err{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.3)}
+.alert.ok{background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.3)}
+.hint{text-align:center;font-size:11px;color:#475569;margin-top:16px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="logo-box">
+    <div class="logo-icon">📹</div>
+    <div class="logo-title">وحدة كاميرات المراقبة</div>
+    <div class="logo-sub">محافظة صلاح الدين</div>
+  </div>
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" onclick="showTab('login',this)">دخول</button>
+      <button class="tab" onclick="showTab('reg',this)">حساب جديد</button>
+    </div>
+    <div class="alert" id="msg"></div>
+
+    <!-- LOGIN -->
+    <div id="f-login">
+      <div class="field"><label>رقم الهاتف</label><input id="lp" type="text" placeholder="07xxxxxxxxx"></div>
+      <div class="field"><label>كلمة المرور</label><input id="lw" type="password" placeholder="••••••••" onkeydown="if(event.key==='Enter')login()"></div>
+      <button class="btn" onclick="login()">تسجيل الدخول</button>
+      <div class="hint">دخول المشرف<br><b>رقم: admin</b> &nbsp;|&nbsp; <b>كلمة المرور: admin123</b></div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="f-reg" style="display:none">
+      <div class="field">
+        <label>القاطع</label>
+        <select id="rd">
+          <option value="">— اختر القاطع —</option>
+          <option value="sharqat">الشرقاط</option>
+          <option value="baiji">بيجي</option>
+          <option value="tikrit">تكريت</option>
+          <option value="samarra">سامراء</option>
+          <option value="alam">العلم</option>
+          <option value="dur">الدور</option>
+          <option value="balad">بلد</option>
+          <option value="dujail">الدجيل</option>
+        </select>
+      </div>
+      <div class="field"><label>الاسم الكامل</label><input id="rn" type="text" placeholder="اسم المخول..."></div>
+      <div class="field"><label>رقم الهاتف</label><input id="rp" type="text" placeholder="07xxxxxxxxx"></div>
+      <div class="field"><label>كلمة المرور</label><input id="rw" type="password" placeholder="اختر كلمة مرور..."></div>
+      <button class="btn" onclick="register()">إنشاء حساب</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showTab(tab, el) {
+  document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  el.classList.add("active");
+  document.getElementById("f-login").style.display = tab === "login" ? "block" : "none";
+  document.getElementById("f-reg").style.display   = tab === "reg"   ? "block" : "none";
+  document.getElementById("msg").style.display = "none";
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById("msg");
+  el.textContent = text;
+  el.className = "alert " + type;
+  el.style.display = "block";
+}
+
+async function login() {
+  const phone    = document.getElementById("lp").value.trim();
+  const password = document.getElementById("lw").value;
+  if (!phone || !password) { showMsg("يرجى ملء جميع الحقول", "err"); return; }
+  try {
+    const r = await fetch("/api/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ phone, password }) });
+    const d = await r.json();
+    if (!r.ok) { showMsg(d.error || "خطأ", "err"); return; }
+    location.href = "/dashboard.html";
+  } catch { showMsg("خطأ في الاتصال", "err"); }
+}
+
+async function register() {
+  const district  = document.getElementById("rd").value;
+  const name      = document.getElementById("rn").value.trim();
+  const phone     = document.getElementById("rp").value.trim();
+  const password  = document.getElementById("rw").value;
+  if (!district || !name || !phone || !password) { showMsg("يرجى ملء جميع الحقول", "err"); return; }
+  try {
+    const r = await fetch("/api/officers", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ district, name, phone, password }) });
+    const d = await r.json();
+    if (!r.ok) { showMsg(d.error || "خطأ", "err"); return; }
+    showMsg("✅ تم التسجيل! سجل دخولك الآن", "ok");
+    document.querySelectorAll(".tab")[0].click();
+  } catch { showMsg("خطأ في الاتصال", "err"); }
+}
+
+// Auto-redirect if logged in
+fetch("/api/me").then(r => { if (r.ok) location.href = "/dashboard.html"; }).catch(() => {});
+</script>
+</body>
+</html>
