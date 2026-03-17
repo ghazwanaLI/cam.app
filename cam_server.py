@@ -127,6 +127,7 @@ STATIONS = [
     {"id":16,"name":"محطة الدجيل","district":"الدجيل","type":"حكومية"},
 ]
 
+# Dynamic districts list stored in db
 def default_db():
     return {
         "users":[{
@@ -146,6 +147,7 @@ def default_db():
         "next_camera_id":1,
         "next_station_id":17,
         "next_delegate_id":1,
+        "custom_districts":[],
     }
 
 sessions = {}
@@ -206,7 +208,21 @@ class Handler(BaseHTTPRequestHandler):
             sts=db["stations"]
             if u["role"]!="admin" and u.get("district"): sts=[s for s in sts if s.get("district")==u["district"]]
             self.send_json({"ok":True,"stations":sts})
-        elif p=="/api/districts": self.send_json({"ok":True,"districts":DISTRICTS})
+        elif p=="/api/districts":
+            db=load_db()
+            all_d=DISTRICTS+[d for d in db.get("custom_districts",[]) if d not in DISTRICTS]
+            self.send_json({"ok":True,"districts":all_d})
+        elif p=="/api/districts":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            name=body.get("name","").strip()
+            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
+            db=load_db()
+            if "custom_districts" not in db: db["custom_districts"]=[]
+            if name in DISTRICTS or name in db["custom_districts"]:
+                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
+            db["custom_districts"].append(name); save_db(db)
+            self.send_json({"ok":True})
+
         elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
         elif p=="/api/tours":
             tours=db.get("tours",[])
@@ -322,6 +338,17 @@ class Handler(BaseHTTPRequestHandler):
             st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"type":body.get("type","حكومية")}
             db["stations"].append(st); save_db(db)
             self.send_json({"ok":True,"station":st})
+
+        elif p=="/api/districts":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            name=body.get("name","").strip()
+            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
+            db=load_db()
+            if "custom_districts" not in db: db["custom_districts"]=[]
+            if name in DISTRICTS or name in db["custom_districts"]:
+                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
+            db["custom_districts"].append(name); save_db(db)
+            self.send_json({"ok":True})
 
         elif p=="/api/delegates":
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
