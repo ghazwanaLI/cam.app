@@ -1,0 +1,144 @@
+{
+  "users": [
+    {
+      "id": 1,
+      "fullname": "مدير النظام",
+      "username": "admin",
+      "password": "240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9",
+      "role": "admin",
+      "active": true,
+      "district": "",
+      "perms": {
+        "view": true,
+        "edit": true,
+        "del": true,
+        "files": true,
+        "reports": true
+      }
+    }
+  ],
+  "delegates": [],
+  "stations": [
+    {
+      "id": 1,
+      "name": "محطة اشور",
+      "district": "الشرقاط",
+      "type": "حكومية"
+    },
+    {
+      "id": 2,
+      "name": "محطة مكحول",
+      "district": "بيجي",
+      "type": "حكومية"
+    },
+    {
+      "id": 3,
+      "name": "محطة الشهيد بدر",
+      "district": "بيجي",
+      "type": "حكومية"
+    },
+    {
+      "id": 4,
+      "name": "محطة الحجاج",
+      "district": "بيجي",
+      "type": "حكومية"
+    },
+    {
+      "id": 5,
+      "name": "محطة فتح الفتوح",
+      "district": "تكريت",
+      "type": "حكومية"
+    },
+    {
+      "id": 6,
+      "name": "محطة تكريت القديمة",
+      "district": "تكريت",
+      "type": "حكومية"
+    },
+    {
+      "id": 7,
+      "name": "محطة تكريت الجديدة",
+      "district": "تكريت",
+      "type": "حكومية"
+    },
+    {
+      "id": 8,
+      "name": "محطة سامراء القديمة",
+      "district": "سامراء",
+      "type": "حكومية"
+    },
+    {
+      "id": 9,
+      "name": "محطة سامراء الجديدة",
+      "district": "سامراء",
+      "type": "حكومية"
+    },
+    {
+      "id": 10,
+      "name": "مركز توزيع سامراء",
+      "district": "سامراء",
+      "type": "حكومية"
+    },
+    {
+      "id": 11,
+      "name": "محطة الشهيدة أمية",
+      "district": "العلم",
+      "type": "حكومية"
+    },
+    {
+      "id": 12,
+      "name": "محطة الدور",
+      "district": "الدور",
+      "type": "حكومية"
+    },
+    {
+      "id": 13,
+      "name": "محطة الانوار",
+      "district": "الدور",
+      "type": "حكومية"
+    },
+    {
+      "id": 14,
+      "name": "محطة بلد",
+      "district": "بلد",
+      "type": "حكومية"
+    },
+    {
+      "id": 15,
+      "name": "محطة اريحا",
+      "district": "بلد",
+      "type": "حكومية"
+    },
+    {
+      "id": 16,
+      "name": "محطة الدجيل",
+      "district": "الدجيل",
+      "type": "حكومية"
+    }
+  ],
+  "tours": [],
+  "maintenance": [
+    {
+      "id": 1,
+      "date": "2026-03-17",
+      "district": "سامراء",
+      "station_id": 8,
+      "station_name": "محطة سامراء القديمة",
+      "device_type": "كاميرا",
+      "qty": 1,
+      "reason": "عطل",
+      "technician": "محمد زكي",
+      "notes": "منالا",
+      "created_by": "مدير النظام",
+      "created_at": "2026-03-17 10:49"
+    }
+  ],
+  "cameras": [],
+  "files": {},
+  "next_user_id": 2,
+  "next_tour_id": 1,
+  "next_maintenance_id": 2,
+  "next_camera_id": 1,
+  "next_station_id": 17,
+  "next_delegate_id": 1
+}
