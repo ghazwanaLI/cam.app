@@ -515,12 +515,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <select class="fi btn-sm" id="f-st-district" onchange="filterStations()" style="width:120px">
                 <option value="">كل القواطع</option>
               </select>
+              <button class="btn btn-p btn-sm" id="btn-add-st" onclick="openStationModal()" style="display:none">➕ إضافة محطة</button>
             </div>
             <div class="sec-title"><div class="sdot"></div>⛽ المحطات</div>
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th>عدد الكاميرات</th><th>آخر زيارة</th></tr></thead>
+              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th>عدد الكاميرات</th><th>آخر زيارة</th><th style="text-align:center">إجراءات</th></tr></thead>
               <tbody id="stations-tb"></tbody>
             </table>
           </div>
@@ -762,6 +763,32 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
+<!-- STATION MODAL -->
+<div class="overlay" id="ov-station" onclick="closeOv(event,'ov-station')">
+  <div class="modal modal-sm">
+    <div class="m-title">⛽ <span id="st-ttl">إضافة محطة</span></div>
+    <input type="hidden" id="st-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text" placeholder="اسم المحطة"></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" id="st-district">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">النوع</label>
+        <select class="fi" id="st-type">
+          <option value="حكومية">حكومية</option>
+          <option value="أهلية">أهلية</option>
+        </select>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
 <!-- USER MODAL -->
 <div class="overlay" id="ov-user" onclick="closeOv(event,'ov-user')">
   <div class="modal modal-sm">
@@ -888,6 +915,7 @@ async function initApp(){
   const dEl=document.getElementById('su-district');
   if(CU.district){dEl.textContent='📍 '+CU.district;}else{dEl.textContent='';}
   document.getElementById('admin-sect').style.display=CU.role==='admin'?'block':'none';
+  const bst=document.getElementById('btn-add-st');if(bst)bst.style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('nav-delegates').style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('nav-users').style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('nav-logs').style.display=CU.role==='admin'?'flex':'none';
@@ -1592,6 +1620,49 @@ function renderPg(id,pages,total,cur,cb){
 function dlCSV(rows,name){
   const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);a.download=name;a.click();toast('تم التصدير ✅');
+}
+
+
+// ── STATION MODAL ──
+function openStationModal(){
+  document.getElementById('st-ttl').textContent='إضافة محطة';
+  document.getElementById('st-eid').value='';
+  document.getElementById('st-name').value='';
+  document.getElementById('st-type').value='حكومية';
+  // Populate districts
+  const sel=document.getElementById('st-district');
+  sel.innerHTML='<option value="">— اختر القاطع —</option>';
+  DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  document.getElementById('ov-station').classList.add('open');
+}
+function editStation(id){
+  const s=allStations.find(x=>x.id===id);if(!s)return;
+  document.getElementById('st-ttl').textContent='تعديل المحطة';
+  document.getElementById('st-eid').value=id;
+  document.getElementById('st-name').value=s.name||'';
+  document.getElementById('st-type').value=s.type||'حكومية';
+  const sel=document.getElementById('st-district');
+  sel.innerHTML='<option value="">— اختر القاطع —</option>';
+  DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  sel.value=s.district||'';
+  document.getElementById('ov-station').classList.add('open');
+}
+async function saveStation(){
+  const name=document.getElementById('st-name').value.trim();
+  const district=document.getElementById('st-district').value;
+  if(!name){toast('اسم المحطة مطلوب','err');return;}
+  const body={name,district,type:document.getElementById('st-type').value};
+  const eid=parseInt(document.getElementById('st-eid').value);
+  try{
+    if(eid) await api('PUT',`/api/stations/${eid}`,body);
+    else await api('POST','/api/stations',body);
+    toast('تم الحفظ ✅');closeModal('ov-station');await loadStations();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function delStation(id){
+  if(!confirm('حذف هذه المحطة؟'))return;
+  try{await api('DELETE',`/api/stations/${id}`);toast('تم الحذف');await loadStations();}
+  catch(e){toast('خطأ','err');}
 }
 
 // ── INIT ──
