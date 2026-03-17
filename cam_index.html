@@ -54,46 +54,62 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* LAYOUT */
 #app{display:none;}
-.sidebar{width:var(--sw);position:fixed;top:0;right:0;bottom:0;z-index:100;
-  background:linear-gradient(180deg,#0c1e4a 0%,#1d4ed8 60%,#1e40af 100%);
-  border-left:1px solid rgba(255,255,255,.06);display:flex;flex-direction:column;overflow-y:auto;}
-.sb-logo{padding:18px 16px;border-bottom:1px solid rgba(255,255,255,.08);display:flex;align-items:center;gap:11px;}
-.sb-ico{width:44px;height:44px;background:linear-gradient(135deg,#60a5fa,#3b82f6);
-  border-radius:13px;display:flex;align-items:center;justify-content:center;
-  font-size:22px;flex-shrink:0;box-shadow:0 4px 14px rgba(37,99,168,.4);}
-.sb-name{font-size:13px;font-weight:800;color:#fff;line-height:1.3;}
-.sb-ver{font-size:10px;color:rgba(255,255,255,.4);margin-top:1px;}
-.sb-nav{flex:1;padding:12px 8px;}
-.nav-sect{font-size:9px;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:1.5px;
-  padding:10px 12px 4px;text-transform:uppercase;}
-.nav-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:10px;
-  cursor:pointer;transition:all .18s;color:rgba(255,255,255,.65);font-size:13px;
-  font-weight:500;margin-bottom:2px;position:relative;}
-.nav-item:hover{background:rgba(255,255,255,.08);color:#fff;}
-.nav-item.active{background:rgba(255,255,255,.14);color:#fff;font-weight:700;}
-.nav-item.active::before{content:'';position:absolute;right:0;top:25%;bottom:25%;
-  width:3px;background:#bfdbfe;border-radius:4px;}
-.ni{font-size:16px;width:22px;text-align:center;}
-.nbadge{margin-right:auto;background:#dc2626;color:#fff;border-radius:20px;padding:2px 7px;font-size:10px;font-weight:700;}
-.sb-user{padding:12px 14px;border-top:1px solid rgba(255,255,255,.08);}
-.su-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.su-av{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;
-  justify-content:center;font-size:15px;font-weight:800;flex-shrink:0;
+.sidebar{display:none;}
+.sb-logo{display:none;}
+.sb-nav{display:none;}
+.sb-user{display:none;}
+.su-av{display:none;}
+.nbadge{background:#dc2626;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-right:4px;}
+
+/* TOP NAVBAR */
+.topbar{
+  position:fixed;top:0;right:0;left:0;z-index:200;
+  background:linear-gradient(135deg,#0c1e4a,#1d4ed8);
+  box-shadow:0 2px 16px rgba(29,78,216,.3);
+  display:flex;flex-direction:column;
+}
+.topbar-logo{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.08);
+}
+.tb-brand{display:flex;align-items:center;gap:10px;}
+.tb-ico{width:38px;height:38px;background:rgba(255,255,255,.15);border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:20px;}
+.tb-name{font-size:14px;font-weight:800;color:#fff;}
+.tb-ver{font-size:10px;color:rgba(255,255,255,.5);}
+.tb-user{display:flex;align-items:center;gap:8px;}
+.su-av{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;
+  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
   background:rgba(255,255,255,.15);color:#fff;}
-.su-name{font-size:13px;font-weight:700;color:#fff;}
-.su-role{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px;}
-.su-district{font-size:10px;color:#60a5fa;font-weight:600;}
-.lo-btn{width:100%;padding:7px;background:transparent;border:1px solid rgba(255,255,255,.2);
-  border-radius:8px;color:rgba(255,255,255,.6);font-family:'Cairo',sans-serif;font-size:12px;
-  cursor:pointer;transition:all .2s;margin-bottom:4px;}
-.lo-btn:hover{border-color:rgba(255,255,255,.5);color:#fff;background:rgba(255,255,255,.08);}
+.su-name{font-size:12px;font-weight:700;color:#fff;}
+.su-role{font-size:10px;color:rgba(255,255,255,.5);}
+.su-district{font-size:10px;color:#93c5fd;font-weight:600;}
+.tb-actions{display:flex;gap:6px;}
+.tb-btn{padding:5px 12px;border-radius:8px;border:1px solid rgba(255,255,255,.2);
+  background:transparent;color:rgba(255,255,255,.7);font-family:'Cairo',sans-serif;
+  font-size:11px;cursor:pointer;transition:all .2s;}
+.tb-btn:hover{background:rgba(255,255,255,.15);color:#fff;}
+
+/* NAV TABS */
+.topbar-nav{
+  display:flex;align-items:center;gap:2px;padding:0 16px;overflow-x:auto;
+  scrollbar-width:none;
+}
+.topbar-nav::-webkit-scrollbar{display:none;}
+.nav-item{
+  display:flex;align-items:center;gap:6px;padding:10px 14px;
+  cursor:pointer;transition:all .18s;color:rgba(255,255,255,.6);
+  font-size:12px;font-weight:500;white-space:nowrap;position:relative;
+  border-bottom:3px solid transparent;
+}
+.nav-item:hover{color:#fff;background:rgba(255,255,255,.06);}
+.nav-item.active{color:#fff;font-weight:700;border-bottom:3px solid #bfdbfe;background:rgba(255,255,255,.08);}
+.ni{font-size:14px;}
+.nav-sect{font-size:9px;color:rgba(255,255,255,.25);padding:0 8px;letter-spacing:1px;white-space:nowrap;}
 
 /* MAIN */
-.main{margin-right:var(--sw);display:flex;flex-direction:column;min-height:100vh;}
-.header{background:rgba(255,255,255,.95);backdrop-filter:blur(12px);
-  border-bottom:2px solid var(--border);padding:12px 24px;
-  display:flex;align-items:center;justify-content:space-between;
-  position:sticky;top:0;z-index:50;box-shadow:0 2px 12px rgba(30,58,95,.06);}
+.main{margin-right:0;margin-top:110px;display:flex;flex-direction:column;min-height:100vh;}
+.header{display:none;}
 .h-title{font-size:16px;font-weight:800;color:#1d4ed8;}
 .h-right{display:flex;align-items:center;gap:10px;}
 .odot{width:8px;height:8px;border-radius:50%;background:var(--a3);animation:pulse 2s infinite;box-shadow:0 0 6px var(--a3);}
@@ -247,27 +263,23 @@ tr:hover td{background:rgba(30,58,95,.03);}
   background:rgba(59,130,246,.1);color:#1d4ed8;border:1px solid rgba(59,130,246,.25);}
 
 /* HAMBURGER */
-.hamburger{display:none;width:36px;height:36px;border-radius:9px;border:1.5px solid var(--border);
-  background:transparent;cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:4px;}
-.hamburger span{width:16px;height:2px;background:var(--text);border-radius:2px;}
-.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:99;}
-.sb-overlay.open{display:block;}
+.hamburger{display:none!important;}
+.sb-overlay{display:none!important;}
 
 /* RESPONSIVE */
 @media(max-width:768px){
-  :root{--sw:0px;}
-  .sidebar{transform:translateX(110%);transition:transform .3s;z-index:200;width:280px;}
-  .sidebar.open{transform:translateX(0);}
-  .main{margin-right:0;}
+  .main{margin-top:130px;}
   .stats-grid{grid-template-columns:1fr 1fr;gap:10px;}
   .content{padding:12px;}
-  .header{padding:10px 14px;}
   .fgrid{grid-template-columns:1fr;}
-  .hamburger{display:flex!important;}
   table{min-width:700px;}
+  .topbar-logo{padding:8px 12px;}
+  .tb-name{font-size:12px;}
+  .nav-item{padding:8px 10px;font-size:11px;}
 }
 @media(max-width:420px){
   .stats-grid{grid-template-columns:1fr 1fr;}
+  .tb-actions .tb-btn span.btn-txt{display:none;}
 }
 </style>
 </head>
@@ -293,54 +305,48 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- APP -->
 <div id="app">
-  <div class="sidebar" id="sidebar">
-    <div class="sb-logo">
-      <div class="sb-ico">📹</div>
-      <div>
-        <div class="sb-name">كاميرات المراقبة</div>
-        <div class="sb-ver">الإصدار V1.0.0</div>
+  <!-- TOP NAVBAR -->
+  <div class="topbar" id="sidebar">
+    <div class="topbar-logo">
+      <div class="tb-brand">
+        <div class="tb-ico">📹</div>
+        <div>
+          <div class="tb-name">نظام كاميرات المراقبة</div>
+          <div class="tb-ver">V1.0.0 — شعبة تقنية المعلومات</div>
+        </div>
       </div>
-    </div>
-    <nav class="sb-nav">
-      <div class="nav-sect">الرئيسية</div>
-      <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
-
-      <div class="nav-sect">التشغيل</div>
-      <div class="nav-item" onclick="goTab('tours',this)"><span class="ni">🚗</span>الجولات الميدانية<span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
-      <div class="nav-item" onclick="goTab('maintenance',this)"><span class="ni">🔧</span>الصيانة والأجهزة</div>
-
-      <div class="nav-sect">البيانات</div>
-      <div class="nav-item" onclick="goTab('cameras',this)"><span class="ni">📷</span>الكاميرات</div>
-      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
-      <div class="nav-item" onclick="goTab('reports',this)"><span class="ni">📊</span>التقارير</div>
-
-      <div class="nav-sect" id="admin-sect" style="display:none">الإدارة</div>
-      <div class="nav-item" id="nav-delegates" onclick="goTab('delegates',this)" style="display:none"><span class="ni">👥</span>القواطع والمخولون</div>
-      <div class="nav-item" id="nav-users" onclick="goTab('users',this)" style="display:none"><span class="ni">🔐</span>المستخدمون</div>
-      <div class="nav-item" id="nav-logs" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span>سجل النشاط</div>
-    </nav>
-    <div class="sb-user">
-      <div class="su-row">
+      <div class="tb-user">
         <div class="su-av" id="su-av">م</div>
         <div>
           <div class="su-name" id="su-name">—</div>
           <div class="su-role" id="su-role">—</div>
           <div class="su-district" id="su-district"></div>
         </div>
+        <div class="tb-actions">
+          <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
+          <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
+        </div>
       </div>
-      <button class="lo-btn" onclick="openChangePw()">🔑 تغيير كلمة المرور</button>
-      <button class="lo-btn" onclick="doLogout()">🚪 تسجيل الخروج</button>
+    </div>
+    <div class="topbar-nav">
+      <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
+      <div class="nav-sect">|</div>
+      <div class="nav-item" onclick="goTab('tours',this)"><span class="ni">🚗</span>الجولات<span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="goTab('maintenance',this)"><span class="ni">🔧</span>الصيانة</div>
+      <div class="nav-sect">|</div>
+      <div class="nav-item" onclick="goTab('cameras',this)"><span class="ni">📷</span>الكاميرات</div>
+      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
+      <div class="nav-item" onclick="goTab('reports',this)"><span class="ni">📊</span>التقارير</div>
+      <div class="nav-sect" id="admin-sect" style="display:none">|</div>
+      <div class="nav-item" id="nav-delegates" onclick="goTab('delegates',this)" style="display:none"><span class="ni">👥</span>القواطع</div>
+      <div class="nav-item" id="nav-users" onclick="goTab('users',this)" style="display:none"><span class="ni">🔐</span>المستخدمون</div>
+      <div class="nav-item" id="nav-logs" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span>السجل</div>
     </div>
   </div>
 
   <div class="main">
-    <div class="header">
-      <div class="h-title">📹 نظام كاميرات المراقبة</div>
-      <div class="h-right">
-        <span class="odot"></span>
-        <span style="font-size:12px;color:var(--t3)" id="hdate"></span>
-        <button class="hamburger" onclick="toggleSidebar()"><span></span><span></span><span></span></button>
-      </div>
+    <div class="header" style="display:none">
+      <span id="hdate"></span>
     </div>
     <div class="content">
 
@@ -976,7 +982,7 @@ function toast(msg,type='ok'){const el=document.getElementById('toast');el.textC
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeOv(e,id){if(e.target.id===id)closeModal(id);}
 function openLB(src){document.getElementById('lb-content').innerHTML=`<img src="${src}" style="max-width:90vw;max-height:80vh;border-radius:12px">`;document.getElementById('lb').classList.add('open');}
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('open');document.getElementById('sb-overlay').classList.toggle('open');}
+function toggleSidebar(){}
 
 // ── AUTH ──
 async function doLogin(){
