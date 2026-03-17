@@ -394,6 +394,14 @@ class Handler(BaseHTTPRequestHandler):
                 db["cameras"][idx]["district"]=st.get("district","")
             save_db(db); self.send_json({"ok":True})
 
+        elif p.startswith("/api/stations/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            sid=int(p.split("/")[-1]); idx=next((i for i,s in enumerate(db["stations"]) if s["id"]==sid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["name","district","type"]:
+                if f in body: db["stations"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+
         elif p.startswith("/api/users/"):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             uid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db["users"]) if x["id"]==uid),None)
@@ -442,6 +450,12 @@ class Handler(BaseHTTPRequestHandler):
             uid=int(p.split("/")[-1])
             if uid==u["id"]: self.send_json({"error":"لا يمكن حذف حسابك"},400); return
             db["users"]=[x for x in db["users"] if x["id"]!=uid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/stations/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            sid=int(p.split("/")[-1])
+            db["stations"]=[s for s in db["stations"] if s["id"]!=sid]; save_db(db)
             self.send_json({"ok":True})
 
         elif p.startswith("/api/files/"):
