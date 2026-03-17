@@ -766,11 +766,31 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="m-title">👥 مخول القاطع</div>
     <input type="hidden" id="d-eid">
     <div class="fgrid">
-      <div class="fg"><label class="fl">القاطع</label>
+      <div class="fg full"><label class="fl">القاطع</label>
         <select class="fi" id="d-district"><option value="">— اختر —</option></select>
       </div>
-      <div class="fg"><label class="fl">اسم المخول *</label><input class="fi" id="d-name" type="text"></div>
-      <div class="fg full"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone" type="text"></div>
+
+      <!-- مخول 1 -->
+      <div class="fg full" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
+        <div style="font-size:12px;font-weight:700;color:var(--p1);margin-bottom:8px">👤 المخول الأول</div>
+        <div class="fgrid">
+          <div class="fg"><label class="fl">الاسم *</label><input class="fi" id="d-name" type="text" placeholder="اسم المخول"></div>
+          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone" type="text" placeholder="07xx..."></div>
+        </div>
+      </div>
+
+      <!-- مخول إضافي -->
+      <div class="fg full" id="d-extra-section" style="display:none;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
+        <div style="font-size:12px;font-weight:700;color:var(--p2);margin-bottom:8px">👤 المخول الإضافي</div>
+        <div class="fgrid">
+          <div class="fg"><label class="fl">الاسم</label><input class="fi" id="d-name2" type="text" placeholder="اسم المخول الإضافي"></div>
+          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone2" type="text" placeholder="07xx..."></div>
+        </div>
+      </div>
+
+      <div class="fg full" id="d-add-extra-btn">
+        <button type="button" class="btn btn-o btn-sm" style="width:100%" onclick="toggleExtraDelegate()">➕ إضافة مخول إضافي</button>
+      </div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-delegate')">إلغاء</button>
@@ -1400,7 +1420,11 @@ function openDelegateModal(district=''){
   document.getElementById('d-eid').value='';
   document.getElementById('d-name').value='';
   document.getElementById('d-phone').value='';
+  document.getElementById('d-name2').value='';
+  document.getElementById('d-phone2').value='';
   document.getElementById('d-district').value=district||'';
+  document.getElementById('d-extra-section').style.display='none';
+  document.getElementById('d-add-extra-btn').style.display='block';
   document.getElementById('ov-delegate').classList.add('open');
 }
 function editDelegate(id){
@@ -1408,8 +1432,18 @@ function editDelegate(id){
   document.getElementById('d-eid').value=del.id;
   document.getElementById('d-name').value=del.name||'';
   document.getElementById('d-phone').value=del.phone||'';
+  document.getElementById('d-name2').value='';
+  document.getElementById('d-phone2').value='';
   document.getElementById('d-district').value=del.district||'';
+  document.getElementById('d-extra-section').style.display='none';
+  document.getElementById('d-add-extra-btn').style.display='block';
   document.getElementById('ov-delegate').classList.add('open');
+}
+function toggleExtraDelegate(){
+  const sec=document.getElementById('d-extra-section');
+  const btn=document.getElementById('d-add-extra-btn');
+  sec.style.display='block';
+  btn.style.display='none';
 }
 async function saveDelegate(){
   const name=document.getElementById('d-name').value.trim();
@@ -1420,6 +1454,11 @@ async function saveDelegate(){
   try{
     if(eid) await api('PUT',`/api/delegates/${eid}`,body);
     else await api('POST','/api/delegates',body);
+    // Save extra delegate if filled
+    const name2=document.getElementById('d-name2').value.trim();
+    if(!eid&&name2){
+      await api('POST','/api/delegates',{district,name:name2,phone:document.getElementById('d-phone2').value.trim()});
+    }
     toast('تم الحفظ ✅');closeModal('ov-delegate');await loadDelegates();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
