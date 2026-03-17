@@ -147,6 +147,8 @@ def default_db():
         "next_camera_id":1,
         "next_station_id":17,
         "next_delegate_id":1,
+        "inventory":[],
+        "next_inventory_id":1,
         "custom_districts":[],
     }
 
@@ -223,6 +225,29 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
+        elif p=="/api/inventory":
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            db=load_db()
+            if "inventory" not in db: db["inventory"]=[]
+            if "next_inventory_id" not in db: db["next_inventory_id"]=1
+            iid=db["next_inventory_id"]; db["next_inventory_id"]+=1
+            now=datetime.now().strftime("%Y-%m-%d %H:%M")
+            inv_item={
+                "id":iid,"station_id":body.get("station_id"),"station_name":body.get("station_name",""),
+                "district":body.get("district",""),"status":body.get("status","مكتمل"),
+                "dvr_count":body.get("dvr_count",0),"dvr_spec":body.get("dvr_spec",""),"dvr_model":body.get("dvr_model",""),
+                "hdd_count":body.get("hdd_count",0),"hdd_size":body.get("hdd_size",""),
+                "cam_count":body.get("cam_count",0),"cam_spec":body.get("cam_spec",""),"cam_res":body.get("cam_res",""),
+                "poe_count":body.get("poe_count",0),"poe_spec":body.get("poe_spec",""),
+                "mon_count":body.get("mon_count",0),"mon_spec":body.get("mon_spec",""),
+                "ups_count":body.get("ups_count",0),"ups_spec":body.get("ups_spec",""),
+                "bat_count":body.get("bat_count",0),"bat_spec":body.get("bat_spec",""),
+                "notes":body.get("notes",""),"created_by":u["fullname"],"updated_at":now,
+            }
+            db["inventory"].append(inv_item); save_db(db)
+            add_log_safe(u,"إضافة جرد",f"جرد: {inv_item['station_name']}",self.ip())
+            self.send_json({"ok":True,"inventory":inv_item})
+
         elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
         elif p=="/api/tours":
             tours=db.get("tours",[])
@@ -243,6 +268,11 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             qs=parse_qs(urlparse(self.path).query)
             self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
+        elif p=="/api/inventory":
+            inv=db.get("inventory",[])
+            if u["role"]!="admin" and u.get("district"): inv=[x for x in inv if x.get("district")==u["district"]]
+            self.send_json({"ok":True,"inventory":inv})
+
         elif p=="/api/stats":
             tours=db.get("tours",[])
             maintenance=db.get("maintenance",[])
@@ -350,6 +380,29 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
+        elif p=="/api/inventory":
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            db=load_db()
+            if "inventory" not in db: db["inventory"]=[]
+            if "next_inventory_id" not in db: db["next_inventory_id"]=1
+            iid=db["next_inventory_id"]; db["next_inventory_id"]+=1
+            now=datetime.now().strftime("%Y-%m-%d %H:%M")
+            inv_item={
+                "id":iid,"station_id":body.get("station_id"),"station_name":body.get("station_name",""),
+                "district":body.get("district",""),"status":body.get("status","مكتمل"),
+                "dvr_count":body.get("dvr_count",0),"dvr_spec":body.get("dvr_spec",""),"dvr_model":body.get("dvr_model",""),
+                "hdd_count":body.get("hdd_count",0),"hdd_size":body.get("hdd_size",""),
+                "cam_count":body.get("cam_count",0),"cam_spec":body.get("cam_spec",""),"cam_res":body.get("cam_res",""),
+                "poe_count":body.get("poe_count",0),"poe_spec":body.get("poe_spec",""),
+                "mon_count":body.get("mon_count",0),"mon_spec":body.get("mon_spec",""),
+                "ups_count":body.get("ups_count",0),"ups_spec":body.get("ups_spec",""),
+                "bat_count":body.get("bat_count",0),"bat_spec":body.get("bat_spec",""),
+                "notes":body.get("notes",""),"created_by":u["fullname"],"updated_at":now,
+            }
+            db["inventory"].append(inv_item); save_db(db)
+            add_log_safe(u,"إضافة جرد",f"جرد: {inv_item['station_name']}",self.ip())
+            self.send_json({"ok":True,"inventory":inv_item})
+
         elif p=="/api/delegates":
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             did=db["next_delegate_id"]; db["next_delegate_id"]+=1
@@ -421,6 +474,16 @@ class Handler(BaseHTTPRequestHandler):
                 db["cameras"][idx]["district"]=st.get("district","")
             save_db(db); self.send_json({"ok":True})
 
+        elif p.startswith("/api/inventory/"):
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","notes"]
+            for f in fields:
+                if f in body: db["inventory"][idx][f]=body[f]
+            db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
+            save_db(db); self.send_json({"ok":True})
+
         elif p.startswith("/api/stations/"):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             sid=int(p.split("/")[-1]); idx=next((i for i,s in enumerate(db["stations"]) if s["id"]==sid),None)
@@ -477,6 +540,12 @@ class Handler(BaseHTTPRequestHandler):
             uid=int(p.split("/")[-1])
             if uid==u["id"]: self.send_json({"error":"لا يمكن حذف حسابك"},400); return
             db["users"]=[x for x in db["users"] if x["id"]!=uid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/inventory/"):
+            if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
+            iid=int(p.split("/")[-1])
+            db["inventory"]=[x for x in db.get("inventory",[]) if x["id"]!=iid]; save_db(db)
             self.send_json({"ok":True})
 
         elif p.startswith("/api/stations/"):
