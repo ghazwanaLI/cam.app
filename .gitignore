@@ -1,0 +1,6 @@
+__pycache__/
+*.pyc
+.env
+flask_session/
+/tmp/
+*.log

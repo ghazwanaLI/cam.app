@@ -1,0 +1,42 @@
+{
+  "officers": [
+    {
+      "id": 1,
+      "name": "المشرف العام",
+      "phone": "admin",
+      "password": "admin123",
+      "district": null,
+      "role": "admin"
+    }
+  ],
+  "tours": [],
+  "maintenance": [],
+  "districts": [
+    { "id": "sharqat", "name": "الشرقاط" },
+    { "id": "baiji",   "name": "بيجي"    },
+    { "id": "tikrit",  "name": "تكريت"   },
+    { "id": "samarra", "name": "سامراء"  },
+    { "id": "alam",    "name": "العلم"   },
+    { "id": "dur",     "name": "الدور"   },
+    { "id": "balad",   "name": "بلد"     },
+    { "id": "dujail",  "name": "الدجيل"  }
+  ],
+  "stations": [
+    { "id": "s1",  "name": "محطة اشور الحكومية",        "district": "sharqat" },
+    { "id": "s2",  "name": "محطة مكحول الحكومية",        "district": "baiji"   },
+    { "id": "s3",  "name": "محطة الشهيد بدر الحكومية",   "district": "baiji"   },
+    { "id": "s4",  "name": "محطة الحجاج الحكومية",       "district": "baiji"   },
+    { "id": "s5",  "name": "محطة فتح الفتوح الحكومية",   "district": "tikrit"  },
+    { "id": "s6",  "name": "محطة تكريت القديمة",          "district": "tikrit"  },
+    { "id": "s7",  "name": "محطة تكريت الجديدة",          "district": "tikrit"  },
+    { "id": "s8",  "name": "محطة سامراء القديمة",          "district": "samarra" },
+    { "id": "s9",  "name": "محطة سامراء الجديدة",          "district": "samarra" },
+    { "id": "s10", "name": "مركز توزيع سامراء",            "district": "samarra" },
+    { "id": "s11", "name": "محطة الشهيدة أمية",            "district": "alam"    },
+    { "id": "s12", "name": "محطة الدور الحكومية",           "district": "dur"     },
+    { "id": "s13", "name": "محطة الانوار الحكومية",         "district": "dur"     },
+    { "id": "s14", "name": "محطة بلد الحكومية",             "district": "balad"   },
+    { "id": "s15", "name": "محطة اريحا",                   "district": "balad"   },
+    { "id": "s16", "name": "محطة الدجيل الحكومية",          "district": "dujail"  }
+  ]
+}
