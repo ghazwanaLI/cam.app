@@ -385,6 +385,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
         </div>
 
+        <div id="district-cams-breakdown" style="display:none"></div>
+
         <div id="unvisited-bar" class="alert-bar" style="display:none">
           <div style="font-size:20px;flex-shrink:0">⚠️</div>
           <div style="flex:1">
@@ -1283,6 +1285,43 @@ async function loadDashboard(){
       bar.style.display='flex';
       chips.innerHTML=d.unvisited.map(s=>`<span class="achip" onclick="goTab('stations',null)">⛽ ${s.name} — ${s.district}</span>`).join('');
     }else{bar.style.display='none';}
+
+    // ── District camera breakdown ──
+    const distDiv=document.getElementById('district-cams-breakdown');
+    if(distDiv&&d.district_cams){
+      const dc=d.district_cams;
+      const districts=Object.keys(dc).filter(k=>dc[k].working>0||dc[k].broken>0);
+      if(districts.length>0){
+        distDiv.innerHTML=`
+          <div class="section" style="margin-bottom:18px">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot"></div>📷 الكاميرات حسب القاطع</div>
+              <span style="font-size:12px;color:var(--t3)">إجمالي: ${d.cameras_working+d.cameras_broken} كاميرا</span>
+            </div>
+            <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px">
+              ${districts.map(dist=>{
+                const w=dc[dist].working||0;
+                const b=dc[dist].broken||0;
+                const total=w+b;
+                const pct=total>0?Math.round(w/total*100):0;
+                return `<div style="background:#fff;border:1px solid var(--border);border-radius:12px;padding:12px;border-top:3px solid ${b>0?'#dc2626':'#16a34a'}">
+                  <div style="font-weight:700;font-size:13px;color:var(--p1);margin-bottom:8px">📍 ${dist}</div>
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <span style="font-size:12px;color:var(--a3)">✅ تعمل: <strong>${w}</strong></span>
+                    <span style="font-size:12px;color:var(--a2)">❌ لا تعمل: <strong>${b}</strong></span>
+                  </div>
+                  <div style="height:6px;background:var(--border);border-radius:4px;overflow:hidden">
+                    <div style="height:100%;width:${pct}%;background:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'};border-radius:4px"></div>
+                  </div>
+                  <div style="font-size:10px;color:var(--t3);margin-top:4px;text-align:center">${pct}% تعمل من ${total}</div>
+                </div>`;
+              }).join('')}
+            </div>
+          </div>`;
+        distDiv.style.display='block';
+      }else{distDiv.innerHTML='';distDiv.style.display='none';}
+    }
+
     // Recent tours
     const rt=document.getElementById('recent-tours-tb');
     if(rt) rt.innerHTML=allTours.slice(0,5).map((t,i)=>`<tr>
