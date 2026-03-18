@@ -534,7 +534,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th>عدد الكاميرات</th><th>آخر زيارة</th><th style="text-align:center">إجراءات</th></tr></thead>
+              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th>عدد الكاميرات</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
               <tbody id="stations-tb"></tbody>
             </table>
           </div>
@@ -1329,6 +1329,12 @@ function renderStations(){
       </td>
       <td style="font-size:12px">
         ${lastTour?`<span class="${daysSince>30?'badge b-bad':'badge b-ok'}">${lastTour.date} (${daysSince} يوم)</span>`:'<span class="badge b-warn">لم تُزَر</span>'}
+      </td>
+      <td style="text-align:center">
+        <div style="display:flex;gap:4px;justify-content:center">
+          ${CU&&CU.role==='admin'?`<button class="btn btn-o btn-sm" onclick="editStation(${s.id})" title="تعديل">✏️</button>`:''}
+          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})" title="حذف">🗑️</button>`:''}
+        </div>
       </td>
     </tr>`;
   }).join('');
