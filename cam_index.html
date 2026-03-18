@@ -534,7 +534,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
           <div class="table-wrap">
             <table>
-              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th>عدد الكاميرات</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
+              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
               <tbody id="stations-tb"></tbody>
             </table>
           </div>
@@ -1065,6 +1065,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="أهلية">أهلية</option>
         </select>
       </div>
+      <div class="fg" style="border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px;background:rgba(22,163,74,.03)">
+        <label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label>
+        <input class="fi" id="st-cam-working" type="number" min="0" value="0" placeholder="0">
+      </div>
+      <div class="fg" style="border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:10px;background:rgba(220,38,38,.03)">
+        <label class="fl" style="color:var(--a2)">📷 كاميرات لا تعمل</label>
+        <input class="fi" id="st-cam-broken" type="number" min="0" value="0" placeholder="0">
+      </div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
@@ -1324,8 +1332,11 @@ function renderStations(){
       <td><strong>⛽ ${s.name}</strong></td>
       <td><span class="db">${s.district||'—'}</span></td>
       <td><span class="badge b-navy">${s.type||'حكومية'}</span></td>
-      <td style="text-align:center">
-        <span class="badge ${cams.length>0?'b-blue':'b-warn'}">${cams.length} كاميرا</span>
+      <td style="text-align:center;background:rgba(22,163,74,.04)">
+        <span style="font-size:16px;font-weight:900;color:var(--a3)">${s.cam_working||0}</span>
+      </td>
+      <td style="text-align:center;background:rgba(220,38,38,.04)">
+        <span style="font-size:16px;font-weight:900;color:var(--a2)">${s.cam_broken||0}</span>
       </td>
       <td style="font-size:12px">
         ${lastTour?`<span class="${daysSince>30?'badge b-bad':'badge b-ok'}">${lastTour.date} (${daysSince} يوم)</span>`:'<span class="badge b-warn">لم تُزَر</span>'}
@@ -2350,6 +2361,8 @@ function openStationModal(){
   document.getElementById('st-eid').value='';
   document.getElementById('st-name').value='';
   document.getElementById('st-type').value='حكومية';
+  document.getElementById('st-cam-working').value=0;
+  document.getElementById('st-cam-broken').value=0;
   // Populate districts fresh
   const sel=document.getElementById('st-district');
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
@@ -2367,6 +2380,8 @@ function editStation(id){
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
   DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
   sel.value=s.district||'';
+  document.getElementById('st-cam-working').value=s.cam_working||0;
+  document.getElementById('st-cam-broken').value=s.cam_broken||0;
   document.getElementById('ov-station').classList.add('open');
 }
 async function saveStation(){
