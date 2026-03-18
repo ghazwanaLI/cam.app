@@ -1230,8 +1230,8 @@ function populateDistrictSelects(){
       const opt=document.createElement('option');opt.value=d;opt.textContent=d;
       el.appendChild(opt);
     });
-    // Pre-select district for non-admin
-    if(CU&&CU.role!=='admin'&&CU.district){el.value=CU.district;el.disabled=true;}
+    // Pre-select district for non-admin — only for filter selects, not modal selects
+    if(CU&&CU.role!=='admin'&&CU.district&&id.startsWith('f-')){el.value=CU.district;el.disabled=true;}
   });
 }
 
@@ -2344,10 +2344,11 @@ function openStationModal(){
   document.getElementById('st-eid').value='';
   document.getElementById('st-name').value='';
   document.getElementById('st-type').value='حكومية';
-  // Populate districts
+  // Populate districts fresh
   const sel=document.getElementById('st-district');
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
   DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  sel.value=''; // reset to empty
   document.getElementById('ov-station').classList.add('open');
 }
 function editStation(id){
