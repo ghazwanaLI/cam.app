@@ -1200,6 +1200,11 @@ async function initApp(){
   const dEl=document.getElementById('su-district');
   if(CU.district){dEl.textContent='📍 '+CU.district;}else{dEl.textContent='';}
   document.getElementById('admin-sect').style.display=CU.role==='admin'?'block':'none';
+  // Show inventory button immediately after login
+  setTimeout(()=>{
+    const btn=document.getElementById('btn-add-inv');
+    if(btn) btn.style.display=(can('edit')||can('inventory'))?'flex':'none';
+  },500);
   const bst=document.getElementById('btn-add-st');if(bst)bst.style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('nav-delegates').style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('nav-users').style.display=CU.role==='admin'?'flex':'none';
@@ -1241,8 +1246,12 @@ function goTab(name,el){
   if(name==='tours') renderTours();
   if(name==='maintenance') renderMaint();
   if(name==='cameras') renderCams();
-  if(name==='inventory'){loadInventory();const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}}
-  if(name==='stations') renderStations();
+  if(name==='inventory'){
+    loadInventory();
+    const btn=document.getElementById('btn-add-inv');
+    if(btn) btn.style.display=(can('edit')||can('inventory'))?'flex':'none';
+    const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
+  }  if(name==='stations') renderStations();
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
   if(name==='users') loadUsers();
