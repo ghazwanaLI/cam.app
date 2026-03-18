@@ -269,13 +269,28 @@ class Handler(BaseHTTPRequestHandler):
             now=datetime.now()
             visited_30=set(t["station_id"] for t in tours if t.get("date") and (now-datetime.strptime(t["date"],"%Y-%m-%d")).days<=30)
             unvisited=[s for s in stations if s["id"] not in visited_30]
+            # Camera counts from stations (more accurate)
+            st_cams_working=sum(int(s.get("cam_working",0)) for s in stations)
+            st_cams_broken=sum(int(s.get("cam_broken",0)) for s in stations)
+            # Fallback to cameras table if stations have no data
+            cams_working=st_cams_working if st_cams_working>0 else len([c for c in cameras if c.get("status")=="working"])
+            cams_broken=st_cams_broken if st_cams_broken>0 else len([c for c in cameras if c.get("status")=="broken"])
+            # Per district breakdown
+            district_cams={}
+            for s in stations:
+                d=s.get("district","")
+                if d not in district_cams: district_cams[d]={"working":0,"broken":0}
+                district_cams[d]["working"]+=int(s.get("cam_working",0))
+                district_cams[d]["broken"]+=int(s.get("cam_broken",0))
             self.send_json({
                 "ok":True,
                 "total_stations":len(stations),
                 "total_tours":len(tours),
                 "total_maintenance":len(maintenance),
-                "cameras_working":len([c for c in cameras if c.get("status")=="working"]),
-                "cameras_broken":len([c for c in cameras if c.get("status")=="broken"]),
+                "cameras_working":cams_working,
+                "cameras_broken":cams_broken,
+                "cameras_total":cams_working+cams_broken,
+                "district_cams":district_cams,
                 "unvisited_count":len(unvisited),
                 "unvisited":unvisited[:5],
             })
