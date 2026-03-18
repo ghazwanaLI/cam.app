@@ -567,8 +567,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <!-- Summary cards per district -->
           <div id="inv-district-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)"></div>
 
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
             <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvModal()" style="display:none">➕ إضافة جرد محطة</button>
+            <span style="font-size:12px;color:var(--t3)" id="inv-total-label"></span>
           </div>
           <div class="table-wrap">
             <table id="inv-table">
@@ -2054,6 +2055,7 @@ function renderInv(){
   </tr>`).join('');
   renderPg('pg-inv',pages,f.length,sPI,n=>{sPI=n;renderInv();});
   const btn=document.getElementById('btn-add-inv');if(btn)btn.style.display=(can('edit')||can('inventory'))?'flex':'none';
+  const lbl=document.getElementById('inv-total-label');if(lbl)lbl.textContent=`إجمالي المحطات المسجلة: ${allInv.length}`;
 }
 
 function renderInvSummary(){
