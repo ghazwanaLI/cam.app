@@ -2388,7 +2388,12 @@ async function saveStation(){
   const name=document.getElementById('st-name').value.trim();
   const district=document.getElementById('st-district').value;
   if(!name){toast('اسم المحطة مطلوب','err');return;}
-  const body={name,district,type:document.getElementById('st-type').value};
+  const body={
+    name,district,
+    type:document.getElementById('st-type').value,
+    cam_working:parseInt(document.getElementById('st-cam-working').value)||0,
+    cam_broken:parseInt(document.getElementById('st-cam-broken').value)||0,
+  };
   const eid=parseInt(document.getElementById('st-eid').value);
   try{
     if(eid) await api('PUT',`/api/stations/${eid}`,body);
