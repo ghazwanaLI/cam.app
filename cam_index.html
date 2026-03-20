@@ -275,11 +275,53 @@ tr:hover td{background:rgba(30,58,95,.03);}
   #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
   #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
 }
+
+/* LOGIN */
+#login-screen{display:flex;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,#0c1e4a 0%,#1d4ed8 50%,#1e3a8a 100%);}
+.lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
+  box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeup .5s cubic-bezier(.34,1.56,.64,1);}
+@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
+.licon{width:72px;height:72px;margin:0 auto 16px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;
+  box-shadow:0 8px 24px rgba(29,78,216,.4);}
+.ltitle{text-align:center;font-size:20px;font-weight:800;color:var(--p1);margin-bottom:4px;}
+.lsub{text-align:center;font-size:12px;color:var(--t3);margin-bottom:28px;}
+.lerr{background:var(--a2d);border:1px solid rgba(220,38,38,.3);border-radius:10px;
+  padding:10px 14px;font-size:13px;color:var(--a2);margin-bottom:12px;display:none;}
+.lf{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
+.ll{font-size:11px;color:var(--t2);font-weight:700;letter-spacing:.3px;}
+.li{background:#f7fafc;border:1.5px solid var(--border);border-radius:10px;
+  padding:11px 14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;
+  outline:none;transition:all .2s;width:100%;}
+.li:focus{border-color:var(--p1);box-shadow:0 0 0 3px var(--p1d);background:#fff;}
+.lbtn{width:100%;padding:13px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  color:#fff;border:none;border-radius:10px;font-family:'Cairo',sans-serif;
+  font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
+.lbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(29,78,216,.4);}
+.lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+.lhint{text-align:center;font-size:11px;color:var(--t3);margin-top:16px;}
 </style>
 </head>
 <body>
 <div class="toast" id="toast"></div>
 <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
+
+<!-- LOGIN -->
+<div id="login-screen" style="display:none">
+  <div class="lbox">
+    <div class="licon">📹</div>
+    <div class="ltitle">نظام كاميرات المراقبة</div>
+    <div class="lsub">شعبة تقنية المعلومات — الإصدار V1.0.0</div>
+    <div class="lerr" id="lerr"></div>
+    <div class="lf"><label class="ll">اسم المستخدم</label>
+      <input class="li" id="li-u" type="text" placeholder="أدخل اسم المستخدم" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <div class="lf"><label class="ll">كلمة المرور</label>
+      <input class="li" id="li-p" type="password" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()"></div>
+    <button class="lbtn" id="lbtn" onclick="doLogin()">دخول ←</button>
+    <div class="lhint">إعداد وبرمجة: Ghazwan Ali Alqaissi</div>
+  </div>
+</div>
 
 <!-- APP -->
 <div id="app">
@@ -1195,10 +1237,10 @@ async function api(method,path,body=null){
   try{
     const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:body?JSON.stringify(body):null});
     if(r.status===401&&path!=='/api/login'){
-      // حاول إعادة الدخول تلقائياً
-      try{const d2=await fetch(API+'/api/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({username:'admin',password:'admin123'})});const dd=await d2.json();if(dd.token){TOKEN=dd.token;localStorage.setItem('cam_token',TOKEN);CU=dd.user;}}catch(e){}
-      const r2=await fetch(API+path,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:body?JSON.stringify(body):null});
-      const d2=await r2.json();if(!r2.ok) throw new Error(d2.error||`خطأ ${r2.status}`);return d2;
+      TOKEN='';localStorage.removeItem('cam_token');
+      document.getElementById('login-screen').style.display='flex';
+      document.getElementById('app').style.display='none';
+      throw new Error('انتهت الجلسة');
     }
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
@@ -1216,23 +1258,36 @@ function openLB(src){document.getElementById('lb-content').innerHTML=`<img src="
 function toggleSidebar(){}
 
 // ── AUTH ──
+async function doLogin(){
+  const u=document.getElementById('li-u').value.trim(),p=document.getElementById('li-p').value;
+  const btn=document.getElementById('lbtn'),err=document.getElementById('lerr');
+  err.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';
+  try{
+    const d=await api('POST','/api/login',{username:u,password:p});
+    TOKEN=d.token;CU=d.user;localStorage.setItem('cam_token',TOKEN);
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    await initApp();
+  }catch(e){err.textContent=e.message;err.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='دخول ←';}
+}
 async function doLogout(){
   try{await api('POST','/api/logout');}catch(e){}
   TOKEN='';CU=null;localStorage.removeItem('cam_token');
-  location.reload();
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('app').style.display='none';
 }
 async function tryAutoLogin(){
-  // وضع مفتوح — بدون تسجيل دخول
-  CU={id:1,fullname:'مدير النظام',username:'admin',role:'admin',
-      perms:{view:true,edit:true,del:true,files:true,reports:true,inventory:true}};
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-  // محاولة الحصول على توكن حقيقي في الخلفية
+  if(!TOKEN){document.getElementById('login-screen').style.display='flex';return;}
   try{
-    const d=await api('POST','/api/login',{username:'admin',password:'admin123'});
-    TOKEN=d.token; CU=d.user; localStorage.setItem('cam_token',TOKEN);
-  }catch(e){}
-  await initApp();
+    const d=await api('GET','/api/me');CU=d.user;
+    document.getElementById('login-screen').style.display='none';
+    document.getElementById('app').style.display='block';
+    await initApp();
+  }catch(e){
+    TOKEN='';localStorage.removeItem('cam_token');
+    document.getElementById('login-screen').style.display='flex';
+  }
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
 
@@ -1412,47 +1467,6 @@ async function loadDashboard(){
 
 
   }catch(e){console.error('Dashboard error:',e);}
-}
-
-    mapInstance=L.map('stations-map',{zoomControl:true}).setView([34.5,43.5],8);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
-      attribution:'© OpenStreetMap',maxZoom:18
-    }).addTo(mapInstance);
-
-    // Station coordinates (approximate for Salah al-Din governorate)
-    const coordsMap={
-      'محطة اشور':[35.52,43.26],'محطة مكحول':[35.08,43.47],
-      'محطة الشهيد بدر':[34.93,43.47],'محطة الحجاج':[34.92,43.50],
-      'محطة فتح الفتوح':[34.62,43.69],'محطة تكريت القديمة':[34.61,43.68],
-      'محطة تكريت الجديدة':[34.62,43.67],'محطة سامراء القديمة':[34.19,43.87],
-      'محطة سامراء الجديدة':[34.20,43.87],'مركز توزيع سامراء':[34.18,43.88],
-      'محطة الشهيدة أمية':[34.35,43.60],'محطة الدور':[34.44,43.66],
-      'محطة الانوار':[34.43,43.65],'محطة بلد':[34.02,43.83],
-      'محطة اريحا':[34.01,43.82],'محطة الدجيل':[33.85,44.24],
-    };
-
-    const unvisitedIds=new Set((unvisitedList||[]).map(s=>s.id));
-    const maintStations=new Set(allMaint.slice(0,5).map(m=>m.station_name));
-
-    const greenIcon=L.divIcon({html:'<div style="width:14px;height:14px;background:#16a34a;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>',className:'',iconSize:[14,14]});
-    const yellowIcon=L.divIcon({html:'<div style="width:14px;height:14px;background:#d97706;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.3)"></div>',className:'',iconSize:[14,14]});
-    const redIcon=L.divIcon({html:'<div style="width:16px;height:16px;background:#dc2626;border-radius:50%;border:2px solid #fff;box-shadow:0 2px 8px rgba(220,38,38,.5)"></div>',className:'',iconSize:[16,16]});
-
-    allStations.forEach(s=>{
-      const coord=coordsMap[s.name];
-      if(!coord)return;
-      let icon=greenIcon;
-      if(maintStations.has(s.name)) icon=redIcon;
-      else if(unvisitedIds.has(s.id)) icon=yellowIcon;
-      L.marker(coord,{icon}).addTo(mapInstance)
-        .bindPopup(`<div dir="rtl" style="font-family:Cairo,sans-serif;min-width:160px">
-          <strong style="color:#1d4ed8">⛽ ${s.name}</strong><br>
-          <span style="color:#666;font-size:12px">📍 ${s.district}</span><br>
-          <span style="color:#16a34a;font-size:12px">✅ تعمل: ${s.cam_working||0}</span><br>
-          <span style="color:#dc2626;font-size:12px">❌ معطلة: ${s.cam_broken||0}</span>
-        </div>`);
-    });
-  }catch(e){console.error('Map error:',e);}
 }
 
 // ── STATIONS ──
