@@ -475,7 +475,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
 
           <!-- Delegates Table -->
-          <div class="section">
+          <div class="section" id="dash-delegates-section">
             <div class="sec-hdr">
               <div class="sec-title"><div class="sdot"></div>👥 القواطع والمخولون</div>
             </div>
@@ -1365,6 +1365,8 @@ async function initApp(){
   });
   const adminSect=document.getElementById('admin-sect');
   if(adminSect) adminSect.style.display=CU.role==='admin'?'':'none';
+  const delegSect=document.getElementById('dash-delegates-section');
+  if(delegSect) delegSect.style.display=CU.role==='admin'?'':'none';
   const rCard=document.getElementById('dash-reports-card');if(rCard)rCard.style.display=CU.role==='admin'?'block':'none';
   document.getElementById('hdate').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   // Load districts
