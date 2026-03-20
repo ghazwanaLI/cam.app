@@ -1280,6 +1280,7 @@ function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.
 
 // ── INIT ──
 async function initApp(){
+  try{
   document.getElementById('su-name').textContent=CU.fullname;
   document.getElementById('su-role').textContent=CU.role==='admin'?'مدير النظام':'مخول قاطع';
   document.getElementById('su-av').textContent=CU.fullname[0];
@@ -1297,12 +1298,21 @@ async function initApp(){
   document.getElementById('nav-logs').style.display=CU.role==='admin'?'flex':'none';
   document.getElementById('hdate').textContent=new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   // Load districts
-  const dRes=await api('GET','/api/districts');
-  DISTRICTS_LIST=dRes.districts||[];
-  populateDistrictSelects();
-  // Load data
-  await Promise.all([loadStations(),loadTours(),loadMaintenance(),loadCameras(),loadDelegates(),loadInventory()]);
+  try{
+    const dRes=await api('GET','/api/districts');
+    DISTRICTS_LIST=dRes.districts||[];
+    populateDistrictSelects();
+  }catch(e){console.warn('districts error',e);}
+  // Load data — each independently so one failure doesn't block others
+  await Promise.allSettled([
+    loadStations(),loadTours(),loadMaintenance(),
+    loadCameras(),loadDelegates(),loadInventory()
+  ]);
   loadDashboard();
+  }catch(e){
+    console.error('initApp error',e);
+    toast('خطأ في تحميل البيانات — حاول مرة أخرى','err');
+  }
 }
 
 function populateDistrictSelects(){
