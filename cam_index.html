@@ -5,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام كاميرات المراقبة</title>
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --bg:#ffffff;--bg2:#f8fafc;
@@ -286,9 +284,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
   .tb-actions .tb-btn span.btn-txt{display:none;}
 }
 
-/* MAP */
-#stations-map{z-index:1;}
-.leaflet-container{font-family:'Cairo',sans-serif;}
 
 /* DASHBOARD RESPONSIVE */
 @media(max-width:900px){
@@ -346,8 +341,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('tours',this)"><span class="ni">🚗</span>الجولات<span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
-      <div class="nav-item" onclick="goTab('maintenance',this)"><span class="ni">🔧</span>الصيانة</div>
+      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span>الجولات والصيانة<span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('cameras',this)"><span class="ni">📷</span>الكاميرات</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
@@ -371,7 +365,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
         <!-- 4 Quick Cards -->
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px">
-          <div onclick="goTab('tours',document.querySelector('[onclick*=tours]'))" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(29,78,216,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(29,78,216,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
                 <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">الجولات الميدانية</div>
@@ -381,7 +375,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🚗</div>
             </div>
           </div>
-          <div onclick="goTab('maintenance',document.querySelector('[onclick*=maintenance]'))" style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(220,38,38,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(220,38,38,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
                 <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">الصيانة</div>
@@ -413,24 +407,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
         </div>
 
-        <!-- Map + Widget -->
-        <div style="display:grid;grid-template-columns:1fr 340px;gap:14px;margin-bottom:18px">
-
-          <!-- Map -->
-          <div class="section" style="min-height:400px">
-            <div class="sec-hdr">
-              <div class="sec-title"><div class="sdot"></div>🗺️ خريطة حالة المحطات</div>
-              <div style="display:flex;gap:12px;font-size:11px;align-items:center">
-                <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#16a34a;display:inline-block"></span>تمت الزيارة</span>
-                <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#d97706;display:inline-block"></span>تحتاج زيارة</span>
-                <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;border-radius:50%;background:#dc2626;display:inline-block"></span>تحت الصيانة</span>
-              </div>
-            </div>
-            <div id="stations-map" style="height:360px;border-radius:0 0 var(--r) var(--r)"></div>
-          </div>
-
-          <!-- Widget -->
-          <div style="display:flex;flex-direction:column;gap:12px">
+        <!-- Widget -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px">
+          <div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
 
             <!-- Camera Status -->
             <div class="section">
@@ -453,7 +433,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="section" style="flex:1">
               <div class="sec-hdr" style="padding:10px 14px">
                 <div class="sec-title" style="font-size:13px"><div class="sdot"></div>🚗 أحدث الجولات</div>
-                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="openTourModal()">+ جولة</button>
+                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)">+ جولة</button>
               </div>
               <div id="widget-tours" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
             </div>
@@ -462,11 +442,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="section">
               <div class="sec-hdr" style="padding:10px 14px">
                 <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#dc2626"></div>🔧 آخر الصيانات</div>
-                <button class="btn btn-r btn-sm" style="font-size:10px;padding:4px 8px" onclick="openMaintModal()">+ صيانة</button>
+                <button class="btn btn-r btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)">+ صيانة</button>
               </div>
               <div id="widget-maint" style="padding:8px 0;max-height:160px;overflow-y:auto"></div>
             </div>
 
+          </div>
           </div>
         </div>
 
@@ -509,8 +490,22 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
+      <!-- FIELD TAB (Tours + Maintenance) -->
+      <div id="tab-field" style="display:none">
+        <!-- Sub tabs -->
+        <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;background:#fff;position:sticky;top:110px;z-index:10">
+          <button onclick="switchField('tours',this)" id="sub-tours"
+            style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;color:#1d4ed8;border-bottom:3px solid #1d4ed8;cursor:pointer;display:flex;align-items:center;gap:6px">
+            🚗 الجولات الميدانية
+          </button>
+          <button onclick="switchField('maintenance',this)" id="sub-maint"
+            style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;cursor:pointer;display:flex;align-items:center;gap:6px">
+            🔧 الصيانة والأجهزة
+          </button>
+        </div>
+
       <!-- TOURS TAB -->
-      <div id="tab-tours" style="display:none">
+      <div id="tab-tours" style="display:block">
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
@@ -531,7 +526,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="sec-title"><div class="sdot"></div>🚗 سجل الجولات الميدانية</div>
           </div>
           <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-p btn-sm" id="btn-add-tour" onclick="openTourModal()" style="display:none">➕ إضافة جولة</button>
+            <button class="btn btn-p btn-sm" id="btn-add-tour" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)" style="display:none">➕ إضافة جولة</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -542,6 +537,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="pagination" id="pg-tours"></div>
         </div>
       </div>
+
+      </div><!-- /tab-tours -->
 
       <!-- MAINTENANCE TAB -->
       <div id="tab-maintenance" style="display:none">
@@ -558,7 +555,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
           </div>
           <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="openMaintModal()" style="display:none">➕ إضافة صيانة</button>
+            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)" style="display:none">➕ إضافة صيانة</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -569,6 +566,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="pagination" id="pg-maint"></div>
         </div>
       </div>
+
+      </div><!-- /tab-field -->
 
       <!-- CAMERAS TAB -->
       <div id="tab-cameras" style="display:none">
@@ -1332,7 +1331,6 @@ function goTab(name,el){
   if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open');}
   if(name==='tours') renderTours();
   if(name==='maintenance') renderMaint();
-  if(name==='cameras') renderCams();
   if(name==='inventory'){
     loadInventory();
     const btn=document.getElementById('btn-add-inv');
@@ -1444,19 +1442,10 @@ async function loadDashboard(){
       }).join('');
     }
 
-    // Draw map
-    initMap(d.unvisited||[]);
 
   }catch(e){console.error('Dashboard error:',e);}
 }
 
-// ── MAP ──
-let mapInstance=null;
-function initMap(unvisitedList){
-  try{
-    const mapDiv=document.getElementById('stations-map');
-    if(!mapDiv||typeof L==='undefined') return;
-    if(mapInstance){mapInstance.remove();mapInstance=null;}
     mapInstance=L.map('stations-map',{zoomControl:true}).setView([34.5,43.5],8);
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
       attribution:'© OpenStreetMap',maxZoom:18
@@ -2506,6 +2495,26 @@ function printInv(){
   </body></html>`);
   win.document.close();
   setTimeout(()=>win.print(),600);
+}
+
+
+function switchField(name, btn){
+  ['tours','maintenance'].forEach(t=>{
+    const el=document.getElementById('tab-'+t);
+    if(el) el.style.display=t===name?'block':'none';
+  });
+  document.querySelectorAll('#tab-field button').forEach(b=>{
+    b.style.color='#64748b';
+    b.style.borderBottom='3px solid transparent';
+    b.style.fontWeight='600';
+  });
+  if(btn){
+    btn.style.color='#1d4ed8';
+    btn.style.borderBottom='3px solid #1d4ed8';
+    btn.style.fontWeight='700';
+  }
+  if(name==='tours') loadTours();
+  if(name==='maintenance') loadMaintenance();
 }
 
 // ── DISTRICTS ──
