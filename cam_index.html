@@ -1396,20 +1396,21 @@ function populateDistrictSelects(){
 
 // ── TABS ──
 function goTab(name,el){
-  ['dashboard','tours','maintenance','cameras','stations','inventory','reports','delegates','users','logs'].forEach(t=>{
+  ['dashboard','field','cameras','stations','inventory','reports','delegates','users','logs'].forEach(t=>{
     const e=document.getElementById('tab-'+t);if(e)e.style.display=t===name?'block':'none';
   });
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
   if(el)el.classList.add('active');
-  if(window.innerWidth<=768){document.getElementById('sidebar').classList.remove('open');document.getElementById('sb-overlay').classList.remove('open');}
-  if(name==='tours') renderTours();
-  if(name==='maintenance') renderMaint();
+  if(name==='field'){
+    switchField('tours',document.getElementById('sub-tours'));
+  }
   if(name==='inventory'){
     loadInventory();
     const btn=document.getElementById('btn-add-inv');
     if(btn) btn.style.display=(can('edit')||can('inventory'))?'flex':'none';
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
-  }  if(name==='stations') renderStations();
+  }
+  if(name==='stations') renderStations();
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
   if(name==='users') loadUsers();
@@ -2544,18 +2545,23 @@ function switchField(name, btn){
     const el=document.getElementById('tab-'+t);
     if(el) el.style.display=t===name?'block':'none';
   });
-  document.querySelectorAll('#tab-field button').forEach(b=>{
+  document.querySelectorAll('#tab-field > button').forEach(b=>{
     b.style.color='#64748b';
     b.style.borderBottom='3px solid transparent';
     b.style.fontWeight='600';
   });
+  // Reset sub tab buttons
+  const subTours=document.getElementById('sub-tours');
+  const subMaint=document.getElementById('sub-maint');
+  if(subTours){subTours.style.color='#64748b';subTours.style.borderBottom='3px solid transparent';subTours.style.fontWeight='600';}
+  if(subMaint){subMaint.style.color='#64748b';subMaint.style.borderBottom='3px solid transparent';subMaint.style.fontWeight='600';}
   if(btn){
     btn.style.color='#1d4ed8';
     btn.style.borderBottom='3px solid #1d4ed8';
     btn.style.fontWeight='700';
   }
-  if(name==='tours') loadTours();
-  if(name==='maintenance') loadMaintenance();
+  if(name==='tours'){loadTours();const b=document.getElementById('btn-add-tour');if(b)b.style.display=can('edit')?'flex':'none';}
+  if(name==='maintenance'){loadMaintenance();const b=document.getElementById('btn-add-maint');if(b)b.style.display=can('edit')?'flex':'none';}
 }
 
 // ── DISTRICTS ──
