@@ -881,21 +881,71 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full"><label class="fl">المحطة *</label>
         <select class="fi" id="m-station"><option value="">— اختر المحطة —</option></select>
       </div>
-      <div class="fg"><label class="fl">نوع الجهاز</label>
-        <select class="fi" id="m-device">
-          <option value="كاميرا">كاميرا</option>
-          <option value="DVR">DVR</option>
-          <option value="NVR">NVR</option>
-          <option value="كابل">كابل</option>
-          <option value="مصدر طاقة">مصدر طاقة</option>
-          <option value="هارد ديسك">هارد ديسك</option>
-          <option value="شاشة">شاشة</option>
+      <!-- الجهاز -->
+      <div class="fg">
+        <label class="fl">نوع الجهاز</label>
+        <select class="fi" id="m-device" onchange="updateDeviceIcon()">
+          <optgroup label="📹 أجهزة التسجيل">
+            <option value="DVR/NVR">DVR/NVR — جهاز تسجيل</option>
+            <option value="هارد ديسك HDD">هارد ديسك HDD</option>
+          </optgroup>
+          <optgroup label="📷 الكاميرات">
+            <option value="كاميرا داخلية">كاميرا داخلية</option>
+            <option value="كاميرا خارجية">كاميرا خارجية</option>
+            <option value="كاميرا PTZ">كاميرا PTZ</option>
+          </optgroup>
+          <optgroup label="🔌 الشبكة والطاقة">
+            <option value="سويج POE">سويج POE</option>
+            <option value="UPS عاكس">UPS عاكس</option>
+            <option value="بطارية UPS">بطارية UPS</option>
+          </optgroup>
+          <optgroup label="🔧 الأسلاك والتمديدات">
+            <option value="كابل شبكة">كابل شبكة</option>
+            <option value="كابل طاقة">كابل طاقة</option>
+            <option value="قوطي تعليب">قوطي تعليب</option>
+            <option value="كونيكتر RJ45">كونيكتر RJ45</option>
+          </optgroup>
           <option value="أخرى">أخرى</option>
         </select>
       </div>
       <div class="fg"><label class="fl">الكمية</label><input class="fi" id="m-qty" type="number" min="1" value="1"></div>
-      <div class="fg"><label class="fl">سبب الصيانة</label><input class="fi" id="m-reason" type="text" placeholder="عطل / استبدال / ..."></div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="m-tech" type="text"></div>
+
+      <!-- نوع العطل -->
+      <div class="fg">
+        <label class="fl">نوع العطل</label>
+        <select class="fi" id="m-fault-type">
+          <option value="عطل كلي">عطل كلي</option>
+          <option value="عطل جزئي">عطل جزئي</option>
+          <option value="كسر فيزيائي">كسر فيزيائي</option>
+          <option value="مشكلة برمجية">مشكلة برمجية</option>
+          <option value="انقطاع كابل">انقطاع كابل</option>
+          <option value="خلل في الطاقة">خلل في الطاقة</option>
+          <option value="صيانة دورية">صيانة دورية</option>
+          <option value="استبدال وقائي">استبدال وقائي</option>
+        </select>
+      </div>
+
+      <!-- قطعة الغيار -->
+      <div class="fg"><label class="fl">قطعة الغيار المستبدلة</label>
+        <input class="fi" id="m-spare-part" type="text" placeholder="مثال: كاميرا 2MP Sony، هارد 2TB..."></div>
+
+      <!-- سبب + فني -->
+      <div class="fg"><label class="fl">سبب الصيانة</label>
+        <input class="fi" id="m-reason" type="text" placeholder="وصف المشكلة..."></div>
+      <div class="fg"><label class="fl">اسم الفني</label>
+        <input class="fi" id="m-tech" type="text"></div>
+
+      <!-- الحالة بعد الصيانة -->
+      <div class="fg">
+        <label class="fl">الحالة بعد الصيانة</label>
+        <select class="fi" id="m-status-after">
+          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
+          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
+          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
+          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
+        </select>
+      </div>
+
       <div class="fg full"><label class="fl">ملاحظات</label>
         <textarea class="fi" id="m-notes" rows="2" style="resize:vertical"></textarea></div>
 
@@ -1674,9 +1724,11 @@ function openMaintModal(){
   document.getElementById('maint-ttl').textContent='إضافة صيانة / صرف جهاز';
   document.getElementById('maint-eid').value='';
   document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
-  ['m-reason','m-tech','m-notes'].forEach(id=>document.getElementById(id).value='');
+  ['m-reason','m-tech','m-notes','m-spare-part'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('m-qty').value=1;
-  document.getElementById('m-device').value='كاميرا';
+  document.getElementById('m-device').value='DVR/NVR';
+  document.getElementById('m-fault-type').value='عطل كلي';
+  document.getElementById('m-status-after').value='يعمل بشكل طبيعي';
   if(CU&&CU.district) document.getElementById('m-district').value=CU.district;
   filterMaintStations();
   document.getElementById('ov-maint').classList.add('open');
@@ -1692,6 +1744,9 @@ function editMaint(id){
   document.getElementById('m-reason').value=m.reason||'';
   document.getElementById('m-tech').value=m.technician||'';
   document.getElementById('m-notes').value=m.notes||'';
+  const faultEl=document.getElementById('m-fault-type');if(faultEl)faultEl.value=m.fault_type||'عطل كلي';
+  const spareEl=document.getElementById('m-spare-part');if(spareEl)spareEl.value=m.spare_part||'';
+  const statusEl=document.getElementById('m-status-after');if(statusEl)statusEl.value=m.status_after||'يعمل بشكل طبيعي';
   filterMaintStations();
   setTimeout(()=>{document.getElementById('m-station').value=m.station_id||'';},100);
   document.getElementById('ov-maint').classList.add('open');
@@ -1701,7 +1756,11 @@ async function saveMaint(){
   const sid=parseInt(document.getElementById('m-station').value);
   if(!date||!sid){toast('التاريخ والمحطة مطلوبان','err');return;}
   const body={date,district:document.getElementById('m-district').value,station_id:sid,
-    device_type:document.getElementById('m-device').value,qty:parseInt(document.getElementById('m-qty').value)||1,
+    device_type:document.getElementById('m-device').value,
+    fault_type:document.getElementById('m-fault-type')?.value||'',
+    spare_part:document.getElementById('m-spare-part')?.value.trim()||'',
+    qty:parseInt(document.getElementById('m-qty').value)||1,
+    status_after:document.getElementById('m-status-after')?.value||'',
     reason:document.getElementById('m-reason').value.trim(),technician:document.getElementById('m-tech').value.trim(),
     notes:document.getElementById('m-notes').value.trim()};
   const eid=parseInt(document.getElementById('maint-eid').value);
@@ -1725,7 +1784,7 @@ async function delMaint(id){
 }
 function exportMaintCSV(){
   const rows=[['التاريخ','المحطة','القاطع','الجهاز','الكمية','السبب','الفني']];
-  allMaint.forEach(m=>rows.push([m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician]));
+  allMaint.forEach(m=>rows.push([m.date,m.station_name,m.district,m.device_type,m.fault_type||'—',m.spare_part||'—',m.qty,m.reason,m.technician,m.status_after||'—']));
   dlCSV(rows,'الصيانة.csv');
 }
 
