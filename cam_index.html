@@ -1369,7 +1369,7 @@ async function initApp(){
     const btn=document.getElementById('btn-add-inv');
     if(btn) btn.style.display=(can('edit')||can('inventory'))?'flex':'none';
   },500);
-  const bst=document.getElementById('btn-add-st');if(bst)bst.style.display=CU.role==='admin'?'flex':'none';
+  const bst=document.getElementById('btn-add-st');if(bst)bst.style.display='flex';
   ['nav-delegates','nav-users','nav-logs','nav-reports'].forEach(id=>{
     const el=document.getElementById(id);if(!el)return;
     if(CU.role==='admin') el.classList.remove('hidden');
@@ -1601,7 +1601,7 @@ function renderStations(){
       </td>
       <td style="text-align:center">
         <div style="display:flex;gap:4px;justify-content:center">
-          ${CU&&CU.role==='admin'?`<button class="btn btn-o btn-sm" onclick="editStation(${s.id})" title="تعديل">✏️</button>`:''}
+          <button class="btn btn-o btn-sm" onclick="editStation(${s.id})" title="تعديل" ${CU&&CU.role!=='admin'&&CU.district&&s.district!==CU.district?'style="display:none"':''}>✏️</button>
           ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})" title="حذف">🗑️</button>`:''}
         </div>
       </td>
@@ -2655,23 +2655,32 @@ function openStationModal(){
   document.getElementById('st-type').value='حكومية';
   document.getElementById('st-cam-working').value=0;
   document.getElementById('st-cam-broken').value=0;
-  // Populate districts fresh
   const sel=document.getElementById('st-district');
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
-  DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
-  sel.value=''; // reset to empty
+  // المخول يرى قاطعه فقط
+  const districts = CU&&CU.role!=='admin'&&CU.district ? [CU.district] : DISTRICTS_LIST;
+  districts.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  if(CU&&CU.role!=='admin'&&CU.district){sel.value=CU.district;sel.disabled=true;}
+  else{sel.value='';sel.disabled=false;}
   document.getElementById('ov-station').classList.add('open');
 }
 function editStation(id){
   const s=allStations.find(x=>x.id===id);if(!s)return;
+  // المخول لا يعدل إلا محطات قاطعه
+  if(CU&&CU.role!=='admin'&&CU.district&&s.district!==CU.district){
+    toast('لا تملك صلاحية تعديل محطات قاطع آخر','err');return;
+  }
   document.getElementById('st-ttl').textContent='تعديل المحطة';
   document.getElementById('st-eid').value=id;
   document.getElementById('st-name').value=s.name||'';
   document.getElementById('st-type').value=s.type||'حكومية';
   const sel=document.getElementById('st-district');
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
-  DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+  const districts = CU&&CU.role!=='admin'&&CU.district ? [CU.district] : DISTRICTS_LIST;
+  districts.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
   sel.value=s.district||'';
+  if(CU&&CU.role!=='admin'&&CU.district){sel.disabled=true;}
+  else{sel.disabled=false;}
   document.getElementById('st-cam-working').value=s.cam_working||0;
   document.getElementById('st-cam-broken').value=s.cam_broken||0;
   document.getElementById('ov-station').classList.add('open');
