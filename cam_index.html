@@ -1642,22 +1642,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
-<!-- CIRCULAR NOTIFICATION MODAL -->
-<div class="overlay" id="ov-circ-notify" style="z-index:9998">
-  <div class="modal" style="width:460px;border-top:5px solid #f59e0b">
-    <div style="text-align:center;margin-bottom:16px">
-      <div style="font-size:40px;margin-bottom:8px">📢</div>
-      <div style="font-size:18px;font-weight:800;color:#f59e0b">تعميم جديد</div>
-      <div style="font-size:13px;color:var(--t3);margin-top:4px">يتوفر تعميم جديد يخصك</div>
-    </div>
-    <div id="circ-notify-body" style="background:var(--bg2);border-radius:12px;padding:14px;margin-bottom:16px"></div>
-    <div class="m-footer" style="justify-content:center;gap:12px">
-      <button class="btn btn-p" onclick="goToCirculars()" style="background:linear-gradient(135deg,#f59e0b,#d97706)">📢 عرض التعاميم</button>
-      <button class="btn btn-o" onclick="dismissCircNotify()">تجاهل مؤقتاً</button>
-    </div>
-  </div>
-</div>
-
 <!-- CHANGE PW MODAL -->
 <div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
   <div class="modal modal-sm">
@@ -3393,21 +3377,9 @@ function getUnreadCirculars(){
 }
 
 function checkNewCirculars(){
+  // الشارة للمخولين فقط
+  if(CU&&CU.role==='admin') return;
   updateCircBadge();
-  const unread = getUnreadCirculars();
-  if(unread.length === 0) return;
-  // Show notification popup
-  const latest = unread[0];
-  const nb = document.getElementById('circ-notify-body');
-  if(nb) nb.innerHTML = `<div style="font-size:15px;font-weight:700;color:var(--text);margin-bottom:8px">${latest.title}</div>
-    <div style="font-size:12px;color:var(--t3)">📍 ${latest.district} — 📅 ${latest.date}</div>
-    ${unread.length>1?`<div style="margin-top:8px;font-size:12px;color:#f59e0b;font-weight:700">+ ${unread.length-1} تعاميم أخرى غير مقروءة</div>`:''}`;
-  document.getElementById('ov-circ-notify').classList.add('open');
-}
-
-function goToCirculars(){
-  closeModal('ov-circ-notify');
-  goTab('circulars', document.querySelector('[onclick*=circulars]'));
 }
 
 function dismissCircNotify(){
