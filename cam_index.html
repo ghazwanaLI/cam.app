@@ -844,7 +844,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
-              <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
+              <div style="display:flex;gap:8px">
+                <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
+                <button class="btn btn-p btn-sm" id="btn-add-book" onclick="toggleBookForm()" style="display:none;background:linear-gradient(135deg,#7c3aed,#8b5cf6)">📄 كتاب تعميم</button>
+              </div>
             </div>
           </div>
 
@@ -909,6 +912,44 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div style="display:flex;gap:10px;justify-content:flex-end">
               <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
               <button class="btn btn-p" onclick="saveQuickCircular()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📢 نشر التعميم</button>
+            </div>
+          </div>
+
+          <!-- كتاب تعميم Form -->
+          <div id="circ-book-form" style="display:none;padding:16px;border-bottom:2px solid var(--border);background:linear-gradient(135deg,#f5f3ff,#ede9fe)">
+            <div style="font-size:15px;font-weight:800;color:#5b21b6;margin-bottom:14px">📄 رفع كتاب تعميم</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+              <div><label class="fl">العنوان *</label><input class="fi" id="book-title" type="text" placeholder="عنوان الكتاب..."></div>
+              <div><label class="fl">القاطع</label>
+                <select class="fi" id="book-district">
+                  <option value="الكل">جميع القواطع</option>
+                </select>
+              </div>
+              <div class="fg full" style="grid-column:1/-1"><label class="fl">ملاحظات</label>
+                <input class="fi" id="book-notes" type="text" placeholder="ملاحظات اختيارية...">
+              </div>
+            </div>
+
+            <div style="margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:8px">📎 الملفات والصور (حتى 5 ملفات)</div>
+              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
+                ${[1,2,3,4,5].map(n=>`
+                <div>
+                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف ${n}</div>
+                  <div class="up-box" id="ub-book-${n}" style="min-height:75px">
+                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_${n}')">
+                    <button class="up-rm" onclick="rmFile('book_${n}',event)">✕</button>
+                    <div class="up-ico" style="font-size:18px">📷</div>
+                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
+                    <div class="up-stat" id="us-book_${n}" style="font-size:10px">اختر ملفاً</div>
+                  </div>
+                </div>`).join('')}
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn btn-o btn-sm" onclick="cancelBookForm()">إلغاء</button>
+              <button class="btn btn-p" onclick="saveCircularBook()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">📄 نشر الكتاب</button>
             </div>
           </div>
 
@@ -1749,7 +1790,7 @@ function goTab(name,el){
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
   }
   if(name==='stations') renderStations();
-  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
+  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const bb=document.getElementById('btn-add-book');if(bb)bb.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
   if(name==='users') loadUsers();
@@ -2676,14 +2717,16 @@ function setBox(type,name){
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
     circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
-    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3',
+    book_1:'ub-book-1',book_2:'ub-book-2',book_3:'ub-book-3',book_4:'ub-book-4',book_5:'ub-book-5'};
   const statMap={tour_img:'us-tour_img',tour_rep:'us-tour_rep',tour_doc:'us-tour_doc',
     maint_img:'us-maint_img',maint_img2:'us-maint_img2',maint_img3:'us-maint_img3',
     maint_rep:'us-maint_rep',maint_rep2:'us-maint_rep2',maint_rep3:'us-maint_rep3',
     maint_tawkeef:'us-maint_tawkeef',maint_tawkeef2:'us-maint_tawkeef2',
     maint_doc:'us-maint_doc',
     circ_1:'us-circ_1',circ_2:'us-circ_2',circ_3:'us-circ_3',
-    qcirc_1:'us-qcirc_1',qcirc_2:'us-qcirc_2',qcirc_3:'us-qcirc_3'};
+    qcirc_1:'us-qcirc_1',qcirc_2:'us-qcirc_2',qcirc_3:'us-qcirc_3',
+    book_1:'us-book_1',book_2:'us-book_2',book_3:'us-book_3',book_4:'us-book_4',book_5:'us-book_5'};
   const b=document.getElementById(boxMap[type]||'ub-'+type);
   const s=document.getElementById(statMap[type]||'us-'+type);
   if(b){if(name){b.classList.add('hf');}else{b.classList.remove('hf');}}
@@ -2696,7 +2739,8 @@ function rmFile(type,e){e.preventDefault();e.stopPropagation();UF[type]=null;
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
     circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
-    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3',
+    book_1:'ub-book-1',book_2:'ub-book-2',book_3:'ub-book-3',book_4:'ub-book-4',book_5:'ub-book-5'};
   const bid=boxMap[type]||'ub-'+type;
   const i=document.querySelector('#'+bid+' input');if(i)i.value='';setBox(type,null);}
 function clearUploads(){UF={};
@@ -3119,7 +3163,7 @@ function renderCirculars(list){
     g.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
     return;
   }
-  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
+  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a','كتاب تعميم':'#7c3aed'};
 
   if(isAdmin){
     // ── عرض المدير: إدارة فقط بدون قراءة ──
@@ -3226,7 +3270,7 @@ async function printCircular(circId){
       if(f.file&&f.file.data) loaded.push({n, data:f.file.data, mime:f.file.mime||''});
     }catch(e){}
   }
-  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
+  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a','كتاب تعميم':'#7c3aed'};
   const clr = typeColors[circ.type]||'#888';
   const win = window.open('','_blank','width=900,height=700');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
@@ -3375,6 +3419,70 @@ async function delCircular(id){
 }
 
 
+
+function toggleBookForm(){
+  const form=document.getElementById('circ-book-form');
+  const btn=document.getElementById('btn-add-book');
+  if(!form)return;
+  if(form.style.display==='none'||!form.style.display){
+    // Close other form
+    const otherForm=document.getElementById('circ-add-form');
+    if(otherForm)otherForm.style.display='none';
+    const otherBtn=document.getElementById('btn-add-circ');
+    if(otherBtn)otherBtn.textContent='➕ إضافة تعميم';
+    // Open book form
+    form.style.display='block';
+    if(btn)btn.textContent='✕ إغلاق';
+    document.getElementById('book-title').value='';
+    document.getElementById('book-notes').value='';
+    const sel=document.getElementById('book-district');
+    if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
+    for(let n=1;n<=5;n++){UF[`book_${n}`]=null;}
+    for(let n=1;n<=5;n++){const el=document.getElementById(`ub-book-${n}`);if(el)el.classList.remove('hf');}
+    for(let n=1;n<=5;n++){const el=document.getElementById(`us-book_${n}`);if(el)el.textContent='اختر ملفاً';}
+  } else {
+    form.style.display='none';
+    if(btn)btn.textContent='📄 كتاب تعميم';
+  }
+}
+
+function cancelBookForm(){
+  const form=document.getElementById('circ-book-form');
+  if(form)form.style.display='none';
+  const btn=document.getElementById('btn-add-book');
+  if(btn)btn.textContent='📄 كتاب تعميم';
+}
+
+async function saveCircularBook(){
+  const title=document.getElementById('book-title').value.trim();
+  if(!title){toast('العنوان مطلوب','err');return;}
+  // Count files
+  const fileNums=[];
+  for(let n=1;n<=5;n++){if(UF[`book_${n}`])fileNums.push(n);}
+  if(fileNums.length===0){toast('أرفق ملفاً واحداً على الأقل','err');return;}
+  const body={
+    title,
+    type:'كتاب تعميم',
+    district:document.getElementById('book-district').value,
+    body:document.getElementById('book-notes').value.trim(),
+    date:new Date().toISOString().split('T')[0],
+    added_by:CU?.fullname||'',
+    has_file1:!!UF['book_1'],has_file2:!!UF['book_2'],has_file3:!!UF['book_3'],
+    has_file4:!!UF['book_4'],has_file5:!!UF['book_5'],
+  };
+  try{
+    const d=await api('POST','/api/circulars',body);
+    const cid=d.circular.id;
+    for(let n=1;n<=5;n++){
+      if(UF[`book_${n}`]){
+        try{await api('POST',`/api/files/circ_${n}_${cid}`,UF[`book_${n}`]);}catch(e){}
+      }
+    }
+    toast('تم نشر كتاب التعميم ✅');
+    cancelBookForm();
+    await loadCirculars();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
 function toggleCircForm(){
   const form = document.getElementById('circ-add-form');
   if(!form) return;
