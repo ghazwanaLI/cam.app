@@ -388,7 +388,7 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/stations":
             sid=db["next_station_id"]; db["next_station_id"]+=1
-            st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0)}
+            st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
             db["stations"].append(st); save_db(db)
             self.send_json({"ok":True,"station":st})
 
@@ -541,7 +541,7 @@ class Handler(BaseHTTPRequestHandler):
         elif p.startswith("/api/stations/"):
             sid=int(p.split("/")[-1]); idx=next((i for i,s in enumerate(db["stations"]) if s["id"]==sid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            for f in ["name","district","type","cam_working","cam_broken"]:
+            for f in ["name","district","type","cam_working","cam_broken","sanda_cam_count","sanda_cam_type","sanda_hdd_count","sanda_hdd_size","sanda_record_days","sanda_notes"]:
                 if f in body: db["stations"][idx][f]=body[f]
             save_db(db); self.send_json({"ok":True})
 
