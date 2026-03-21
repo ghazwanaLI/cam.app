@@ -4180,43 +4180,50 @@ function resetCodingRows(nvrs,hdds,switches){
 }
 
 
+
 function printVoidLabel(id){
   const d=allCoding.find(x=>x.id===id); if(!d)return;
   const code=d.code;
-  const qrTxt=code+'|'+(d.location||'')+'|'+(d.station_name||'')+'|'+(d.district||'');
-  const w=window.open('','_blank','width=450,height=380');
-  const S='script', ss='<'+S, se='</'+S+'>';
-  w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +ss+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js">'+se
-    +ss+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js">'+se
+  const station=d.station_name||'—';
+  const location=d.location||'—';
+  const qr=code+'|'+station+'|'+(d.district||'');
+  const S='script';
+  const w=window.open('','_blank','width=460,height=400');
+  w.document.write(
+    '<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+    +'<'+(S)+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+(S)+'>'
+    +'<'+(S)+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+(S)+'>'
     +'<style>'
     +'*{margin:0;padding:0;box-sizing:border-box}'
-    +'body{background:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2mm;height:100vh}'
-    +'.lbl{width:76mm;height:36mm;border:1px solid #000;display:flex;flex-direction:column;align-items:center;padding:2mm;gap:1.5mm;overflow:hidden}'
-    +'.top{display:flex;justify-content:space-between;width:100%;font-size:7px;font-family:Arial,sans-serif;font-weight:bold}'
-    +'.mid{display:flex;align-items:center;gap:3mm;flex:1;width:100%}'
-    +'.qr{flex-shrink:0}'
-    +'.bc{flex:1;display:flex;flex-direction:column;align-items:center;gap:1mm}'
-    +'.bc svg{width:100%}'
-    +'.print-btn{margin-top:8px;padding:6px 20px;cursor:pointer;font-size:13px}'
-    +'@media print{@page{size:80mm 40mm;margin:0}.print-btn{display:none}body{height:auto;padding:1mm}}'
+    +'body{font-family:Arial,sans-serif;background:#fff;display:flex;flex-direction:column;align-items:center;padding:2mm}'
+    +'.lbl{width:76mm;height:38mm;border:1px solid #000;padding:2mm;display:flex;flex-direction:column;gap:1.5mm;overflow:hidden}'
+    +'.hdr{display:flex;justify-content:space-between;align-items:flex-start;font-size:7.5px;font-weight:bold}'
+    +'.codes{flex:1;display:flex;flex-direction:row;align-items:center;gap:2mm}'
+    +'.qr-col{flex-shrink:0}'
+    +'.bc-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%}'
+    +'.bc-col svg{width:100%;height:100%}'
+    +'.btn{margin-top:6px;padding:5px 18px;cursor:pointer;font-size:13px}'
+    +'@media print{@page{size:80mm 40mm;margin:0}.btn{display:none}body{padding:1mm}}'
     +'</style></head><body>'
     +'<div class="lbl">'
-    +'<div class="top"><span>'+(d.station_name||'—')+'</span><span>'+(d.location||d.code)+'</span></div>'
-    +'<div class="top" style="font-size:6.5px;font-weight:normal;color:#555"><span>'+(d.device_type||nvrs.length?nvrs.map((n,i)=>`NVR${i+1}: ${n.num||''}`).join(' | '):'')+'</span><span>'+code+'</span></div>'
-    +'<div class="mid">'
-    +'<div class="qr" id="qr"></div>'
-    +'<div class="bc"><svg id="bc"></svg></div>'
+    +'<div class="hdr"><span>'+station+'</span><span>'+location+'</span></div>'
+    +'<div class="codes">'
+    +'<div class="qr-col" id="qr"></div>'
+    +'<div class="bc-col"><svg id="bc"></svg></div>'
     +'</div>'
     +'</div>'
-    +'<button class="print-btn" onclick="window.print()">🖨️ طباعة 80×40</button>'
-    +ss+'>window.onload=function(){'
-    +'new QRCode(document.getElementById("qr"),{text:"'+qrTxt+'",width:80,height:80,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});'
-    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:2.2,height:45,displayValue:false,margin:1,background:"transparent",lineColor:"#000"});}catch(e){}'
-    +'};'+se
-    +'</body></html>');
+    +'<button class="btn" onclick="window.print()">🖨️ طباعة 80×40</button>'
+    +'<'+(S)+'>'
+    +'window.onload=function(){'
+    +'try{new QRCode(document.getElementById("qr"),{text:"'+qr+'",width:85,height:85,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
+    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:2.2,height:55,displayValue:false,margin:1,background:"transparent",lineColor:"#000"});}catch(e){}'
+    +'};'
+    +'</'+(S)+'>'
+    +'</body></html>'
+  );
   w.document.close();
 }
+
 
 // ── DEVICE CODING ──
 let allCoding = [];
@@ -4283,7 +4290,7 @@ function renderCoding(list){
         ${d.notes?`<div style="font-size:11px;color:var(--t3);margin-bottom:6px">📝 ${d.notes}</div>`:''}
         <div style="display:flex;gap:6px;margin-top:8px">
           <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
-          <button class="btn btn-sm" onclick="printVoidLabel(${d.id})" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🏷️ VOID</button>
+          <button onclick="printVoidLabel(${d.id})" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🏷️ VOID</button>
           <button class="btn btn-o btn-sm" onclick="printDeviceCard(${d.id})" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
           ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button>`:''}
         </div>
