@@ -4255,12 +4255,10 @@ function printVoidLabel(id){
     +'document.head.appendChild(style);'
     +'buildQR(qrs); buildBC(bch,bcw);'
     +'}'
+    +'function saveJPG(){setTimeout(function(){html2canvas(document.querySelector(".lbl"),{scale:5,backgroundColor:"#ffffff",useCORS:true}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.jpg";a.href=cv.toDataURL("image/jpeg",0.98);a.click();});},200);}'
     +'window.onload=function(){applySettings();};'
     +'</'+(S)+'>'
     +'<'+(S)+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+(S)+'>'
-    +'<'+(S)+'>'
-    +'function saveJPG(){html2canvas(document.querySelector(".lbl"),{scale:5,backgroundColor:"#ffffff"}).then(function(c){var a=document.createElement("a");a.download="label_'+code+'.jpg";a.href=c.toDataURL("image/jpeg",0.98);a.click();});};'
-    +'</'+(S)+'>'
     +'</body></html>'
   );
   w.document.close();
