@@ -4297,7 +4297,7 @@ function printVoidLabel(id){
     +'try{new QRCode(qc,{text:"'+qr+'",width:size,height:size,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
     +'}'
     +'function buildBC(h,w){'
-    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:w,height:h,displayValue:true,fontSize:11,textMargin:3,margin:1,background:"transparent",lineColor:"#000"});}catch(e){}'
+    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:w,height:h,displayValue:true,font:"monospace",fontSize:13,textMargin:6,margin:4,background:"#ffffff",lineColor:"#000000"});}catch(e){}'
     +'}'
     +'function applySettings(){'
     +'var W=parseInt(document.getElementById("w").value)||80;'
