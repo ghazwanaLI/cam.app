@@ -132,7 +132,7 @@ def default_db():
     return {
         "users":[{
             "id":1,"fullname":"مدير النظام","username":"admin",
-            "password":hash_pw("admin123"),"role":"admin","active":True,"district":"",
+            "password":hash_pw("1000"),"role":"admin","active":True,"district":"",
             "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True}
         }],
         "delegates":[],
@@ -149,6 +149,8 @@ def default_db():
         "next_delegate_id":1,
         "inventory":[],
         "next_inventory_id":1,
+        "circulars":[],
+        "next_circular_id":1,
         "custom_districts":[],
     }
 
@@ -225,6 +227,13 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
+        elif p=="/api/circulars":
+            circs=db.get("circulars",[])
+            # Filter by district for non-admin
+            if u["role"]!="admin" and u.get("district"):
+                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district")==u["district"]]
+            self.send_json({"ok":True,"circulars":list(reversed(circs))})
+
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
             if u["role"]!="admin" and u.get("district"): inv=[x for x in inv if x.get("district")==u["district"]]
@@ -250,6 +259,13 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             qs=parse_qs(urlparse(self.path).query)
             self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
+        elif p=="/api/circulars":
+            circs=db.get("circulars",[])
+            # Filter by district for non-admin
+            if u["role"]!="admin" and u.get("district"):
+                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district")==u["district"]]
+            self.send_json({"ok":True,"circulars":list(reversed(circs))})
+
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
             if u["role"]!="admin" and u.get("district"): inv=[x for x in inv if x.get("district")==u["district"]]
@@ -360,7 +376,6 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok":True,"camera":cam})
 
         elif p=="/api/stations":
-            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             sid=db["next_station_id"]; db["next_station_id"]+=1
             st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0)}
             db["stations"].append(st); save_db(db)
@@ -376,6 +391,22 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error":"القاطع موجود مسبقاً"},400); return
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
+
+        elif p=="/api/circulars":
+            if u["role"]!="admin": self.send_json({"error":"المدير فقط يستطيع نشر التعاميم"},403); return
+            if "circulars" not in db: db["circulars"]=[]
+            if "next_circular_id" not in db: db["next_circular_id"]=1
+            cid=db["next_circular_id"]; db["next_circular_id"]+=1
+            circ={
+                "id":cid,"title":body.get("title",""),"type":body.get("type","تعميم"),
+                "district":body.get("district","الكل"),"body":body.get("body",""),
+                "date":body.get("date",datetime.now().strftime("%Y-%m-%d")),
+                "added_by":u["fullname"],"created_at":datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "has_file1":body.get("has_file1",False),"has_file2":body.get("has_file2",False),
+                "has_file3":body.get("has_file3",False),
+            }
+            db["circulars"].append(circ); save_db(db)
+            self.send_json({"ok":True,"circular":circ})
 
         elif p=="/api/inventory":
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
@@ -394,6 +425,7 @@ class Handler(BaseHTTPRequestHandler):
                 "mon_count":body.get("mon_count",0),"mon_spec":body.get("mon_spec",""),
                 "ups_count":body.get("ups_count",0),"ups_spec":body.get("ups_spec",""),
                 "bat_count":body.get("bat_count",0),"bat_spec":body.get("bat_spec",""),
+                "box_count":body.get("box_count",0),"box_spec":body.get("box_spec",""),
                 "notes":body.get("notes",""),"created_by":u["fullname"],"updated_at":now,
             }
             db["inventory"].append(inv_item); save_db(db)
@@ -475,14 +507,13 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","notes"]
+            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes"]
             for f in fields:
                 if f in body: db["inventory"][idx][f]=body[f]
             db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
             save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/stations/"):
-            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             sid=int(p.split("/")[-1]); idx=next((i for i,s in enumerate(db["stations"]) if s["id"]==sid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
             for f in ["name","district","type","cam_working","cam_broken"]:
@@ -538,6 +569,12 @@ class Handler(BaseHTTPRequestHandler):
             if uid==u["id"]: self.send_json({"error":"لا يمكن حذف حسابك"},400); return
             db["users"]=[x for x in db["users"] if x["id"]!=uid]; save_db(db)
             self.send_json({"ok":True})
+
+        elif p.startswith("/api/circulars/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            cid=int(p.split("/")[-1])
+            db["circulars"]=[c2 for c2 in db.get("circulars",[]) if c2["id"]!=cid]
+            save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/inventory/"):
             if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
