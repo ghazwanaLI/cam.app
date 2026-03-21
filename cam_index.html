@@ -687,6 +687,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="table-wrap">
               <table>
                 <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
+                <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>كاميرات رئيسية</th><th>منظومة ساندة</th><th>آخر زيارة</th><th style="text-align:center;width:110px">إجراءات</th></tr></thead>
                 <tbody id="stations-priv-tb"></tbody>
               </table>
             </div>
@@ -1421,7 +1422,43 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="أهلية">أهلية</option>
         </select>
       </div>
-      <!-- منظومة ساندة - تظهر عند اختيار أهلية -->
+
+      <!-- منظومة كاميرات رئيسية -->
+      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
+        <div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:12px">📷 منظومة كاميرات رئيسية</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fl">📷 عدد الكاميرات</label>
+            <input class="fi" id="st-main-cam-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">🔍 نوع الكاميرات</label>
+            <input class="fi" id="st-main-cam-type" type="text" placeholder="مثال: خارجية 4MP...">
+          </div>
+          <div>
+            <label class="fl">💾 عدد الهاردات</label>
+            <input class="fi" id="st-main-hdd-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">💽 حجم الهارد</label>
+            <input class="fi" id="st-main-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="fl">⏱️ مدة التسجيلات</label>
+            <select class="fi" id="st-main-record-days">
+              <option value="">— اختر المدة —</option>
+              <option value="7 أيام">7 أيام</option>
+              <option value="14 يوم">14 يوم</option>
+              <option value="30 يوم">30 يوم</option>
+              <option value="60 يوم">60 يوم</option>
+              <option value="90 يوم">90 يوم</option>
+              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- منظومة كاميرات ساندة - تظهر عند اختيار أهلية -->
       <div class="fg full" id="sanda-row" style="display:none;border:1.5px solid rgba(245,158,11,.35);border-radius:12px;padding:14px;background:rgba(245,158,11,.04)">
         <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px">⚙️ منظومة كاميرات ساندة</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -1441,7 +1478,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <label class="fl">💽 حجم الهارد</label>
             <input class="fi" id="st-sanda-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
           </div>
-          <div class="fg full" style="grid-column:1/-1">
+          <div style="grid-column:1/-1">
             <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
             <select class="fi" id="st-sanda-record-days">
               <option value="">— اختر المدة —</option>
@@ -1453,8 +1490,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
             </select>
           </div>
-          <div class="fg full" style="grid-column:1/-1">
-            <label class="fl">📝 ملاحظات إضافية</label>
+          <div style="grid-column:1/-1">
+            <label class="fl">📝 ملاحظات</label>
             <input class="fi" id="st-sanda-notes" type="text" placeholder="ملاحظات عن المنظومة الساندة...">
           </div>
         </div>
@@ -1907,7 +1944,6 @@ function renderStations(){
       <td><span class="snum">${i+1}</span></td>
       <td><strong>⛽ ${s.name}</strong></td>
       <td><span class="db">${s.district||'—'}</span></td>
-      ${s.type==='أهلية'?`<td style="font-size:11px;color:#d97706">${s.sanda_cam_count?`📷${s.sanda_cam_count} `:''} ${s.sanda_record_days||'—'}</td>`:''}
       <td style="text-align:center;background:rgba(22,163,74,.04)">
         <span style="font-size:16px;font-weight:900;color:var(--a3)">${s.cam_working||0}</span>
       </td>
@@ -1925,12 +1961,123 @@ function renderStations(){
       </td>
     </tr>`;
   };
+
+  // صف خاص للمحطات الأهلية مع زر طباعة التقرير
+  const rowFnPriv=(s,i)=>{
+    const lastTour=allTours.filter(t=>t.station_id===s.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
+    const daysSince=lastTour?Math.floor((new Date()-new Date(lastTour.date))/86400000):null;
+    return `<tr>
+      <td><span class="snum">${i+1}</span></td>
+      <td><strong>⛽ ${s.name}</strong></td>
+      <td><span class="db">${s.district||'—'}</span></td>
+      <td style="font-size:11px;color:#d97706">${s.main_cam_count?`📷${s.main_cam_count}`:s.cam_working||0}</td>
+      <td style="font-size:11px;color:#0369a1">${s.sanda_cam_count?`📷${s.sanda_cam_count} ساندة`:'—'}</td>
+      <td style="font-size:12px">
+        ${lastTour?`<span class="${daysSince>30?'badge b-bad':'badge b-ok'}">${lastTour.date} (${daysSince} يوم)</span>`:'<span class="badge b-warn">لم تُزَر</span>'}
+      </td>
+      <td style="text-align:center">
+        <div style="display:flex;gap:4px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" onclick="editStation(${s.id})" title="تعديل" ${CU&&CU.role!=='admin'&&CU.district&&s.district!==CU.district?'style="display:none"':''}>✏️</button>
+          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})" title="حذف">🗑️</button>`:''}
+          <button class="btn btn-o btn-sm" onclick="printPrivStation(${s.id})" title="طباعة تقرير" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
+        </div>
+      </td>
+    </tr>`;
+  };
+
   const govTb=document.getElementById('stations-gov-tb');
   if(govTb) govTb.innerHTML=gov.length?gov.map(rowFn).join(''):`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">لا توجد محطات حكومية</td></tr>`;
   const privTb=document.getElementById('stations-priv-tb');
-  if(privTb) privTb.innerHTML=priv.length?priv.map(rowFn).join(''):`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">لا توجد محطات أهلية</td></tr>`;
+  if(privTb) privTb.innerHTML=priv.length?priv.map(rowFnPriv).join(''):`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">لا توجد محطات أهلية</td></tr>`;
 }
 
+
+function printPrivStation(id){
+  const s = allStations.find(x=>x.id===id); if(!s)return;
+  const tours = allTours.filter(t=>t.station_id===id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const maint = allMaint.filter(m=>m.station_id===id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const win = window.open('','_blank','width=850,height:700');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;font-size:13px;}
+      .header{background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:18px}
+      .header h1{font-size:20px;font-weight:900}
+      .header p{font-size:12px;opacity:.85;margin-top:4px}
+      .section{border:1px solid #e2e8f0;border-radius:10px;padding:14px;margin-bottom:14px}
+      .sec-title{font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #e2e8f0}
+      .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+      .item{background:#f8fafc;border-radius:8px;padding:8px 12px}
+      .item label{font-size:11px;color:#64748b;display:block}
+      .item span{font-size:13px;font-weight:700;color:#1e293b}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:#1d4ed8;color:#fff;padding:8px;text-align:right}
+      td{padding:7px 8px;border-bottom:1px solid #f1f5f9}
+      .badge{display:inline-block;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700}
+      .ok{background:#dcfce7;color:#16a34a} .bad{background:#fee2e2;color:#dc2626} .warn{background:#fef3c7;color:#d97706}
+      .print-btn{position:fixed;bottom:20px;left:20px;padding:10px 18px;background:#1d4ed8;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:A4;margin:10mm}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>🏪 ${s.name}</h1>
+      <p>محطة أهلية &nbsp;|&nbsp; القاطع: ${s.district||'—'} &nbsp;|&nbsp; التاريخ: ${new Date().toLocaleDateString('ar-SA')}</p>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">📷 منظومة الكاميرات الرئيسية</div>
+      <div class="grid">
+        <div class="item"><label>عدد الكاميرات</label><span>${s.main_cam_count||0}</span></div>
+        <div class="item"><label>نوع الكاميرات</label><span>${s.main_cam_type||'—'}</span></div>
+        <div class="item"><label>عدد الهاردات</label><span>${s.main_hdd_count||0}</span></div>
+        <div class="item"><label>حجم الهارد</label><span>${s.main_hdd_size||'—'}</span></div>
+        <div class="item" style="grid-column:1/-1"><label>مدة التسجيل</label><span>${s.main_record_days||'—'}</span></div>
+      </div>
+    </div>
+
+    ${(s.sanda_cam_count||0)>0?`
+    <div class="section">
+      <div class="sec-title">⚙️ منظومة الكاميرات الساندة</div>
+      <div class="grid">
+        <div class="item"><label>عدد الكاميرات</label><span>${s.sanda_cam_count||0}</span></div>
+        <div class="item"><label>نوع الكاميرات</label><span>${s.sanda_cam_type||'—'}</span></div>
+        <div class="item"><label>عدد الهاردات</label><span>${s.sanda_hdd_count||0}</span></div>
+        <div class="item"><label>حجم الهارد</label><span>${s.sanda_hdd_size||'—'}</span></div>
+        <div class="item" style="grid-column:1/-1"><label>مدة التسجيل</label><span>${s.sanda_record_days||'—'}</span></div>
+        ${s.sanda_notes?`<div class="item" style="grid-column:1/-1"><label>ملاحظات</label><span>${s.sanda_notes}</span></div>`:''}
+      </div>
+    </div>`:''}
+
+    <div class="section">
+      <div class="sec-title">📊 حالة الكاميرات</div>
+      <div class="grid">
+        <div class="item"><label>تعمل ✅</label><span style="color:#16a34a;font-size:18px;font-weight:900">${s.cam_working||0}</span></div>
+        <div class="item"><label>لا تعمل ❌</label><span style="color:#dc2626;font-size:18px;font-weight:900">${s.cam_broken||0}</span></div>
+      </div>
+    </div>
+
+    ${tours.length>0?`
+    <div class="section">
+      <div class="sec-title">🚗 آخر الجولات الميدانية</div>
+      <table><thead><tr><th>التاريخ</th><th>نوع الزيارة</th><th>الفني</th><th>ملاحظات</th></tr></thead>
+      <tbody>${tours.map(t=>`<tr><td>${t.date}</td><td>${t.visit_type||'—'}</td><td>${t.technician||'—'}</td><td>${t.notes||'—'}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>`:''}
+
+    ${maint.length>0?`
+    <div class="section">
+      <div class="sec-title">🔧 آخر أعمال الصيانة</div>
+      <table><thead><tr><th>التاريخ</th><th>الجهاز</th><th>الفني</th><th>الحالة</th></tr></thead>
+      <tbody>${maint.map(m=>`<tr><td>${m.date}</td><td>${m.device_type||'—'}</td><td>${m.technician||'—'}</td><td>${m.status_after||'—'}</td></tr>`).join('')}</tbody>
+      </table>
+    </div>`:''}
+
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </body></html>`);
+  win.document.close();
+}
 // ── TOURS ──
 async function loadTours(){
   try{const d=await api('GET','/api/tours');allTours=d.tours||[];allTours.sort((a,b)=>b.date.localeCompare(a.date));renderTours();}catch(e){}
@@ -3583,8 +3730,9 @@ function openStationModal(){
   document.getElementById('st-name').value='';
   document.getElementById('st-type').value='حكومية';
   toggleSandaField();
-  ['st-sanda-cam-count','st-sanda-hdd-count'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
-  ['st-sanda-cam-type','st-sanda-hdd-size','st-sanda-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['st-main-cam-count','st-main-hdd-count','st-sanda-cam-count','st-sanda-hdd-count'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+  ['st-main-cam-type','st-main-hdd-size','st-sanda-cam-type','st-sanda-hdd-size','st-sanda-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const mrd=document.getElementById('st-main-record-days');if(mrd)mrd.value='';
   const rdays=document.getElementById('st-sanda-record-days');if(rdays)rdays.value='';
   document.getElementById('st-cam-working').value=0;
   document.getElementById('st-cam-broken').value=0;
@@ -3608,6 +3756,11 @@ function editStation(id){
   document.getElementById('st-name').value=s.name||'';
   document.getElementById('st-type').value=s.type||'حكومية';
   toggleSandaField();
+  const mcc=document.getElementById('st-main-cam-count');if(mcc)mcc.value=s.main_cam_count||0;
+  const mct=document.getElementById('st-main-cam-type');if(mct)mct.value=s.main_cam_type||'';
+  const mhc=document.getElementById('st-main-hdd-count');if(mhc)mhc.value=s.main_hdd_count||0;
+  const mhs=document.getElementById('st-main-hdd-size');if(mhs)mhs.value=s.main_hdd_size||'';
+  const mrd=document.getElementById('st-main-record-days');if(mrd)mrd.value=s.main_record_days||'';
   const scc=document.getElementById('st-sanda-cam-count');if(scc)scc.value=s.sanda_cam_count||0;
   const sct=document.getElementById('st-sanda-cam-type');if(sct)sct.value=s.sanda_cam_type||'';
   const shc=document.getElementById('st-sanda-hdd-count');if(shc)shc.value=s.sanda_hdd_count||0;
@@ -3632,6 +3785,11 @@ async function saveStation(){
   const body={
     name,district,
     type:document.getElementById('st-type').value,
+    main_cam_count:parseInt(document.getElementById('st-main-cam-count')?.value)||0,
+    main_cam_type:document.getElementById('st-main-cam-type')?.value.trim()||'',
+    main_hdd_count:parseInt(document.getElementById('st-main-hdd-count')?.value)||0,
+    main_hdd_size:document.getElementById('st-main-hdd-size')?.value.trim()||'',
+    main_record_days:document.getElementById('st-main-record-days')?.value||'',
     sanda_cam_count:parseInt(document.getElementById('st-sanda-cam-count')?.value)||0,
     sanda_cam_type:document.getElementById('st-sanda-cam-type')?.value.trim()||'',
     sanda_hdd_count:parseInt(document.getElementById('st-sanda-hdd-count')?.value)||0,
