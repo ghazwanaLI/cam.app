@@ -1980,6 +1980,7 @@ function renderStations(){
         <div style="display:flex;gap:4px;justify-content:center">
           <button class="btn btn-o btn-sm" onclick="editStation(${s.id})" title="تعديل" ${CU&&CU.role!=='admin'&&CU.district&&s.district!==CU.district?'style="display:none"':''}>✏️</button>
           ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})" title="حذف">🗑️</button>`:''}
+          <button class="btn btn-o btn-sm" onclick="printOneStation(${s.id})" title="طباعة تقرير" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
         </div>
       </td>
     </tr>`;
@@ -2251,6 +2252,118 @@ function printGovStationsReport(){
           </div>`:''}
         </div>`;
     }).join('')}
+
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </body></html>`);
+  win.document.close();
+}
+
+function printOneStation(id){
+  const s=allStations.find(x=>x.id===id); if(!s)return;
+  const isPriv=s.type==='أهلية';
+  const clr=isPriv?'#d97706':'#1d4ed8';
+  const tours=allTours.filter(t=>t.station_id===id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const maint=allMaint.filter(m=>m.station_id===id).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const w=s.cam_working||0,b=s.cam_broken||0,tot=w+b;
+  const pct=tot>0?Math.round(w/tot*100):0;
+  const lastTour=tours[0];
+  const daysSince=lastTour?Math.floor((new Date()-new Date(lastTour.date))/86400000):null;
+
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;font-size:13px;}
+      .header{background:linear-gradient(135deg,${clr},${clr}bb);color:#fff;padding:20px 24px;border-radius:12px;margin-bottom:18px}
+      .header h1{font-size:22px;font-weight:900}.header p{font-size:13px;opacity:.85;margin-top:6px}
+      .section{border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;margin-bottom:14px}
+      .sec-title{font-size:14px;font-weight:800;color:${clr};margin-bottom:10px;border-bottom:2px solid #f1f5f9;padding-bottom:6px}
+      .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+      .grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+      .item{background:#f8fafc;border-radius:8px;padding:10px 12px}
+      .item label{font-size:11px;color:#64748b;display:block;margin-bottom:3px}
+      .item span{font-size:15px;font-weight:800;color:#1e293b}
+      .ok{color:#16a34a!important}.bad{color:#dc2626!important}.warn{color:#d97706!important}
+      .bar{height:8px;background:#e2e8f0;border-radius:4px;margin-top:6px;overflow:hidden}
+      .bar-fill{height:100%;border-radius:4px}
+      table{width:100%;border-collapse:collapse;font-size:12px}
+      th{background:${clr};color:#fff;padding:8px 10px;text-align:right;font-weight:700}
+      td{padding:8px 10px;border-bottom:1px solid #f1f5f9}
+      tr:nth-child(even){background:#fafafa}
+      .badge{padding:2px 8px;border-radius:10px;font-size:11px;font-weight:700}
+      .b-ok{background:#dcfce7;color:#16a34a}.b-bad{background:#fee2e2;color:#dc2626}.b-warn{background:#fef3c7;color:#d97706}.b-blue{background:#dbeafe;color:#1d4ed8}
+      .print-btn{position:fixed;bottom:20px;left:20px;padding:10px 18px;background:${clr};color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:A4;margin:10mm}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>${isPriv?'🏪':'🏛️'} ${s.name}</h1>
+      <p>${s.type} &nbsp;|&nbsp; 📍 ${s.district||'—'} &nbsp;|&nbsp; 📅 ${new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+
+    <div class="section">
+      <div class="sec-title">📊 حالة الكاميرات</div>
+      <div class="grid4">
+        <div class="item"><label>إجمالي الكاميرات</label><span>${tot}</span></div>
+        <div class="item"><label>تعمل ✅</label><span class="ok">${w}</span></div>
+        <div class="item"><label>لا تعمل ❌</label><span class="bad">${b}</span></div>
+        <div class="item"><label>نسبة التشغيل</label>
+          <span class="${pct>70?'ok':pct>40?'warn':'bad'}">${pct}%</span>
+          <div class="bar"><div class="bar-fill" style="width:${pct}%;background:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}"></div></div>
+        </div>
+      </div>
+    </div>
+
+    ${isPriv?`
+    <div class="section">
+      <div class="sec-title">📷 المنظومة الرئيسية</div>
+      <div class="grid4">
+        <div class="item"><label>عدد الكاميرات</label><span>${s.main_cam_count||0}</span></div>
+        <div class="item"><label>نوع الكاميرات</label><span>${s.main_cam_type||'—'}</span></div>
+        <div class="item"><label>عدد الهاردات</label><span>${s.main_hdd_count||0}</span></div>
+        <div class="item"><label>مدة التسجيل</label><span>${s.main_record_days||'—'}</span></div>
+      </div>
+    </div>
+    ${(s.sanda_cam_count||0)>0?`
+    <div class="section">
+      <div class="sec-title">⚙️ المنظومة الساندة</div>
+      <div class="grid4">
+        <div class="item"><label>عدد الكاميرات</label><span>${s.sanda_cam_count||0}</span></div>
+        <div class="item"><label>نوع الكاميرات</label><span>${s.sanda_cam_type||'—'}</span></div>
+        <div class="item"><label>عدد الهاردات</label><span>${s.sanda_hdd_count||0}</span></div>
+        <div class="item"><label>مدة التسجيل</label><span>${s.sanda_record_days||'—'}</span></div>
+      </div>
+    </div>`:''}
+    `:''}
+
+    <div class="section">
+      <div class="sec-title">🚗 سجل الجولات الميدانية</div>
+      ${tours.length>0?`
+      <table><thead><tr><th>التاريخ</th><th>نوع الزيارة</th><th>الفني</th><th>ملاحظات</th></tr></thead>
+      <tbody>${tours.map(t=>`<tr>
+        <td>${t.date}</td>
+        <td><span class="badge b-blue">${t.visit_type||'—'}</span></td>
+        <td>${t.technician||'—'}</td>
+        <td>${t.notes||'—'}</td>
+      </tr>`).join('')}</tbody></table>`
+      :'<div style="padding:14px;text-align:center;color:#94a3b8">لا توجد جولات مسجلة</div>'}
+    </div>
+
+    <div class="section">
+      <div class="sec-title">🔧 سجل الصيانة والأجهزة</div>
+      ${maint.length>0?`
+      <table><thead><tr><th>التاريخ</th><th>الجهاز</th><th>العطل</th><th>الفني</th><th>الحالة</th></tr></thead>
+      <tbody>${maint.map(m=>`<tr>
+        <td>${m.date}</td>
+        <td>${(m.devices&&m.devices.length>0)?m.devices.map(d=>d.device+'×'+d.qty).join('، '):m.device_type||'—'}</td>
+        <td>${m.fault_type||'—'}</td>
+        <td>${m.technician||'—'}</td>
+        <td><span class="badge ${m.status_after==='يعمل بشكل طبيعي'?'b-ok':m.status_after==='لا يزال معطلاً'?'b-bad':'b-warn'}">${m.status_after||'—'}</span></td>
+      </tr>`).join('')}</tbody></table>`
+      :'<div style="padding:14px;text-align:center;color:#94a3b8">لا توجد صيانات مسجلة</div>'}
+    </div>
 
     <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
   </body></html>`);
