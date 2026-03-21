@@ -972,6 +972,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="أخرى">أخرى</option>
               </select>
               <button class="btn btn-o btn-sm" onclick="exportCodingExcel()">📊 Excel</button>
+              <button class="btn btn-o btn-sm" onclick="exportVoidExcel()" style="color:#dc2626;border-color:rgba(220,38,38,.3)">🏷️ VOID Excel</button>
               <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
@@ -4316,6 +4317,24 @@ function printVoidLabel(id){
 }
 
 
+async function directPrint(id){
+  const d=allCoding.find(x=>x.id===id); if(!d)return;
+  toast('جاري الإرسال للطابعة...');
+  try{
+    const res=await api('POST','/api/print_label',{
+      code:d.code,
+      station:d.station_name||'',
+      location:d.location||'',
+      width_mm:80,
+      height_mm:40
+    });
+    if(res.ok) toast('✅ '+res.message);
+    else toast('❌ '+res.message,'err');
+  }catch(e){
+    toast('خطأ: تأكد أن السيرفر يعمل محلياً','err');
+  }
+}
+
 // ── DEVICE CODING ──
 let allCoding = [];
 
@@ -4382,6 +4401,7 @@ function renderCoding(list){
         <div style="display:flex;gap:6px;margin-top:8px">
           <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
           <button onclick="printVoidLabel(${d.id})" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🏷️ VOID</button>
+          <button onclick="directPrint(${d.id})" style="background:#7c3aed;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700" title="طباعة مباشرة للطابعة">🖨️</button>
           <button class="btn btn-o btn-sm" onclick="printDeviceCard(${d.id})" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
           ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button><button class="btn btn-o btn-sm" onclick="showScanLogs('${d.code}')" style="font-size:11px;color:#7c3aed;border-color:rgba(124,58,237,.3)" title="سجل المسح">📡</button>`:''}
         </div>
