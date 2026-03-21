@@ -4305,10 +4305,10 @@ function editCoding(id){
 }
 
 async function saveCoding(){
-  const code=document.getElementById('coding-code')?.value.trim();
-  const location=document.getElementById('coding-location')?.value.trim();
+  const code=(document.getElementById('coding-code')?.value||'').trim();
+  const location=(document.getElementById('coding-location')?.value||'').trim();
   const district=document.getElementById('coding-district')?.value||'';
-  const sid=document.getElementById('coding-station')?.value;
+  const sid=document.getElementById('coding-station')?.value||'';
   const station=allStations.find(s=>s.id==sid)||{};
   if(!code){toast('رقم الموقع مطلوب','err');return;}
   if(!location){toast('اسم الموقع مطلوب','err');return;}
@@ -4320,7 +4320,7 @@ async function saveCoding(){
     station_name:station.name||'',
     install_date:document.getElementById('coding-install-date')?.value||'',
     status:document.getElementById('coding-status')?.value||'يعمل',
-    notes:document.getElementById('coding-notes')?.value.trim()||'',
+    notes:(document.getElementById('coding-notes')?.value||'').trim(),
     added_by:CU?.fullname||'',
     nvrs:getNvrData(),
     hdds:getHddData(),
