@@ -152,6 +152,8 @@ def default_db():
         "circulars":[],
         "circular_reads":[],
         "next_circular_id":1,
+        "coding":[],
+        "next_coding_id":1,
         "custom_districts":[],
     }
 
@@ -403,6 +405,13 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
+        elif p.startswith("/api/coding/"):
+            cid=int(p.split("/")[-1]); idx=next((i for i,d in enumerate(db.get("coding",[])) if d["id"]==cid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["code","device_type","model","district","station_id","station_name","location","install_date","status","notes"]:
+                if f in body: db["coding"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+
         elif "/api/circulars/" in p and p.endswith("/read"):
             cid=int(p.split("/")[3])
             if "circular_reads" not in db: db["circular_reads"]=[]
@@ -416,6 +425,21 @@ class Handler(BaseHTTPRequestHandler):
                 "read_at":body.get("read_at",datetime.now().strftime("%Y/%m/%d %H:%M"))
             })
             save_db(db); self.send_json({"ok":True})
+
+        elif p=="/api/coding":
+            if "coding" not in db: db["coding"]=[]
+            if "next_coding_id" not in db: db["next_coding_id"]=1
+            cid=db["next_coding_id"]; db["next_coding_id"]+=1
+            dev={
+                "id":cid,"code":body.get("code",""),"device_type":body.get("device_type",""),
+                "model":body.get("model",""),"district":body.get("district",""),
+                "station_id":body.get("station_id"),"station_name":body.get("station_name",""),
+                "location":body.get("location",""),"install_date":body.get("install_date",""),
+                "status":body.get("status","يعمل"),"notes":body.get("notes",""),
+                "added_by":u["fullname"],"created_at":datetime.now().strftime("%Y-%m-%d")
+            }
+            db["coding"].append(dev); save_db(db)
+            self.send_json({"ok":True,"device":dev})
 
         elif p=="/api/circulars":
             if u["role"]!="admin": self.send_json({"error":"المدير فقط يستطيع نشر التعاميم"},403); return
