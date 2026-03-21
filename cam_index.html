@@ -52,6 +52,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   box-shadow:0 2px 12px rgba(0,0,0,.06);
   display:flex!important;flex-direction:column;
   width:100%;box-sizing:border-box;
+  -webkit-overflow-scrolling:touch;
 }
 .topbar-logo{
   display:flex!important;align-items:center;justify-content:space-between;
@@ -303,6 +304,39 @@ tr:hover td{background:rgba(30,58,95,.03);}
 .lbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(29,78,216,.4);}
 .lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 .lhint{text-align:center;font-size:11px;color:var(--t3);margin-top:16px;}
+
+/* ── MOBILE RESPONSIVE ── */
+@media(max-width:768px){
+  .topbar-nav{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
+  .nav-item{padding:10px 12px;font-size:14px;}
+  .main{margin-top:120px;padding:0 8px;}
+  .content{padding:10px 6px;}
+  .section{border-radius:12px;margin-bottom:12px;}
+  .modal{width:95vw!important;max-height:90vh;overflow-y:auto;}
+  .fgrid{grid-template-columns:1fr!important;}
+  .fg.full{grid-column:1!important;}
+  table{font-size:13px;}
+  th,td{padding:8px 8px!important;}
+  .btn{padding:10px 14px;font-size:14px;}
+  .btn-sm{padding:8px 12px;font-size:13px!important;}
+  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;}
+  .sec-actions{width:100%;justify-content:flex-start;flex-wrap:wrap;}
+  .fi{font-size:15px;padding:12px 14px;}
+  .search-box input{font-size:14px;}
+  .up-box{min-height:80px;}
+  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  #circulars-grid > div{grid-template-columns:1fr!important;}
+  .pagination{flex-wrap:wrap;gap:4px;}
+  .tb-ico{width:32px;height:32px;font-size:16px;}
+  .su-av{width:28px;height:28px;font-size:11px;}
+}
+@media(max-width:480px){
+  .nav-item{padding:8px 10px;font-size:13px;}
+  .nav-item .ni{font-size:13px;}
+  .topbar-brand{gap:8px;}
+  .tb-name{font-size:15px;}
+}
+
 </style>
 </head>
 <body>
@@ -376,12 +410,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div id="tab-dashboard">
 
         <!-- 4 Quick Cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:18px">
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(29,78,216,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px">
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(29,78,216,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
-                <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">الجولات الميدانية</div>
-                <div style="font-size:28px;font-weight:900;color:#fff" id="s-tours-count">—</div>
+                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">الجولات الميدانية</div>
+                <div style="font-size:34px;font-weight:900;color:#fff" id="s-tours-count">—</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-tours-sub">آخر جولة —</div>
               </div>
               <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🚗</div>
@@ -390,8 +424,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(220,38,38,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
-                <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">الصيانة</div>
-                <div style="font-size:28px;font-weight:900;color:#fff" id="s-maint-count">—</div>
+                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">الصيانة</div>
+                <div style="font-size:34px;font-weight:900;color:#fff" id="s-maint-count">—</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-cams-bad-sub">— كاميرا معطلة</div>
               </div>
               <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🔧</div>
@@ -400,8 +434,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(3,105,161,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
-                <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">المحطات</div>
-                <div style="font-size:28px;font-weight:900;color:#fff" id="s-stations">—</div>
+                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">المحطات</div>
+                <div style="font-size:34px;font-weight:900;color:#fff" id="s-stations">—</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-stations-sub">محطة مراقبة</div>
               </div>
               <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">⛽</div>
@@ -410,8 +444,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(124,58,237,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="display:flex;justify-content:space-between;align-items:flex-start">
               <div>
-                <div style="font-size:12px;color:rgba(255,255,255,.7);margin-bottom:6px">التقارير</div>
-                <div style="font-size:28px;font-weight:900;color:#fff" id="s-unvisited">—</div>
+                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">التقارير</div>
+                <div style="font-size:34px;font-weight:900;color:#fff" id="s-unvisited">—</div>
                 <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">محطة لم تُزَر 30 يوم</div>
               </div>
               <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">📊</div>
@@ -626,12 +660,38 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
             <div class="sec-title"><div class="sdot"></div>⛽ المحطات</div>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>النوع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
-              <tbody id="stations-tb"></tbody>
-            </table>
+
+          <!-- Government Stations -->
+          <div style="padding:0 14px 0;margin-bottom:20px">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:2px solid #1d4ed8;margin-bottom:10px">
+              <div style="width:10px;height:10px;border-radius:50%;background:#1d4ed8"></div>
+              <span style="font-size:15px;font-weight:800;color:#1d4ed8">🏛️ المحطات الحكومية</span>
+              <span id="gov-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
+                <tbody id="stations-gov-tb"></tbody>
+              </table>
+            </div>
           </div>
+
+          <!-- Private Stations -->
+          <div style="padding:0 14px 14px">
+            <div style="display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:2px solid #f59e0b;margin-bottom:10px">
+              <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b"></div>
+              <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
+              <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
+                <tbody id="stations-priv-tb"></tbody>
+              </table>
+            </div>
+          </div>
+          <!-- hidden for compat -->
+          <div style="display:none"><tbody id="stations-tb"></tbody></div>
         </div>
       </div>
 
@@ -1827,7 +1887,6 @@ async function loadStations(){
 }
 function filterStations(){renderStations();}
 function renderStations(){
-  const tb=document.getElementById('stations-tb');if(!tb)return;
   const q=(document.getElementById('sq-stations')?.value||'').toLowerCase();
   const fd=document.getElementById('f-st-district')?.value||'';
   const f=allStations.filter(s=>{
@@ -1835,15 +1894,17 @@ function renderStations(){
     if(fd&&s.district!==fd) return false;
     return true;
   });
-  tb.innerHTML=f.map((s,i)=>{
-    const cams=allCams.filter(c=>c.station_id===s.id);
+  const gov=f.filter(s=>(s.type||'حكومية')==='حكومية');
+  const priv=f.filter(s=>s.type==='أهلية');
+  const govC=document.getElementById('gov-count');if(govC)govC.textContent=gov.length;
+  const privC=document.getElementById('priv-count');if(privC)privC.textContent=priv.length;
+  const rowFn=(s,i)=>{
     const lastTour=allTours.filter(t=>t.station_id===s.id).sort((a,b)=>b.date.localeCompare(a.date))[0];
     const daysSince=lastTour?Math.floor((new Date()-new Date(lastTour.date))/86400000):null;
     return `<tr>
       <td><span class="snum">${i+1}</span></td>
       <td><strong>⛽ ${s.name}</strong></td>
       <td><span class="db">${s.district||'—'}</span></td>
-      <td><span class="badge b-navy">${s.type||'حكومية'}</span></td>
       <td style="text-align:center;background:rgba(22,163,74,.04)">
         <span style="font-size:16px;font-weight:900;color:var(--a3)">${s.cam_working||0}</span>
       </td>
@@ -1860,7 +1921,11 @@ function renderStations(){
         </div>
       </td>
     </tr>`;
-  }).join('');
+  };
+  const govTb=document.getElementById('stations-gov-tb');
+  if(govTb) govTb.innerHTML=gov.length?gov.map(rowFn).join(''):`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">لا توجد محطات حكومية</td></tr>`;
+  const privTb=document.getElementById('stations-priv-tb');
+  if(privTb) privTb.innerHTML=priv.length?priv.map(rowFn).join(''):`<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:20px">لا توجد محطات أهلية</td></tr>`;
 }
 
 // ── TOURS ──
@@ -3049,34 +3114,138 @@ function filterCirculars(){
 
 function renderCirculars(list){
   const g = document.getElementById('circulars-grid'); if(!g) return;
+  const isAdmin = CU&&CU.role==='admin';
   if(list.length === 0){
     g.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
     return;
   }
   const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
-  g.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">` +
-  list.map(circ=>{
-    const clr = typeColors[circ.type] || '#888';
-    const isNew = !isCircRead(circ.id);
-    return `<div style="background:#fff;border:1.5px solid ${isNew?clr:'var(--border)'};border-radius:14px;overflow:hidden;box-shadow:${isNew?`0 4px 16px ${clr}22`:'none'}">
-      <div style="background:${clr};padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-        <span style="color:#fff;font-weight:700;font-size:13px">📢 ${circ.type}</span>
-        ${isNew?`<span style="background:rgba(255,255,255,.25);color:#fff;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">جديد</span>`:''}
-      </div>
-      <div style="padding:14px">
-        <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:6px">${circ.title}</div>
-        <div style="font-size:12px;color:var(--t3);margin-bottom:8px">
-          📍 ${circ.district} &nbsp;|&nbsp; 📅 ${circ.date} &nbsp;|&nbsp; 👤 ${circ.added_by||'—'}
+
+  if(isAdmin){
+    // ── عرض المدير: إدارة فقط بدون قراءة ──
+    g.innerHTML = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">` +
+    list.map(circ=>{
+      const clr = typeColors[circ.type] || '#888';
+      return `<div style="background:#fff;border:1.5px solid ${clr}44;border-radius:14px;overflow:hidden">
+        <div style="background:${clr};padding:10px 16px;display:flex;justify-content:space-between;align-items:center">
+          <span style="color:#fff;font-weight:700;font-size:13px">📢 ${circ.type}</span>
+          <button onclick="delCircular(${circ.id})" style="background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🗑️ حذف</button>
         </div>
-        ${circ.body?`<div style="font-size:13px;color:var(--t2);background:var(--bg2);border-radius:8px;padding:10px;margin-bottom:10px">${circ.body}</div>`:''}
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          ${[1,2,3].map(n=>circ['file'+n]?`<button class="btn btn-o btn-sm" onclick="viewCircFile(${circ.id},${n})" style="font-size:12px">📎 مرفق ${n}</button>`:'').join('')}
-          ${!isCircRead(circ.id)?`<button class="btn btn-o btn-sm" onclick="markCircRead(${circ.id})" style="font-size:12px;color:var(--a3);border-color:rgba(22,163,74,.3)">✅ تم الاطلاع</button>`:'<span style="font-size:11px;color:var(--a3)">✅ تمت القراءة</span>'}
-          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCircular(${circ.id})" style="font-size:12px;margin-right:auto">🗑️</button>`:''}
+        <div style="padding:12px 16px">
+          <div style="font-size:15px;font-weight:800;color:var(--text);margin-bottom:4px">${circ.title}</div>
+          <div style="font-size:12px;color:var(--t3);margin-bottom:8px">📍 ${circ.district} &nbsp;|&nbsp; 📅 ${circ.date} &nbsp;|&nbsp; 👤 ${circ.added_by||'—'}</div>
+          ${circ.body?`<div style="font-size:12px;color:var(--t2);background:var(--bg2);border-radius:8px;padding:8px;margin-bottom:8px">${circ.body}</div>`:''}
+          <div style="font-size:11px;color:var(--t3)">
+            ${[1,2,3].map(n=>circ[`has_file${n}`]?`📎 مرفق ${n} موجود`:'').filter(Boolean).join(' &nbsp; ')||'لا توجد مرفقات'}
+          </div>
         </div>
+      </div>`;
+    }).join('') + '</div>';
+  } else {
+    // ── عرض المستخدم: صورة + تنزيل + طباعة + تم الاطلاع ──
+    g.innerHTML = `<div style="display:flex;flex-direction:column;gap:16px">` +
+    list.map(circ=>{
+      const clr = typeColors[circ.type] || '#888';
+      const isNew = !isCircRead(circ.id);
+      return `<div style="background:#fff;border:2px solid ${isNew?clr:'var(--border)'};border-radius:16px;overflow:hidden;box-shadow:${isNew?`0 4px 20px ${clr}33`:'none'}">
+        <div style="background:linear-gradient(135deg,${clr},${clr}cc);padding:14px 18px;display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <span style="color:#fff;font-weight:800;font-size:15px">📢 ${circ.type}</span>
+            ${isNew?`<span style="background:rgba(255,255,255,.3);color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700;margin-right:8px">● جديد</span>`:''}
+          </div>
+          <span style="color:rgba(255,255,255,.8);font-size:12px">📅 ${circ.date}</span>
+        </div>
+        <div style="padding:16px 18px">
+          <div style="font-size:17px;font-weight:800;color:var(--text);margin-bottom:6px">${circ.title}</div>
+          <div style="font-size:13px;color:var(--t3);margin-bottom:10px">📍 ${circ.district} &nbsp;|&nbsp; 👤 ${circ.added_by||'—'}</div>
+          ${circ.body?`<div style="font-size:14px;color:var(--t2);background:var(--bg2);border-radius:10px;padding:12px;margin-bottom:12px;line-height:1.7">${circ.body}</div>`:''}
+
+          <!-- المرفقات كصور -->
+          <div id="circ-files-${circ.id}" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px"></div>
+
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <button class="btn btn-o btn-sm" onclick="loadCircFiles(${circ.id})" style="font-size:13px">📥 تحميل المرفقات</button>
+            <button class="btn btn-o btn-sm" onclick="printCircular(${circ.id})" style="font-size:13px">🖨️ طباعة</button>
+            ${isNew
+              ?`<button class="btn btn-p btn-sm" onclick="markCircRead(${circ.id})" style="font-size:13px;background:linear-gradient(135deg,#16a34a,#22c55e)">✅ تم الاطلاع</button>`
+              :`<span style="font-size:13px;color:var(--a3);font-weight:700">✅ تمت القراءة</span>`
+            }
+          </div>
+        </div>
+      </div>`;
+    }).join('') + '</div>';
+  }
+}
+
+async function loadCircFiles(circId){
+  const container = document.getElementById(`circ-files-${circId}`);
+  if(!container) return;
+  container.innerHTML = '<div style="color:var(--t3);font-size:13px">جاري التحميل...</div>';
+  const loaded = [];
+  for(let n=1;n<=3;n++){
+    try{
+      const f = await api('GET',`/api/files/circ_${n}_${circId}`);
+      if(f.file&&f.file.data) loaded.push({n, data:f.file.data, mime:f.file.mime||'image/jpeg', name:f.file.name||`مرفق${n}`});
+    }catch(e){}
+  }
+  if(loaded.length===0){container.innerHTML='<div style="color:var(--t3);font-size:13px">لا توجد مرفقات</div>';return;}
+  container.innerHTML = loaded.map(f=>`
+    <div style="border:1px solid var(--border);border-radius:10px;overflow:hidden">
+      <div style="background:var(--bg2);padding:8px 12px;font-size:12px;font-weight:700;color:var(--t2);display:flex;justify-content:space-between;align-items:center">
+        <span>📎 مرفق ${f.n}</span>
+        <a href="${f.data}" download="${f.name}" style="color:var(--p1);font-size:12px;text-decoration:none">⬇️ تنزيل</a>
       </div>
-    </div>`;
-  }).join('') + '</div>';
+      ${f.mime.startsWith('image/')
+        ?`<img src="${f.data}" style="width:100%;max-height:400px;object-fit:contain;display:block;cursor:pointer" onclick="openLB('${f.data}')">`
+        :`<iframe src="${f.data}" style="width:100%;height:300px;border:none"></iframe>`
+      }
+    </div>`).join('');
+}
+
+async function printCircular(circId){
+  const circ = allCirculars.find(x=>x.id===circId);
+  if(!circ) return;
+  toast('جاري التحضير...');
+  const loaded = [];
+  for(let n=1;n<=3;n++){
+    try{
+      const f = await api('GET',`/api/files/circ_${n}_${circId}`);
+      if(f.file&&f.file.data) loaded.push({n, data:f.file.data, mime:f.file.mime||''});
+    }catch(e){}
+  }
+  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
+  const clr = typeColors[circ.type]||'#888';
+  const win = window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;}
+      .header{background:${clr};color:#fff;padding:20px 24px;border-radius:12px;margin-bottom:20px}
+      .header h1{font-size:22px;font-weight:900}
+      .header p{font-size:13px;opacity:.85;margin-top:6px}
+      .body-text{font-size:15px;line-height:1.8;color:#1e293b;background:#f8fafc;border-radius:10px;padding:16px;margin-bottom:20px}
+      .file-item{border:1px solid #e2e8f0;border-radius:10px;margin-bottom:16px;overflow:hidden;page-break-inside:avoid}
+      .file-label{background:#f8fafc;padding:8px 14px;font-size:13px;font-weight:700;color:#1d4ed8}
+      img{max-width:100%;display:block}
+      iframe{width:100%;height:400px;border:none}
+      .print-btn{position:fixed;bottom:20px;left:20px;padding:12px 20px;background:${clr};color:#fff;border:none;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:15px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:A4;margin:10mm}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>📢 ${circ.title}</h1>
+      <p>${circ.type} &nbsp;|&nbsp; ${circ.district} &nbsp;|&nbsp; ${circ.date} &nbsp;|&nbsp; ${circ.added_by||''}</p>
+    </div>
+    ${circ.body?`<div class="body-text">${circ.body}</div>`:''}
+    ${loaded.map(f=>`<div class="file-item">
+      <div class="file-label">📎 مرفق ${f.n}</div>
+      ${f.mime.startsWith('image/')?`<img src="${f.data}">`:`<iframe src="${f.data}"></iframe>`}
+    </div>`).join('')}
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </body></html>`);
+  win.document.close();
 }
 
 function isCircRead(id){
