@@ -385,48 +385,73 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- DASHBOARD -->
       <div id="tab-dashboard">
 
-        <!-- 4 Quick Cards -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:18px">
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:14px;padding:16px 18px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(29,78,216,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
-                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">الجولات الميدانية</div>
-                <div style="font-size:34px;font-weight:900;color:#fff" id="s-tours-count">—</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-tours-sub">آخر جولة —</div>
+        <!-- 4 Circular Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
+
+          <!-- الجولات -->
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(29,78,216,.1);border:1.5px solid rgba(29,78,216,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0e7ff" stroke-width="8"/>
+                <circle id="circ-tours" cx="45" cy="45" r="38" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">🚗</div>
               </div>
-              <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🚗</div>
             </div>
+            <div style="font-size:26px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-tours-sub">—</div>
           </div>
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(220,38,38,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
-                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">الصيانة</div>
-                <div style="font-size:34px;font-weight:900;color:#fff" id="s-maint-count">—</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-cams-bad-sub">— كاميرا معطلة</div>
+
+          <!-- الصيانة -->
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#fee2e2" stroke-width="8"/>
+                <circle id="circ-maint" cx="45" cy="45" r="38" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">🔧</div>
               </div>
-              <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">🔧</div>
             </div>
+            <div style="font-size:26px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-cams-bad-sub">—</div>
           </div>
-          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:linear-gradient(135deg,#0369a1,#0ea5e9);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(3,105,161,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
-                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">المحطات</div>
-                <div style="font-size:34px;font-weight:900;color:#fff" id="s-stations">—</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px" id="s-stations-sub">محطة مراقبة</div>
+
+          <!-- المحطات -->
+          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
+                <circle id="circ-stations" cx="45" cy="45" r="38" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">⛽</div>
               </div>
-              <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">⛽</div>
             </div>
+            <div style="font-size:26px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
+            <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-stations-sub">—</div>
           </div>
-          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6);border-radius:14px;padding:18px 20px;cursor:pointer;transition:all .2s;box-shadow:0 4px 16px rgba(124,58,237,.3)" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="display:flex;justify-content:space-between;align-items:flex-start">
-              <div>
-                <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:8px;letter-spacing:.3px">التقارير</div>
-                <div style="font-size:34px;font-weight:900;color:#fff" id="s-unvisited">—</div>
-                <div style="font-size:10px;color:rgba(255,255,255,.6);margin-top:4px">محطة لم تُزَر 30 يوم</div>
+
+          <!-- التقارير -->
+          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#ede9fe" stroke-width="8"/>
+                <circle id="circ-reports" cx="45" cy="45" r="38" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">📊</div>
               </div>
-              <div style="width:46px;height:46px;background:rgba(255,255,255,.15);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:22px">📊</div>
             </div>
+            <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
+            <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
           </div>
+
         </div>
 
         <!-- Widget -->
@@ -1936,6 +1961,13 @@ async function loadDashboard(){
     const d=await api('GET','/api/stats');
     // Cards
     document.getElementById('s-stations').textContent=d.total_stations;
+    // Animate circles
+    setTimeout(()=>{
+      animateCircle('circ-tours',d.total_tours,Math.max(d.total_tours,1));
+      animateCircle('circ-maint',d.total_maintenance,Math.max(d.total_maintenance,1));
+      animateCircle('circ-stations',d.total_stations,Math.max(d.total_stations,1));
+      animateCircle('circ-reports',d.unvisited_30||0,Math.max(d.total_stations,1));
+    },300);
     document.getElementById('s-tours-count').textContent=d.total_tours;
     document.getElementById('s-maint-count').textContent=d.total_maintenance;
     document.getElementById('s-unvisited').textContent=d.unvisited_count;
@@ -4676,6 +4708,14 @@ function printCodingList(){
     <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
   </body></html>`);
   win.document.close();
+}
+
+function animateCircle(id, value, max){
+  const el=document.getElementById(id); if(!el)return;
+  const r=38; const circ=2*Math.PI*r;
+  const pct=max>0?Math.min(value/max,1):0;
+  const offset=circ-(pct*circ);
+  el.style.strokeDashoffset=offset;
 }
 // ── DISTRICTS ──
 function openDistrictModal(){
