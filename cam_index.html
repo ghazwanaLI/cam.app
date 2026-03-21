@@ -4305,28 +4305,39 @@ function editCoding(id){
 }
 
 async function saveCoding(){
-  const code=document.getElementById('coding-code').value.trim();
-  const dtype=document.getElementById('coding-device-type').value;
-  const district=document.getElementById('coding-district').value;
-  const sid=document.getElementById('coding-station').value;
+  const code=document.getElementById('coding-code')?.value.trim();
+  const location=document.getElementById('coding-location')?.value.trim();
+  const district=document.getElementById('coding-district')?.value||'';
+  const sid=document.getElementById('coding-station')?.value;
   const station=allStations.find(s=>s.id==sid)||{};
-  if(!code){toast('رمز الجهاز مطلوب','err');return;}
+  if(!code){toast('رقم الموقع مطلوب','err');return;}
+  if(!location){toast('اسم الموقع مطلوب','err');return;}
   const body={
-    code, device_type:dtype,
-    model:document.getElementById('coding-model').value.trim(),
-    district, station_id:sid||null, station_name:station.name||'',
-    location:document.getElementById('coding-location').value.trim(),
-    install_date:document.getElementById('coding-install-date').value,
-    status:document.getElementById('coding-status').value,
-    notes:document.getElementById('coding-notes').value.trim(),
-    added_by:CU?.fullname||''
+    code, location, district,
+    device_type:'موقع',
+    model:'',
+    station_id:sid||null,
+    station_name:station.name||'',
+    install_date:document.getElementById('coding-install-date')?.value||'',
+    status:document.getElementById('coding-status')?.value||'يعمل',
+    notes:document.getElementById('coding-notes')?.value.trim()||'',
+    added_by:CU?.fullname||'',
+    nvrs:getNvrData(),
+    hdds:getHddData(),
+    switches:getSwitchData(),
+    cam_total:parseInt(document.getElementById('coding-cam-total')?.value)||0,
+    cam_working:parseInt(document.getElementById('coding-cam-working')?.value)||0,
+    cam_broken:parseInt(document.getElementById('coding-cam-broken')?.value)||0,
   };
-  const eid=parseInt(document.getElementById('coding-eid').value);
+  const eid=parseInt(document.getElementById('coding-eid')?.value);
+  const btn=document.querySelector('#ov-coding .btn-p');
+  if(btn){btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';}
   try{
     if(eid) await api('PUT',`/api/coding/${eid}`,body);
     else await api('POST','/api/coding',body);
     toast('تم الحفظ ✅');closeModal('ov-coding');await loadCoding();
   }catch(e){toast('خطأ: '+e.message,'err');}
+  finally{if(btn){btn.disabled=false;btn.textContent='💾 حفظ';}}
 }
 
 async function delCoding(id){
