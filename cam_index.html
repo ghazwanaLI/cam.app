@@ -4235,18 +4235,21 @@ function printDeviceCard(id){
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <scr' + 'ipt src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></scr' + 'ipt>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
-      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;display:flex;justify-content:center;}
-      .card{width:100%;border:1.5px solid #0891b2;border-radius:6px;overflow:hidden;page-break-inside:avoid}
-      .card-hdr{background:linear-gradient(135deg,#0891b2,#06b6d4);padding:5px 8px;text-align:center;color:#fff}
-      .card-hdr h2{font-size:8px;font-weight:800}.card-hdr p{font-size:7px;opacity:.8}
-      .code-box{background:#f0f9ff;margin:4px;border:1px solid #bae6fd;border-radius:4px;padding:4px;text-align:center}
-      .code-val{font-size:14px;font-weight:900;color:#0891b2;letter-spacing:1px}
-      .info{padding:0 5px 5px;font-size:7px;color:#475569}
-      .info div{padding:2px 0;border-bottom:1px solid #f1f5f9}
-      .status{display:inline-block;padding:1px 5px;border-radius:10px;font-size:7px;font-weight:700;background:${clr}22;color:${clr};margin:2px 5px}
-      .print-btn{margin:6px;width:calc(100% - 12px);padding:5px;background:#0891b2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:Cairo,sans-serif;font-size:10px;font-weight:700}
+      body{font-family:'Cairo',sans-serif;padding:2mm;background:#fff;display:flex;justify-content:center;}
+      .card{width:48mm;border:1px solid #0891b2;border-radius:3px;overflow:hidden}
+      .card-hdr{background:#0891b2;padding:2px 4px;text-align:center;color:#fff}
+      .card-hdr h2{font-size:7px;font-weight:800}.card-hdr p{font-size:6px;opacity:.8}
+      .body{display:grid;grid-template-columns:auto 1fr;gap:3px;padding:3px}
+      .qr-box{display:flex;flex-direction:column;align-items:center;gap:1px}
+      #qrcode canvas,#qrcode img{width:28mm!important;height:28mm!important}
+      .code-txt{font-size:6px;font-weight:900;color:#0891b2;text-align:center}
+      .info{font-size:6px;color:#475569;display:flex;flex-direction:column;gap:1px;justify-content:center}
+      .info div{padding:1px 0;border-bottom:1px solid #f1f5f9}
+      .status{display:inline-block;padding:1px 4px;border-radius:4px;font-size:6px;font-weight:700;background:${clr}22;color:${clr}}
+      .print-btn{width:100%;padding:3px;background:#0891b2;color:#fff;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:9px;font-weight:700;margin-top:3px}
       @media print{.print-btn{display:none}@page{size:50mm 40mm;margin:1mm}}
     </style>
   </head><body>
