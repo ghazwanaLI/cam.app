@@ -392,6 +392,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span>جرد الكاميرات</div>
+      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span>ترميز الأجهزة</div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
       <div class="nav-item hidden" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
       <div class="nav-item" id="nav-reports" class="nav-item hidden" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
@@ -1627,6 +1628,72 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
+
+<!-- CODING MODAL -->
+<div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
+  <div class="modal" style="width:520px">
+    <div class="m-title">🏷️ <span id="coding-ttl">إضافة جهاز مرمّز</span></div>
+    <input type="hidden" id="coding-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">رقم الترميز / الرمز الفريد *</label>
+        <div style="display:flex;gap:8px">
+          <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-001، DVR-TK-002...">
+          <button type="button" onclick="genCode()" class="btn btn-o" style="white-space:nowrap;min-width:100px">⚡ توليد تلقائي</button>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">نوع الجهاز *</label>
+        <select class="fi" id="coding-device-type">
+          <optgroup label="📹 أجهزة التسجيل">
+            <option value="DVR/NVR">DVR/NVR</option>
+            <option value="هارد ديسك HDD">هارد ديسك HDD</option>
+          </optgroup>
+          <optgroup label="📷 الكاميرات">
+            <option value="كاميرا داخلية">كاميرا داخلية</option>
+            <option value="كاميرا خارجية">كاميرا خارجية</option>
+            <option value="كاميرا PTZ">كاميرا PTZ</option>
+          </optgroup>
+          <optgroup label="🔌 الشبكة والطاقة">
+            <option value="سويج POE">سويج POE</option>
+            <option value="UPS عاكس">UPS عاكس</option>
+            <option value="بطارية UPS">بطارية UPS</option>
+          </optgroup>
+          <option value="أخرى">أخرى</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">الموديل / المواصفات</label>
+        <input class="fi" id="coding-model" type="text" placeholder="مثال: Hikvision DS-7208..."></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" id="coding-district" onchange="filterCodingStations()">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">المحطة</label>
+        <select class="fi" id="coding-station">
+          <option value="">— اختر المحطة —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">الموقع داخل المحطة</label>
+        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة، الطابق الأول..."></div>
+      <div class="fg"><label class="fl">تاريخ التركيب</label>
+        <input class="fi" id="coding-install-date" type="date"></div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" id="coding-status">
+          <option value="يعمل">✅ يعمل</option>
+          <option value="معطل">❌ معطل</option>
+          <option value="صيانة">🔧 تحت الصيانة</option>
+          <option value="مستبدل">🔄 تم استبداله</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات إضافية..."></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHANGE PW MODAL -->
 <div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
   <div class="modal modal-sm">
@@ -1759,7 +1826,7 @@ async function initApp(){
   // Load data — each independently so one failure doesn't block others
   await Promise.allSettled([
     loadStations(),loadTours(),loadMaintenance(),
-    loadCameras(),loadDelegates(),loadInventory(),loadCirculars()
+    loadCameras(),loadDelegates(),loadInventory(),loadCirculars(),loadCoding()
   ]);
   // إظهار لوحة التحكم
   goTab('dashboard', document.querySelector('.nav-item.active'));
@@ -1788,7 +1855,7 @@ function populateDistrictSelects(){
 
 // ── TABS ──
 function goTab(name,el){
-  ['dashboard','field','stations','inventory','circulars','reports','delegates','users','logs'].forEach(t=>{
+  ['dashboard','field','stations','inventory','coding','circulars','reports','delegates','users','logs'].forEach(t=>{
     const e=document.getElementById('tab-'+t);
     if(e) e.style.display=t===name?'block':'none';
   });
@@ -1804,6 +1871,7 @@ function goTab(name,el){
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
   }
   if(name==='stations') renderStations();
+  if(name==='coding'){loadCoding();const sel=document.getElementById('f-coding-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
@@ -3972,6 +4040,250 @@ function resetDeviceRows(devices){
   }
 }
 
+
+// ── DEVICE CODING ──
+let allCoding = [];
+
+async function loadCoding(){
+  try{
+    const d=await api('GET','/api/coding');
+    allCoding=d.devices||[];
+    filterCoding();
+  }catch(e){
+    const g=document.getElementById('coding-grid');
+    if(g)g.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">تعذر تحميل البيانات</div>';
+  }
+}
+
+function filterCoding(){
+  const q=(document.getElementById('sq-coding')?.value||'').toLowerCase();
+  const dist=document.getElementById('f-coding-district')?.value||'';
+  const dev=document.getElementById('f-coding-device')?.value||'';
+  let f=allCoding.filter(d=>{
+    if(q&&!d.code.toLowerCase().includes(q)&&!d.device_type.toLowerCase().includes(q)&&!(d.station_name||'').toLowerCase().includes(q)) return false;
+    if(dist&&d.district!==dist) return false;
+    if(dev&&!d.device_type.includes(dev)) return false;
+    return true;
+  });
+  // Filter by user district for non-admin
+  if(CU&&CU.role!=='admin'&&CU.district) f=f.filter(d=>d.district===CU.district);
+  renderCoding(f);
+}
+
+function renderCoding(list){
+  const g=document.getElementById('coding-grid');if(!g)return;
+  if(list.length===0){g.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);font-size:14px">📭 لا توجد أجهزة مرمّزة</div>';return;}
+  const statusColor={'يعمل':'#16a34a','معطل':'#dc2626','صيانة':'#d97706','مستبدل':'#6b7280'};
+  const deviceIcon={'DVR/NVR':'📹','هارد ديسك HDD':'💾','كاميرا داخلية':'📷','كاميرا خارجية':'📷','كاميرا PTZ':'🎥','سويج POE':'🔌','UPS عاكس':'⚡','بطارية UPS':'🔋'};
+  g.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px">`+
+  list.map(d=>{
+    const clr=statusColor[d.status]||'#888';
+    const ico=deviceIcon[d.device_type]||'🔧';
+    return `<div style="background:#fff;border:1.5px solid ${clr}33;border-radius:14px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#0891b2,#06b6d4);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:8px">
+          <span style="font-size:18px">${ico}</span>
+          <div>
+            <div style="color:#fff;font-weight:800;font-size:13px">${d.device_type}</div>
+            <div style="color:rgba(255,255,255,.7);font-size:11px">${d.model||'—'}</div>
+          </div>
+        </div>
+        <span class="badge" style="background:${clr}22;color:${clr};font-size:11px">${d.status||'—'}</span>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:8px 12px;margin-bottom:10px;text-align:center">
+          <div style="font-size:11px;color:#0369a1;margin-bottom:2px">🏷️ رمز الجهاز</div>
+          <div style="font-size:17px;font-weight:900;color:#0891b2;letter-spacing:1px">${d.code}</div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:5px;font-size:12px;color:var(--t2)">
+          <div>📍 ${d.district||'—'} &nbsp;|&nbsp; ⛽ ${d.station_name||'—'}</div>
+          <div>📌 ${d.location||'—'}</div>
+          <div>📅 تركيب: ${d.install_date||'—'}</div>
+          ${d.notes?`<div style="color:var(--t3)">📝 ${d.notes}</div>`:''}
+        </div>
+        <div style="display:flex;gap:6px;margin-top:10px">
+          <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
+          <button class="btn btn-o btn-sm" onclick="printDeviceCard(${d.id})" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
+          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+function genCode(){
+  const type=document.getElementById('coding-device-type').value;
+  const prefix={'DVR/NVR':'DVR','هارد ديسك HDD':'HDD','كاميرا داخلية':'CAM-IN','كاميرا خارجية':'CAM-OUT','كاميرا PTZ':'CAM-PTZ','سويج POE':'POE','UPS عاكس':'UPS','بطارية UPS':'BAT'}[type]||'DEV';
+  const num=String(allCoding.filter(d=>d.device_type===type).length+1).padStart(3,'0');
+  document.getElementById('coding-code').value=`${prefix}-${num}`;
+}
+
+function filterCodingStations(){
+  const dist=document.getElementById('coding-district').value;
+  const sel=document.getElementById('coding-station');
+  sel.innerHTML='<option value="">— اختر المحطة —</option>';
+  allStations.filter(s=>!dist||s.district===dist).forEach(s=>{
+    const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
+  });
+}
+
+function openCodingModal(){
+  document.getElementById('coding-ttl').textContent='إضافة جهاز مرمّز';
+  document.getElementById('coding-eid').value='';
+  ['coding-code','coding-model','coding-location','coding-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('coding-device-type').value='DVR/NVR';
+  document.getElementById('coding-status').value='يعمل';
+  document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
+  // Populate district
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>';
+  const dists=CU&&CU.role!=='admin'&&CU.district?[CU.district]:DISTRICTS_LIST;
+  dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
+  if(CU&&CU.role!=='admin'&&CU.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  filterCodingStations();
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+function editCoding(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  document.getElementById('coding-ttl').textContent='تعديل ترميز الجهاز';
+  document.getElementById('coding-eid').value=id;
+  document.getElementById('coding-code').value=d.code||'';
+  document.getElementById('coding-model').value=d.model||'';
+  document.getElementById('coding-location').value=d.location||'';
+  document.getElementById('coding-notes').value=d.notes||'';
+  document.getElementById('coding-device-type').value=d.device_type||'DVR/NVR';
+  document.getElementById('coding-status').value=d.status||'يعمل';
+  document.getElementById('coding-install-date').value=d.install_date||'';
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>';
+  DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
+  ds.value=d.district||'';ds.disabled=false;
+  filterCodingStations();
+  setTimeout(()=>{const ss=document.getElementById('coding-station');if(ss)ss.value=d.station_id||'';},150);
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+async function saveCoding(){
+  const code=document.getElementById('coding-code').value.trim();
+  const dtype=document.getElementById('coding-device-type').value;
+  const district=document.getElementById('coding-district').value;
+  const sid=document.getElementById('coding-station').value;
+  const station=allStations.find(s=>s.id==sid)||{};
+  if(!code){toast('رمز الجهاز مطلوب','err');return;}
+  const body={
+    code, device_type:dtype,
+    model:document.getElementById('coding-model').value.trim(),
+    district, station_id:sid||null, station_name:station.name||'',
+    location:document.getElementById('coding-location').value.trim(),
+    install_date:document.getElementById('coding-install-date').value,
+    status:document.getElementById('coding-status').value,
+    notes:document.getElementById('coding-notes').value.trim(),
+    added_by:CU?.fullname||''
+  };
+  const eid=parseInt(document.getElementById('coding-eid').value);
+  try{
+    if(eid) await api('PUT',`/api/coding/${eid}`,body);
+    else await api('POST','/api/coding',body);
+    toast('تم الحفظ ✅');closeModal('ov-coding');await loadCoding();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+async function delCoding(id){
+  if(!confirm('حذف هذا الجهاز من الترميز؟'))return;
+  try{await api('DELETE',`/api/coding/${id}`);toast('تم الحذف');await loadCoding();}
+  catch(e){toast('خطأ','err');}
+}
+
+function printDeviceCard(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  const statusColor={'يعمل':'#16a34a','معطل':'#dc2626','صيانة':'#d97706','مستبدل':'#6b7280'};
+  const clr=statusColor[d.status]||'#0891b2';
+  const win=window.open('','_blank','width=400,height=500');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;display:flex;justify-content:center;}
+      .card{width:100%;border:1.5px solid #0891b2;border-radius:6px;overflow:hidden;page-break-inside:avoid}
+      .card-hdr{background:linear-gradient(135deg,#0891b2,#06b6d4);padding:5px 8px;text-align:center;color:#fff}
+      .card-hdr h2{font-size:8px;font-weight:800}.card-hdr p{font-size:7px;opacity:.8}
+      .code-box{background:#f0f9ff;margin:4px;border:1px solid #bae6fd;border-radius:4px;padding:4px;text-align:center}
+      .code-val{font-size:14px;font-weight:900;color:#0891b2;letter-spacing:1px}
+      .info{padding:0 5px 5px;font-size:7px;color:#475569}
+      .info div{padding:2px 0;border-bottom:1px solid #f1f5f9}
+      .status{display:inline-block;padding:1px 5px;border-radius:10px;font-size:7px;font-weight:700;background:${clr}22;color:${clr};margin:2px 5px}
+      .print-btn{margin:6px;width:calc(100% - 12px);padding:5px;background:#0891b2;color:#fff;border:none;border-radius:5px;cursor:pointer;font-family:Cairo,sans-serif;font-size:10px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:50mm 40mm;margin:1mm}}
+    </style>
+  </head><body>
+    <div class="card">
+      <div class="card-hdr">
+        <h2>🏷️ بطاقة ترميز جهاز</h2>
+        <p>نظام كاميرات المراقبة</p>
+      </div>
+      <div class="code-box">
+        <div style="font-size:11px;color:#0369a1;margin-bottom:4px">رمز الجهاز</div>
+        <div class="code-val">${d.code}</div>
+      </div>
+      <span class="status">${d.status}</span>
+      <div class="info">
+        <div><strong>النوع:</strong> ${d.device_type}</div>
+        <div><strong>الموديل:</strong> ${d.model||'—'}</div>
+        <div><strong>القاطع:</strong> ${d.district||'—'}</div>
+        <div><strong>المحطة:</strong> ${d.station_name||'—'}</div>
+        <div><strong>الموقع:</strong> ${d.location||'—'}</div>
+        <div><strong>تاريخ التركيب:</strong> ${d.install_date||'—'}</div>
+        ${d.notes?`<div><strong>ملاحظات:</strong> ${d.notes}</div>`:''}
+      </div>
+      <button class="print-btn" onclick="window.print()">🖨️ طباعة البطاقة</button>
+    </div>
+  </body></html>`);
+  win.document.close();
+}
+
+function printCodingList(){
+  const f=allCoding.filter(d=>CU?.role==='admin'||(CU?.district&&d.district===CU.district));
+  if(f.length===0){toast('لا توجد أجهزة','err');return;}
+  const win=window.open('','_blank','width=950,height=700');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;font-size:12px;}
+      .header{background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;padding:16px 20px;border-radius:10px;margin-bottom:16px}
+      .header h1{font-size:18px;font-weight:900}.header p{font-size:11px;opacity:.8;margin-top:3px}
+      table{width:100%;border-collapse:collapse}
+      th{background:#0891b2;color:#fff;padding:8px;text-align:right;font-weight:700;font-size:12px}
+      td{padding:7px 8px;border-bottom:1px solid #f1f5f9;font-size:12px}
+      tr:nth-child(even){background:#f8fafc}
+      .badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+      .ok{background:#dcfce7;color:#16a34a}.bad{background:#fee2e2;color:#dc2626}.warn{background:#fef3c7;color:#d97706}.gray{background:#f1f5f9;color:#6b7280}
+      .print-btn{position:fixed;bottom:20px;left:20px;padding:10px 16px;background:#0891b2;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:A4 landscape;margin:10mm}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>🏷️ سجل ترميز الأجهزة</h1>
+      <p>إجمالي الأجهزة: ${f.length} &nbsp;|&nbsp; ${new Date().toLocaleDateString('ar-SA',{year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>رمز الجهاز</th><th>النوع</th><th>الموديل</th><th>القاطع</th><th>المحطة</th><th>الموقع</th><th>تاريخ التركيب</th><th>الحالة</th></tr></thead>
+      <tbody>${f.map((d,i)=>`<tr>
+        <td>${i+1}</td>
+        <td><strong style="color:#0891b2;font-size:13px">${d.code}</strong></td>
+        <td>${d.device_type}</td><td>${d.model||'—'}</td>
+        <td>${d.district||'—'}</td><td>${d.station_name||'—'}</td>
+        <td>${d.location||'—'}</td><td>${d.install_date||'—'}</td>
+        <td><span class="badge ${d.status==='يعمل'?'ok':d.status==='معطل'?'bad':d.status==='صيانة'?'warn':'gray'}">${d.status||'—'}</span></td>
+      </tr>`).join('')}</tbody>
+    </table>
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </body></html>`);
+  win.document.close();
+}
 // ── DISTRICTS ──
 function openDistrictModal(){
   document.getElementById('dist-name').value='';
