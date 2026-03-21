@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام كاميرات المراقبة</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='75' x='50' text-anchor='middle' font-size='65'>📹</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -846,7 +847,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
               <div style="display:flex;gap:8px">
                 <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
-                <button class="btn btn-p btn-sm" id="btn-add-book" onclick="toggleBookForm()" style="display:none;background:linear-gradient(135deg,#7c3aed,#8b5cf6)">📄 كتاب تعميم</button>
               </div>
             </div>
           </div>
@@ -912,89 +912,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div style="display:flex;gap:10px;justify-content:flex-end">
               <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
               <button class="btn btn-p" onclick="saveQuickCircular()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📢 نشر التعميم</button>
-            </div>
-          </div>
-
-          <!-- كتاب تعميم Form -->
-          <div id="circ-book-form" style="display:none;padding:16px;border-bottom:2px solid var(--border);background:linear-gradient(135deg,#f5f3ff,#ede9fe)">
-            <div style="font-size:15px;font-weight:800;color:#5b21b6;margin-bottom:14px">📄 رفع كتاب تعميم</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-              <div><label class="fl">العنوان *</label><input class="fi" id="book-title" type="text" placeholder="عنوان الكتاب..."></div>
-              <div><label class="fl">القاطع</label>
-                <select class="fi" id="book-district">
-                  <option value="الكل">جميع القواطع</option>
-                </select>
-              </div>
-              <div class="fg full" style="grid-column:1/-1"><label class="fl">ملاحظات</label>
-                <input class="fi" id="book-notes" type="text" placeholder="ملاحظات اختيارية...">
-              </div>
-            </div>
-
-            <div style="margin-bottom:14px">
-              <div style="font-size:13px;font-weight:700;color:#5b21b6;margin-bottom:8px">📎 الملفات والصور (حتى 5 ملفات)</div>
-              <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:10px">
-
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف 1</div>
-                  <div class="up-box" id="ub-book-1" style="min-height:75px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_1')">
-                    <button class="up-rm" onclick="rmFile('book_1',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-book_1" style="font-size:10px">اختر ملفاً</div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف 2</div>
-                  <div class="up-box" id="ub-book-2" style="min-height:75px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_2')">
-                    <button class="up-rm" onclick="rmFile('book_2',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-book_2" style="font-size:10px">اختر ملفاً</div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف 3</div>
-                  <div class="up-box" id="ub-book-3" style="min-height:75px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_3')">
-                    <button class="up-rm" onclick="rmFile('book_3',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-book_3" style="font-size:10px">اختر ملفاً</div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف 4</div>
-                  <div class="up-box" id="ub-book-4" style="min-height:75px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_4')">
-                    <button class="up-rm" onclick="rmFile('book_4',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-book_4" style="font-size:10px">اختر ملفاً</div>
-                  </div>
-                </div>
-
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">ملف 5</div>
-                  <div class="up-box" id="ub-book-5" style="min-height:75px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'book_5')">
-                    <button class="up-rm" onclick="rmFile('book_5',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:10px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-book_5" style="font-size:10px">اختر ملفاً</div>
-                  </div>
-                </div>
-
-              </div>
-            </div>
-
-            <div style="display:flex;gap:10px;justify-content:flex-end">
-              <button class="btn btn-o btn-sm" onclick="cancelBookForm()">إلغاء</button>
-              <button class="btn btn-p" onclick="saveCircularBook()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">📄 نشر الكتاب</button>
             </div>
           </div>
 
@@ -1127,37 +1044,18 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full"><label class="fl">المحطة *</label>
         <select class="fi" id="m-station"><option value="">— اختر المحطة —</option></select>
       </div>
-      <!-- الجهاز -->
-      <div class="fg">
-        <label class="fl">نوع الجهاز</label>
-        <select class="fi" id="m-device" onchange="updateDeviceIcon()">
-          <optgroup label="📹 أجهزة التسجيل">
-            <option value="DVR/NVR">DVR/NVR — جهاز تسجيل</option>
-            <option value="هارد ديسك HDD">هارد ديسك HDD</option>
-          </optgroup>
-          <optgroup label="📷 الكاميرات">
-            <option value="كاميرا داخلية">كاميرا داخلية</option>
-            <option value="كاميرا خارجية">كاميرا خارجية</option>
-            <option value="كاميرا PTZ">كاميرا PTZ</option>
-          </optgroup>
-          <optgroup label="🔌 الشبكة والطاقة">
-            <option value="سويج POE">سويج POE</option>
-            <option value="UPS عاكس">UPS عاكس</option>
-            <option value="بطارية UPS">بطارية UPS</option>
-          </optgroup>
-          <optgroup label="🔧 الأسلاك والتمديدات">
-            <option value="كابل شبكة">كابل شبكة</option>
-            <option value="كابل طاقة">كابل طاقة</option>
-            <option value="كونيكتر RJ45">كونيكتر RJ45</option>
-          </optgroup>
-          <option value="أخرى">أخرى</option>
-        </select>
+      <!-- قائمة الأجهزة المتعددة -->
+      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
+          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
+        </div>
+        <div id="devices-list"></div>
       </div>
-      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="m-qty" type="number" min="1" value="1"></div>
 
-      <!-- نوع العطل -->
+      <!-- نوع العطل العام -->
       <div class="fg">
-        <label class="fl">نوع العطل</label>
+        <label class="fl">نوع العطل العام</label>
         <select class="fi" id="m-fault-type">
           <option value="عطل كلي">عطل كلي</option>
           <option value="عطل جزئي">عطل جزئي</option>
@@ -1169,10 +1067,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="استبدال وقائي">استبدال وقائي</option>
         </select>
       </div>
-
-      <!-- قطعة الغيار -->
-      <div class="fg"><label class="fl">قطعة الغيار المستبدلة</label>
-        <input class="fi" id="m-spare-part" type="text" placeholder="مثال: كاميرا 2MP Sony، هارد 2TB..."></div>
 
       <!-- سبب + فني -->
       <div class="fg"><label class="fl">سبب الصيانة</label>
@@ -1819,7 +1713,7 @@ function goTab(name,el){
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
   }
   if(name==='stations') renderStations();
-  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const bb=document.getElementById('btn-add-book');if(bb)bb.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
+  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
   if(name==='users') loadUsers();
@@ -2161,9 +2055,8 @@ function openMaintModal(){
   document.getElementById('maint-ttl').textContent='إضافة صيانة / صرف جهاز';
   document.getElementById('maint-eid').value='';
   document.getElementById('m-date').value=new Date().toISOString().split('T')[0];
-  ['m-reason','m-tech','m-notes','m-spare-part'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('m-qty').value=1;
-  document.getElementById('m-device').value='DVR/NVR';
+  ['m-reason','m-tech','m-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  resetDeviceRows([]);
   document.getElementById('m-fault-type').value='عطل كلي';
   document.getElementById('m-status-after').value='يعمل بشكل طبيعي';
   if(CU&&CU.district) document.getElementById('m-district').value=CU.district;
@@ -2183,8 +2076,8 @@ function editMaint(id){
   document.getElementById('m-tech').value=m.technician||'';
   document.getElementById('m-notes').value=m.notes||'';
   const faultEl=document.getElementById('m-fault-type');if(faultEl)faultEl.value=m.fault_type||'عطل كلي';
-  const spareEl=document.getElementById('m-spare-part');if(spareEl)spareEl.value=m.spare_part||'';
   const statusEl=document.getElementById('m-status-after');if(statusEl)statusEl.value=m.status_after||'يعمل بشكل طبيعي';
+  resetDeviceRows(m.devices||[{device:m.device_type||'DVR/NVR',qty:m.qty||1,spare:m.spare_part||''}]);
   filterMaintStations();
   setTimeout(()=>{document.getElementById('m-station').value=m.station_id||'';},100);
   const pb=document.getElementById('btn-print-maint');if(pb){pb.style.display='inline-flex';pb.dataset.mid=id;}
@@ -2269,10 +2162,11 @@ async function saveMaint(){
   const station=allStations.find(s=>s.id===sid)||{};
   const body={date,district:document.getElementById('m-district').value,station_id:sid,
     station_name:station.name||'',
-    device_type:document.getElementById('m-device').value,
+    devices:getDevices(),
+    device_type:getDevices()[0]?.device||'',
+    qty:getDevices()[0]?.qty||1,
+    spare_part:getDevices()[0]?.spare||'',
     fault_type:document.getElementById('m-fault-type')?.value||'',
-    spare_part:document.getElementById('m-spare-part')?.value.trim()||'',
-    qty:parseInt(document.getElementById('m-qty').value)||1,
     status_after:document.getElementById('m-status-after')?.value||'',
     reason:document.getElementById('m-reason').value.trim(),
     technician:document.getElementById('m-tech').value.trim(),
@@ -2665,6 +2559,8 @@ function editUser(id){
       if(el){if(p[k])el.classList.add('on');else el.classList.remove('on');}
     });
     toggleUserPerms();
+    const roleRow=document.getElementById('u-role')?.closest('.fg');
+    if(roleRow) roleRow.style.display='';
     document.getElementById('ov-user').classList.add('open');
   });
 }
@@ -2746,16 +2642,14 @@ function setBox(type,name){
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
     circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
-    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3',
-    book_1:'ub-book-1',book_2:'ub-book-2',book_3:'ub-book-3',book_4:'ub-book-4',book_5:'ub-book-5'};
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
   const statMap={tour_img:'us-tour_img',tour_rep:'us-tour_rep',tour_doc:'us-tour_doc',
     maint_img:'us-maint_img',maint_img2:'us-maint_img2',maint_img3:'us-maint_img3',
     maint_rep:'us-maint_rep',maint_rep2:'us-maint_rep2',maint_rep3:'us-maint_rep3',
     maint_tawkeef:'us-maint_tawkeef',maint_tawkeef2:'us-maint_tawkeef2',
     maint_doc:'us-maint_doc',
     circ_1:'us-circ_1',circ_2:'us-circ_2',circ_3:'us-circ_3',
-    qcirc_1:'us-qcirc_1',qcirc_2:'us-qcirc_2',qcirc_3:'us-qcirc_3',
-    book_1:'us-book_1',book_2:'us-book_2',book_3:'us-book_3',book_4:'us-book_4',book_5:'us-book_5'};
+    qcirc_1:'us-qcirc_1',qcirc_2:'us-qcirc_2',qcirc_3:'us-qcirc_3'};
   const b=document.getElementById(boxMap[type]||'ub-'+type);
   const s=document.getElementById(statMap[type]||'us-'+type);
   if(b){if(name){b.classList.add('hf');}else{b.classList.remove('hf');}}
@@ -2768,8 +2662,7 @@ function rmFile(type,e){e.preventDefault();e.stopPropagation();UF[type]=null;
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
     circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
-    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3',
-    book_1:'ub-book-1',book_2:'ub-book-2',book_3:'ub-book-3',book_4:'ub-book-4',book_5:'ub-book-5'};
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
   const bid=boxMap[type]||'ub-'+type;
   const i=document.querySelector('#'+bid+' input');if(i)i.value='';setBox(type,null);}
 function clearUploads(){UF={};
@@ -3192,7 +3085,7 @@ function renderCirculars(list){
     g.innerHTML = '<div style="text-align:center;padding:40px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
     return;
   }
-  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a','كتاب تعميم':'#7c3aed'};
+  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
 
   if(isAdmin){
     // ── عرض المدير: إدارة فقط بدون قراءة ──
@@ -3304,7 +3197,7 @@ async function printCircular(circId){
       if(f.file&&f.file.data) loaded.push({n, data:f.file.data, mime:f.file.mime||''});
     }catch(e){}
   }
-  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a','كتاب تعميم':'#7c3aed'};
+  const typeColors = {'تعميم':'#f59e0b','تبليغ':'#dc2626','أمر إداري':'#1d4ed8','عام':'#16a34a'};
   const clr = typeColors[circ.type]||'#888';
   const win = window.open('','_blank','width=900,height=700');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
@@ -3477,69 +3370,6 @@ async function loadCircReads(circId){
     container.innerHTML='<div style="font-size:12px;color:var(--t3)">تعذر تحميل البيانات</div>';
   }
 }
-function toggleBookForm(){
-  const form=document.getElementById('circ-book-form');
-  const btn=document.getElementById('btn-add-book');
-  if(!form)return;
-  if(form.style.display==='none'||!form.style.display){
-    // Close other form
-    const otherForm=document.getElementById('circ-add-form');
-    if(otherForm)otherForm.style.display='none';
-    const otherBtn=document.getElementById('btn-add-circ');
-    if(otherBtn)otherBtn.textContent='➕ إضافة تعميم';
-    // Open book form
-    form.style.display='block';
-    if(btn)btn.textContent='✕ إغلاق';
-    document.getElementById('book-title').value='';
-    document.getElementById('book-notes').value='';
-    const sel=document.getElementById('book-district');
-    if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
-    for(let n=1;n<=5;n++){UF[`book_${n}`]=null;}
-    for(let n=1;n<=5;n++){const el=document.getElementById(`ub-book-${n}`);if(el)el.classList.remove('hf');}
-    for(let n=1;n<=5;n++){const el=document.getElementById(`us-book_${n}`);if(el)el.textContent='اختر ملفاً';}
-  } else {
-    form.style.display='none';
-    if(btn)btn.textContent='📄 كتاب تعميم';
-  }
-}
-
-function cancelBookForm(){
-  const form=document.getElementById('circ-book-form');
-  if(form)form.style.display='none';
-  const btn=document.getElementById('btn-add-book');
-  if(btn)btn.textContent='📄 كتاب تعميم';
-}
-
-async function saveCircularBook(){
-  const title=document.getElementById('book-title').value.trim();
-  if(!title){toast('العنوان مطلوب','err');return;}
-  // Count files
-  const fileNums=[];
-  for(let n=1;n<=5;n++){if(UF[`book_${n}`])fileNums.push(n);}
-  if(fileNums.length===0){toast('أرفق ملفاً واحداً على الأقل','err');return;}
-  const body={
-    title,
-    type:'كتاب تعميم',
-    district:document.getElementById('book-district').value,
-    body:document.getElementById('book-notes').value.trim(),
-    date:new Date().toISOString().split('T')[0],
-    added_by:CU?.fullname||'',
-    has_file1:!!UF['book_1'],has_file2:!!UF['book_2'],has_file3:!!UF['book_3'],
-    has_file4:!!UF['book_4'],has_file5:!!UF['book_5'],
-  };
-  try{
-    const d=await api('POST','/api/circulars',body);
-    const cid=d.circular.id;
-    for(let n=1;n<=5;n++){
-      if(UF[`book_${n}`]){
-        try{await api('POST',`/api/files/circ_${n}_${cid}`,UF[`book_${n}`]);}catch(e){}
-      }
-    }
-    toast('تم نشر كتاب التعميم ✅');
-    cancelBookForm();
-    await loadCirculars();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
 function toggleCircForm(){
   const form = document.getElementById('circ-add-form');
   if(!form) return;
@@ -3595,6 +3425,76 @@ async function saveQuickCircular(){
     await loadCirculars();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
+
+// ── MULTIPLE DEVICES ──
+const DEVICE_OPTS = `
+  <optgroup label="📹 أجهزة التسجيل">
+    <option value="DVR/NVR">DVR/NVR</option>
+    <option value="هارد ديسك HDD">هارد ديسك HDD</option>
+  </optgroup>
+  <optgroup label="📷 الكاميرات">
+    <option value="كاميرا داخلية">كاميرا داخلية</option>
+    <option value="كاميرا خارجية">كاميرا خارجية</option>
+    <option value="كاميرا PTZ">كاميرا PTZ</option>
+  </optgroup>
+  <optgroup label="🔌 الشبكة والطاقة">
+    <option value="سويج POE">سويج POE</option>
+    <option value="UPS عاكس">UPS عاكس</option>
+    <option value="بطارية UPS">بطارية UPS</option>
+  </optgroup>
+  <optgroup label="🔧 الأسلاك">
+    <option value="كابل شبكة">كابل شبكة</option>
+    <option value="كابل طاقة">كابل طاقة</option>
+    <option value="كونيكتر RJ45">كونيكتر RJ45</option>
+  </optgroup>
+  <option value="أخرى">أخرى</option>`;
+
+let deviceRowCount = 0;
+
+function addDeviceRow(device='', qty=1, spare=''){
+  deviceRowCount++;
+  const id = deviceRowCount;
+  const row = document.createElement('div');
+  row.id = `drow-${id}`;
+  row.style.cssText = 'display:grid;grid-template-columns:2fr 80px 2fr auto;gap:8px;align-items:center;margin-bottom:8px;background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px';
+  row.innerHTML = `
+    <select class="fi" id="d-device-${id}" style="font-size:13px">${DEVICE_OPTS}</select>
+    <input class="fi" id="d-qty-${id}" type="number" min="1" value="${qty}" style="font-size:13px;text-align:center" placeholder="عدد">
+    <input class="fi" id="d-spare-${id}" type="text" value="${spare}" style="font-size:13px" placeholder="المواصفات / قطعة الغيار...">
+    <button type="button" onclick="removeDeviceRow(${id})" style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;font-size:16px;color:#dc2626">✕</button>`;
+  document.getElementById('devices-list').appendChild(row);
+  if(device) document.getElementById(`d-device-${id}`).value = device;
+}
+
+function removeDeviceRow(id){
+  const row = document.getElementById(`drow-${id}`);
+  if(row) row.remove();
+  // Keep at least one row
+  if(document.getElementById('devices-list').children.length === 0) addDeviceRow();
+}
+
+function getDevices(){
+  const rows = document.querySelectorAll('[id^="drow-"]');
+  return Array.from(rows).map(r=>{
+    const id = r.id.replace('drow-','');
+    return {
+      device: document.getElementById(`d-device-${id}`)?.value||'',
+      qty: parseInt(document.getElementById(`d-qty-${id}`)?.value)||1,
+      spare: document.getElementById(`d-spare-${id}`)?.value.trim()||''
+    };
+  }).filter(d=>d.device);
+}
+
+function resetDeviceRows(devices){
+  deviceRowCount = 0;
+  document.getElementById('devices-list').innerHTML = '';
+  if(devices && devices.length > 0){
+    devices.forEach(d => addDeviceRow(d.device, d.qty, d.spare));
+  } else {
+    addDeviceRow();
+  }
+}
+
 // ── DISTRICTS ──
 function openDistrictModal(){
   document.getElementById('dist-name').value='';
