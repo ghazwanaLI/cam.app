@@ -582,9 +582,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
-</div><!-- /inv-center -->
-      </div><!-- /tab-inventory -->
-
       </div><!-- /tab-field -->
 
       <!-- CAMERAS TAB -->
@@ -639,7 +636,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 
       <!-- INVENTORY TAB -->
-      <div id="tab-inventory" style="display:none"><div style="max-width:1200px;margin:0 auto">
+      <div id="tab-inventory" style="display:none"><div style="max-width:1200px;margin:0 auto;padding:0">
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
@@ -1000,37 +997,64 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
 
         <!-- سجلات الاشتغال — 3 سجلات -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال (حتى 3 سجلات)</div>
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
             <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل 1</div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
               <div class="up-box" id="ub-maint-rep">
                 <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'maint_rep')">
                 <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
                 <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال</div>
+                <div class="up-lbl">سجل اشتغال المحطة</div>
                 <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
               </div>
             </div>
             <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل 2</div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
               <div class="up-box" id="ub-maint-rep2">
                 <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'maint_rep2')">
                 <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
                 <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال</div>
+                <div class="up-lbl">سجل اشتغال الصيانة</div>
                 <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
               </div>
             </div>
             <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل 3</div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
               <div class="up-box" id="ub-maint-rep3">
                 <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'maint_rep3')">
                 <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
                 <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال</div>
+                <div class="up-lbl">سجل إنجاز عمل</div>
                 <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- التكليف -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
+              <div class="up-box" id="ub-maint-tawkeef">
+                <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'maint_tawkeef')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">وثيقة التكليف</div>
+                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
+              <div class="up-box" id="ub-maint-tawkeef2">
+                <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'maint_tawkeef2')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">تكليف إضافي</div>
+                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
               </div>
             </div>
           </div>
@@ -1869,7 +1893,7 @@ async function saveMaint(){
     let mid;
     if(eid){await api('PUT',`/api/maintenance/${eid}`,body);mid=eid;}
     else{const d=await api('POST','/api/maintenance',body);mid=d.maintenance.id;}
-    for(const fkey of ['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_doc']){
+    for(const fkey of ['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2','maint_doc']){
       if(UF[fkey]){try{await api('POST',`/api/files/${fkey}_${mid}`,UF[fkey]);}catch(e){}}
     }
     toast('تم الحفظ ✅');closeModal('ov-maint');await loadMaintenance();loadDashboard();
@@ -2286,10 +2310,12 @@ function setBox(type,name){
   const boxMap={tour_img:'ub-tour',tour_rep:'ub-tour-rep',tour_doc:'ub-tour-doc',
     maint_img:'ub-maint-img',maint_img2:'ub-maint-img2',maint_img3:'ub-maint-img3',
     maint_rep:'ub-maint-rep',maint_rep2:'ub-maint-rep2',maint_rep3:'ub-maint-rep3',
+    maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc'};
   const statMap={tour_img:'us-tour_img',tour_rep:'us-tour_rep',tour_doc:'us-tour_doc',
     maint_img:'us-maint_img',maint_img2:'us-maint_img2',maint_img3:'us-maint_img3',
     maint_rep:'us-maint_rep',maint_rep2:'us-maint_rep2',maint_rep3:'us-maint_rep3',
+    maint_tawkeef:'us-maint_tawkeef',maint_tawkeef2:'us-maint_tawkeef2',
     maint_doc:'us-maint_doc'};
   const b=document.getElementById(boxMap[type]||'ub-'+type);
   const s=document.getElementById(statMap[type]||'us-'+type);
@@ -2300,6 +2326,7 @@ function rmFile(type,e){e.preventDefault();e.stopPropagation();UF[type]=null;
   const boxMap={tour_img:'ub-tour',tour_rep:'ub-tour-rep',tour_doc:'ub-tour-doc',
     maint_img:'ub-maint-img',maint_img2:'ub-maint-img2',maint_img3:'ub-maint-img3',
     maint_rep:'ub-maint-rep',maint_rep2:'ub-maint-rep2',maint_rep3:'ub-maint-rep3',
+    maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc'};
   const bid=boxMap[type]||'ub-'+type;
   const i=document.querySelector('#'+bid+' input');if(i)i.value='';setBox(type,null);}
@@ -2307,12 +2334,14 @@ function clearUploads(){UF={};
   ['ub-tour','ub-tour-rep','ub-tour-doc',
    'ub-maint-img','ub-maint-img2','ub-maint-img3',
    'ub-maint-rep','ub-maint-rep2','ub-maint-rep3',
+   'ub-maint-tawkeef','ub-maint-tawkeef2',
    'ub-maint-doc'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.classList.remove('hf');
   });
   ['us-tour_img','us-tour_rep','us-tour_doc',
    'us-maint_img','us-maint_img2','us-maint_img3',
    'us-maint_rep','us-maint_rep2','us-maint_rep3',
+   'us-maint_tawkeef','us-maint_tawkeef2',
    'us-maint_doc'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.textContent='صورة أو PDF';
   });
