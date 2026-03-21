@@ -2033,31 +2033,59 @@ async function loadDashboard(){
     // Stats: Gov vs Private camera breakdown
     const renderCamStats = (containerId, stations) => {
       const el = document.getElementById(containerId); if(!el)return;
-      if(stations.length===0){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--t3);font-size:13px">لا توجد محطات</div>';return;}
+      if(stations.length===0){el.innerHTML='<div style="text-align:center;padding:16px;color:var(--t3);font-size:13px">لا توجد محطات</div>';return;}
       const totalWork = stations.reduce((s,x)=>s+(x.cam_working||0),0);
       const totalBroke = stations.reduce((s,x)=>s+(x.cam_broken||0),0);
       const total = totalWork+totalBroke;
       const pct = total>0?Math.round(totalWork/total*100):0;
       const clr = containerId.includes('gov')?'#1d4ed8':'#d97706';
-      el.innerHTML = `
-        <div style="background:var(--bg2);border-radius:10px;padding:10px;border-right:4px solid ${clr}">
-          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">إجمالي المحطات</div>
-          <div style="font-size:22px;font-weight:900;color:${clr}">${stations.length}</div>
-        </div>
-        <div style="background:rgba(22,163,74,.06);border-radius:10px;padding:10px;border-right:4px solid #16a34a">
-          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">✅ تعمل</div>
-          <div style="font-size:22px;font-weight:900;color:#16a34a">${totalWork}</div>
-        </div>
-        <div style="background:rgba(220,38,38,.06);border-radius:10px;padding:10px;border-right:4px solid #dc2626">
-          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">❌ لا تعمل</div>
-          <div style="font-size:22px;font-weight:900;color:#dc2626">${totalBroke}</div>
-        </div>
-        <div style="background:var(--bg2);border-radius:10px;padding:10px">
-          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">نسبة التشغيل</div>
-          <div style="font-size:22px;font-weight:900;color:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}">${pct}%</div>
-          <div style="height:5px;background:var(--border);border-radius:3px;margin-top:5px;overflow:hidden">
-            <div style="height:100%;width:${pct}%;background:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'};border-radius:3px"></div>
+      const r=42; const circ=2*Math.PI*r;
+      const pctOffset=circ-(pct/100*circ);
+
+      el.innerHTML=`
+        <div style="display:flex;align-items:center;justify-content:space-around;padding:10px 8px;gap:8px;flex-wrap:wrap">
+
+          <!-- دائرة نسبة التشغيل -->
+          <div style="text-align:center">
+            <div style="position:relative;width:100px;height:100px">
+              <svg width="100" height="100" style="transform:rotate(-90deg)">
+                <circle cx="50" cy="50" r="${r}" fill="none" stroke="#f1f5f9" stroke-width="10"/>
+                <circle cx="50" cy="50" r="${r}" fill="none" stroke="${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}" stroke-width="10"
+                  stroke-linecap="round" stroke-dasharray="${circ.toFixed(1)}" stroke-dashoffset="${pctOffset.toFixed(1)}"
+                  style="transition:stroke-dashoffset 1.2s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:18px;font-weight:900;color:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}">${pct}%</div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--t3);margin-top:4px">نسبة التشغيل</div>
           </div>
+
+          <!-- الأرقام -->
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:10px;height:10px;border-radius:50%;background:${clr}"></div>
+              <div>
+                <div style="font-size:18px;font-weight:900;color:${clr}">${stations.length}</div>
+                <div style="font-size:10px;color:var(--t3)">محطة</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:10px;height:10px;border-radius:50%;background:#16a34a"></div>
+              <div>
+                <div style="font-size:18px;font-weight:900;color:#16a34a">${totalWork}</div>
+                <div style="font-size:10px;color:var(--t3)">✅ تعمل</div>
+              </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:10px;height:10px;border-radius:50%;background:#dc2626"></div>
+              <div>
+                <div style="font-size:18px;font-weight:900;color:#dc2626">${totalBroke}</div>
+                <div style="font-size:10px;color:var(--t3)">❌ لا تعمل</div>
+              </div>
+            </div>
+          </div>
+
         </div>`;
     };
     renderCamStats('gov-cams-stats', allStations.filter(s=>(s.type||'حكومية')==='حكومية'));
