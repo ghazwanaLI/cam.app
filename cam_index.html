@@ -500,12 +500,27 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <!-- Bottom: Stats + Delegates -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
 
-          <!-- District Camera Stats -->
-          <div class="section">
-            <div class="sec-hdr">
-              <div class="sec-title"><div class="sdot"></div>📊 إحصائيات الكاميرات بالقواطع</div>
+          <!-- Camera Stats Split -->
+          <div style="display:flex;flex-direction:column;gap:12px">
+
+            <!-- Government Stats -->
+            <div class="section">
+              <div class="sec-hdr">
+                <div class="sec-title"><div class="sdot" style="background:#1d4ed8"></div>🏛️ إحصائية الكاميرات الحكومية</div>
+                <button onclick="printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:var(--p1)">🖨️ تقرير</button>
+              </div>
+              <div id="gov-cams-stats" style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
             </div>
-            <div id="district-cams-breakdown" style="padding:12px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+
+            <!-- Private Stats -->
+            <div class="section">
+              <div class="sec-hdr">
+                <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 إحصائية الكاميرات الأهلية</div>
+                <button onclick="printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">🖨️ تقرير</button>
+              </div>
+              <div id="priv-cams-stats" style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+            </div>
+
           </div>
 
           <!-- Delegates Table -->
@@ -1863,31 +1878,38 @@ async function loadDashboard(){
       }
     }
 
-    // District breakdown
-    const distDiv=document.getElementById('district-cams-breakdown');
-    if(distDiv&&d.district_cams){
-      const dc=d.district_cams;
-      const districts=Object.keys(dc).filter(k=>dc[k].working>0||dc[k].broken>0);
-      if(districts.length>0){
-        distDiv.innerHTML=districts.map(dist=>{
-          const w=dc[dist].working||0,b=dc[dist].broken||0,total=w+b;
-          const pct=total>0?Math.round(w/total*100):0;
-          return `<div style="background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:10px;border-right:4px solid ${b>0?'#dc2626':'#16a34a'}">
-            <div style="font-weight:700;font-size:12px;color:var(--p1);margin-bottom:6px">📍 ${dist}</div>
-            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px">
-              <span style="color:var(--a3)">✅ ${w}</span>
-              <span style="color:var(--a2)">❌ ${b}</span>
-            </div>
-            <div style="height:5px;background:var(--border);border-radius:3px;overflow:hidden">
-              <div style="height:100%;width:${pct}%;background:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'};border-radius:3px"></div>
-            </div>
-            <div style="font-size:9px;color:var(--t3);margin-top:3px;text-align:center">${pct}% من ${total}</div>
-          </div>`;
-        }).join('');
-      }else{
-        distDiv.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--t3);font-size:12px">أضف كاميرات للمحطات لعرض الإحصائيات</div>';
-      }
-    }
+    // Stats: Gov vs Private camera breakdown
+    const renderCamStats = (containerId, stations) => {
+      const el = document.getElementById(containerId); if(!el)return;
+      if(stations.length===0){el.innerHTML='<div style="grid-column:1/-1;text-align:center;padding:16px;color:var(--t3);font-size:13px">لا توجد محطات</div>';return;}
+      const totalWork = stations.reduce((s,x)=>s+(x.cam_working||0),0);
+      const totalBroke = stations.reduce((s,x)=>s+(x.cam_broken||0),0);
+      const total = totalWork+totalBroke;
+      const pct = total>0?Math.round(totalWork/total*100):0;
+      const clr = containerId.includes('gov')?'#1d4ed8':'#d97706';
+      el.innerHTML = `
+        <div style="background:var(--bg2);border-radius:10px;padding:10px;border-right:4px solid ${clr}">
+          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">إجمالي المحطات</div>
+          <div style="font-size:22px;font-weight:900;color:${clr}">${stations.length}</div>
+        </div>
+        <div style="background:rgba(22,163,74,.06);border-radius:10px;padding:10px;border-right:4px solid #16a34a">
+          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">✅ تعمل</div>
+          <div style="font-size:22px;font-weight:900;color:#16a34a">${totalWork}</div>
+        </div>
+        <div style="background:rgba(220,38,38,.06);border-radius:10px;padding:10px;border-right:4px solid #dc2626">
+          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">❌ لا تعمل</div>
+          <div style="font-size:22px;font-weight:900;color:#dc2626">${totalBroke}</div>
+        </div>
+        <div style="background:var(--bg2);border-radius:10px;padding:10px">
+          <div style="font-size:12px;color:var(--t3);margin-bottom:4px">نسبة التشغيل</div>
+          <div style="font-size:22px;font-weight:900;color:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}">${pct}%</div>
+          <div style="height:5px;background:var(--border);border-radius:3px;margin-top:5px;overflow:hidden">
+            <div style="height:100%;width:${pct}%;background:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'};border-radius:3px"></div>
+          </div>
+        </div>`;
+    };
+    renderCamStats('gov-cams-stats', allStations.filter(s=>(s.type||'حكومية')==='حكومية'));
+    renderCamStats('priv-cams-stats', allStations.filter(s=>s.type==='أهلية'));
 
     // Delegates table
     const dt=document.getElementById('dash-delegates-tb');
@@ -2074,6 +2096,68 @@ function printPrivStation(id){
       </table>
     </div>`:''}
 
+    <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
+  </body></html>`);
+  win.document.close();
+}
+
+function printCamReport(type){
+  const isGov = type==='gov';
+  const stations = allStations.filter(s=>(s.type||'حكومية')===(isGov?'حكومية':'أهلية'));
+  const clr = isGov?'#1d4ed8':'#d97706';
+  const title = isGov?'🏛️ المحطات الحكومية':'🏪 المحطات الأهلية';
+  const totalWork=stations.reduce((s,x)=>s+(x.cam_working||0),0);
+  const totalBroke=stations.reduce((s,x)=>s+(x.cam_broken||0),0);
+  const total=totalWork+totalBroke;
+  const pct=total>0?Math.round(totalWork/total*100):0;
+
+  const win=window.open('','_blank','width=900,height=700');
+  win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box;}
+      body{font-family:'Cairo',sans-serif;padding:20px;background:#fff;font-size:13px;}
+      .header{background:linear-gradient(135deg,${clr},${clr}cc);color:#fff;padding:18px 22px;border-radius:12px;margin-bottom:18px}
+      .header h1{font-size:20px;font-weight:900}.header p{font-size:12px;opacity:.85;margin-top:4px}
+      .summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
+      .sum-card{background:#f8fafc;border-radius:10px;padding:12px;text-align:center;border-top:3px solid ${clr}}
+      .sum-card .val{font-size:26px;font-weight:900;color:${clr}}.sum-card .lbl{font-size:12px;color:#64748b;margin-top:4px}
+      table{width:100%;border-collapse:collapse;font-size:12px;margin-top:10px}
+      th{background:${clr};color:#fff;padding:9px;text-align:right;font-weight:700}
+      td{padding:8px;border-bottom:1px solid #f1f5f9}
+      tr:nth-child(even){background:#fafafa}
+      .ok{color:#16a34a;font-weight:700}.bad{color:#dc2626;font-weight:700}
+      .bar{height:6px;background:#e2e8f0;border-radius:3px;margin-top:4px;overflow:hidden}
+      .bar-fill{height:100%;border-radius:3px}
+      .print-btn{position:fixed;bottom:20px;left:20px;padding:10px 18px;background:${clr};color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:A4;margin:10mm}}
+    </style>
+  </head><body>
+    <div class="header">
+      <h1>${title} — تقرير إحصائي شامل</h1>
+      <p>تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA',{weekday:'long',year:'numeric',month:'long',day:'numeric'})}</p>
+    </div>
+    <div class="summary">
+      <div class="sum-card"><div class="val">${stations.length}</div><div class="lbl">إجمالي المحطات</div></div>
+      <div class="sum-card"><div class="val ok">${totalWork}</div><div class="lbl">كاميرا تعمل ✅</div></div>
+      <div class="sum-card"><div class="val bad">${totalBroke}</div><div class="lbl">كاميرا لا تعمل ❌</div></div>
+      <div class="sum-card"><div class="val" style="color:${pct>70?'#16a34a':pct>40?'#d97706':'#dc2626'}">${pct}%</div><div class="lbl">نسبة التشغيل</div></div>
+    </div>
+    <table>
+      <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th>✅ تعمل</th><th>❌ لا تعمل</th><th>الإجمالي</th><th>النسبة</th>${!isGov?'<th>منظومة ساندة</th>':''}</tr></thead>
+      <tbody>${stations.map((s,i)=>{
+        const w=s.cam_working||0,b=s.cam_broken||0,tot=w+b;
+        const p=tot>0?Math.round(w/tot*100):0;
+        return `<tr>
+          <td>${i+1}</td><td><strong>${s.name}</strong></td>
+          <td>${s.district||'—'}</td>
+          <td class="ok">${w}</td><td class="bad">${b}</td><td>${tot}</td>
+          <td><div>${p}%</div><div class="bar"><div class="bar-fill" style="width:${p}%;background:${p>70?'#16a34a':p>40?'#d97706':'#dc2626'}"></div></div></td>
+          ${!isGov?`<td>${s.sanda_cam_count?`📷${s.sanda_cam_count} | ${s.sanda_record_days||'—'}`:'—'}</td>`:''}
+        </tr>`;
+      }).join('')}</tbody>
+    </table>
     <button class="print-btn" onclick="window.print()">🖨️ طباعة</button>
   </body></html>`);
   win.document.close();
