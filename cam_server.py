@@ -242,6 +242,12 @@ class Handler(BaseHTTPRequestHandler):
                 circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district")==u["district"]]
             self.send_json({"ok":True,"circulars":list(reversed(circs))})
 
+        elif p=="/api/coding":
+            devices=db.get("coding",[])
+            if u["role"]!="admin" and u.get("district"):
+                devices=[d for d in devices if not d.get("district") or d.get("district")==u["district"]]
+            self.send_json({"ok":True,"devices":devices})
+
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
             if u["role"]!="admin" and u.get("district"): inv=[x for x in inv if x.get("district")==u["district"]]
