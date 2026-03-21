@@ -83,7 +83,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   display:flex!important;align-items:center;gap:2px;padding:0 16px;overflow-x:auto;
   scrollbar-width:none;flex-direction:row;width:100%;
 }
-.topbar-nav::-webkit-scrollbar{display:none;}
 .nav-item{
   display:flex;align-items:center;flex-direction:row;gap:6px;padding:10px 16px;
   cursor:pointer;transition:all .18s;color:#64748b;
@@ -306,37 +305,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
 .lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
 .lhint{text-align:center;font-size:11px;color:var(--t3);margin-top:16px;}
 
-/* ── MOBILE RESPONSIVE ── */
-@media(max-width:768px){
-  .topbar-nav{overflow-x:auto;-webkit-overflow-scrolling:touch;flex-wrap:nowrap;}
-  .nav-item{padding:10px 12px;font-size:14px;}
-  .main{margin-top:120px;padding:0 8px;}
-  .content{padding:10px 6px;}
-  .section{border-radius:12px;margin-bottom:12px;}
-  .modal{width:95vw!important;max-height:90vh;overflow-y:auto;}
-  .fgrid{grid-template-columns:1fr!important;}
-  .fg.full{grid-column:1!important;}
-  table{font-size:13px;}
-  th,td{padding:8px 8px!important;}
-  .btn{padding:10px 14px;font-size:14px;}
-  .btn-sm{padding:8px 12px;font-size:13px!important;}
-  .sec-hdr{flex-direction:column;align-items:flex-start;gap:10px;}
-  .sec-actions{width:100%;justify-content:flex-start;flex-wrap:wrap;}
-  .fi{font-size:15px;padding:12px 14px;}
-  .search-box input{font-size:14px;}
-  .up-box{min-height:80px;}
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  #circulars-grid > div{grid-template-columns:1fr!important;}
-  .pagination{flex-wrap:wrap;gap:4px;}
-  .tb-ico{width:32px;height:32px;font-size:16px;}
-  .su-av{width:28px;height:28px;font-size:11px;}
-}
-@media(max-width:480px){
-  .nav-item{padding:8px 10px;font-size:13px;}
   .nav-item .ni{font-size:13px;}
   .topbar-brand{gap:8px;}
   .tb-name{font-size:15px;}
-}
+
 
 
 </style>
@@ -947,7 +919,21 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-coding" placeholder="بحث برمز أو اسم..." oninput="filterCoding()"></div>
+              <div style="display:flex;gap:6px;align-items:center">
+                <div class="search-box" style="position:relative">
+                  <span class="si">🔍</span>
+                  <input type="text" id="sq-coding" placeholder="امسح الباركود أو ابحث..." oninput="filterCoding()" onkeydown="onScanKey(event)" autofocus style="min-width:220px">
+                </div>
+                <button class="btn btn-o btn-sm" onclick="clearScan()" id="scan-clear" style="display:none;color:#dc2626">✕ مسح</button>
+              </div>
+              <!-- بطاقة نتيجة المسح -->
+              <div id="scan-result-card" style="display:none;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:12px;padding:14px 18px;color:#fff;min-width:240px">
+                <div style="font-size:11px;opacity:.8;margin-bottom:4px">📡 نتيجة المسح</div>
+                <div id="src-code" style="font-size:17px;font-weight:900;letter-spacing:1px"></div>
+                <div id="src-location" style="font-size:12px;opacity:.85;margin-top:2px"></div>
+                <div id="src-station" style="font-size:12px;opacity:.85"></div>
+                <div id="src-status" style="margin-top:6px"></div>
+              </div>
               <select class="fi btn-sm" id="f-coding-district" onchange="filterCoding()" style="width:130px">
                 <option value="">كل القواطع</option>
               </select>
@@ -960,6 +946,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="هارد ديسك HDD">هارد ديسك</option>
                 <option value="أخرى">أخرى</option>
               </select>
+              <button class="btn btn-o btn-sm" onclick="exportCodingExcel()">📊 Excel</button>
               <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
@@ -4192,14 +4179,8 @@ function printVoidLabel(id){
   const hddLine=hdds.map((h,i)=>`HDD${i+1}: ${h.num||'—'}${h.serial?' | SN:'+h.serial:''}`).join('\n');
   const swLine=sws.map((s,i)=>`SW${i+1}: ${s.ports||'—'}-port${s.serial?' | SN:'+s.serial:''}`).join('\n');
   const camLine=d.cam_total?`الكاميرات: ${d.cam_total} (تعمل:${d.cam_working||0} - معطل:${d.cam_broken||0})`:'';
-  const qr=[
-    `الرمز: ${code}`,
-    `المحطة: ${station}`,
-    `القاطع: ${d.district||'—'}`,
-    `الموقع: ${d.location||'—'}`,
-    `التركيب: ${d.install_date||'—'}`,
-    nvrLine, hddLine, swLine, camLine
-  ].filter(Boolean).join('\n');
+  const siteUrl=window.location.origin;
+  const qr=siteUrl+'/scan/'+code;
   const S='script';
   const w=window.open('','_blank','width=520,height=500');
   w.document.write(
@@ -4276,11 +4257,133 @@ function printVoidLabel(id){
     +'}'
     +'window.onload=function(){applySettings();};'
     +'</'+(S)+'>'
+    +'<'+(S)+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+(S)+'>'
+    +'<'+(S)+'>'
+    +'function saveJPG(){html2canvas(document.querySelector(".lbl"),{scale:5,backgroundColor:"#ffffff"}).then(function(c){var a=document.createElement("a");a.download="label_'+code+'.jpg";a.href=c.toDataURL("image/jpeg",0.98);a.click();});};'
+    +'</'+(S)+'>'
     +'</body></html>'
   );
   w.document.close();
 }
 
+
+
+function exportCodingExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  const rows=[['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR','HDD','Switch','كاميرات تعمل','كاميرات معطلة','إجمالي الكاميرات','تاريخ التركيب','الحالة','ملاحظات']];
+  allCoding.forEach(d=>{
+    const nvrs=(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(' | ');
+    const hdds=(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(' | ');
+    const sws=(d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(' | ');
+    rows.push([d.code,d.location||'',d.district||'',d.station_name||'',nvrs,hdds,sws,d.cam_working||0,d.cam_broken||0,d.cam_total||0,d.install_date||'',d.status||'',d.notes||'']);
+  });
+  const bom='\uFEFF';
+  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='ترميز_الأجهزة_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click(); toast('تم التصدير ✅');
+}
+
+let scanBuffer=''; let scanTimer=null;
+
+function onScanKey(e){
+  // Barcode reader sends chars fast then Enter
+  if(e.key==='Enter'){
+    const val=document.getElementById('sq-coding').value.trim();
+    if(val) showScanResult(val);
+    e.preventDefault();
+  }
+}
+
+function showScanResult(code){
+  // Log scan to server
+  api('POST','/api/scan',{code, scanned_by:CU?.username||'', fullname:CU?.fullname||''}).catch(e=>{});
+  
+  // Find device
+  const d=allCoding.find(x=>x.code.toLowerCase()===code.toLowerCase());
+  const card=document.getElementById('scan-result-card');
+  const clearBtn=document.getElementById('scan-clear');
+  
+  if(!d){
+    document.getElementById('src-code').textContent='❌ '+code;
+    document.getElementById('src-location').textContent='جهاز غير موجود في قاعدة البيانات';
+    document.getElementById('src-station').textContent='';
+    document.getElementById('src-status').innerHTML='';
+    card.style.background='linear-gradient(135deg,#dc2626,#ef4444)';
+  } else {
+    const nvrs=(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||'—'}`).join(' | ');
+    const hdds=(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||'—'}`).join(' | ');
+    document.getElementById('src-code').textContent='✅ '+d.code;
+    document.getElementById('src-location').textContent='📌 '+( d.location||'—');
+    document.getElementById('src-station').textContent='⛽ '+(d.station_name||'—')+' | 📍 '+(d.district||'—');
+    document.getElementById('src-status').innerHTML=`
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px;font-size:11px">
+        ${nvrs?`<span style="background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px">${nvrs}</span>`:''}
+        ${hdds?`<span style="background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px">${hdds}</span>`:''}
+        <span style="background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px">📷 ${d.cam_total||0} كاميرا</span>
+        <span style="background:rgba(255,255,255,.2);border-radius:6px;padding:2px 8px">📅 ${d.install_date||'—'}</span>
+      </div>`;
+    card.style.background='linear-gradient(135deg,#1d4ed8,#3b82f6)';
+    // Highlight the device in grid
+    filterCoding();
+    document.getElementById('sq-coding').value=code;
+  }
+  card.style.display='block';
+  if(clearBtn) clearBtn.style.display='inline-flex';
+}
+
+function clearScan(){
+  document.getElementById('sq-coding').value='';
+  document.getElementById('scan-result-card').style.display='none';
+  document.getElementById('scan-clear').style.display='none';
+  filterCoding();
+  document.getElementById('sq-coding').focus();
+}
+
+async function exportCodingExcel_old(){
+  const rows=[['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR','HDD','Switch','كاميرات','تاريخ التركيب','الحالة','ملاحظات']];
+  allCoding.forEach(d=>{
+    const nvrs=(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(' | ');
+    const hdds=(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(' | ');
+    const sws=(d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(' | ');
+    rows.push([d.code,d.location||'',d.district||'',d.station_name||'',nvrs,hdds,sws,d.cam_total||0,d.install_date||'',d.status||'',d.notes||'']);
+  });
+  let csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const bom='\uFEFF';
+  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='ترميز_الأجهزة.csv';
+  a.click();
+  toast('تم تصدير البيانات ✅');
+}
+
+async function showScanLogs(code){
+  try{
+    const d=await api('GET',`/api/scan_logs?code=${code}`);
+    const logs=d.logs||[];
+    const modal=document.createElement('div');
+    modal.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9999;display:flex;align-items:center;justify-content:center';
+    modal.onclick=e=>{if(e.target===modal)modal.remove();};
+    modal.innerHTML=`<div style="background:#fff;border-radius:16px;padding:20px;width:90%;max-width:500px;max-height:80vh;overflow-y:auto">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+        <div style="font-size:15px;font-weight:800;color:#7c3aed">📡 سجل مسح: ${code}</div>
+        <button onclick="this.closest('div[style*=fixed]').remove()" style="background:none;border:none;font-size:20px;cursor:pointer">✕</button>
+      </div>
+      ${logs.length===0
+        ?'<div style="text-align:center;padding:20px;color:var(--t3)">لم يُمسح هذا الجهاز بعد</div>'
+        :logs.map(l=>`<div style="border-bottom:1px solid var(--border);padding:8px 0;font-size:13px">
+          <div style="display:flex;justify-content:space-between">
+            <span style="font-weight:700;color:${l.found?'#16a34a':'#dc2626'}">${l.found?'✅ موجود':'❌ غير موجود'}</span>
+            <span style="color:var(--t3);font-size:11px">${l.scanned_at}</span>
+          </div>
+          <div style="color:var(--t2);font-size:11px;margin-top:2px">📍 ${l.station||'—'} | IP: ${l.ip||'—'}</div>
+        </div>`).join('')}
+    </div>`;
+    document.body.appendChild(modal);
+  }catch(e){toast('خطأ في تحميل السجل','err');}
+}
 
 // ── DEVICE CODING ──
 let allCoding = [];
@@ -4349,7 +4452,7 @@ function renderCoding(list){
           <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
           <button onclick="printVoidLabel(${d.id})" style="background:#dc2626;color:#fff;border:none;border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🏷️ VOID</button>
           <button class="btn btn-o btn-sm" onclick="printDeviceCard(${d.id})" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">🖨️</button>
-          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button>`:''}
+          ${CU&&CU.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button><button class="btn btn-o btn-sm" onclick="showScanLogs('${d.code}')" style="font-size:11px;color:#7c3aed;border-color:rgba(124,58,237,.3)" title="سجل المسح">📡</button>`:''}
         </div>
       </div>
     </div>`;
