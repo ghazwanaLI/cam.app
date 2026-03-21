@@ -408,7 +408,7 @@ class Handler(BaseHTTPRequestHandler):
         elif p.startswith("/api/coding/"):
             cid=int(p.split("/")[-1]); idx=next((i for i,d in enumerate(db.get("coding",[])) if d["id"]==cid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            for f in ["code","device_type","model","district","station_id","station_name","location","install_date","status","notes"]:
+            for f in ["code","device_type","model","district","station_id","station_name","location","install_date","nvrs","hdds","switches","cam_total","cam_working","cam_broken","status","notes"]:
                 if f in body: db["coding"][idx][f]=body[f]
             save_db(db); self.send_json({"ok":True})
 
@@ -435,6 +435,8 @@ class Handler(BaseHTTPRequestHandler):
                 "model":body.get("model",""),"district":body.get("district",""),
                 "station_id":body.get("station_id"),"station_name":body.get("station_name",""),
                 "location":body.get("location",""),"install_date":body.get("install_date",""),
+                "nvrs":body.get("nvrs",[]),"hdds":body.get("hdds",[]),"switches":body.get("switches",[]),
+                "cam_total":body.get("cam_total",0),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),
                 "status":body.get("status","يعمل"),"notes":body.get("notes",""),
                 "added_by":u["fullname"],"created_at":datetime.now().strftime("%Y-%m-%d")
             }
