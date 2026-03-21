@@ -4187,7 +4187,19 @@ function printVoidLabel(id){
   const code=d.code;
   const station=d.station_name||'—';
   const location=d.location||'—';
-  const qr=code+'|'+station+'|'+(d.district||'');
+  const nvrs=d.nvrs||[]; const hdds=d.hdds||[]; const sws=d.switches||[];
+  const nvrLine=nvrs.map((n,i)=>`NVR${i+1}: ${n.num||'—'}${n.serial?' | SN:'+n.serial:''}`).join('\n');
+  const hddLine=hdds.map((h,i)=>`HDD${i+1}: ${h.num||'—'}${h.serial?' | SN:'+h.serial:''}`).join('\n');
+  const swLine=sws.map((s,i)=>`SW${i+1}: ${s.ports||'—'}-port${s.serial?' | SN:'+s.serial:''}`).join('\n');
+  const camLine=d.cam_total?`الكاميرات: ${d.cam_total} (تعمل:${d.cam_working||0} - معطل:${d.cam_broken||0})`:'';
+  const qr=[
+    `الرمز: ${code}`,
+    `المحطة: ${station}`,
+    `القاطع: ${d.district||'—'}`,
+    `الموقع: ${d.location||'—'}`,
+    `التركيب: ${d.install_date||'—'}`,
+    nvrLine, hddLine, swLine, camLine
+  ].filter(Boolean).join('\n');
   const S='script';
   const w=window.open('','_blank','width=520,height=500');
   w.document.write(
