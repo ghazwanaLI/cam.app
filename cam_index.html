@@ -4432,79 +4432,52 @@ function printDeviceCard(id){
 function printVoidLabel(id){
   const d=allCoding.find(x=>x.id===id); if(!d)return;
   const nvrs=d.nvrs||[]; const hdds=d.hdds||[]; const sws=d.switches||[];
-  // Build label info lines
-  const infoLines=[];
-  if(nvrs.length>0) nvrs.forEach((n,i)=>infoLines.push(`NVR${i+1}: ${n.num||'—'}${n.serial?' | S/N:'+n.serial:''}`));
-  if(hdds.length>0) hdds.forEach((h,i)=>infoLines.push(`HDD${i+1}: ${h.num||'—'}${h.serial?' | S/N:'+h.serial:''}`));
-  if(sws.length>0) sws.forEach((s,i)=>infoLines.push(`SW${i+1}: ${s.ports||'—'}-port${s.serial?' | S/N:'+s.serial:''}`));
-  if(d.cam_total) infoLines.push(`كاميرات: ${d.cam_total} (✅${d.cam_working||0} ❌${d.cam_broken||0})`);
+  const nvrTxt=nvrs.map((n,i)=>`NVR${i+1}: ${n.num||'—'}${n.serial?' SN:'+n.serial:''}`).join(' | ');
+  const hddTxt=hdds.map((h,i)=>`HDD${i+1}: ${h.num||'—'}${h.serial?' SN:'+h.serial:''}`).join(' | ');
+  const swTxt=sws.map((s,i)=>`SW${i+1}: ${s.ports||'—'}p${s.serial?' SN:'+s.serial:''}`).join(' | ');
+  const camTxt=d.cam_total?`CAM: ${d.cam_total} (✅${d.cam_working||0} ❌${d.cam_broken||0})`:'';
+  const details=[nvrTxt,hddTxt,swTxt,camTxt].filter(Boolean).join('  |  ');
 
-  let voidTxt=''; for(let i=0;i<400;i++) voidTxt+='VOID ';
-  const qrData=`${d.code}|${d.location||''}|${d.station_name||''}|${d.district||''}`;
-  const win=window.open('','_blank','width=550,height=420');
-  win.document.write(`<!DOCTYPE html><html><head>
-    <meta charset="UTF-8">
-    <scr'+'ipt src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/scr'+'ipt>\n    <scr'+'ipt src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/scr'+'ipt>\n    <style>
-      *{margin:0;padding:0;box-sizing:border-box}
-      body{font-family:Arial,sans-serif;display:flex;justify-content:center;padding:2mm;background:#f5f5f5}
-      .wrap{position:relative;width:76mm;height:38mm;border:1px solid #555;overflow:hidden;background:#fff}
-      .void-bg{position:absolute;inset:0;font-size:8px;font-weight:900;color:#dc2626;opacity:0.07;letter-spacing:4px;line-height:1.6;padding:1mm;word-break:break-all;z-index:0;font-family:monospace}
-      .content{position:relative;z-index:1;width:100%;height:100%;display:flex;flex-direction:column}
-      .hdr{background:#1d4ed8;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:1mm 2.5mm}
-      .hdr-main{font-size:7px;font-weight:bold}
-      .hdr-mid{font-size:5px;opacity:.65;letter-spacing:2px;font-family:monospace}
-      .body{flex:1;display:flex;padding:1.5mm;gap:2mm;overflow:hidden}
-      .left-col{display:flex;flex-direction:column;gap:1mm;align-items:center;flex-shrink:0}
-      .mid-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:1mm}
-      .right-col{width:22mm;font-size:5.5px;color:#1e293b;display:flex;flex-direction:column;gap:0.8mm;justify-content:center;border-right:0.5px solid #e2e8f0;padding-right:1.5mm;overflow:hidden}
-      .right-col .row{border-bottom:0.3px solid #f1f5f9;padding-bottom:0.5mm}
-      .location-txt{font-size:6px;font-weight:bold;color:#0369a1;text-align:center}
-      .device-txt{font-size:7px;font-weight:bold;color:#1d4ed8;text-align:center}
-      .code-txt{font-size:7px;font-family:monospace;letter-spacing:1px;text-align:center;font-weight:bold}
-      .ftr{background:#dc262610;border-top:0.5px solid #dc262640;text-align:center;padding:0.4mm}
-      .ftr span{font-size:5px;color:#dc2626;font-weight:900;letter-spacing:4px;font-family:monospace}
-      .print-btn{margin:6px 0 0;padding:5px 16px;cursor:pointer;font-size:13px}
-      @media print{@page{size:80mm 40mm;margin:0}.print-btn{display:none}body{padding:1mm;background:#fff}}
-    </style>
-  </head><body>
-    <div>
-      <div class="wrap">
-        <div class="void-bg">${voidTxt}</div>
-        <div class="content">
-          <div class="hdr">
-            <span class="hdr-main">${d.district||'—'}</span>
-            <span class="hdr-mid">VOID VOID VOID</span>
-            <span class="hdr-main">${d.station_name||'—'}</span>
-          </div>
-          <div class="body">
-            <div class="left-col">
-              <div id="qr-lbl"></div>
-            </div>
-            <div class="mid-col">
-              <div class="location-txt">${d.location||'—'}</div>
-              <svg id="bc-lbl" style="width:100%;max-height:16mm"></svg>
-              <div class="code-txt">${d.code}</div>
-            </div>
-            ${infoLines.length>0?`<div class="right-col">${infoLines.slice(0,5).map(l=>`<div class="row">${l}</div>`).join('')}</div>`:''}
-          </div>
-          <div class="ftr"><span>VOID • VOID • VOID • VOID • VOID • VOID • VOID</span></div>
-        </div>
-      </div>
-      <button class="print-btn" onclick="window.print()">🖨️ طباعة VOID 80×40</button>
-    </div>
-    <scr'+'ipt>
-      new QRCode(document.getElementById('qr-lbl'),{
-        text:'${qrData}',width:68,height:68,
-        colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M
-      });
-      try{JsBarcode('#bc-lbl','${d.code}',{
-        format:'CODE128',width:1.5,height:38,displayValue:false,
-        margin:1,background:'transparent',lineColor:'#000'
-      });}catch(e){}
-    <\/script>
-  </body></html>`);
-  win.document.close();
+  const html=`<!DOCTYPE html><html><head>
+<meta charset="UTF-8">
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></sc`+`ript>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:Arial,sans-serif;background:#fff;display:flex;flex-direction:column;align-items:center;padding:3mm}
+.lbl{width:76mm;height:38mm;border:1px solid #000;padding:2mm;display:flex;flex-direction:column;gap:0.8mm;overflow:hidden}
+.row{display:flex;align-items:center;gap:2mm;font-size:7px}
+b{font-weight:bold}
+hr{border:none;border-top:0.5px solid #aaa;margin:0.3mm 0}
+.details{font-size:6px;word-break:break-word;line-height:1.5}
+.print-btn{margin-top:6px;padding:6px 20px;cursor:pointer;font-size:13px}
+@media print{@page{size:80mm 40mm;margin:0}.print-btn{display:none}body{padding:1mm}}
+</style></head><body>
+<div class="lbl">
+  <div class="row"><b>الرمز:</b>&nbsp;${d.code}<span style="flex:1"></span><span style="font-size:6px">${d.install_date||''}</span></div>
+  <div class="row"><b>الموقع:</b>&nbsp;${d.location||'—'}</div>
+  <div class="row"><b>القاطع:</b>&nbsp;${d.district||'—'}<span style="flex:1"></span><b>المحطة:</b>&nbsp;${d.station_name||'—'}</div>
+  <hr>
+  <div class="row details">${details||'—'}</div>
+  <hr>
+  <svg id="bc" style="width:100%;flex:1"></svg>
+</div>
+<button class="print-btn" onclick="window.print()">طباعة 80×40</button>
+<sc`+`ript>
+window.onload=function(){
+  JsBarcode("#bc","${d.code}",{
+    format:"CODE128",width:2.2,height:40,
+    displayValue:true,fontSize:9,
+    margin:1,background:"transparent",lineColor:"#000"
+  });
+};
+</sc`+`ript>
+</body></html>`;
+
+  const blob=new Blob([html],{type:'text/html'});
+  const url=URL.createObjectURL(blob);
+  window.open(url,'_blank','width=500,height=380');
 }
+
 function printCodingList(){
   const f=allCoding.filter(d=>CU?.role==='admin'||(CU?.district&&d.district===CU.district));
   if(f.length===0){toast('لا توجد أجهزة','err');return;}
