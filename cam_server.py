@@ -150,6 +150,7 @@ def default_db():
         "inventory":[],
         "next_inventory_id":1,
         "circulars":[],
+        "circular_reads":[],
         "next_circular_id":1,
         "custom_districts":[],
     }
@@ -227,6 +228,11 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
+        elif "/api/circulars/" in p and p.endswith("/reads") and self.method_override=="GET":
+            cid=int(p.split("/")[3])
+            reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
+            self.send_json({"ok":True,"reads":reads})
+
         elif p=="/api/circulars":
             circs=db.get("circulars",[])
             # Filter by district for non-admin
@@ -259,6 +265,11 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             qs=parse_qs(urlparse(self.path).query)
             self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
+        elif "/api/circulars/" in p and p.endswith("/reads") and self.method_override=="GET":
+            cid=int(p.split("/")[3])
+            reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
+            self.send_json({"ok":True,"reads":reads})
+
         elif p=="/api/circulars":
             circs=db.get("circulars",[])
             # Filter by district for non-admin
@@ -391,6 +402,20 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error":"القاطع موجود مسبقاً"},400); return
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
+
+        elif "/api/circulars/" in p and p.endswith("/read"):
+            cid=int(p.split("/")[3])
+            if "circular_reads" not in db: db["circular_reads"]=[]
+            # Remove old read by same user for same circ
+            db["circular_reads"]=[r for r in db["circular_reads"] if not(r.get("circ_id")==cid and r.get("user_id")==u["id"])]
+            db["circular_reads"].append({
+                "circ_id":cid,"user_id":u["id"],
+                "username":body.get("username",u["username"]),
+                "fullname":body.get("fullname",u["fullname"]),
+                "district":body.get("district",u.get("district","")),
+                "read_at":body.get("read_at",datetime.now().strftime("%Y/%m/%d %H:%M"))
+            })
+            save_db(db); self.send_json({"ok":True})
 
         elif p=="/api/circulars":
             if u["role"]!="admin": self.send_json({"error":"المدير فقط يستطيع نشر التعاميم"},403); return
