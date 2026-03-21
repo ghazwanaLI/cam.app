@@ -1663,61 +1663,91 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- CODING MODAL -->
 <div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
-  <div class="modal" style="width:520px">
-    <div class="m-title">🏷️ <span id="coding-ttl">إضافة جهاز مرمّز</span></div>
+  <div class="modal" style="width:640px;max-height:90vh;overflow-y:auto">
+    <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
     <input type="hidden" id="coding-eid">
     <div class="fgrid">
-      <div class="fg full"><label class="fl">رقم الترميز / الرمز الفريد *</label>
-        <div style="display:flex;gap:8px">
-          <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-001، DVR-TK-002...">
-          <button type="button" onclick="genCode()" class="btn btn-o" style="white-space:nowrap;min-width:100px">⚡ توليد تلقائي</button>
+
+      <!-- معلومات الموقع -->
+      <div style="grid-column:1/-1;background:rgba(8,145,178,.06);border:1.5px solid rgba(8,145,178,.25);border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:800;color:#0891b2;margin-bottom:10px">📍 معلومات الموقع</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><label class="fl">رقم الموقع *</label>
+            <input class="fi" id="coding-code" type="text" placeholder="مثال: LOC-001، TK-CAM-05...">
+          </div>
+          <div><label class="fl">اسم الموقع *</label>
+            <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة الرئيسية">
+          </div>
+          <div><label class="fl">القاطع</label>
+            <select class="fi" id="coding-district" onchange="filterCodingStations()">
+              <option value="">— اختر القاطع —</option>
+            </select>
+          </div>
+          <div><label class="fl">المحطة</label>
+            <select class="fi" id="coding-station">
+              <option value="">— اختر المحطة —</option>
+            </select>
+          </div>
+          <div><label class="fl">تاريخ التركيب</label>
+            <input class="fi" id="coding-install-date" type="date">
+          </div>
+          <div><label class="fl">الحالة العامة</label>
+            <select class="fi" id="coding-status">
+              <option value="يعمل">✅ يعمل</option>
+              <option value="معطل">❌ معطل</option>
+              <option value="صيانة">🔧 تحت الصيانة</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="fg"><label class="fl">نوع الجهاز *</label>
-        <select class="fi" id="coding-device-type">
-          <optgroup label="📹 أجهزة التسجيل">
-            <option value="DVR/NVR">DVR/NVR</option>
-            <option value="هارد ديسك HDD">هارد ديسك HDD</option>
-          </optgroup>
-          <optgroup label="📷 الكاميرات">
-            <option value="كاميرا داخلية">كاميرا داخلية</option>
-            <option value="كاميرا خارجية">كاميرا خارجية</option>
-            <option value="كاميرا PTZ">كاميرا PTZ</option>
-          </optgroup>
-          <optgroup label="🔌 الشبكة والطاقة">
-            <option value="سويج POE">سويج POE</option>
-            <option value="UPS عاكس">UPS عاكس</option>
-            <option value="بطارية UPS">بطارية UPS</option>
-          </optgroup>
-          <option value="أخرى">أخرى</option>
-        </select>
+
+      <!-- NVR/DVR -->
+      <div style="grid-column:1/-1;background:rgba(29,78,216,.04);border:1.5px solid rgba(29,78,216,.2);border-radius:12px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
+          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm" style="font-size:12px">➕ إضافة</button>
+        </div>
+        <div id="nvr-rows"></div>
       </div>
-      <div class="fg"><label class="fl">الموديل / المواصفات</label>
-        <input class="fi" id="coding-model" type="text" placeholder="مثال: Hikvision DS-7208..."></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="coding-district" onchange="filterCodingStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
+
+      <!-- HDD -->
+      <div style="grid-column:1/-1;background:rgba(16,185,129,.04);border:1.5px solid rgba(16,185,129,.2);border-radius:12px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
+          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm" style="font-size:12px">➕ إضافة</button>
+        </div>
+        <div id="hdd-rows"></div>
       </div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="coding-station">
-          <option value="">— اختر المحطة —</option>
-        </select>
+
+      <!-- Switch POE -->
+      <div style="grid-column:1/-1;background:rgba(124,58,237,.04);border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#7c3aed">🔌 سويجات Switch POE</div>
+          <button type="button" onclick="addSwitchRow()" class="btn btn-o btn-sm" style="font-size:12px">➕ إضافة</button>
+        </div>
+        <div id="switch-rows"></div>
       </div>
-      <div class="fg"><label class="fl">الموقع داخل المحطة</label>
-        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة، الطابق الأول..."></div>
-      <div class="fg"><label class="fl">تاريخ التركيب</label>
-        <input class="fi" id="coding-install-date" type="date"></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="coding-status">
-          <option value="يعمل">✅ يعمل</option>
-          <option value="معطل">❌ معطل</option>
-          <option value="صيانة">🔧 تحت الصيانة</option>
-          <option value="مستبدل">🔄 تم استبداله</option>
-        </select>
+
+      <!-- عدد الكاميرات -->
+      <div style="grid-column:1/-1;background:rgba(245,158,11,.04);border:1.5px solid rgba(245,158,11,.25);border-radius:12px;padding:14px">
+        <div style="font-size:13px;font-weight:800;color:#d97706;margin-bottom:10px">📷 الكاميرات</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div><label class="fl">إجمالي الكاميرات</label>
+            <input class="fi" id="coding-cam-total" type="number" min="0" value="0">
+          </div>
+          <div><label class="fl">كاميرات تعمل</label>
+            <input class="fi" id="coding-cam-working" type="number" min="0" value="0">
+          </div>
+          <div><label class="fl">كاميرات معطلة</label>
+            <input class="fi" id="coding-cam-broken" type="number" min="0" value="0">
+          </div>
+        </div>
       </div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات إضافية..."></div>
+
+      <div style="grid-column:1/-1"><label class="fl">ملاحظات</label>
+        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات إضافية...">
+      </div>
+
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
@@ -4073,6 +4103,79 @@ function resetDeviceRows(devices){
 }
 
 
+
+// ── Dynamic rows for NVR/HDD/Switch ──
+let nvrCount=0, hddCount=0, switchCount=0;
+
+function addNvrRow(num='', serial=''){
+  nvrCount++;
+  const id=nvrCount;
+  const row=document.createElement('div');
+  row.id=`nvr-row-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px';
+  row.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:6px">NVR ${id}</div>
+    <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
+    <input class="fi" id="nvr-serial-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px">
+    <button type="button" onclick="document.getElementById('nvr-row-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('nvr-rows').appendChild(row);
+}
+
+function addHddRow(num='', serial=''){
+  hddCount++;
+  const id=hddCount;
+  const row=document.createElement('div');
+  row.id=`hdd-row-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px';
+  row.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:6px">HDD ${id}</div>
+    <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
+    <input class="fi" id="hdd-serial-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px">
+    <button type="button" onclick="document.getElementById('hdd-row-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('hdd-rows').appendChild(row);
+}
+
+function addSwitchRow(ports='', serial=''){
+  switchCount++;
+  const id=switchCount;
+  const row=document.createElement('div');
+  row.id=`switch-row-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:6px';
+  row.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:#7c3aed;text-align:center;background:#f5f3ff;border-radius:8px;padding:6px">SW ${id}</div>
+    <input class="fi" id="sw-ports-${id}" type="text" value="${ports}" placeholder="عدد المنافذ (8/16/24)" style="font-size:13px">
+    <input class="fi" id="sw-serial-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px">
+    <button type="button" onclick="document.getElementById('switch-row-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('switch-rows').appendChild(row);
+}
+
+function getNvrData(){
+  return Array.from(document.querySelectorAll('[id^="nvr-row-"]')).map(r=>{
+    const id=r.id.replace('nvr-row-','');
+    return {num:document.getElementById(`nvr-num-${id}`)?.value||'',serial:document.getElementById(`nvr-serial-${id}`)?.value||''};
+  }).filter(x=>x.num||x.serial);
+}
+function getHddData(){
+  return Array.from(document.querySelectorAll('[id^="hdd-row-"]')).map(r=>{
+    const id=r.id.replace('hdd-row-','');
+    return {num:document.getElementById(`hdd-num-${id}`)?.value||'',serial:document.getElementById(`hdd-serial-${id}`)?.value||''};
+  }).filter(x=>x.num||x.serial);
+}
+function getSwitchData(){
+  return Array.from(document.querySelectorAll('[id^="switch-row-"]')).map(r=>{
+    const id=r.id.replace('switch-row-','');
+    return {ports:document.getElementById(`sw-ports-${id}`)?.value||'',serial:document.getElementById(`sw-serial-${id}`)?.value||''};
+  }).filter(x=>x.ports||x.serial);
+}
+
+function resetCodingRows(nvrs,hdds,switches){
+  nvrCount=0;hddCount=0;switchCount=0;
+  ['nvr-rows','hdd-rows','switch-rows'].forEach(id=>{const el=document.getElementById(id);if(el)el.innerHTML='';});
+  if(nvrs&&nvrs.length>0) nvrs.forEach(n=>addNvrRow(n.num,n.serial)); else addNvrRow();
+  if(hdds&&hdds.length>0) hdds.forEach(h=>addHddRow(h.num,h.serial)); else addHddRow();
+  if(switches&&switches.length>0) switches.forEach(s=>addSwitchRow(s.ports,s.serial)); else addSwitchRow();
+}
+
 // ── DEVICE CODING ──
 let allCoding = [];
 
@@ -4162,8 +4265,9 @@ function filterCodingStations(){
 function openCodingModal(){
   document.getElementById('coding-ttl').textContent='إضافة جهاز مرمّز';
   document.getElementById('coding-eid').value='';
-  ['coding-code','coding-model','coding-location','coding-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('coding-device-type').value='DVR/NVR';
+  ['coding-code','coding-location','coding-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['coding-cam-total','coding-cam-working','coding-cam-broken'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+  resetCodingRows([],[],[]);
   document.getElementById('coding-status').value='يعمل';
   document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
   // Populate district
@@ -4184,7 +4288,10 @@ function editCoding(id){
   document.getElementById('coding-model').value=d.model||'';
   document.getElementById('coding-location').value=d.location||'';
   document.getElementById('coding-notes').value=d.notes||'';
-  document.getElementById('coding-device-type').value=d.device_type||'DVR/NVR';
+  const cct=document.getElementById('coding-cam-total');if(cct)cct.value=d.cam_total||0;
+  const ccw=document.getElementById('coding-cam-working');if(ccw)ccw.value=d.cam_working||0;
+  const ccb=document.getElementById('coding-cam-broken');if(ccb)ccb.value=d.cam_broken||0;
+  resetCodingRows(d.nvrs||[],d.hdds||[],d.switches||[]);
   document.getElementById('coding-status').value=d.status||'يعمل';
   document.getElementById('coding-install-date').value=d.install_date||'';
   const ds=document.getElementById('coding-district');
