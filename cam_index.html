@@ -1416,10 +1416,48 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </select>
       </div>
       <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" id="st-type">
+        <select class="fi" id="st-type" onchange="toggleSandaField()">
           <option value="حكومية">حكومية</option>
           <option value="أهلية">أهلية</option>
         </select>
+      </div>
+      <!-- منظومة ساندة - تظهر عند اختيار أهلية -->
+      <div class="fg full" id="sanda-row" style="display:none;border:1.5px solid rgba(245,158,11,.35);border-radius:12px;padding:14px;background:rgba(245,158,11,.04)">
+        <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px">⚙️ منظومة كاميرات ساندة</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fl">📷 عدد الكاميرات</label>
+            <input class="fi" id="st-sanda-cam-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">🔍 نوع الكاميرات</label>
+            <input class="fi" id="st-sanda-cam-type" type="text" placeholder="مثال: داخلية 2MP...">
+          </div>
+          <div>
+            <label class="fl">💾 عدد الهاردات</label>
+            <input class="fi" id="st-sanda-hdd-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">💽 حجم الهارد</label>
+            <input class="fi" id="st-sanda-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
+            <select class="fi" id="st-sanda-record-days">
+              <option value="">— اختر المدة —</option>
+              <option value="7 أيام">7 أيام</option>
+              <option value="14 يوم">14 يوم</option>
+              <option value="30 يوم">30 يوم</option>
+              <option value="60 يوم">60 يوم</option>
+              <option value="90 يوم">90 يوم</option>
+              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
+            </select>
+          </div>
+          <div class="fg full" style="grid-column:1/-1">
+            <label class="fl">📝 ملاحظات إضافية</label>
+            <input class="fi" id="st-sanda-notes" type="text" placeholder="ملاحظات عن المنظومة الساندة...">
+          </div>
+        </div>
       </div>
       <div class="fg" style="border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px;background:rgba(22,163,74,.03)">
         <label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label>
@@ -1869,6 +1907,7 @@ function renderStations(){
       <td><span class="snum">${i+1}</span></td>
       <td><strong>⛽ ${s.name}</strong></td>
       <td><span class="db">${s.district||'—'}</span></td>
+      ${s.type==='أهلية'?`<td style="font-size:11px;color:#d97706">${s.sanda_cam_count?`📷${s.sanda_cam_count} `:''} ${s.sanda_record_days||'—'}</td>`:''}
       <td style="text-align:center;background:rgba(22,163,74,.04)">
         <span style="font-size:16px;font-weight:900;color:var(--a3)">${s.cam_working||0}</span>
       </td>
@@ -3532,11 +3571,21 @@ function filterDelegatesForUser(){
 }
 
 // ── STATION MODAL ──
+function toggleSandaField(){
+  const type = document.getElementById('st-type').value;
+  const row = document.getElementById('sanda-row');
+  if(row) row.style.display = type==='أهلية' ? 'block' : 'none';
+}
+
 function openStationModal(){
   document.getElementById('st-ttl').textContent='إضافة محطة';
   document.getElementById('st-eid').value='';
   document.getElementById('st-name').value='';
   document.getElementById('st-type').value='حكومية';
+  toggleSandaField();
+  ['st-sanda-cam-count','st-sanda-hdd-count'].forEach(id=>{const el=document.getElementById(id);if(el)el.value=0;});
+  ['st-sanda-cam-type','st-sanda-hdd-size','st-sanda-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  const rdays=document.getElementById('st-sanda-record-days');if(rdays)rdays.value='';
   document.getElementById('st-cam-working').value=0;
   document.getElementById('st-cam-broken').value=0;
   const sel=document.getElementById('st-district');
@@ -3558,6 +3607,13 @@ function editStation(id){
   document.getElementById('st-eid').value=id;
   document.getElementById('st-name').value=s.name||'';
   document.getElementById('st-type').value=s.type||'حكومية';
+  toggleSandaField();
+  const scc=document.getElementById('st-sanda-cam-count');if(scc)scc.value=s.sanda_cam_count||0;
+  const sct=document.getElementById('st-sanda-cam-type');if(sct)sct.value=s.sanda_cam_type||'';
+  const shc=document.getElementById('st-sanda-hdd-count');if(shc)shc.value=s.sanda_hdd_count||0;
+  const shs=document.getElementById('st-sanda-hdd-size');if(shs)shs.value=s.sanda_hdd_size||'';
+  const srd=document.getElementById('st-sanda-record-days');if(srd)srd.value=s.sanda_record_days||'';
+  const sn=document.getElementById('st-sanda-notes');if(sn)sn.value=s.sanda_notes||'';
   const sel=document.getElementById('st-district');
   sel.innerHTML='<option value="">— اختر القاطع —</option>';
   const districts = CU&&CU.role!=='admin'&&CU.district ? [CU.district] : DISTRICTS_LIST;
@@ -3576,6 +3632,12 @@ async function saveStation(){
   const body={
     name,district,
     type:document.getElementById('st-type').value,
+    sanda_cam_count:parseInt(document.getElementById('st-sanda-cam-count')?.value)||0,
+    sanda_cam_type:document.getElementById('st-sanda-cam-type')?.value.trim()||'',
+    sanda_hdd_count:parseInt(document.getElementById('st-sanda-hdd-count')?.value)||0,
+    sanda_hdd_size:document.getElementById('st-sanda-hdd-size')?.value.trim()||'',
+    sanda_record_days:document.getElementById('st-sanda-record-days')?.value||'',
+    sanda_notes:document.getElementById('st-sanda-notes')?.value.trim()||'',
     cam_working:parseInt(document.getElementById('st-cam-working').value)||0,
     cam_broken:parseInt(document.getElementById('st-cam-broken').value)||0,
   };
