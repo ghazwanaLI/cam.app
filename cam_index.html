@@ -940,6 +940,38 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
+      <!-- CODING TAB -->
+      <div id="tab-coding" style="display:none">
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-actions">
+              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-coding" placeholder="بحث برمز أو اسم..." oninput="filterCoding()"></div>
+              <select class="fi btn-sm" id="f-coding-district" onchange="filterCoding()" style="width:130px">
+                <option value="">كل القواطع</option>
+              </select>
+              <select class="fi btn-sm" id="f-coding-device" onchange="filterCoding()" style="width:130px">
+                <option value="">كل الأجهزة</option>
+                <option value="DVR/NVR">DVR/NVR</option>
+                <option value="كاميرا">كاميرا</option>
+                <option value="سويج POE">سويج POE</option>
+                <option value="UPS عاكس">UPS عاكس</option>
+                <option value="هارد ديسك HDD">هارد ديسك</option>
+                <option value="أخرى">أخرى</option>
+              </select>
+              <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px">
+              <div class="sec-title"><div class="sdot" style="background:#0891b2"></div>🏷️ ترميز الأجهزة</div>
+              <button class="btn btn-p btn-sm" onclick="openCodingModal()" id="btn-add-coding" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">➕ إضافة جهاز</button>
+            </div>
+          </div>
+          <div style="padding:14px" id="coding-grid">
+            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
+          </div>
+        </div>
+      </div>
+
       <div id="tab-users" style="display:none">
         <div class="section">
           <div class="sec-hdr">
