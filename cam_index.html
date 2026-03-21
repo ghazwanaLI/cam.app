@@ -782,7 +782,71 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
             <div style="display:flex;align-items:center;gap:8px">
               <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
-              <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="openCircModal()" style="display:none">➕ إضافة تعميم</button>
+              <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
+            </div>
+          </div>
+
+          <!-- Add Circular Form - admin only -->
+          <div id="circ-add-form" style="display:none;padding:16px;border-bottom:2px solid var(--border);background:linear-gradient(135deg,#fffbeb,#fef3c7)">
+            <div style="font-size:15px;font-weight:800;color:#92400e;margin-bottom:14px">➕ إضافة تعميم جديد</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+              <div><label class="fl">العنوان *</label><input class="fi" id="q-circ-title" type="text" placeholder="عنوان التعميم..."></div>
+              <div><label class="fl">النوع</label>
+                <select class="fi" id="q-circ-type">
+                  <option value="تعميم">تعميم</option>
+                  <option value="تبليغ">تبليغ</option>
+                  <option value="أمر إداري">أمر إداري</option>
+                  <option value="عام">عام</option>
+                </select>
+              </div>
+              <div><label class="fl">موجه إلى</label>
+                <select class="fi" id="q-circ-district">
+                  <option value="الكل">جميع القواطع</option>
+                </select>
+              </div>
+              <div><label class="fl">ملاحظات</label><input class="fi" id="q-circ-body" type="text" placeholder="نص التعميم..."></div>
+            </div>
+
+            <!-- File attachments -->
+            <div style="margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px">📎 المرفقات</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                <div>
+                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 1</div>
+                  <div class="up-box" id="ub-qcirc-1" style="min-height:70px">
+                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_1')">
+                    <button class="up-rm" onclick="rmFile('qcirc_1',event)">✕</button>
+                    <div class="up-ico" style="font-size:18px">📷</div>
+                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
+                    <div class="up-stat" id="us-qcirc_1" style="font-size:10px">اضغط للاختيار</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 2</div>
+                  <div class="up-box" id="ub-qcirc-2" style="min-height:70px">
+                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_2')">
+                    <button class="up-rm" onclick="rmFile('qcirc_2',event)">✕</button>
+                    <div class="up-ico" style="font-size:18px">📷</div>
+                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
+                    <div class="up-stat" id="us-qcirc_2" style="font-size:10px">اضغط للاختيار</div>
+                  </div>
+                </div>
+                <div>
+                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 3</div>
+                  <div class="up-box" id="ub-qcirc-3" style="min-height:70px">
+                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_3')">
+                    <button class="up-rm" onclick="rmFile('qcirc_3',event)">✕</button>
+                    <div class="up-ico" style="font-size:18px">📷</div>
+                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
+                    <div class="up-stat" id="us-qcirc_3" style="font-size:10px">اضغط للاختيار</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="display:flex;gap:10px;justify-content:flex-end">
+              <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
+              <button class="btn btn-p" onclick="saveQuickCircular()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📢 نشر التعميم</button>
             </div>
           </div>
 
@@ -799,12 +863,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
             <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
           </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>الاسم</th><th>المستخدم</th><th>الدور</th><th>القاطع</th><th>تعديل</th><th>حذف</th><th>ملفات</th><th>تقارير</th><th>جرد</th><th>إجراءات</th></tr></thead>
-              <tbody id="users-tb"></tbody>
-            </table>
+          <!-- Users Cards -->
+          <div style="padding:16px" id="users-cards">
+            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
           </div>
+          <!-- Users Table (hidden, for compat) -->
+          <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
         </div>
       </div>
 
@@ -1623,7 +1687,7 @@ function goTab(name,el){
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
   }
   if(name==='stations') renderStations();
-  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
+  if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
   if(name==='users') loadUsers();
@@ -2375,7 +2439,46 @@ function generateMaintReport(){
 
 // ── USERS ──
 async function loadUsers(){
-  try{const d=await api('GET','/api/users');renderUsers(d.users);}catch(e){}
+  try{
+    const d=await api('GET','/api/users');
+    renderUsers(d.users);
+    renderUsersCards(d.users);
+  }catch(e){console.error('loadUsers',e);}
+}
+function renderUsersCards(users){
+  const el=document.getElementById('users-cards');if(!el)return;
+  if(!users||users.length===0){el.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px">` +
+  users.map(u=>{
+    const isA=u.role==='admin';const isMe=CU&&u.id===CU.id;
+    return `<div style="background:#fff;border:1.5px solid ${isA?'#bfdbfe':isMe?'rgba(22,163,74,.3)':'var(--border)'};border-radius:14px;overflow:hidden">
+      <div style="background:${isA?'linear-gradient(135deg,#1d4ed8,#3b82f6)':'linear-gradient(135deg,#0369a1,#0ea5e9)'};padding:12px 16px;display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:18px;color:#fff;font-weight:800">${u.fullname?.[0]||'م'}</div>
+        <div style="flex:1">
+          <div style="color:#fff;font-weight:800;font-size:14px">${u.fullname}</div>
+          <div style="color:rgba(255,255,255,.7);font-size:11px">@${u.username} ${isMe?'· أنت':''}</div>
+        </div>
+        <span style="background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:3px 10px;font-size:11px;font-weight:700">${isA?'👑 مدير':'👁️ مخول'}</span>
+      </div>
+      <div style="padding:12px 16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+          <div style="font-size:12px;color:var(--t2)">📍 ${u.district||'جميع القواطع'}</div>
+          <span class="badge ${u.active!==false?'b-ok':'b-warn'}" style="font-size:11px">${u.active!==false?'نشط':'معطل'}</span>
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;font-size:11px">
+          ${['edit','del','files','reports','inventory'].map(p=>{
+            const hasP=isA||u.perms?.[p];
+            const labels={'edit':'تعديل','del':'حذف','files':'ملفات','reports':'تقارير','inventory':'جرد'};
+            return `<span style="background:${hasP?'rgba(22,163,74,.1)':'rgba(220,38,38,.08)'};color:${hasP?'#16a34a':'#dc2626'};border-radius:6px;padding:2px 8px;font-weight:600">${hasP?'✓':'✗'} ${labels[p]}</span>`;
+          }).join('')}
+        </div>
+        <div style="display:flex;gap:8px">
+          <button class="btn btn-o btn-sm" onclick="editUser(${u.id})" style="flex:1">✏️ تعديل</button>
+          ${!isMe?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('') + '</div>';
 }
 function renderUsers(users){
   const pb=v=>`<span class="badge ${v?'b-ok':'b-bad'}" style="font-size:10px">${v?'✓':'✗'}</span>`;
@@ -2505,13 +2608,15 @@ function setBox(type,name){
     maint_rep:'ub-maint-rep',maint_rep2:'ub-maint-rep2',maint_rep3:'ub-maint-rep3',
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
-    circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3'};
+    circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
   const statMap={tour_img:'us-tour_img',tour_rep:'us-tour_rep',tour_doc:'us-tour_doc',
     maint_img:'us-maint_img',maint_img2:'us-maint_img2',maint_img3:'us-maint_img3',
     maint_rep:'us-maint_rep',maint_rep2:'us-maint_rep2',maint_rep3:'us-maint_rep3',
     maint_tawkeef:'us-maint_tawkeef',maint_tawkeef2:'us-maint_tawkeef2',
     maint_doc:'us-maint_doc',
-    circ_1:'us-circ_1',circ_2:'us-circ_2',circ_3:'us-circ_3'};
+    circ_1:'us-circ_1',circ_2:'us-circ_2',circ_3:'us-circ_3',
+    qcirc_1:'us-qcirc_1',qcirc_2:'us-qcirc_2',qcirc_3:'us-qcirc_3'};
   const b=document.getElementById(boxMap[type]||'ub-'+type);
   const s=document.getElementById(statMap[type]||'us-'+type);
   if(b){if(name){b.classList.add('hf');}else{b.classList.remove('hf');}}
@@ -2523,7 +2628,8 @@ function rmFile(type,e){e.preventDefault();e.stopPropagation();UF[type]=null;
     maint_rep:'ub-maint-rep',maint_rep2:'ub-maint-rep2',maint_rep3:'ub-maint-rep3',
     maint_tawkeef:'ub-maint-tawkeef',maint_tawkeef2:'ub-maint-tawkeef2',
     maint_doc:'ub-maint-doc',
-    circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3'};
+    circ_1:'ub-circ-1',circ_2:'ub-circ-2',circ_3:'ub-circ-3',
+    qcirc_1:'ub-qcirc-1',qcirc_2:'ub-qcirc-2',qcirc_3:'ub-qcirc-3'};
   const bid=boxMap[type]||'ub-'+type;
   const i=document.querySelector('#'+bid+' input');if(i)i.value='';setBox(type,null);}
 function clearUploads(){UF={};
@@ -3084,6 +3190,62 @@ async function delCircular(id){
   }catch(e){toast('خطأ','err');}
 }
 
+
+function toggleCircForm(){
+  const form = document.getElementById('circ-add-form');
+  if(!form) return;
+  if(form.style.display==='none'||!form.style.display){
+    form.style.display='block';
+    // Populate district
+    const sel=document.getElementById('q-circ-district');
+    if(sel&&sel.options.length<=1){
+      DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});
+    }
+    // Reset fields
+    document.getElementById('q-circ-title').value='';
+    document.getElementById('q-circ-body').value='';
+    document.getElementById('q-circ-type').value='تعميم';
+    document.getElementById('q-circ-district').value='الكل';
+    ['qcirc_1','qcirc_2','qcirc_3'].forEach(k=>{UF[k]=null;});
+    ['ub-qcirc-1','ub-qcirc-2','ub-qcirc-3'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('hf');});
+    ['us-qcirc_1','us-qcirc_2','us-qcirc_3'].forEach(id=>{const el=document.getElementById(id);if(el)el.textContent='اضغط للاختيار';});
+    document.getElementById('btn-add-circ').textContent='✕ إغلاق';
+  } else {
+    form.style.display='none';
+    document.getElementById('btn-add-circ').textContent='➕ إضافة تعميم';
+  }
+}
+
+function cancelQuickCirc(){
+  const form=document.getElementById('circ-add-form');
+  if(form) form.style.display='none';
+  const btn=document.getElementById('btn-add-circ');
+  if(btn) btn.textContent='➕ إضافة تعميم';
+}
+
+async function saveQuickCircular(){
+  const title=document.getElementById('q-circ-title').value.trim();
+  if(!title){toast('العنوان مطلوب','err');return;}
+  const body={
+    title,
+    type:document.getElementById('q-circ-type').value,
+    district:document.getElementById('q-circ-district').value,
+    body:document.getElementById('q-circ-body').value.trim(),
+    date:new Date().toISOString().split('T')[0],
+    added_by:CU?.fullname||'',
+    has_file1:!!UF['qcirc_1'],has_file2:!!UF['qcirc_2'],has_file3:!!UF['qcirc_3'],
+  };
+  try{
+    const d=await api('POST','/api/circulars',body);
+    const cid=d.circular.id;
+    for(const [n,key] of [[1,'qcirc_1'],[2,'qcirc_2'],[3,'qcirc_3']]){
+      if(UF[key]){try{await api('POST',`/api/files/circ_${n}_${cid}`,UF[key]);}catch(e){}}
+    }
+    toast('تم نشر التعميم ✅');
+    cancelQuickCirc();
+    await loadCirculars();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
 // ── DISTRICTS ──
 function openDistrictModal(){
   document.getElementById('dist-name').value='';
