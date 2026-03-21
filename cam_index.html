@@ -4297,7 +4297,7 @@ function printVoidLabel(id){
     +'try{new QRCode(qc,{text:"'+qr+'",width:size,height:size,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
     +'}'
     +'function buildBC(h,w){'
-    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:w,height:h,displayValue:false,margin:1,background:"transparent",lineColor:"#000"});}catch(e){}'
+    +'try{JsBarcode("#bc","'+code+'",{format:"CODE128",width:w,height:h,displayValue:true,fontSize:11,textMargin:3,margin:1,background:"transparent",lineColor:"#000"});}catch(e){}'
     +'}'
     +'function applySettings(){'
     +'var W=parseInt(document.getElementById("w").value)||80;'
@@ -4328,19 +4328,46 @@ function printVoidLabel(id){
 
 function exportCodingExcel(){
   if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
-  const rows=[['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR','HDD','Switch','كاميرات تعمل','كاميرات معطلة','إجمالي الكاميرات','تاريخ التركيب','الحالة','ملاحظات']];
-  allCoding.forEach(d=>{
-    const nvrs=(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(' | ');
-    const hdds=(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(' | ');
-    const sws=(d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(' | ');
-    rows.push([d.code,d.location||'',d.district||'',d.station_name||'',nvrs,hdds,sws,d.cam_working||0,d.cam_broken||0,d.cam_total||0,d.install_date||'',d.status||'',d.notes||'']);
+  toast('جاري إنشاء ملف Excel...');
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
   });
-  const bom='\uFEFF';
-  const csv=rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const blob=new Blob([bom+csv],{type:'text/csv;charset=utf-8'});
-  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
-  a.download='ترميز_الأجهزة_'+new Date().toISOString().split('T')[0]+'.csv';
-  a.click(); toast('تم التصدير ✅');
+  loadXLSX().then(()=>{
+    const headers=['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR','HDD','Switch','كاميرات تعمل','كاميرات معطلة','إجمالي الكاميرات','تاريخ التركيب','الحالة','ملاحظات'];
+    const data=allCoding.map(d=>[
+      d.code,
+      d.location||'',
+      d.district||'',
+      d.station_name||'',
+      (d.nvrs||[]).map((n,i)=>`NVR${i+1}: ${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(' | '),
+      (d.hdds||[]).map((h,i)=>`HDD${i+1}: ${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(' | '),
+      (d.switches||[]).map((s,i)=>`SW${i+1}: ${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(' | '),
+      d.cam_working||0,
+      d.cam_broken||0,
+      d.cam_total||0,
+      d.install_date||'',
+      d.status||'',
+      d.notes||''
+    ]);
+    const ws=XLSX.utils.aoa_to_sheet([headers,...data]);
+    // Style header row
+    const range=XLSX.utils.decode_range(ws['!ref']);
+    for(let C=range.s.c;C<=range.e.c;C++){
+      const addr=XLSX.utils.encode_cell({r:0,c:C});
+      if(!ws[addr]) continue;
+      ws[addr].s={font:{bold:true},fill:{fgColor:{rgb:"1D4ED8"}},alignment:{horizontal:'center'}};
+    }
+    // Column widths
+    ws['!cols']=[{wch:15},{wch:20},{wch:15},{wch:20},{wch:30},{wch:25},{wch:20},{wch:12},{wch:12},{wch:12},{wch:15},{wch:12},{wch:25}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
+    XLSX.writeFile(wb,'ترميز_الأجهزة_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(()=>toast('خطأ في تحميل مكتبة Excel','err'));
 }
 
 let scanBuffer=''; let scanTimer=null;
