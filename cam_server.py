@@ -228,7 +228,7 @@ class Handler(BaseHTTPRequestHandler):
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
 
-        elif "/api/circulars/" in p and p.endswith("/reads") and self.method_override=="GET":
+        elif "/api/circulars/" in p and p.endswith("/reads"):
             cid=int(p.split("/")[3])
             reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
             self.send_json({"ok":True,"reads":reads})
@@ -265,7 +265,7 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             qs=parse_qs(urlparse(self.path).query)
             self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
-        elif "/api/circulars/" in p and p.endswith("/reads") and self.method_override=="GET":
+        elif "/api/circulars/" in p and p.endswith("/reads"):
             cid=int(p.split("/")[3])
             reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
             self.send_json({"ok":True,"reads":reads})
