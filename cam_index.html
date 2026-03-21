@@ -4203,6 +4203,7 @@ function printVoidLabel(id){
     +'</style></head><body>'
     +'<div class="lbl">'
     +'<div class="top"><span>'+(d.station_name||'—')+'</span><span>'+(d.location||d.code)+'</span></div>'
+    +'<div class="top" style="font-size:6.5px;font-weight:normal;color:#555"><span>'+(d.device_type||nvrs.length?nvrs.map((n,i)=>`NVR${i+1}: ${n.num||''}`).join(' | '):'')+'</span><span>'+code+'</span></div>'
     +'<div class="mid">'
     +'<div class="qr" id="qr"></div>'
     +'<div class="bc"><svg id="bc"></svg></div>'
