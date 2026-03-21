@@ -281,7 +281,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 }
 
 /* LOGIN */
-#login-screen{display:flex;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;
+#login-screen{position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;
   background:linear-gradient(135deg,#0c1e4a 0%,#1d4ed8 50%,#1e3a8a 100%);}
 .lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
   box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeup .5s cubic-bezier(.34,1.56,.64,1);}
@@ -361,7 +361,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 </div>
 
 <!-- APP -->
-<div id="app">
+<div id="app" style="display:none">
   <!-- TOP NAVBAR -->
   <div class="topbar" id="sidebar">
     <div class="topbar-logo">
@@ -1835,7 +1835,7 @@ async function doLogout(){
   document.getElementById('app').style.display='none';
 }
 async function tryAutoLogin(){
-  if(!TOKEN){document.getElementById('login-screen').style.display='flex';return;}
+  if(!TOKEN){const ls=document.getElementById('login-screen');ls.style.display='flex';ls.style.alignItems='center';ls.style.justifyContent='center';return;}
   try{
     const d=await api('GET','/api/me');CU=d.user;
     document.getElementById('login-screen').style.display='none';
@@ -4104,6 +4104,7 @@ function resetDeviceRows(devices){
 
 
 
+
 // ── Dynamic rows for NVR/HDD/Switch ──
 let nvrCount=0, hddCount=0, switchCount=0;
 
@@ -4335,52 +4336,80 @@ async function delCoding(id){
 }
 
 function printDeviceCard(id){
-  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  const d=allCoding.find(x=>x.id===id); if(!d)return;
   const statusColor={'يعمل':'#16a34a','معطل':'#dc2626','صيانة':'#d97706','مستبدل':'#6b7280'};
   const clr=statusColor[d.status]||'#0891b2';
-  const win=window.open('','_blank','width=400,height=500');
+  const nvrs=d.nvrs||[]; const hdds=d.hdds||[]; const sws=d.switches||[];
+
+  const win=window.open('','_blank','width=420,height=560');
   win.document.write(`<!DOCTYPE html><html lang="ar" dir="rtl"><head>
     <meta charset="UTF-8">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
-    <scr' + 'ipt src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></scr' + 'ipt>
+    <scr'+"ipt" src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"><\/script>
+    <scr'+"ipt" src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"><\/script>
     <style>
       *{margin:0;padding:0;box-sizing:border-box;}
-      body{font-family:'Cairo',sans-serif;padding:2mm;background:#fff;display:flex;justify-content:center;}
-      .card{width:48mm;border:1px solid #0891b2;border-radius:3px;overflow:hidden}
-      .card-hdr{background:#0891b2;padding:2px 4px;text-align:center;color:#fff}
-      .card-hdr h2{font-size:7px;font-weight:800}.card-hdr p{font-size:6px;opacity:.8}
-      .body{display:grid;grid-template-columns:auto 1fr;gap:3px;padding:3px}
-      .qr-box{display:flex;flex-direction:column;align-items:center;gap:1px}
-      #qrcode canvas,#qrcode img{width:28mm!important;height:28mm!important}
-      .code-txt{font-size:6px;font-weight:900;color:#0891b2;text-align:center}
-      .info{font-size:6px;color:#475569;display:flex;flex-direction:column;gap:1px;justify-content:center}
-      .info div{padding:1px 0;border-bottom:1px solid #f1f5f9}
-      .status{display:inline-block;padding:1px 4px;border-radius:4px;font-size:6px;font-weight:700;background:${clr}22;color:${clr}}
-      .print-btn{width:100%;padding:3px;background:#0891b2;color:#fff;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:9px;font-weight:700;margin-top:3px}
-      @media print{.print-btn{display:none}@page{size:50mm 40mm;margin:1mm}}
+      body{font-family:'Cairo',sans-serif;background:#fff;padding:2mm;display:flex;justify-content:center;}
+      .label{width:46mm;border:1px solid #ccc;border-radius:2mm;overflow:hidden;font-size:7px}
+      .hdr{background:#0891b2;color:#fff;padding:2mm 3mm;text-align:center}
+      .hdr .code{font-size:11px;font-weight:900;letter-spacing:.5px}
+      .hdr .loc{font-size:6px;opacity:.85}
+      .codes{display:flex;justify-content:space-between;align-items:center;padding:2mm;gap:2mm}
+      .qr-wrap{text-align:center}
+      .qr-wrap div{font-size:5px;color:#666;margin-top:1mm}
+      .bc-wrap{flex:1;text-align:center}
+      .bc-wrap div{font-size:5px;color:#666;margin-top:1mm}
+      .info{padding:0 2mm 2mm;font-size:6px;color:#333;border-top:1px solid #eee}
+      .info-row{display:flex;justify-content:space-between;padding:0.5mm 0;border-bottom:1px solid #f5f5f5}
+      .info-row span:first-child{color:#666}
+      .status{display:inline-block;padding:0.5mm 2mm;border-radius:2mm;font-size:6px;font-weight:700;background:${clr}22;color:${clr};margin:1mm 2mm}
+      .print-btn{width:100%;padding:3mm;background:#0891b2;color:#fff;border:none;cursor:pointer;font-family:Cairo,sans-serif;font-size:10px;font-weight:700}
+      @media print{.print-btn{display:none}@page{size:50mm 40mm;margin:0}}
     </style>
   </head><body>
-    <div class="card">
-      <div class="card-hdr">
-        <h2>🏷️ بطاقة ترميز جهاز</h2>
-        <p>نظام كاميرات المراقبة</p>
+    <div>
+      <div class="label">
+        <div class="hdr">
+          <div class="code">${d.code}</div>
+          <div class="loc">${d.location||'—'} | ${d.district||'—'}</div>
+        </div>
+        <div class="codes">
+          <div class="qr-wrap">
+            <div id="qr"></div>
+            <div>QR Code</div>
+          </div>
+          <div class="bc-wrap">
+            <svg id="bc"></svg>
+            <div>Barcode</div>
+          </div>
+        </div>
+        <span class="status">${d.status}</span>
+        <div class="info">
+          <div class="info-row"><span>القاطع:</span><span>${d.district||'—'}</span></div>
+          <div class="info-row"><span>المحطة:</span><span>${d.station_name||'—'}</span></div>
+          ${nvrs.length>0?`<div class="info-row"><span>NVR:</span><span>${nvrs.map((n,i)=>`NVR${i+1}:${n.num||''}`).join(' ')}</span></div>`:''}
+          ${hdds.length>0?`<div class="info-row"><span>HDD:</span><span>${hdds.length} هارد</span></div>`:''}
+          <div class="info-row"><span>كاميرات:</span><span>${d.cam_total||0} (✅${d.cam_working||0} ❌${d.cam_broken||0})</span></div>
+          <div class="info-row"><span>التركيب:</span><span>${d.install_date||'—'}</span></div>
+        </div>
       </div>
-      <div class="code-box">
-        <div style="font-size:11px;color:#0369a1;margin-bottom:4px">رمز الجهاز</div>
-        <div class="code-val">${d.code}</div>
-      </div>
-      <span class="status">${d.status}</span>
-      <div class="info">
-        <div><strong>النوع:</strong> ${d.device_type}</div>
-        <div><strong>الموديل:</strong> ${d.model||'—'}</div>
-        <div><strong>القاطع:</strong> ${d.district||'—'}</div>
-        <div><strong>المحطة:</strong> ${d.station_name||'—'}</div>
-        <div><strong>الموقع:</strong> ${d.location||'—'}</div>
-        <div><strong>تاريخ التركيب:</strong> ${d.install_date||'—'}</div>
-        ${d.notes?`<div><strong>ملاحظات:</strong> ${d.notes}</div>`:''}
-      </div>
-      <button class="print-btn" onclick="window.print()">🖨️ طباعة البطاقة</button>
+      <button class="print-btn" onclick="window.print()">🖨️ طباعة الليبل</button>
     </div>
+    <scr'+'ipt>
+      // QR Code
+      new QRCode(document.getElementById('qr'),{
+        text:'${d.code}|${(d.location||'').replace(/'/g,"\'")}|${d.station_name||''}',
+        width:80,height:80,colorDark:'#0891b2',colorLight:'#fff',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+      // Barcode
+      try{
+        JsBarcode('#bc','${d.code}',{
+          format:'CODE128',width:1.2,height:25,displayValue:false,
+          margin:0,background:'transparent',lineColor:'#1e293b'
+        });
+      }catch(e){}
+    <\/script>
   </body></html>`);
   win.document.close();
 }
