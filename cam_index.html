@@ -1903,6 +1903,7 @@ const AUTO_USER='admin';
 const AUTO_PASS='1000';
 
 // ── API ──
+let _refreshing=false;
 async function api(method,path,body=null){
   try{
     const r=await fetch(API+path,{
@@ -1910,17 +1911,19 @@ async function api(method,path,body=null){
       headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
       body:body?JSON.stringify(body):null
     });
-    if(r.status===401&&path!=='/api/login'){
-      // حاول تجديد الجلسة تلقائياً
+    if(r.status===401 && path!=='/api/login' && !_refreshing){
+      _refreshing=true;
       const ok=await silentLogin();
-      if(ok) return api(method,path,body); // أعد المحاولة
-      throw new Error('انتهت الجلسة');
+      _refreshing=false;
+      if(ok) return api(method,path,body);
+      throw new Error('انتهت الجلسة — تحقق من تشغيل السيرفر');
     }
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
     return d;
   }catch(e){
-    if(e.message==='Failed to fetch') throw new Error('لا يوجد اتصال بالسيرفر');
+    if(e.name==='TypeError'||e.message==='Failed to fetch')
+      throw new Error('لا يوجد اتصال — تحقق من تشغيل السيرفر على المنفذ 8082');
     throw e;
   }
 }
@@ -1970,23 +1973,61 @@ async function doLogout(){
 async function tryAutoLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
+  showPageLoader('جاري الاتصال بالسيرفر...');
 
-  // إذا في token مخزن جرب تحققه، وإلا سجل دخول تلقائي
+  // جرب التوكن المحفوظ أولاً
   if(TOKEN){
     try{
       const d=await api('GET','/api/me');
       CU=d.user;
+      hidePageLoader();
+      await initApp();
+      return;
     }catch(e){
       TOKEN=''; localStorage.removeItem('cam_token');
-      const ok=await silentLogin();
-      if(!ok){ toast('لا يوجد اتصال بالسيرفر','err'); return; }
     }
-  } else {
-    const ok=await silentLogin();
-    if(!ok){ toast('لا يوجد اتصال بالسيرفر','err'); return; }
   }
 
+  // توكن منتهي أو مافيه — سجل دخول تلقائي
+  showPageLoader('جاري تسجيل الدخول...');
+  const ok=await silentLogin();
+  hidePageLoader();
+  if(!ok){
+    showConnError();
+    return;
+  }
   await initApp();
+}
+
+function showPageLoader(msg){
+  let el=document.getElementById('page-loader');
+  if(!el){
+    el=document.createElement('div');
+    el.id='page-loader';
+    el.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Cairo,sans-serif';
+    el.innerHTML='<div style="width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#1d4ed8;border-radius:50%;animation:spin .7s linear infinite"></div><div id="page-loader-msg" style="font-size:15px;color:#475569;font-weight:600"></div>';
+    document.body.appendChild(el);
+  }
+  document.getElementById('page-loader-msg').textContent=msg||'جاري التحميل...';
+  el.style.display='flex';
+}
+function hidePageLoader(){
+  const el=document.getElementById('page-loader');
+  if(el) el.style.display='none';
+}
+function showConnError(){
+  let el=document.getElementById('page-loader');
+  if(!el){ showPageLoader(''); el=document.getElementById('page-loader'); }
+  el.innerHTML=`
+    <div style="font-size:52px">⚠️</div>
+    <div style="font-size:18px;font-weight:800;color:#dc2626">لا يوجد اتصال بالسيرفر</div>
+    <div style="font-size:13px;color:#64748b;text-align:center;max-width:320px">
+      تأكد من تشغيل <b>cam_server.py</b> ثم اضغط إعادة المحاولة
+    </div>
+    <button onclick="location.reload()" style="margin-top:8px;padding:10px 28px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer">
+      🔄 إعادة المحاولة
+    </button>`;
+  el.style.display='flex';
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
 
@@ -2541,7 +2582,18 @@ async function initApp(){
     DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
   }
 
-  await Promise.all([loadStations(), loadTours(), loadMaintenance(), loadDelegates(), loadCirculars()]).catch(()=>{});
+  try{
+    await Promise.all([
+      loadStations(),
+      loadTours(),
+      loadMaintenance(),
+      loadDelegates(),
+      loadCirculars(),
+    ]);
+  }catch(e){
+    toast('خطأ في تحميل البيانات: '+e.message,'err');
+    console.error('initApp load error:',e);
+  }
   updateDashboard();
   populateDistrictFilters();
 }
@@ -2632,7 +2684,7 @@ async function loadStations(){
     const d=await api('GET','/api/stations');
     allStations=d.stations||[];
     renderStations(); populateDistrictFilters();
-  }catch(e){ toast('خطأ في تحميل المحطات','err'); }
+  }catch(e){toast('loadStations: '+e.message,'err');console.error('loadStations',e);}
 }
 
 function renderStations(){
@@ -2718,7 +2770,7 @@ async function loadTours(){
     const d=await api('GET','/api/tours');
     allTours=d.tours||[];
     renderTours();
-  }catch(e){toast('خطأ في تحميل الجولات','err');}
+  }catch(e){toast('loadTours: '+e.message,'err');console.error('loadTours',e);}
 }
 
 function renderTours(){
@@ -2810,7 +2862,7 @@ async function loadMaintenance(){
     const d=await api('GET','/api/maintenance');
     allMaint=d.maintenance||[];
     renderMaint();
-  }catch(e){toast('خطأ في تحميل الصيانة','err');}
+  }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
 }
 function renderMaint(){
   const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
@@ -2898,7 +2950,7 @@ async function loadCameras(){
     const d=await api('GET','/api/cameras');
     allCams=d.cameras||[];
     renderCams();
-  }catch(e){toast('خطأ في تحميل الكاميرات','err');}
+  }catch(e){toast('loadCameras: '+e.message,'err');console.error('loadCameras',e);}
 }
 function renderCams(){
   const search=(document.getElementById('sq-cams')?.value||'').toLowerCase();
@@ -2982,7 +3034,7 @@ async function loadInventory(){
     const d=await api('GET','/api/inventory');
     allInventory=d.inventory||[];
     renderInv();
-  }catch(e){toast('خطأ في تحميل الجرد','err');}
+  }catch(e){toast('loadInventory: '+e.message,'err');console.error('loadInventory',e);}
 }
 function renderInv(){
   const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
