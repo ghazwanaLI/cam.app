@@ -1897,51 +1897,108 @@ let CU=null;
 let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
 let sP_t=1,sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
+let SERVER_ONLINE=false;
 
-// بيانات الدخول التلقائي (بدون شاشة لوجن)
 const AUTO_USER='admin';
 const AUTO_PASS='1000';
 
-// ── API ──
+// ── LOCAL STORAGE DB (يعمل بدون سيرفر) ──
+const LS = {
+  get(key){ try{ return JSON.parse(localStorage.getItem('cam_'+key)||'null'); }catch(e){ return null; } },
+  set(key,val){ localStorage.setItem('cam_'+key, JSON.stringify(val)); },
+  del(key){ localStorage.removeItem('cam_'+key); },
+};
+
+function lsGetList(key){ return LS.get(key)||[]; }
+function lsNextId(key){ const id=(LS.get('nid_'+key)||0)+1; LS.set('nid_'+key,id); return id; }
+
+// ── API — يحاول السيرفر أولاً، يرجع للـ localStorage إذا فشل ──
 let _refreshing=false;
 async function api(method,path,body=null){
-  try{
-    const r=await fetch(API+path,{
-      method,
-      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-      body:body?JSON.stringify(body):null
-    });
-    if(r.status===401 && path!=='/api/login' && !_refreshing){
-      _refreshing=true;
-      const ok=await silentLogin();
-      _refreshing=false;
-      if(ok) return api(method,path,body);
-      throw new Error('انتهت الجلسة — تحقق من تشغيل السيرفر');
+  if(SERVER_ONLINE){
+    try{
+      const r=await fetch(API+path,{
+        method,
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+        body:body?JSON.stringify(body):null
+      });
+      if(r.status===401 && path!=='/api/login' && !_refreshing){
+        _refreshing=true;
+        const ok=await silentLogin();
+        _refreshing=false;
+        if(ok) return api(method,path,body);
+        // السيرفر رفض — اشتغل offline
+        SERVER_ONLINE=false;
+        showOfflineBanner();
+        return lsApi(method,path,body);
+      }
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
+      return d;
+    }catch(e){
+      if(e.name==='TypeError'||e.message==='Failed to fetch'){
+        SERVER_ONLINE=false; showOfflineBanner();
+        return lsApi(method,path,body);
+      }
+      throw e;
     }
-    const d=await r.json();
-    if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
-    return d;
-  }catch(e){
-    if(e.name==='TypeError'||e.message==='Failed to fetch')
-      throw new Error('لا يوجد اتصال — تحقق من تشغيل السيرفر على المنفذ 8082');
-    throw e;
   }
+  return lsApi(method,path,body);
 }
 
-// دخول صامت تلقائي
-async function silentLogin(){
-  try{
-    const r=await fetch(API+'/api/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:AUTO_USER,password:AUTO_PASS})
-    });
-    if(!r.ok) return false;
-    const d=await r.json();
-    TOKEN=d.token; CU=d.user;
-    localStorage.setItem('cam_token',TOKEN);
-    return true;
-  }catch(e){ return false; }
+// ── LOCAL API — محاكاة السيرفر بـ localStorage ──
+function lsApi(method,path,body){
+  const seg=path.split('?')[0].replace(/\/$/,'').split('/');
+  const res=seg[2];        // stations, tours, ...
+  const rid=parseInt(seg[3])||0;
+
+  if(method==='GET'){
+    if(res==='me')        return {user:CU||{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
+    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
+    if(res==='logs')      return {logs:[]};
+    if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
+    const list=lsGetList(res);
+    return {[res]:list, tours:res==='tours'?list:undefined, maintenance:res==='maintenance'?list:undefined,
+      stations:res==='stations'?list:undefined, cameras:res==='cameras'?list:undefined,
+      inventory:res==='inventory'?list:undefined, coding:res==='coding'?list:undefined,
+      circulars:res==='circulars'?list:undefined, reads:[], delegates:res==='delegates'?list:undefined,
+      users:res==='users'?list:undefined};
+  }
+  if(method==='POST'){
+    if(res==='login') return {token:'local-token',user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
+    if(res==='logout') return {ok:true};
+    if(res==='files'){ LS.set('file_'+seg.slice(3).join('_'),body); return {ok:true}; }
+    const list=lsGetList(res);
+    const id=lsNextId(res);
+    const item={...body,id};
+    list.push(item);
+    LS.set(res,list);
+    return {ok:true,id,...item};
+  }
+  if(method==='PUT' && rid){
+    const list=lsGetList(res);
+    const idx=list.findIndex(x=>x.id===rid);
+    if(idx>-1){ list[idx]={...list[idx],...body}; LS.set(res,list); }
+    return {ok:true};
+  }
+  if(method==='DELETE' && rid){
+    const list=lsGetList(res).filter(x=>x.id!==rid);
+    LS.set(res,list);
+    return {ok:true};
+  }
+  return {ok:true};
+}
+
+// silentLogin — يستخدم silentLoginWith (تم استبداله)
+async function silentLogin(){ return silentLoginWith(AUTO_USER,AUTO_PASS); }
+
+function showOfflineBanner(){
+  if(document.getElementById('offline-banner')) return;
+  const b=document.createElement('div');
+  b.id='offline-banner';
+  b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:13px;font-weight:700;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px';
+  b.innerHTML='⚠️ وضع عمل بدون سيرفر — البيانات محفوظة محلياً في المتصفح <button onclick="location.reload()" style="border:none;background:#000;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🔄 إعادة الاتصال</button>';
+  document.body.appendChild(b);
 }
 
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;setTimeout(()=>el.classList.remove('show'),3500);}
@@ -1966,68 +2023,109 @@ async function doLogin(){
 }
 async function doLogout(){
   try{await api('POST','/api/logout');}catch(e){}
-  TOKEN='';CU=null;localStorage.removeItem('cam_token');
-  document.getElementById('login-screen').style.display='flex';
-  document.getElementById('app').style.display='none';
+  TOKEN='';CU=null;
+  localStorage.removeItem('cam_token');
+  LS.del('login_creds');
+  showMiniLogin();
 }
 async function tryAutoLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
-  showPageLoader('جاري الاتصال بالسيرفر...');
 
-  // جرب التوكن المحفوظ أولاً
+  // 1. جرب التوكن المحفوظ أولاً
   if(TOKEN){
     try{
-      const d=await api('GET','/api/me');
-      CU=d.user;
-      hidePageLoader();
-      await initApp();
-      return;
-    }catch(e){
-      TOKEN=''; localStorage.removeItem('cam_token');
-    }
+      const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
+      if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true; await initApp(); return; }
+    }catch(e){}
+    TOKEN=''; localStorage.removeItem('cam_token');
   }
 
-  // توكن منتهي أو مافيه — سجل دخول تلقائي
-  showPageLoader('جاري تسجيل الدخول...');
-  const ok=await silentLogin();
-  hidePageLoader();
-  if(!ok){
-    showConnError();
-    return;
+  // 2. جرب auto-login بالمعلومات المخزنة
+  const saved=LS.get('login_creds');
+  if(saved){
+    const ok=await silentLoginWith(saved.u, saved.p);
+    if(ok){ SERVER_ONLINE=true; await initApp(); return; }
   }
-  await initApp();
+
+  // 3. ما في اتصال أو بيانات دخول — أظهر نافذة دخول صغيرة فوق الواجهة
+  showMiniLogin();
 }
 
-function showPageLoader(msg){
-  let el=document.getElementById('page-loader');
-  if(!el){
-    el=document.createElement('div');
-    el.id='page-loader';
-    el.style.cssText='position:fixed;inset:0;z-index:9998;background:rgba(255,255,255,.95);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;font-family:Cairo,sans-serif';
-    el.innerHTML='<div style="width:48px;height:48px;border:4px solid #e2e8f0;border-top-color:#1d4ed8;border-radius:50%;animation:spin .7s linear infinite"></div><div id="page-loader-msg" style="font-size:15px;color:#475569;font-weight:600"></div>';
-    document.body.appendChild(el);
+function showMiniLogin(errMsg){
+  let ov=document.getElementById('mini-login-ov');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='mini-login-ov';
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif';
+    ov.innerHTML=`
+      <div style="background:#fff;border-radius:20px;padding:36px 32px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+        <div style="text-align:center;margin-bottom:20px">
+          <div style="font-size:40px">📹</div>
+          <div style="font-size:18px;font-weight:800;color:#1d4ed8;margin-top:8px">نظام كاميرات المراقبة</div>
+          <div style="font-size:12px;color:#94a3b8;margin-top:4px">سجل دخول للمتابعة</div>
+        </div>
+        <div id="ml-err" style="display:none;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:13px;color:#dc2626;margin-bottom:12px"></div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">اسم المستخدم</label>
+            <input id="ml-u" class="fi" type="text" value="admin" placeholder="admin"
+              onkeydown="if(event.key==='Enter')doMiniLogin()"
+              style="background:#f7fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-family:Cairo,sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">كلمة المرور</label>
+            <input id="ml-p" class="fi" type="password" placeholder="••••••"
+              onkeydown="if(event.key==='Enter')doMiniLogin()"
+              style="background:#f7fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-family:Cairo,sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
+          </div>
+          <button id="ml-btn" onclick="doMiniLogin()"
+            style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;padding:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">
+            دخول ←
+          </button>
+        </div>
+      </div>`;
+    document.body.appendChild(ov);
   }
-  document.getElementById('page-loader-msg').textContent=msg||'جاري التحميل...';
-  el.style.display='flex';
+  ov.style.display='flex';
+  if(errMsg){
+    const e=document.getElementById('ml-err');
+    if(e){e.textContent=errMsg;e.style.display='block';}
+  }
+  setTimeout(()=>document.getElementById('ml-p')?.focus(),100);
 }
-function hidePageLoader(){
-  const el=document.getElementById('page-loader');
-  if(el) el.style.display='none';
+
+async function doMiniLogin(){
+  const u=(document.getElementById('ml-u')?.value||'').trim();
+  const p=document.getElementById('ml-p')?.value||'';
+  const btn=document.getElementById('ml-btn');
+  if(!u||!p){showMiniLogin('أدخل اسم المستخدم وكلمة المرور');return;}
+  if(btn){btn.disabled=true;btn.textContent='جاري الدخول...';}
+  const ok=await silentLoginWith(u,p);
+  if(ok){
+    LS.set('login_creds',{u,p}); // حفظ للمرة القادمة
+    SERVER_ONLINE=true;
+    document.getElementById('mini-login-ov').style.display='none';
+    await initApp();
+  } else {
+    if(btn){btn.disabled=false;btn.textContent='دخول ←';}
+    showMiniLogin('كلمة المرور أو اسم المستخدم غير صحيح');
+  }
 }
-function showConnError(){
-  let el=document.getElementById('page-loader');
-  if(!el){ showPageLoader(''); el=document.getElementById('page-loader'); }
-  el.innerHTML=`
-    <div style="font-size:52px">⚠️</div>
-    <div style="font-size:18px;font-weight:800;color:#dc2626">لا يوجد اتصال بالسيرفر</div>
-    <div style="font-size:13px;color:#64748b;text-align:center;max-width:320px">
-      تأكد من تشغيل <b>cam_server.py</b> ثم اضغط إعادة المحاولة
-    </div>
-    <button onclick="location.reload()" style="margin-top:8px;padding:10px 28px;background:#1d4ed8;color:#fff;border:none;border-radius:10px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer">
-      🔄 إعادة المحاولة
-    </button>`;
-  el.style.display='flex';
+
+async function silentLoginWith(u,p){
+  try{
+    const r=await fetch(API+'/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:u,password:p})
+    });
+    if(!r.ok) return false;
+    const d=await r.json();
+    TOKEN=d.token; CU=d.user;
+    localStorage.setItem('cam_token',TOKEN);
+    return true;
+  }catch(e){ return false; }
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
 
