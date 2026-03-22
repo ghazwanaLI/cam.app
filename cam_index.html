@@ -23,8 +23,10 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
-::-webkit-scrollbar{width:4px;height:4px;}
+::-webkit-scrollbar{width:8px;height:8px;}
+::-webkit-scrollbar-track{background:var(--bg2);border-radius:4px;}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
 
 /* LOGIN */
 .lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
@@ -686,9 +688,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <span style="font-size:15px;font-weight:800;color:#1d4ed8">🏛️ المحطات الحكومية</span>
               <span id="gov-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
               <button onclick="event.stopPropagation();printGovStationsReport()"
-                style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8;margin-right:auto">
+                style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8">
                 🖨️ طباعة
               </button>
+              <span style="flex:1"></span>
               <span id="gov-toggle-icon" style="font-size:18px;color:#1d4ed8;transition:transform .2s">▲</span>
             </div>
             <div id="gov-section-body" style="overflow:hidden;transition:max-height .3s ease">
@@ -708,7 +711,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
               <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
               <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
-              <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;margin-right:auto;transition:transform .2s">▲</span>
+              <span style="flex:1"></span>
+              <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s">▲</span>
             </div>
             <div id="priv-section-body" style="overflow:hidden;transition:max-height .3s ease">
               <div class="table-wrap" style="padding-top:10px">
@@ -990,7 +994,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="هارد ديسك HDD">هارد ديسك</option>
                 <option value="أخرى">أخرى</option>
               </select>
-              <button class="btn btn-o btn-sm" onclick="exportVoidExcel()" style="color:#dc2626;border-color:rgba(220,38,38,.3)">🏷️ VOID Excel</button>
+
               <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
@@ -1094,7 +1098,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                     <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
                   </div>
                   <div style="display:flex;gap:10px;align-items:flex-start">
-                    <div id="gen-qr" style="flex-shrink:0;line-height:0;border:1px solid #eee"></div>
+                    <canvas id="gen-qr" style="flex-shrink:0;display:block;border:1px solid #eee"></canvas>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
                       <svg id="gen-bc"></svg>
                       <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;white-space:nowrap"></div>
@@ -1158,26 +1162,26 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="m-title">🚗 <span id="tour-ttl">إضافة جولة</span></div>
     <input type="hidden" id="tour-eid">
     <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="t-date" type="date"></div>
+      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="t-district" onchange="filterStationsByDistrict()">
+        <select class="fi" id="tour-district" onchange="filterTourStations()">
           <option value="">— اختر القاطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="t-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" id="tour-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <div class="fg"><label class="fl">نوع الزيارة</label>
-        <select class="fi" id="t-type">
+        <select class="fi" id="tour-type">
           <option value="كشف">كشف</option>
           <option value="صيانة">صيانة</option>
           <option value="تركيب">تركيب</option>
           <option value="متابعة">متابعة</option>
         </select>
       </div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="t-tech" type="text" placeholder="اسم الفني"></div>
+      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="t-notes" rows="3" style="resize:vertical"></textarea></div>
+        <textarea class="fi" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات والمستندات</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
@@ -1227,14 +1231,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
     <input type="hidden" id="maint-eid">
     <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="m-date" type="date"></div>
+      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="m-district" onchange="filterMaintStations()">
+        <select class="fi" id="maint-district" onchange="filterMaintStations()">
           <option value="">— اختر القاطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="m-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" id="maint-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <!-- قائمة الأجهزة المتعددة -->
       <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
@@ -1248,7 +1252,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- نوع العطل العام -->
       <div class="fg">
         <label class="fl">نوع العطل العام</label>
-        <select class="fi" id="m-fault-type">
+        <select class="fi" id="maint-device">
           <option value="عطل كلي">عطل كلي</option>
           <option value="عطل جزئي">عطل جزئي</option>
           <option value="كسر فيزيائي">كسر فيزيائي</option>
@@ -1262,9 +1266,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
       <!-- سبب + فني -->
       <div class="fg"><label class="fl">سبب الصيانة</label>
-        <input class="fi" id="m-reason" type="text" placeholder="وصف المشكلة..."></div>
+        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
       <div class="fg"><label class="fl">اسم الفني</label>
-        <input class="fi" id="m-tech" type="text"></div>
+        <input class="fi" id="maint-tech" type="text"></div>
 
       <!-- الحالة بعد الصيانة -->
       <div class="fg">
@@ -1278,7 +1282,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="m-notes" rows="2" style="resize:vertical"></textarea></div>
+        <textarea class="fi" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
 
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <label class="fl" style="margin-bottom:12px;display:block">📎 المرفقات والمستندات</label>
@@ -1399,13 +1403,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
     <input type="hidden" id="cam-eid">
     <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="c-no" type="text" placeholder="CAM-001"></div>
+      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
       <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="c-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" id="cam-station"><option value="">— اختر المحطة —</option></select>
       </div>
-      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="c-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
+      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
       <div class="fg"><label class="fl">نوع الكاميرا</label>
-        <select class="fi" id="c-type">
+        <select class="fi" id="cam-type">
           <option value="داخلية">داخلية</option>
           <option value="خارجية">خارجية</option>
           <option value="PTZ">PTZ</option>
@@ -1413,16 +1417,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="돔">돔 Dome</option>
         </select>
       </div>
-      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="c-mfr" type="text"></div>
-      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="c-last" type="date"></div>
+      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
+      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
       <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="c-status">
+        <select class="fi" id="cam-status">
           <option value="working">شغالة</option>
           <option value="broken">معطلة</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="c-notes" rows="2" style="resize:vertical"></textarea></div>
+        <textarea class="fi" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
@@ -2453,48 +2457,54 @@ function getLabelSizes(){
 
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  const {qrSize, bcH, lblW} = getLabelSizes();
+  const {qrSize, bcH} = getLabelSizes();
 
-  // ── QR Code ──
-  const qc = document.getElementById('gen-qr');
-  if(qc){
-    qc.innerHTML = '';
-    qc.style.width  = qrSize + 'px';
-    qc.style.height = qrSize + 'px';
-    qc.style.flexShrink = '0';
+  // ── QR Code على canvas مباشرة ──
+  const qCanvas = document.getElementById('gen-qr');
+  if(qCanvas && typeof QRCode !== 'undefined'){
+    qCanvas.width  = qrSize;
+    qCanvas.height = qrSize;
+    qCanvas.style.width  = qrSize + 'px';
+    qCanvas.style.height = qrSize + 'px';
     try{
-      new QRCode(qc, {
-        text: _genQrData,
-        width: qrSize, height: qrSize,
-        colorDark: '#000000', colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      // اجبر الـ img/canvas داخل QR على الحجم الصحيح
+      // استخدم QRCode مع canvas مباشرة
+      const ctx = qCanvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, qrSize, qrSize);
+      // توليد QR في div مؤقت ثم نسخه للـ canvas
+      const tmp = document.createElement('div');
+      tmp.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
+      document.body.appendChild(tmp);
+      new QRCode(tmp, {text:_genQrData, width:qrSize, height:qrSize,
+        colorDark:'#000000', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M});
       setTimeout(()=>{
-        const img = qc.querySelector('img,canvas');
-        if(img){ img.style.width=qrSize+'px'; img.style.height=qrSize+'px'; img.style.display='block'; }
-      }, 50);
+        const src = tmp.querySelector('canvas,img');
+        if(src){
+          if(src.tagName==='CANVAS'){
+            ctx.drawImage(src, 0, 0, qrSize, qrSize);
+          } else {
+            const img = new Image();
+            img.onload = ()=>{ ctx.drawImage(img, 0, 0, qrSize, qrSize); };
+            img.src = src.src;
+          }
+        }
+        document.body.removeChild(tmp);
+      }, 100);
     }catch(e){ console.error('QR:',e); }
   }
 
   // ── Barcode ──
   const bc = document.getElementById('gen-bc');
-  if(bc){
-    // حذف الـ attributes القديمة
+  if(bc && typeof JsBarcode !== 'undefined'){
     bc.removeAttribute('width');
     bc.removeAttribute('height');
-    bc.style.cssText = 'display:block;';
+    bc.style.display = 'block';
     try{
       JsBarcode(bc, _genCode, {
-        format: 'CODE128',
-        width: 2, height: bcH,
-        displayValue: false,
-        margin: 4,
-        background: '#ffffff',
-        lineColor: '#000000'
+        format:'CODE128', width:2, height:bcH,
+        displayValue:false, margin:4,
+        background:'#ffffff', lineColor:'#000000'
       });
-      // بعد JsBarcode يضيف width/height للـ SVG — احترمها
-      bc.style.display = 'block';
     }catch(e){ console.error('BC:',e); }
   }
 }
@@ -2698,7 +2708,7 @@ async function initApp(){
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
     });
     const circBtn=document.getElementById('btn-add-circ');
-    if(circBtn) circBtn.style.display=isAdmin?'':'none';
+    if(circBtn) circBtn.style.display='';  // مرئي للجميع
   }
 
   try{
@@ -3039,7 +3049,8 @@ function renderMaint(){
     <td style="text-align:center">${m.qty||0}</td>
     <td>${m.reason||'—'}</td>
     <td>${m.technician||'—'}</td>
-    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
+    <td>${['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'].map(k=>`<button class="btn btn-o btn-sm" style="font-size:10px;padding:2px 6px;margin:1px" onclick="viewFile('maint_${m.id}_${k}')" title="${k}">📎</button>`).join('')}</td>
     <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
   </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
@@ -3056,23 +3067,31 @@ function openMaintModal(id){
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   filterMaintStations();
   if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
-  document.getElementById('maint-device').value=m.device_type||'';
-  document.getElementById('maint-qty').value=m.qty||1;
+  const devEl=document.getElementById('maint-device'); if(devEl) devEl.value=m.device_type||'';
+  const qtyEl=document.getElementById('maint-qty'); if(qtyEl) qtyEl.value=m.qty||1;
   document.getElementById('maint-reason').value=m.reason||'';
   document.getElementById('maint-tech').value=m.technician||'';
   document.getElementById('maint-notes').value=m.notes||'';
+  const saEl=document.getElementById('maint-status-after'); if(saEl) saEl.value=m.status_after||'يعمل بشكل طبيعي';
 }
 async function saveMaint(){
   const id=parseInt(document.getElementById('maint-eid').value)||0;
   const stId=parseInt(document.getElementById('maint-station').value)||0;
   const st=allStations.find(s=>s.id===stId)||{};
   const body={date:document.getElementById('maint-date').value, district:document.getElementById('maint-district').value,
-    station_id:stId, station_name:st.name||'', device_type:document.getElementById('maint-device').value,
-    qty:parseInt(document.getElementById('maint-qty').value)||1, reason:document.getElementById('maint-reason').value,
-    technician:document.getElementById('maint-tech').value, notes:document.getElementById('maint-notes').value};
+    station_id:stId, station_name:st.name||'', device_type:document.getElementById('maint-device').value||'',
+    qty:parseInt(document.getElementById('maint-qty')?.value)||1, reason:document.getElementById('maint-reason').value,
+    technician:document.getElementById('maint-tech').value, notes:document.getElementById('maint-notes').value,
+    status_after:document.getElementById('maint-status-after')?.value||''};
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
-    id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
+    const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
+    const mid=id||r.id;
+    // رفع الملفات المرفقة
+    const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
+    for(const k of fileKeys){
+      if(UF[k]){ await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime}); delete UF[k]; }
+    }
     closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
@@ -3143,11 +3162,12 @@ function openCamModal(id){
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${c.district===d?'selected':''}>${d}</option>`).join('');
   filterCamStations();
   if(c.station_id)setTimeout(()=>document.getElementById('cam-station').value=c.station_id,50);
-  ['cam-no','cam-type','cam-mfr','cam-loc','cam-last','cam-notes'].forEach((fid,idx)=>{
-    const keys=['cam_no','cam_type','manufacturer','location_detail','last_maintenance','notes'];
-    const el=document.getElementById(fid); if(el) el.value=c[keys[idx]]||'';
+  [{id:'cam-no',key:'cam_no'},{id:'cam-loc',key:'location_detail'},{id:'cam-mfr',key:'manufacturer'},
+   {id:'cam-last',key:'last_maintenance'},{id:'cam-notes',key:'notes'}].forEach(({id,key})=>{
+    const el=document.getElementById(id); if(el) el.value=c[key]||'';
   });
-  document.getElementById('cam-status').value=c.status||'يعمل';
+  const ctEl=document.getElementById('cam-type'); if(ctEl) ctEl.value=c.cam_type||'';
+  const csEl=document.getElementById('cam-status'); if(csEl) csEl.value=c.status||'يعمل';
 }
 async function saveCam(){
   const id=parseInt(document.getElementById('cam-eid').value)||0;
