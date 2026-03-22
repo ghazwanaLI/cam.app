@@ -1021,6 +1021,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div><label class="fl">رقم الجهاز</label>
                 <input class="fi" id="gen-num" type="text" placeholder="001" oninput="updateGenCode()">
               </div>
+              <div id="gen-distcode-wrap" style="display:none">
+                <label class="fl" style="color:#d97706">⚠️ كود القاطع (Latin) *</label>
+                <input class="fi" id="gen-distcode" type="text" placeholder="مثال: NK أو D09"
+                  style="direction:ltr;border-color:#d97706;text-transform:uppercase"
+                  oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();updateGenCode()">
+                <div style="font-size:10px;color:#94a3b8;margin-top:3px">القاطع غير موجود في القائمة — أدخل اختصاراً بالأحرف اللاتينية</div>
+              </div>
               <div><label class="fl">Serial Number</label>
                 <input class="fi" id="gen-serial" type="text" placeholder="امسح أو أدخل يدوياً..." style="direction:ltr" onkeydown="onGenScanKey(event)">
               </div>
@@ -1031,25 +1038,73 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <button class="btn btn-p" onclick="generateLabel()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">⚡ توليد الباركود والQR</button>
             </div>
             <!-- المعاينة -->
-            <div id="gen-preview" style="display:none;flex-direction:column;align-items:center;gap:12px">
-              <div style="font-size:13px;font-weight:800;color:var(--text);align-self:flex-start">📋 معاينة الليبل</div>
-              <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:8px;width:300px;border-radius:4px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                  <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2"></span>
-                  <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed"></span>
-                </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <div id="gen-qr" style="flex-shrink:0"></div>
-                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
-                    <svg id="gen-bc" style="width:100%;display:block"></svg>
-                    <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000"></div>
+            <div id="gen-preview" style="display:none;flex-direction:column;align-items:flex-start;gap:14px">
+              <div style="font-size:13px;font-weight:800;color:var(--text)">📋 معاينة الليبل</div>
+
+              <!-- Size Controls -->
+              <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px;width:100%">
+                <div style="font-size:12px;font-weight:800;color:var(--p1);margin-bottom:12px">⚙️ ضبط الحجم — يتحدث الليبل فوراً</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);font-weight:700;margin-bottom:4px">
+                      <span>📐 عرض الليبل</span><span id="lbl-w-val" style="color:var(--p1);font-weight:900">80 مم</span>
+                    </div>
+                    <input type="range" id="ctrl-lbl-w" min="40" max="150" value="80" step="5"
+                      oninput="document.getElementById('lbl-w-val').textContent=this.value+' مم';rebuildLabel()"
+                      style="width:100%;accent-color:var(--p1)">
                   </div>
+
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);font-weight:700;margin-bottom:4px">
+                      <span>📏 ارتفاع الليبل</span><span id="lbl-h-val" style="color:var(--p1);font-weight:900">50 مم</span>
+                    </div>
+                    <input type="range" id="ctrl-lbl-h" min="20" max="100" value="50" step="5"
+                      oninput="document.getElementById('lbl-h-val').textContent=this.value+' مم';rebuildLabel()"
+                      style="width:100%;accent-color:var(--p1)">
+                  </div>
+
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);font-weight:700;margin-bottom:4px">
+                      <span>◼ حجم QR Code</span><span id="qr-size-val" style="color:#7c3aed;font-weight:900">90 px</span>
+                    </div>
+                    <input type="range" id="ctrl-qr-size" min="40" max="200" value="90" step="5"
+                      oninput="document.getElementById('qr-size-val').textContent=this.value+' px';rebuildLabel()"
+                      style="width:100%;accent-color:#7c3aed">
+                  </div>
+
+                  <div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);font-weight:700;margin-bottom:4px">
+                      <span>▌ ارتفاع الباركود</span><span id="bc-h-val" style="color:#0891b2;font-weight:900">40 px</span>
+                    </div>
+                    <input type="range" id="ctrl-bc-h" min="20" max="120" value="40" step="5"
+                      oninput="document.getElementById('bc-h-val').textContent=this.value+' px';rebuildLabel()"
+                      style="width:100%;accent-color:#0891b2">
+                  </div>
+
                 </div>
               </div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
-                <button class="btn btn-o" onclick="saveGenImg()">💾 صورة</button>
-                <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
+
+              <!-- Label Preview -->
+              <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%">
+                <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:8px;width:300px;border-radius:4px;transition:all .2s">
+                  <div style="display:flex;justify-content:space-between;margin-bottom:6px">
+                    <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2"></span>
+                    <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed"></span>
+                  </div>
+                  <div style="display:flex;gap:8px;align-items:center">
+                    <div id="gen-qr" style="flex-shrink:0"></div>
+                    <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
+                      <svg id="gen-bc" style="width:100%;display:block"></svg>
+                      <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000"></div>
+                    </div>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+                  <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
+                  <button class="btn btn-o" onclick="saveGenImg()">💾 حفظ صورة</button>
+                  <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
+                </div>
               </div>
             </div>
           </div>
@@ -2220,6 +2275,50 @@ function exportCodingExcel(){
 
 
 
+// Stored globally so rebuildLabel can access them
+let _genQrData='', _genCode='';
+
+const _loadLib=(src,checkGlobal)=>new Promise((res,rej)=>{
+  if(checkGlobal && typeof window[checkGlobal]!=='undefined'){res();return;}
+  const old=document.querySelector('script[src="'+src+'"]');
+  if(old) old.remove();
+  const s=document.createElement('script');
+  s.src=src; s.onload=res; s.onerror=()=>rej(new Error('فشل تحميل: '+src));
+  document.head.appendChild(s);
+});
+
+function getLabelSizes(){
+  return {
+    qrSize : parseInt(document.getElementById('ctrl-qr-size')?.value)||90,
+    bcH    : parseInt(document.getElementById('ctrl-bc-h')?.value)||40,
+    lblW   : parseInt(document.getElementById('ctrl-lbl-w')?.value)||80,
+    lblH   : parseInt(document.getElementById('ctrl-lbl-h')?.value)||50,
+  };
+}
+
+function applyLabelSize(){
+  const {lblW} = getLabelSizes();
+  // Scale preview box width proportionally (80mm ≈ 300px base)
+  const px = Math.round(lblW * 3.75);
+  const lbl = document.getElementById('gen-lbl');
+  if(lbl) lbl.style.width = px+'px';
+}
+
+function rebuildLabel(){
+  if(!_genQrData || !_genCode) return;
+  applyLabelSize();
+  const {qrSize, bcH} = getLabelSizes();
+  const qc = document.getElementById('gen-qr');
+  if(qc){
+    qc.innerHTML='';
+    try{ new QRCode(qc,{text:_genQrData,width:qrSize,height:qrSize,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M}); }catch(e){}
+  }
+  const bc = document.getElementById('gen-bc');
+  if(bc){
+    try{ JsBarcode(bc,_genCode,{format:'CODE128',width:2.5,height:bcH,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'}); }catch(e){}
+  }
+}
+
 function generateLabel(){
   const station=document.getElementById('gen-station')?.value||'';
   if(!station){toast('اختر المحطة أولاً','err');return;}
@@ -2227,122 +2326,67 @@ function generateLabel(){
   const deviceNames={'NVR':'NVR — تسجيل شبكي','DVR':'DVR — تسجيل رقمي','CAM':'كاميرا','POE':'سويج POE','UPS':'UPS عاكس','HDD':'هارد ديسك'};
   const serial=(document.getElementById('gen-serial')?.value||'').trim();
   const code=updateGenCode();
-  if(code==='—'){toast('أدخل بيانات الجهاز','err');return;}
-  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+  if(!code||code==='—'||!/^[\x20-\x7E]+$/.test(code)){
+    toast('لا يمكن توليد باركود — تحقق من اسم القاطع','err');return;
+  }
+  _genQrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+  _genCode=code;
 
-  // Set text labels
   document.getElementById('gl-station').textContent=station;
   document.getElementById('gl-device').textContent=deviceNames[device]||device;
   document.getElementById('gen-num-label').textContent=code;
 
-  // Show preview FIRST so canvas gets real dimensions
   const preview=document.getElementById('gen-preview');
   preview.style.display='flex';
-
-  // Load libs — check global var existence, not just script tag presence
-  const loadLib=(src,checkGlobal)=>new Promise((res,rej)=>{
-    if(checkGlobal && typeof window[checkGlobal]!=='undefined'){res();return;}
-    // Remove any previous failed script tag for this src
-    const old=document.querySelector('script[src="'+src+'"]');
-    if(old) old.remove();
-    const s=document.createElement('script');
-    s.src=src;
-    s.onload=()=>{res();};
-    s.onerror=()=>rej(new Error('فشل تحميل: '+src));
-    document.head.appendChild(s);
-  });
+  applyLabelSize();
 
   Promise.all([
-    loadLib('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js','QRCode'),
-    loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode')
-  ]).then(()=>{
-    setTimeout(()=>{
-      // QR Code
-      const qc=document.getElementById('gen-qr');
-      qc.innerHTML='';
-      try{
-        new QRCode(qc,{text:qrData,width:90,height:90,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
-      }catch(e){console.error('QR:',e);toast('خطأ في توليد QR','err');return;}
-
-      // Barcode — SVG element
-      const bc=document.getElementById('gen-bc');
-      try{
-        JsBarcode(bc,code,{format:'CODE128',width:2.5,height:40,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'});
-        toast('تم التوليد ✅');
-      }catch(e){console.error('BC:',e);toast('خطأ في توليد الباركود','err');}
-    },200);
-  }).catch((err)=>{console.error(err);toast('خطأ في تحميل المكتبات','err');});
+    _loadLib('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js','QRCode'),
+    _loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode')
+  ]).then(()=>{ setTimeout(()=>{ rebuildLabel(); toast('تم التوليد ✅'); },200); })
+    .catch(err=>{ console.error(err); toast('خطأ في تحميل المكتبات','err'); });
 }
 
 function printGenLabel(){
   const code=document.getElementById('gen-code-display').textContent;
   const station=document.getElementById('gl-station').textContent;
   const device=document.getElementById('gl-device').textContent;
-  const serial=document.getElementById('gen-serial')?.value||'';
-  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+  const {qrSize,bcH,lblW,lblH}=getLabelSizes();
+  const qrData=_genQrData||window.location.origin+'/scan/'+code;
   const S='script';
-  const w=window.open('','_blank','width=580,height=540');
+  const w=window.open('','_blank','width=620,height=560');
   w.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
     +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
-    +'body{background:#ddd;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
-    +'.ctrl{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:440px}'
-    +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:2px}'
-    +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
-    +'.apply{grid-column:1/-1;background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-size:13px;font-weight:bold}'
+    +'<style>'
+    +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'body{background:#e2e8f0;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px}'
     +'.lbl{background:#fff;border:2px solid #111;padding:8px;display:flex;flex-direction:column;gap:6px}'
     +'.lbl-info{display:flex;justify-content:space-between;font-size:10px;font-weight:bold}'
     +'.lbl-body{display:flex;gap:6px;align-items:center}'
     +'.bc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}'
     +'.bc-num{font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold}'
     +'.btns{display:flex;gap:8px}'
-    +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
-    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
+    +'.btn{padding:8px 20px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
+    +'@media print{@page{size:'+lblW+'mm '+lblH+'mm;margin:0}.btns{display:none!important}body{background:#fff;padding:0}}'
     +'</style></head><body>'
-    +'<div class="ctrl">'
-    +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
-    +'<div class="cg"><label>ارتفاع (مم)</label><input id="H" type="number" value="50"></div>'
-    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="95"></div>'
-    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="36"></div>'
-    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
-    +'</div>'
-    +'<div class="lbl" id="lbl">'
-    +'<div class="lbl-info">'
-    +'<span style="color:#0891b2">'+station+'</span>'
-    +'<span style="color:#7c3aed">'+device+'</span>'
-    +'</div>'
-    +'<div class="lbl-body">'
-    +'<div id="qr"></div>'
-    +'<div class="bc-wrap">'
-    +'<canvas id="bc" style="width:100%"></canvas>'
-    +'<div class="bc-num">'+code+'</div>'
-    +'</div>'
-    +'</div>'
-    +'</div>'
+    +'<div class="lbl" id="lbl" style="width:'+lblW+'mm">'
+    +'<div class="lbl-info"><span style="color:#0891b2">'+station+'</span><span style="color:#7c3aed">'+device+'</span></div>'
+    +'<div class="lbl-body"><div id="qr"></div>'
+    +'<div class="bc-wrap"><canvas id="bc" style="width:100%"></canvas>'
+    +'<div class="bc-num">'+code+'</div></div></div></div>'
     +'<div class="btns">'
     +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
     +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 صورة</button>'
     +'</div>'
     +'<'+S+'>'
-    +'function build(){'
-    +'var W=+document.getElementById("W").value||80;'
-    +'var H=+document.getElementById("H").value||50;'
-    +'var QS=+document.getElementById("QS").value||95;'
-    +'var BH=+document.getElementById("BH").value||36;'
-    +'document.getElementById("lbl").style.width=W+"mm";'
-    +'document.getElementById("lbl").style.height=H+"mm";'
-    +'var st=document.createElement("style");'
-    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
-    +'document.head.appendChild(st);'
-    +'document.getElementById("qr").innerHTML="";'
-    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
-    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2,height:BH,displayValue:false,margin:0,background:"#fff",lineColor:"#000"});}catch(e){}'
-    +'}'
+    +'window.onload=function(){'
+    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:'+qrSize+',height:'+qrSize+',colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
+    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2.5,height:'+bcH+',displayValue:false,margin:2,background:"#fff",lineColor:"#000"});}catch(e){}'
+    +'};'
     +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},400);}'
-    +'window.onload=function(){build();};'
     +'<\/script>'
     +'</body></html>'
   );
@@ -2350,19 +2394,27 @@ function printGenLabel(){
 }
 
 function saveGenImg(){
-  if(typeof html2canvas==='undefined'){
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    s.onload=()=>doSaveGenImg();
-    document.head.appendChild(s);
-  } else { doSaveGenImg(); }
+  const load=()=>{
+    if(typeof html2canvas==='undefined'){
+      const s=document.createElement('script');
+      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+      s.onload=doSaveGenImg; document.head.appendChild(s);
+    } else { doSaveGenImg(); }
+  };
+  // Rebuild first to ensure latest sizes are applied, then save
+  rebuildLabel();
+  setTimeout(load, 300);
 }
 function doSaveGenImg(){
   const code=document.getElementById('gen-code-display').textContent;
-  html2canvas(document.getElementById('gen-lbl'),{scale:5,backgroundColor:'#fff'}).then(cv=>{
-    const a=document.createElement('a');a.download='label_'+code+'.png';
-    a.href=cv.toDataURL('image/png');a.click();
-  });
+  toast('جاري الحفظ...');
+  html2canvas(document.getElementById('gen-lbl'),{scale:6,backgroundColor:'#fff',useCORS:true}).then(cv=>{
+    const a=document.createElement('a');
+    a.download='label_'+code+'.png';
+    a.href=cv.toDataURL('image/png');
+    a.click();
+    toast('تم حفظ الصورة ✅');
+  }).catch(()=>toast('خطأ في حفظ الصورة','err'));
 }
 
 async function saveGenToList(){
@@ -2977,11 +3029,50 @@ function updateGenCode(){
   const device=document.getElementById('gen-device')?.value||'NVR';
   const num=(document.getElementById('gen-num')?.value||'001').padStart(3,'0');
   if(!station){document.getElementById('gen-code-display').textContent='—';return '—';}
+
   const stObj=allStations.find(s=>s.name===station)||{};
   const dist=stObj.district||'';
-  const distCode={'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM','العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ'}[dist]||dist.slice(0,2).toUpperCase();
+  const stId=stObj.id||0;
+
+  // خريطة القواطع المعروفة → كود ASCII
+  const DIST_MAP={
+    'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
+    'العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ',
+  };
+
+  const wrapEl=document.getElementById('gen-distcode-wrap');
+  let distCode=DIST_MAP[dist];
+  if(!distCode){
+    // إظهار حقل الإدخال اليدوي للقواطع غير المعروفة
+    if(wrapEl) wrapEl.style.display='block';
+    const manual=(document.getElementById('gen-distcode')?.value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+    if(manual){
+      distCode=manual;
+    } else if(stId){
+      distCode='ST'+String(stId).padStart(2,'0');
+    } else {
+      distCode='D'+String(allStations.findIndex(s=>s.name===station)+1).padStart(2,'0');
+    }
+  } else {
+    // إخفاء حقل الإدخال اليدوي إذا كان القاطع معروفاً
+    if(wrapEl) wrapEl.style.display='none';
+    const manualEl=document.getElementById('gen-distcode');
+    if(manualEl) manualEl.value='';
+  }
+
   const code=`${device}-${distCode}-${num}`;
-  document.getElementById('gen-code-display').textContent=code;
+
+  // تحقق: الكود يجب أن يحتوي ASCII فقط (لأن JsBarcode CODE128 لا يدعم Unicode)
+  const isASCII=/^[ -~]+$/.test(code);
+  const display=document.getElementById('gen-code-display');
+  if(!isASCII){
+    display.textContent='—';
+    display.style.color='#dc2626';
+    toast('خطأ: اسم القاطع يحتوي أحرف غير مدعومة للباركود','err');
+    return '—';
+  }
+  display.style.color='#0891b2';
+  display.textContent=code;
   return code;
 }
 
