@@ -1892,54 +1892,53 @@ tr:hover td{background:rgba(30,58,95,.03);}
 </div>
 
 <script>const API='';
-let TOKEN=localStorage.getItem('cam_token')||'dev-token';
-let CU={id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}};
+let TOKEN=localStorage.getItem('cam_token')||'';
+let CU=null;
 let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
 let sP_t=1,sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
 
-// ── DEV MODE (bypass login) ──
-const DEV_MODE = new URLSearchParams(location.search).has('dev');
-if(DEV_MODE) console.warn('🚧 DEV MODE — تجاوز تسجيل الدخول');
-
-const DEV_MOCK = {
-  '/api/me':         {user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}},
-  '/api/stations':   {stations:[]},
-  '/api/tours':      {tours:[]},
-  '/api/maintenance':{maintenance:[]},
-  '/api/cameras':    {cameras:[]},
-  '/api/inventory':  {inventory:[]},
-  '/api/coding':     {coding:[]},
-  '/api/circulars':  {circulars:[],reads:[]},
-  '/api/delegates':  {delegates:[]},
-  '/api/users':      {users:[]},
-  '/api/logs':       {logs:[]},
-  '/api/districts':  {districts:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']},
-};
+// بيانات الدخول التلقائي (بدون شاشة لوجن)
+const AUTO_USER='admin';
+const AUTO_PASS='1000';
 
 // ── API ──
 async function api(method,path,body=null){
-  if(DEV_MODE){
-    const base=path.split('?')[0].replace(/\/\d+$/,'');
-    const mock=DEV_MOCK[base]||DEV_MOCK[path]||{ok:true};
-    console.log(`[DEV] ${method} ${path}`,body||'');
-    return JSON.parse(JSON.stringify(mock));
-  }
   try{
-    const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:body?JSON.stringify(body):null});
+    const r=await fetch(API+path,{
+      method,
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+      body:body?JSON.stringify(body):null
+    });
     if(r.status===401&&path!=='/api/login'){
-      TOKEN='';localStorage.removeItem('cam_token');
-      document.getElementById('login-screen').style.display='flex';
-      document.getElementById('app').style.display='none';
+      // حاول تجديد الجلسة تلقائياً
+      const ok=await silentLogin();
+      if(ok) return api(method,path,body); // أعد المحاولة
       throw new Error('انتهت الجلسة');
     }
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
     return d;
   }catch(e){
-    if(e.message==='Failed to fetch') throw new Error('لا يوجد اتصال');
+    if(e.message==='Failed to fetch') throw new Error('لا يوجد اتصال بالسيرفر');
     throw e;
   }
+}
+
+// دخول صامت تلقائي
+async function silentLogin(){
+  try{
+    const r=await fetch(API+'/api/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username:AUTO_USER,password:AUTO_PASS})
+    });
+    if(!r.ok) return false;
+    const d=await r.json();
+    TOKEN=d.token; CU=d.user;
+    localStorage.setItem('cam_token',TOKEN);
+    return true;
+  }catch(e){ return false; }
 }
 
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;setTimeout(()=>el.classList.remove('show'),3500);}
@@ -1971,6 +1970,22 @@ async function doLogout(){
 async function tryAutoLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
+
+  // إذا في token مخزن جرب تحققه، وإلا سجل دخول تلقائي
+  if(TOKEN){
+    try{
+      const d=await api('GET','/api/me');
+      CU=d.user;
+    }catch(e){
+      TOKEN=''; localStorage.removeItem('cam_token');
+      const ok=await silentLogin();
+      if(!ok){ toast('لا يوجد اتصال بالسيرفر','err'); return; }
+    }
+  } else {
+    const ok=await silentLogin();
+    if(!ok){ toast('لا يوجد اتصال بالسيرفر','err'); return; }
+  }
+
   await initApp();
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
