@@ -370,10 +370,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span>جرد الكاميرات</div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span>ترميز الأجهزة</div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
-      <div class="nav-item hidden" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
-      <div class="nav-item" id="nav-reports" class="nav-item hidden" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
+      <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
+      <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
       <div class="nav-sect" id="admin-sect" style="display:none">|</div>
-      <div class="nav-item" id="nav-delegates" class="nav-item hidden" onclick="goTab('delegates',this)" style="display:none"><span class="ni">👥</span>القواطع</div>
       <div class="nav-item" id="nav-logs" class="nav-item hidden" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span>السجل</div>
     </div>
   </div>
@@ -1079,15 +1078,15 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
               <!-- معاينة الليبل -->
               <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;overflow:auto">
-                <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:8px;display:inline-flex;flex-direction:column;gap:6px;border-radius:4px">
-                  <div style="display:flex;justify-content:space-between;gap:12px">
+                <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:10px;display:inline-block;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.1)">
+                  <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:8px">
                     <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2;white-space:nowrap"></span>
                     <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
                   </div>
-                  <div style="display:flex;gap:8px;align-items:center">
-                    <div id="gen-qr" style="flex-shrink:0;line-height:0"></div>
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:3px;min-width:0">
-                      <svg id="gen-bc" style="display:block;max-width:100%"></svg>
+                  <div style="display:flex;gap:10px;align-items:flex-start">
+                    <div id="gen-qr" style="flex-shrink:0;line-height:0;border:1px solid #eee"></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
+                      <svg id="gen-bc"></svg>
                       <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;white-space:nowrap"></div>
                     </div>
                   </div>
@@ -2446,35 +2445,47 @@ function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
   const {qrSize, bcH, lblW} = getLabelSizes();
 
-  // ضبط عرض الـ QR وحده بدون تأثير على باقي الـ layout
+  // ── QR Code ──
   const qc = document.getElementById('gen-qr');
   if(qc){
-    qc.innerHTML='';
+    qc.innerHTML = '';
+    qc.style.width  = qrSize + 'px';
+    qc.style.height = qrSize + 'px';
+    qc.style.flexShrink = '0';
     try{
-      new QRCode(qc,{
-        text:_genQrData, width:qrSize, height:qrSize,
-        colorDark:'#000', colorLight:'#fff',
-        correctLevel:QRCode.CorrectLevel.M
+      new QRCode(qc, {
+        text: _genQrData,
+        width: qrSize, height: qrSize,
+        colorDark: '#000000', colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
       });
-    }catch(e){ console.error('QR error:',e); }
+      // اجبر الـ img/canvas داخل QR على الحجم الصحيح
+      setTimeout(()=>{
+        const img = qc.querySelector('img,canvas');
+        if(img){ img.style.width=qrSize+'px'; img.style.height=qrSize+'px'; img.style.display='block'; }
+      }, 50);
+    }catch(e){ console.error('QR:',e); }
   }
 
-  // ضبط الباركود بعرض ثابت بناءً على عرض الليبل
+  // ── Barcode ──
   const bc = document.getElementById('gen-bc');
   if(bc){
-    // عرض الباركود = عرض الليبل بالـ px ناقص عرض QR وبعض الـ padding
-    const bcW = Math.max(60, Math.round(lblW * 3.2) - qrSize - 24);
+    // حذف الـ attributes القديمة
+    bc.removeAttribute('width');
+    bc.removeAttribute('height');
+    bc.style.cssText = 'display:block;';
     try{
       JsBarcode(bc, _genCode, {
-        format:'CODE128', width:1.5, height:bcH,
-        displayValue:false, margin:2,
-        background:'#ffffff', lineColor:'#000000'
+        format: 'CODE128',
+        width: 2, height: bcH,
+        displayValue: false,
+        margin: 4,
+        background: '#ffffff',
+        lineColor: '#000000'
       });
-      // اجعل الـ SVG له عرض محدد بدل width:100%
-      bc.setAttribute('width', bcW);
-      bc.style.width = bcW+'px';
-      bc.style.maxWidth = 'none';
-    }catch(e){ console.error('BC error:',e); }
+      // بعد JsBarcode يضيف width/height للـ SVG — احترمها
+      bc.style.display = 'block';
+    }catch(e){ console.error('BC:',e); }
   }
 }
 
@@ -2668,9 +2679,10 @@ async function initApp(){
     if(dt) dt.textContent = CU.district||'';
 
     const isAdmin = CU.role==='admin';
-    ['nav-users','nav-logs','nav-delegates','admin-sect'].forEach(id=>{
+    ['nav-logs','admin-sect'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
     });
+    // nav-delegates removed; nav-users always visible
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
     ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
