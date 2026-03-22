@@ -1034,20 +1034,20 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <!-- المعاينة -->
             <div id="gen-preview" style="display:none;flex-direction:column;align-items:center;gap:12px">
               <div style="font-size:13px;font-weight:800;color:var(--text);align-self:flex-start">📋 معاينة الليبل</div>
-              <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:8px;width:300px;border-radius:4px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:6px">
-                  <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2"></span>
-                  <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed"></span>
+              <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:8px;width:320px;border-radius:4px;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+                <div style="display:flex;justify-content:space-between;margin-bottom:6px;padding:3px 2px;background:#0891b2;border-radius:3px">
+                  <span id="gl-station" style="font-size:10px;font-weight:900;color:#fff;padding:0 4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:50%"></span>
+                  <span id="gl-device" style="font-size:10px;font-weight:700;color:rgba(255,255,255,.85);padding:0 4px;white-space:nowrap"></span>
                 </div>
-                <div style="display:flex;gap:8px;align-items:center">
-                  <div id="gen-qr" style="flex-shrink:0"></div>
+                <div style="display:flex;gap:6px;align-items:center;min-height:95px">
+                  <div id="gen-qr" style="flex-shrink:0;width:90px;height:90px;display:flex;align-items:center;justify-content:center"></div>
                   <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px">
-                    <canvas id="gen-bc" style="width:100%"></canvas>
-                    <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000"></div>
+                    <canvas id="gen-bc" width="180" height="36" style="width:100%;max-width:180px;display:block"></canvas>
+                    <div id="gen-num-label" style="font-family:monospace;font-size:9px;letter-spacing:2px;font-weight:bold;color:#000;text-align:center"></div>
                   </div>
                 </div>
               </div>
-              <div style="display:flex;gap:8px">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
                 <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
                 <button class="btn btn-o" onclick="saveGenImg()">💾 صورة</button>
                 <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
@@ -2199,7 +2199,232 @@ function exportCodingExcel(){
     toast('تم التصدير ✅');
   }).catch(e=>toast('خطأ: '+e,'err'));
 }
-/* الدوال الثانية المكررة — حُذفت، النسخ الأصلية في الأعلى تعمل بشكل صحيح */
+function swCodingTab(name, btn){
+  document.querySelectorAll('.coding-sub').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  ['list','gen'].forEach(n=>{
+    const p=document.getElementById('cpane-'+n);
+    if(p) p.style.display=n===name?'block':'none';
+  });
+  if(name==='gen'){
+    // Populate station select
+    const sel=document.getElementById('gen-station');
+    if(sel&&sel.options.length<=1){
+      allStations.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);});
+    }
+  }
+}
+
+function updateGenCode(){
+  const station=(document.getElementById('gen-station')?.value||'').trim();
+  const device=(document.getElementById('gen-device')?.value||'NVR');
+  const num=(document.getElementById('gen-num')?.value||'').trim();
+  // Build code: first 3 chars of station + device + num
+  const stCode=station?station.replace(/\s+/g,'').substring(0,4).toUpperCase():'XXX';
+  const code=num?`${stCode}-${device}-${num}`:`${stCode}-${device}`;
+  document.getElementById('gen-code-display').textContent=code||'—';
+  return code;
+}
+
+function onGenScanKey(e){
+  if(e.key==='Enter') generateLabel();
+}
+
+function generateLabel(){
+  const station=document.getElementById('gen-station')?.value||'';
+  if(!station){toast('اختر المحطة أولاً','err');return;}
+  const device=document.getElementById('gen-device')?.value||'NVR';
+  const deviceNames={'NVR':'NVR — تسجيل شبكي','DVR':'DVR — تسجيل رقمي','CAM':'كاميرا','POE':'سويج POE','UPS':'UPS عاكس','HDD':'هارد ديسك'};
+  const serial=(document.getElementById('gen-serial')?.value||'').trim();
+  const code=updateGenCode();
+  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+
+  /* تحديث نصوص الليبل */
+  document.getElementById('gl-station').textContent=station;
+  document.getElementById('gl-device').textContent=deviceNames[device]||device;
+  document.getElementById('gen-num-label').textContent=code;
+
+  /* إظهار المعاينة أولاً حتى تأخذ الـ canvas أبعادها */
+  const preview=document.getElementById('gen-preview');
+  preview.style.display='flex';
+
+  /* تحميل المكتبات */
+  const loadLibs=()=>new Promise((res)=>{
+    if(window.QRCode&&window.JsBarcode){res();return;}
+    let done=0,needed=0;
+    const tryRes=()=>{done++;if(done>=needed)res();};
+    const addLib=(src,key)=>{
+      if(window[key]){tryRes();return;}
+      needed++;
+      const s=document.createElement('script');
+      s.src=src;s.onload=tryRes;s.onerror=()=>{console.warn('فشل تحميل:',src);tryRes();};
+      document.head.appendChild(s);
+    };
+    addLib('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js','QRCode');
+    addLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode');
+    if(needed===0)res();
+  });
+
+  toast('⏳ جاري التوليد...');
+  loadLibs().then(()=>{
+    /* ── QR Code ── */
+    const qc=document.getElementById('gen-qr');
+    qc.innerHTML=''; /* امسح القديم */
+    /* إعطاء الـ div أبعاد صريحة مطلوبة لـ QRCode.js */
+    qc.style.width='90px';
+    qc.style.height='90px';
+    if(window.QRCode){
+      try{
+        new QRCode(qc,{
+          text:qrData,
+          width:90,height:90,
+          colorDark:'#000000',
+          colorLight:'#ffffff',
+          correctLevel:QRCode.CorrectLevel.M
+        });
+      }catch(e){console.error('QR error:',e);}
+    }else{
+      qc.innerHTML='<div style="width:90px;height:90px;background:#fef3c7;border:1px solid #fbbf24;display:flex;align-items:center;justify-content:center;font-size:9px;color:#92400e;text-align:center;border-radius:4px">QR<br>غير متاح</div>';
+    }
+
+    /* ── Barcode ── */
+    const bc=document.getElementById('gen-bc');
+    /* إعادة تعيين أبعاد الـ canvas بشكل صريح قبل الرسم */
+    bc.width=200;
+    bc.height=40;
+    if(window.JsBarcode){
+      try{
+        JsBarcode(bc,code,{
+          format:'CODE128',
+          width:2,
+          height:36,
+          displayValue:false,
+          margin:2,
+          background:'#ffffff',
+          lineColor:'#000000'
+        });
+      }catch(e){console.error('BC error:',e);}
+    }
+
+    toast('✅ تم توليد الباركود والـ QR');
+  });
+}
+
+function printGenLabel(){
+  const code=document.getElementById('gen-code-display').textContent;
+  const station=document.getElementById('gl-station').textContent;
+  const device=document.getElementById('gl-device').textContent;
+  const serial=document.getElementById('gen-serial')?.value||'';
+  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+  const S='script';
+  const w=window.open('','_blank','width=580,height=540');
+  w.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'body{background:#ddd;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
+    +'.ctrl{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:440px}'
+    +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:2px}'
+    +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
+    +'.apply{grid-column:1/-1;background:#7c3aed;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-size:13px;font-weight:bold}'
+    +'.lbl{background:#fff;border:2px solid #111;padding:8px;display:flex;flex-direction:column;gap:6px}'
+    +'.lbl-info{display:flex;justify-content:space-between;font-size:10px;font-weight:bold}'
+    +'.lbl-body{display:flex;gap:6px;align-items:center}'
+    +'.bc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}'
+    +'.bc-num{font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold}'
+    +'.btns{display:flex;gap:8px}'
+    +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
+    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
+    +'</style></head><body>'
+    +'<div class="ctrl">'
+    +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
+    +'<div class="cg"><label>ارتفاع (مم)</label><input id="H" type="number" value="50"></div>'
+    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="95"></div>'
+    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="36"></div>'
+    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
+    +'</div>'
+    +'<div class="lbl" id="lbl">'
+    +'<div class="lbl-info">'
+    +'<span style="color:#0891b2">'+station+'</span>'
+    +'<span style="color:#7c3aed">'+device+'</span>'
+    +'</div>'
+    +'<div class="lbl-body">'
+    +'<div id="qr"></div>'
+    +'<div class="bc-wrap">'
+    +'<canvas id="bc" style="width:100%"></canvas>'
+    +'<div class="bc-num">'+code+'</div>'
+    +'</div>'
+    +'</div>'
+    +'</div>'
+    +'<div class="btns">'
+    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
+    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 صورة</button>'
+    +'</div>'
+    +'<'+S+'>'
+    +'function build(){'
+    +'var W=+document.getElementById("W").value||80;'
+    +'var H=+document.getElementById("H").value||50;'
+    +'var QS=+document.getElementById("QS").value||95;'
+    +'var BH=+document.getElementById("BH").value||36;'
+    +'document.getElementById("lbl").style.width=W+"mm";'
+    +'document.getElementById("lbl").style.height=H+"mm";'
+    +'var st=document.createElement("style");'
+    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
+    +'document.head.appendChild(st);'
+    +'document.getElementById("qr").innerHTML="";'
+    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
+    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2,height:BH,displayValue:false,margin:0,background:"#fff",lineColor:"#000"});}catch(e){}'
+    +'}'
+    +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},400);}'
+    +'window.onload=function(){build();};'
+    +'<\/script>'
+    +'</body></html>'
+  );
+  w.document.close();
+}
+
+function saveGenImg(){
+  if(typeof html2canvas==='undefined'){
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload=()=>doSaveGenImg();
+    document.head.appendChild(s);
+  } else { doSaveGenImg(); }
+}
+function doSaveGenImg(){
+  const code=document.getElementById('gen-code-display').textContent;
+  html2canvas(document.getElementById('gen-lbl'),{scale:5,backgroundColor:'#fff'}).then(cv=>{
+    const a=document.createElement('a');a.download='label_'+code+'.png';
+    a.href=cv.toDataURL('image/png');a.click();
+  });
+}
+
+async function saveGenToList(){
+  const station=document.getElementById('gen-station')?.value||'';
+  if(!station){toast('اختر المحطة أولاً','err');return;}
+  const code=document.getElementById('gen-code-display').textContent;
+  if(code==='—'){toast('ولّد الباركود أولاً','err');return;}
+  const device=document.getElementById('gen-device')?.value||'NVR';
+  const serial=document.getElementById('gen-serial')?.value||'';
+  const stObj=allStations.find(s=>s.name===station)||{};
+  const body={
+    code, location:station, district:stObj.district||'',
+    station_id:stObj.id||null, station_name:station,
+    install_date:new Date().toISOString().split('T')[0],
+    status:'يعمل', notes:'',
+    nvrs:['NVR','DVR'].includes(device)?[{num:'1',serial}]:[],
+    hdds:device==='HDD'?[{num:'1',serial}]:[],
+    switches:[], cam_total:0, cam_working:0, cam_broken:0
+  };
+  try{
+    await api('POST','/api/coding',body);
+    toast('تم الحفظ في السجل ✅');
+    swCodingTab('list',document.getElementById('csub-list'));
+    await loadCoding();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
 
 // ── INIT ──
 async function initApp(){
@@ -4460,9 +4685,9 @@ function resetDeviceRows(devices){
 
 // ── Dynamic rows for NVR/HDD/Switch ──
 
-/* addNvrRow — النسخة الموحدة في الأعلى */
+/* addNvrRow dup removed */
 
-/* addHddRow — النسخة الموحدة في الأعلى */
+/* addHddRow dup removed */
 
 function addSwitchRow(ports='', serial=''){
   switchCount++;
@@ -4475,11 +4700,11 @@ function addSwitchRow(ports='', serial=''){
     <input class="fi" id="sw-ports-${id}" type="text" value="${ports}" placeholder="عدد المنافذ (8/16/24)" style="font-size:13px">
     <input class="fi" id="sw-serial-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px">
     <button type="button" onclick="document.getElementById('switch-row-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:32px;height:32px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
-  const _sr=document.getElementById('switch-rows'); if(_sr) _sr.appendChild(row);
+  const _sr=document.getElementById('switch-rows');if(_sr)_sr.appendChild(row);
 }
 
-function getNvrData(){ return getNvrs(); }
-function getHddData(){ return getHdds(); }
+function getNvrData(){return getNvrs();}
+function getHddData(){return getHdds();}
 function getSwitchData(){
   return Array.from(document.querySelectorAll('[id^="switch-row-"]')).map(r=>{
     const id=r.id.replace('switch-row-','');
@@ -4565,7 +4790,7 @@ function renderCoding(list){
 }
 
 function genCode(){
-  const type=document.getElementById('coding-device-type').value;
+  const _dtel=document.getElementById('coding-device-type'); const type=_dtel?_dtel.value:'';
   const prefix={'DVR/NVR':'DVR','هارد ديسك HDD':'HDD','كاميرا داخلية':'CAM-IN','كاميرا خارجية':'CAM-OUT','كاميرا PTZ':'CAM-PTZ','سويج POE':'POE','UPS عاكس':'UPS','بطارية UPS':'BAT'}[type]||'DEV';
   const num=String(allCoding.filter(d=>d.device_type===type).length+1).padStart(3,'0');
   document.getElementById('coding-code').value=`${prefix}-${num}`;
@@ -4621,7 +4846,7 @@ function editCoding(id){
   document.getElementById('ov-coding').classList.add('open');
 }
 
-/* saveCoding — النسخة الصحيحة في الأعلى */
+/* saveCoding dup removed */
 
 async function delCoding(id){
   if(!confirm('حذف هذا الجهاز من الترميز؟'))return;
@@ -4692,7 +4917,7 @@ function printDeviceCard(id){
     <script>
       // QR Code
       new QRCode(document.getElementById('qr'),{
-        text:'${d.code}|${(d.location||'').replace(/'/g,"'")||''}|${d.station_name||''}',
+        text:'${d.code}|${(d.location||'').replace(/'/g,"\'")}|${d.station_name||''}',
         width:80,height:80,colorDark:'#0891b2',colorLight:'#fff',
         correctLevel:QRCode.CorrectLevel.M
       });
@@ -4880,214 +5105,7 @@ async function delStation(id){
   catch(e){toast('خطأ','err');}
 }
 
-/* الدوال الثانية المكررة — حُذفت، النسخ الأصلية في الأعلى تعمل بشكل صحيح */
-
-/* ══════════════════════════════════════════════════
-   CODING GEN — دوال توليد الباركود والـ QR
-══════════════════════════════════════════════════ */
-function swCodingTab(name,btn){
-  document.querySelectorAll('.coding-sub').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  ['list','gen'].forEach(n=>{const p=document.getElementById('cpane-'+n);if(p)p.style.display=n===name?'block':'none';});
-  if(name==='gen'){
-    const sel=document.getElementById('gen-station');
-    if(sel&&sel.options.length<=1){
-      allStations.forEach(s=>{const o=document.createElement('option');o.value=s.name;o.textContent=s.name;sel.appendChild(o);});
-    }
-  }
-}
-
-function updateGenCode(){
-  const station=(document.getElementById('gen-station')?.value||'').trim();
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const num=(document.getElementById('gen-num')?.value||'').trim();
-  const stCode=station?station.replace(/\s+/g,'').substring(0,4).toUpperCase():'XXX';
-  const code=num?`${stCode}-${device}-${num}`:`${stCode}-${device}`;
-  document.getElementById('gen-code-display').textContent=code||'—';
-  return code;
-}
-
-function onGenScanKey(e){
-  if(e.key==='Enter') generateLabel();
-}
-
-function generateLabel(){
-  const station=document.getElementById('gen-station')?.value||'';
-  if(!station){toast('اختر المحطة أولاً','err');return;}
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const deviceNames={'NVR':'NVR — تسجيل شبكي','DVR':'DVR — تسجيل رقمي','CAM':'كاميرا','POE':'سويج POE','UPS':'UPS عاكس','HDD':'هارد ديسك'};
-  const serial=(document.getElementById('gen-serial')?.value||'').trim();
-  const code=updateGenCode();
-  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
-
-  document.getElementById('gl-station').textContent=station;
-  document.getElementById('gl-device').textContent=deviceNames[device]||device;
-  document.getElementById('gen-num-label').textContent=code;
-
-  /* تحميل مكتبات QR والباركود بشكل موثوق */
-  const loadLibs=()=>new Promise((res)=>{
-    if(window.QRCode&&window.JsBarcode){res();return;}
-    let done=0,needed=0;
-    const tryRes=()=>{done++;if(done>=needed)res();};
-    const addLib=(src,key)=>{
-      if(window[key]){tryRes();return;}
-      needed++;
-      const s=document.createElement('script');
-      s.src=src;s.onload=tryRes;s.onerror=tryRes;
-      document.head.appendChild(s);
-    };
-    addLib('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js','QRCode');
-    addLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode');
-    if(needed===0)res();
-  });
-
-  toast('⏳ جاري التوليد...');
-  loadLibs().then(()=>{
-    /* QR */
-    const qc=document.getElementById('gen-qr');
-    if(qc){
-      qc.innerHTML='';
-      if(window.QRCode){
-        try{new QRCode(qc,{text:qrData,width:90,height:90,colorDark:'#000000',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M});}
-        catch(e){console.error('QR error:',e);}
-      }
-    }
-    /* Barcode */
-    const bc=document.getElementById('gen-bc');
-    if(bc&&window.JsBarcode){
-      try{JsBarcode(bc,code,{format:'CODE128',width:2,height:36,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'});}
-      catch(e){console.error('BC error:',e);}
-    }
-    const preview=document.getElementById('gen-preview');
-    if(preview)preview.style.display='flex';
-    toast('✅ تم توليد الباركود والـ QR');
-  });
-}
-
-function printGenLabel(){
-  const code=document.getElementById('gen-code-display').textContent;
-  const station=document.getElementById('gl-station').textContent;
-  const device=document.getElementById('gl-device').textContent;
-  const serial=document.getElementById('gen-serial')?.value||'';
-  if(!code||code==='—'){toast('ولّد الباركود أولاً','err');return;}
-  const qrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
-  const S='script';
-  const w=window.open('','_blank','width=600,height=580');
-  w.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
-    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
-    +'body{background:#e5e7eb;display:flex;flex-direction:column;align-items:center;padding:12px;gap:10px}'
-    +'.ctrl{background:#fff;border:1px solid #d1d5db;border-radius:10px;padding:12px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:460px}'
-    +'.cg label{font-size:11px;color:#6b7280;display:block;margin-bottom:3px;font-weight:600}'
-    +'.cg input{width:100%;border:1.5px solid #d1d5db;border-radius:6px;padding:5px;font-size:13px;text-align:center}'
-    +'.apply{grid-column:1/-1;background:#0891b2;color:#fff;border:none;border-radius:6px;padding:8px;cursor:pointer;font-size:13px;font-weight:700}'
-    +'.lbl{background:#fff;border:2px solid #111;display:flex;flex-direction:column;overflow:hidden}'
-    +'.lbl-hdr{background:#0891b2;color:#fff;display:flex;justify-content:space-between;padding:3px 7px}'
-    +'.lbl-hdr span{font-size:8px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:48%}'
-    +'.lbl-body{flex:1;display:flex;align-items:center;padding:4px 6px;gap:5px}'
-    +'.bc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px}'
-    +'.bc-wrap canvas{width:100%}'
-    +'.bc-num{font-family:monospace;font-size:9px;letter-spacing:1px;font-weight:bold;color:#000}'
-    +'.lbl-ftr{background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;padding:2px 7px}'
-    +'.lbl-ftr span{font-size:6px;color:#6b7280}'
-    +'.btns{display:flex;gap:8px}'
-    +'.btn{padding:8px 20px;cursor:pointer;font-size:13px;border:none;border-radius:7px;color:#fff;font-weight:700}'
-    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
-    +'</style></head><body>'
-    +'<div class="ctrl">'
-    +'<div class="cg"><label>العرض (مم)</label><input id="W" type="number" value="80" min="30" max="200"></div>'
-    +'<div class="cg"><label>الارتفاع (مم)</label><input id="H" type="number" value="50" min="15" max="200"></div>'
-    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="90" min="30" max="150"></div>'
-    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="36" min="10" max="80"></div>'
-    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
-    +'</div>'
-    +'<div class="lbl" id="lbl">'
-    +'<div class="lbl-hdr"><span>'+station+'</span><span>'+device+'</span></div>'
-    +'<div class="lbl-body"><div id="qr"></div>'
-    +'<div class="bc-wrap"><canvas id="bc"></canvas>'
-    +'<div class="bc-num">'+code+'</div></div></div>'
-    +'<div class="lbl-ftr"><span>'+(serial?'SN: '+serial:'')+'</span><span>'+new Date().toLocaleDateString('ar-SA')+'</span></div>'
-    +'</div>'
-    +'<div class="btns">'
-    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
-    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 صورة PNG</button>'
-    +'</div>'
-    +'<'+S+'>'
-    +'function build(){'
-    +'var W=+document.getElementById("W").value||80;'
-    +'var H=+document.getElementById("H").value||50;'
-    +'var QS=+document.getElementById("QS").value||90;'
-    +'var BH=+document.getElementById("BH").value||36;'
-    +'var MM=3.7795;'
-    +'var lbl=document.getElementById("lbl");'
-    +'lbl.style.width=(W*MM)+"px";lbl.style.height=(H*MM)+"px";'
-    +'var st=document.createElement("style");'
-    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
-    +'document.head.appendChild(st);'
-    +'document.getElementById("qr").innerHTML="";'
-    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000000",colorLight:"#ffffff",correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error("QR:",e);}'
-    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:1.8,height:BH,displayValue:false,margin:2,background:"#ffffff",lineColor:"#000000"});}catch(e){console.error("BC:",e);}'
-    +'}'
-    +'function saveImg(){'
-    +'setTimeout(function(){'
-    +'html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff",useCORS:true}).then(function(cv){'
-    +'var a=document.createElement("a");'
-    +'a.download="label_'+code+'.png";'
-    +'a.href=cv.toDataURL("image/png");a.click();'
-    +'});},300);}'
-    +'window.onload=function(){build();};'
-    +'<\/script></body></html>'
-  );
-  w.document.close();
-}
-
-function saveGenImg(){
-  const code=document.getElementById('gen-code-display').textContent;
-  if(!code||code==='—'){toast('ولّد الباركود أولاً','err');return;}
-  const doSave=()=>{
-    html2canvas(document.getElementById('gen-lbl'),{scale:5,backgroundColor:'#fff',useCORS:true}).then(cv=>{
-      const a=document.createElement('a');
-      a.download='label_'+code+'.png';
-      a.href=cv.toDataURL('image/png');a.click();
-      toast('✅ تم حفظ الصورة');
-    });
-  };
-  if(typeof html2canvas==='undefined'){
-    const s=document.createElement('script');
-    s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-    s.onload=doSave;document.head.appendChild(s);
-  }else{doSave();}
-}
-
-function doSaveGenImg(){saveGenImg();}
-
-async function saveGenToList(){
-  const station=document.getElementById('gen-station')?.value||'';
-  if(!station){toast('اختر المحطة أولاً','err');return;}
-  const code=document.getElementById('gen-code-display').textContent;
-  if(!code||code==='—'){toast('ولّد الباركود أولاً','err');return;}
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const serial=document.getElementById('gen-serial')?.value||'';
-  const stObj=allStations.find(s=>s.name===station)||{};
-  const body={
-    code,location:station,district:stObj.district||'',
-    station_id:stObj.id||null,station_name:station,
-    install_date:new Date().toISOString().split('T')[0],
-    status:'يعمل',notes:'',
-    nvrs:['NVR','DVR'].includes(device)?[{num:'1',serial}]:[],
-    hdds:device==='HDD'?[{num:'1',serial}]:[],
-    switches:[],cam_total:0,cam_working:0,cam_broken:0
-  };
-  try{
-    await api('POST','/api/coding',body);
-    toast('✅ تم الحفظ في السجل');
-    swCodingTab('list',document.getElementById('csub-list'));
-    await loadCoding();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
+/* duplicate gen functions removed */
 
 // ── INIT ──
 tryAutoLogin();</script>
