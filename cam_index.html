@@ -1892,6 +1892,75 @@ async function tryAutoLogin(){
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
 
+function exportCodingExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  toast('جاري إنشاء ملف Excel...');
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR','HDD','Switch','كاميرات تعمل','كاميرات معطلة','إجمالي','تاريخ التركيب','الحالة','ملاحظات'];
+    const rows=allCoding.map(d=>[
+      d.code,d.location||'',d.district||'',d.station_name||'',
+      (d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(' | '),
+      (d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(' | '),
+      (d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(' | '),
+      d.cam_working||0,d.cam_broken||0,d.cam_total||0,
+      d.install_date||'',d.status||'',d.notes||''
+    ]);
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:15},{wch:20},{wch:14},{wch:20},{wch:28},{wch:22},{wch:18},{wch:10},{wch:10},{wch:10},{wch:14},{wch:10},{wch:22}];
+    const wb=XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
+    XLSX.writeFile(wb,'ترميز_الأجهزة_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
+
+function exportVoidExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  toast('جاري إنشاء ملف VOID...');
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h1=['BARCODE','QR_DATA','STATION','LOCATION','DISTRICT','NVR','HDD','SWITCH','CAMERAS','DATE','STATUS'];
+    const rows1=allCoding.map(d=>[
+      d.code,
+      window.location.origin+'/scan/'+d.code,
+      d.station_name||'',d.location||'',d.district||'',
+      (d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}`).join(' | '),
+      (d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}`).join(' | '),
+      (d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p`).join(' | '),
+      d.cam_total||0,d.install_date||'',d.status||'يعمل'
+    ]);
+    const rows2=[];
+    allCoding.forEach(d=>{
+      (d.nvrs||[]).forEach((n,i)=>rows2.push([d.code,'NVR',i+1,n.num||'',n.serial||'']));
+      (d.hdds||[]).forEach((h,i)=>rows2.push([d.code,'HDD',i+1,h.num||'',h.serial||'']));
+      (d.switches||[]).forEach((s,i)=>rows2.push([d.code,'SWITCH',i+1,s.ports+'p',s.serial||'']));
+    });
+    const wb=XLSX.utils.book_new();
+    const ws1=XLSX.utils.aoa_to_sheet([h1,...rows1]);
+    ws1['!cols']=[{wch:16},{wch:50},{wch:20},{wch:22},{wch:14},{wch:25},{wch:20},{wch:18},{wch:8},{wch:14},{wch:10}];
+    XLSX.utils.book_append_sheet(wb,'بيانات الطباعة',ws1);
+    if(rows2.length>0){
+      const ws2=XLSX.utils.aoa_to_sheet([['BARCODE','DEVICE_TYPE','INDEX','NUMBER','SERIAL_NUMBER'],...rows2]);
+      ws2['!cols']=[{wch:16},{wch:12},{wch:7},{wch:15},{wch:28}];
+      XLSX.utils.book_append_sheet(wb,'السيريال',ws2);
+    }
+    XLSX.writeFile(wb,'VOID_Labels_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
+
+
 // ── INIT ──
 async function initApp(){
   try{
@@ -4542,6 +4611,74 @@ async function delStation(id){
 if(!confirm(‘حذف هذه المحطة؟’))return;
 try{await api(‘DELETE’,`/api/stations/${id}`);toast(‘تم الحذف’);await loadStations();}
 catch(e){toast(‘خطأ’,‘err’);}
+}
+
+function exportCodingExcel(){
+if(allCoding.length===0){toast(‘لا توجد بيانات’,‘err’);return;}
+toast(‘جاري إنشاء ملف Excel…’);
+const loadXLSX=()=>new Promise((res,rej)=>{
+if(window.XLSX){res();return;}
+const s=document.createElement(‘script’);
+s.src=‘https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js’;
+s.onload=res; s.onerror=rej; document.head.appendChild(s);
+});
+loadXLSX().then(()=>{
+const h=[‘رقم الموقع’,‘اسم الموقع’,‘القاطع’,‘المحطة’,‘NVR’,‘HDD’,‘Switch’,‘كاميرات تعمل’,‘كاميرات معطلة’,‘إجمالي’,‘تاريخ التركيب’,‘الحالة’,‘ملاحظات’];
+const rows=allCoding.map(d=>[
+d.code,d.location||’’,d.district||’’,d.station_name||’’,
+(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}${n.serial?' SN:'+n.serial:''}`).join(’ | ‘),
+(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}${h.serial?' SN:'+h.serial:''}`).join(’ | ‘),
+(d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p${s.serial?' SN:'+s.serial:''}`).join(’ | ‘),
+d.cam_working||0,d.cam_broken||0,d.cam_total||0,
+d.install_date||’’,d.status||’’,d.notes||’’
+]);
+const ws=XLSX.utils.aoa_to_sheet([h,…rows]);
+ws[’!cols’]=[{wch:15},{wch:20},{wch:14},{wch:20},{wch:28},{wch:22},{wch:18},{wch:10},{wch:10},{wch:10},{wch:14},{wch:10},{wch:22}];
+const wb=XLSX.utils.book_new();
+XLSX.utils.book_append_sheet(wb,‘ترميز الأجهزة’,ws);
+XLSX.writeFile(wb,‘ترميز_الأجهزة_’+new Date().toISOString().split(‘T’)[0]+’.xlsx’);
+toast(‘تم التصدير ✅’);
+}).catch(e=>toast(’خطأ: ’+e,‘err’));
+}
+
+function exportVoidExcel(){
+if(allCoding.length===0){toast(‘لا توجد بيانات’,‘err’);return;}
+toast(‘جاري إنشاء ملف VOID…’);
+const loadXLSX=()=>new Promise((res,rej)=>{
+if(window.XLSX){res();return;}
+const s=document.createElement(‘script’);
+s.src=‘https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js’;
+s.onload=res; s.onerror=rej; document.head.appendChild(s);
+});
+loadXLSX().then(()=>{
+const h1=[‘BARCODE’,‘QR_DATA’,‘STATION’,‘LOCATION’,‘DISTRICT’,‘NVR’,‘HDD’,‘SWITCH’,‘CAMERAS’,‘DATE’,‘STATUS’];
+const rows1=allCoding.map(d=>[
+d.code,
+window.location.origin+’/scan/’+d.code,
+d.station_name||’’,d.location||’’,d.district||’’,
+(d.nvrs||[]).map((n,i)=>`NVR${i+1}:${n.num||''}`).join(’ | ‘),
+(d.hdds||[]).map((h,i)=>`HDD${i+1}:${h.num||''}`).join(’ | ‘),
+(d.switches||[]).map((s,i)=>`SW${i+1}:${s.ports||''}p`).join(’ | ‘),
+d.cam_total||0,d.install_date||’’,d.status||‘يعمل’
+]);
+const rows2=[];
+allCoding.forEach(d=>{
+(d.nvrs||[]).forEach((n,i)=>rows2.push([d.code,‘NVR’,i+1,n.num||’’,n.serial||’’]));
+(d.hdds||[]).forEach((h,i)=>rows2.push([d.code,‘HDD’,i+1,h.num||’’,h.serial||’’]));
+(d.switches||[]).forEach((s,i)=>rows2.push([d.code,‘SWITCH’,i+1,s.ports+‘p’,s.serial||’’]));
+});
+const wb=XLSX.utils.book_new();
+const ws1=XLSX.utils.aoa_to_sheet([h1,…rows1]);
+ws1[’!cols’]=[{wch:16},{wch:50},{wch:20},{wch:22},{wch:14},{wch:25},{wch:20},{wch:18},{wch:8},{wch:14},{wch:10}];
+XLSX.utils.book_append_sheet(wb,‘بيانات الطباعة’,ws1);
+if(rows2.length>0){
+const ws2=XLSX.utils.aoa_to_sheet([[‘BARCODE’,‘DEVICE_TYPE’,‘INDEX’,‘NUMBER’,‘SERIAL_NUMBER’],…rows2]);
+ws2[’!cols’]=[{wch:16},{wch:12},{wch:7},{wch:15},{wch:28}];
+XLSX.utils.book_append_sheet(wb,‘السيريال’,ws2);
+}
+XLSX.writeFile(wb,‘VOID_Labels_’+new Date().toISOString().split(‘T’)[0]+’.xlsx’);
+toast(‘تم التصدير ✅’);
+}).catch(e=>toast(’خطأ: ’+e,‘err’));
 }
 
 // ── INIT ──
