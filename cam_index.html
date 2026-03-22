@@ -366,6 +366,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span>جرد الكاميرات</div>
+      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span>ترميز الأجهزة</div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
       <div class="nav-item hidden" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
       <div class="nav-item" id="nav-reports" class="nav-item hidden" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
@@ -1675,6 +1676,69 @@ tr:hover td{background:rgba(30,58,95,.03);}
 </div>
 
 
+
+<!-- CODING MODAL -->
+<div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
+  <div class="modal" style="width:600px;max-height:90vh;overflow-y:auto">
+    <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
+    <input type="hidden" id="coding-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">رقم الموقع *</label>
+        <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-TK-001">
+      </div>
+      <div class="fg"><label class="fl">اسم الموقع *</label>
+        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة">
+      </div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" id="coding-district" onchange="filterCodingStations()">
+          <option value="">— اختر —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">المحطة</label>
+        <select class="fi" id="coding-station"><option value="">— اختر —</option></select>
+      </div>
+      <div class="fg"><label class="fl">تاريخ التركيب</label>
+        <input class="fi" id="coding-install-date" type="date">
+      </div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" id="coding-status">
+          <option value="يعمل">✅ يعمل</option>
+          <option value="معطل">❌ معطل</option>
+          <option value="صيانة">🔧 صيانة</option>
+        </select>
+      </div>
+
+      <!-- NVR -->
+      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
+          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الجهاز | Serial Number</div>
+        <div id="nvr-rows"></div>
+      </div>
+
+      <!-- HDD -->
+      <div class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
+          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الهارد | Serial Number</div>
+        <div id="hdd-rows"></div>
+      </div>
+
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
 <!-- CHANGE PW MODAL -->
 <div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
   <div class="modal modal-sm">
@@ -1766,6 +1830,345 @@ async function tryAutoLogin(){
   }
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
+// ── CODING ──
+let allCoding=[];
+let nvrCount=0, hddCount=0;
+
+function addNvrRow(num='',serial=''){
+  nvrCount++;
+  const id=nvrCount;
+  const row=document.createElement('div');
+  row.id=`nvr-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:7px">NVR ${id}</div>
+    <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
+    <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" onclick="document.getElementById('nvr-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('nvr-rows').appendChild(row);
+}
+
+function addHddRow(num='',serial=''){
+  hddCount++;
+  const id=hddCount;
+  const row=document.createElement('div');
+  row.id=`hdd-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:7px">HDD ${id}</div>
+    <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
+    <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" onclick="document.getElementById('hdd-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('hdd-rows').appendChild(row);
+}
+
+function getNvrs(){
+  return Array.from(document.querySelectorAll('[id^="nvr-"]:not([id*="num"]):not([id*="sn"])'))
+    .map(r=>{const i=r.id.split('-')[1];
+      return{num:(document.getElementById(`nvr-num-${i}`)?.value||'').trim(),
+             serial:(document.getElementById(`nvr-sn-${i}`)?.value||'').trim()};
+    }).filter(x=>x.num||x.serial);
+}
+
+function getHdds(){
+  return Array.from(document.querySelectorAll('[id^="hdd-"]:not([id*="num"]):not([id*="sn"])'))
+    .map(r=>{const i=r.id.split('-')[1];
+      return{num:(document.getElementById(`hdd-num-${i}`)?.value||'').trim(),
+             serial:(document.getElementById(`hdd-sn-${i}`)?.value||'').trim()};
+    }).filter(x=>x.num||x.serial);
+}
+
+function resetRows(nvrs,hdds){
+  nvrCount=0;hddCount=0;
+  document.getElementById('nvr-rows').innerHTML='';
+  document.getElementById('hdd-rows').innerHTML='';
+  if(nvrs&&nvrs.length>0) nvrs.forEach(n=>addNvrRow(n.num,n.serial)); else addNvrRow();
+  if(hdds&&hdds.length>0) hdds.forEach(h=>addHddRow(h.num,h.serial)); else addHddRow();
+}
+
+function filterCodingStations(){
+  const dist=document.getElementById('coding-district').value;
+  const sel=document.getElementById('coding-station');
+  sel.innerHTML='<option value="">— اختر المحطة —</option>';
+  allStations.filter(s=>!dist||s.district===dist).forEach(s=>{
+    const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
+  });
+}
+
+function openCodingModal(){
+  document.getElementById('coding-ttl').textContent='ترميز موقع جديد';
+  document.getElementById('coding-eid').value='';
+  ['coding-code','coding-location','coding-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('coding-status').value='يعمل';
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>';
+  const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+  dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
+  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  filterCodingStations();
+  resetRows([],[]);
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+function editCoding(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  document.getElementById('coding-ttl').textContent='تعديل الترميز';
+  document.getElementById('coding-eid').value=id;
+  document.getElementById('coding-code').value=d.code||'';
+  document.getElementById('coding-location').value=d.location||'';
+  document.getElementById('coding-notes').value=d.notes||'';
+  document.getElementById('coding-install-date').value=d.install_date||'';
+  document.getElementById('coding-status').value=d.status||'يعمل';
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر —</option>';
+  DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
+  ds.value=d.district||'';ds.disabled=false;
+  filterCodingStations();
+  setTimeout(()=>{const ss=document.getElementById('coding-station');if(ss)ss.value=d.station_id||'';},150);
+  resetRows(d.nvrs||[],d.hdds||[]);
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+async function saveCoding(){
+  const code=(document.getElementById('coding-code')?.value||'').trim();
+  const location=(document.getElementById('coding-location')?.value||'').trim();
+  if(!code){toast('رقم الموقع مطلوب','err');return;}
+  if(!location){toast('اسم الموقع مطلوب','err');return;}
+  const sid=document.getElementById('coding-station')?.value||'';
+  const station=allStations.find(s=>s.id==sid)||{};
+  const body={
+    code,location,
+    district:document.getElementById('coding-district')?.value||'',
+    station_id:sid||null,station_name:station.name||'',
+    install_date:document.getElementById('coding-install-date')?.value||'',
+    status:document.getElementById('coding-status')?.value||'يعمل',
+    notes:(document.getElementById('coding-notes')?.value||'').trim(),
+    nvrs:getNvrs(),hdds:getHdds()
+  };
+  const eid=parseInt(document.getElementById('coding-eid')?.value);
+  try{
+    if(eid) await api('PUT',`/api/coding/${eid}`,body);
+    else await api('POST','/api/coding',body);
+    toast('تم الحفظ ✅');closeModal('ov-coding');await loadCoding();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+async function loadCoding(){
+  try{const d=await api('GET','/api/coding');allCoding=d.devices||[];filterCoding();}
+  catch(e){const g=document.getElementById('coding-grid');if(g)g.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">تعذر التحميل</div>';}
+}
+
+function filterCoding(){
+  const q=(document.getElementById('sq-coding')?.value||'').toLowerCase();
+  const dist=document.getElementById('f-coding-district')?.value||'';
+  let f=allCoding.filter(d=>{
+    if(q&&!d.code.toLowerCase().includes(q)&&!(d.location||'').toLowerCase().includes(q)&&!(d.station_name||'').toLowerCase().includes(q)) return false;
+    if(dist&&d.district!==dist) return false;
+    return true;
+  });
+  if(CU?.role!=='admin'&&CU?.district) f=f.filter(d=>!d.district||d.district===CU.district);
+  renderCoding(f);
+}
+
+function renderCoding(list){
+  const g=document.getElementById('coding-grid');if(!g)return;
+  if(list.length===0){g.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);font-size:14px">📭 لا توجد سجلات</div>';return;}
+  const sClr={'يعمل':'#16a34a','معطل':'#dc2626','صيانة':'#d97706'};
+  g.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">'
+  +list.map(d=>{
+    const clr=sClr[d.status]||'#888';
+    const nvrs=d.nvrs||[];const hdds=d.hdds||[];
+    return `<div style="background:#fff;border:1.5px solid #e0f2fe;border-radius:14px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#0891b2,#06b6d4);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="color:#fff;font-weight:900;font-size:15px;letter-spacing:.5px">${d.code}</div>
+          <div style="color:rgba(255,255,255,.8);font-size:11px;margin-top:2px">📌 ${d.location||'—'}</div>
+        </div>
+        <span style="background:${clr}33;color:${clr};padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700">${d.status}</span>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="font-size:12px;color:var(--t2);margin-bottom:8px">⛽ ${d.station_name||'—'} | 📍 ${d.district||'—'} | 📅 ${d.install_date||'—'}</div>
+        ${nvrs.length>0?`<div style="font-size:11px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:4px 8px;margin-bottom:4px">${nvrs.map((n,i)=>`📹 NVR${i+1}: ${n.num||'—'} | SN: ${n.serial||'—'}`).join('<br>')}</div>`:''}
+        ${hdds.length>0?`<div style="font-size:11px;color:#059669;background:#f0fdf4;border-radius:6px;padding:4px 8px;margin-bottom:8px">${hdds.map((h,i)=>`💾 HDD${i+1}: ${h.num||'—'} | SN: ${h.serial||'—'}`).join('<br>')}</div>`:''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
+          <button onclick="printVoidLabel(${d.id})" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">🏷️ طباعة ليبل</button>
+          ${CU?.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+async function delCoding(id){
+  if(!confirm('حذف؟'))return;
+  try{await api('DELETE',`/api/coding/${id}`);toast('تم الحذف');await loadCoding();}
+  catch(e){toast('خطأ','err');}
+}
+
+function onScanKey(e){
+  if(e.key==='Enter'){
+    const val=document.getElementById('sq-coding').value.trim();
+    if(val) showScanResult(val); e.preventDefault();
+  }
+}
+
+function showScanResult(code){
+  api('POST','/api/scan',{code,scanned_by:CU?.username||''}).catch(()=>{});
+  const d=allCoding.find(x=>x.code.toLowerCase()===code.toLowerCase());
+  const card=document.getElementById('scan-result-card');
+  if(!d){
+    document.getElementById('src-code').textContent='❌ '+code;
+    document.getElementById('src-info').textContent='غير موجود في قاعدة البيانات';
+    card.style.background='linear-gradient(135deg,#dc2626,#ef4444)';
+  }else{
+    document.getElementById('src-code').textContent='✅ '+d.code;
+    document.getElementById('src-info').textContent=`📌 ${d.location||'—'} | ⛽ ${d.station_name||'—'} | 📍 ${d.district||'—'}`;
+    card.style.background='linear-gradient(135deg,#1d4ed8,#3b82f6)';
+    document.getElementById('sq-coding').value=code;
+    filterCoding();
+  }
+  card.style.display='block';
+}
+
+function clearScan(){
+  document.getElementById('sq-coding').value='';
+  document.getElementById('scan-result-card').style.display='none';
+  filterCoding();
+}
+
+function printVoidLabel(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  const nvrs=d.nvrs||[];const hdds=d.hdds||[];
+  const code=d.code;
+  const qrData=window.location.origin+'/scan/'+code;
+  const S='script';
+  const w=window.open('','_blank','width=580,height=580');
+  w.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'body{background:#e8e8e8;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
+    +'.ctrl{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:420px}'
+    +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:3px}'
+    +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
+    +'.apply{grid-column:1/-1;background:#0891b2;color:#fff;border:none;border-radius:6px;padding:8px;cursor:pointer;font-size:13px;font-weight:bold}'
+    +'.lbl{background:#fff;border:2px solid #111;display:flex;flex-direction:column}'
+    +'.lbl-top{background:#0891b2;color:#fff;display:flex;justify-content:space-between;padding:2px 6px}'
+    +'.lbl-body{flex:1;display:flex;align-items:center;padding:3px;gap:3px}'
+    +'.qr-side{flex-shrink:0}'
+    +'.bc-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px}'
+    +'.bc-loc{font-size:7px;font-weight:bold;color:#0891b2;align-self:flex-start}'
+    +'.bc-num{font-family:monospace;font-size:11px;letter-spacing:2px;font-weight:bold;color:#000}'
+    +'.lbl-bot{border-top:1px solid #ddd;display:flex;justify-content:space-between;padding:2px 6px;background:#f9f9f9;font-size:6.5px}'
+    +'.btns{display:flex;gap:8px}'
+    +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
+    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}</style>'
+    +'</head><body>'
+    +'<div class="ctrl">'
+    +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
+    +'<div class="cg"><label>ارتفاع (مم)</label><input id="H" type="number" value="50"></div>'
+    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="90"></div>'
+    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="35"></div>'
+    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
+    +'</div>'
+    +'<div class="lbl" id="lbl">'
+    +'<div class="lbl-top" id="top"><span id="sp-st">'+(d.station_name||'—')+'</span><span id="sp-dt">'+(d.district||'—')+'</span></div>'
+    +'<div class="lbl-body">'
+    +'<div class="qr-side" id="qr"></div>'
+    +'<div class="bc-side">'
+    +'<span class="bc-loc" id="sp-loc">'+(d.location||'—')+'</span>'
+    +'<canvas id="bc"></canvas>'
+    +'<span class="bc-num" id="sp-code">'+code+'</span>'
+    +'</div>'
+    +'</div>'
+    +'<div class="lbl-bot"><span>'+code+'</span><span>'+(d.install_date||'')+'</span></div>'
+    +'</div>'
+    +'<div class="btns">'
+    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
+    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 حفظ صورة</button>'
+    +'</div>'
+    +'<'+S+'>'
+    +'function build(){'
+    +'var W=+document.getElementById("W").value||80;'
+    +'var H=+document.getElementById("H").value||50;'
+    +'var QS=+document.getElementById("QS").value||90;'
+    +'var BH=+document.getElementById("BH").value||35;'
+    +'document.getElementById("lbl").style.width=W+"mm";'
+    +'document.getElementById("lbl").style.height=H+"mm";'
+    +'var st=document.createElement("style");'
+    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
+    +'document.head.appendChild(st);'
+    +'document.getElementById("qr").innerHTML="";'
+    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
+    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2,height:BH,displayValue:false,margin:0,background:"#fff",lineColor:"#000"});}catch(e){}'
+    +'}'
+    +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},300);}'
+    +'window.onload=function(){build();};'
+    +'</'+S+'></body></html>'
+  );
+  w.document.close();
+}
+
+function exportCodingExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR - الرقم','NVR - Serial','HDD - الرقم','HDD - Serial','تاريخ التركيب','الحالة','ملاحظات'];
+    const rows=[];
+    allCoding.forEach(d=>{
+      const maxLen=Math.max((d.nvrs||[]).length,(d.hdds||[]).length,1);
+      for(let i=0;i<maxLen;i++){
+        const nvr=(d.nvrs||[])[i]||{}; const hdd=(d.hdds||[])[i]||{};
+        rows.push([i===0?d.code:'',i===0?d.location||'':'',i===0?d.district||'':'',i===0?d.station_name||'':'',
+          nvr.num||'',nvr.serial||'',hdd.num||'',hdd.serial||'',
+          i===0?d.install_date||'':'',i===0?d.status||'':'',i===0?d.notes||'':'']);
+      }
+    });
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:14},{wch:20},{wch:13},{wch:20},{wch:12},{wch:25},{wch:12},{wch:25},{wch:13},{wch:10},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
+    XLSX.writeFile(wb,'ترميز_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
+
+function exportVoidExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h1=['BARCODE','QR_DATA','STATION','LOCATION','DISTRICT','DATE','STATUS'];
+    const rows1=allCoding.map(d=>[d.code,window.location.origin+'/scan/'+d.code,d.station_name||'',d.location||'',d.district||'',d.install_date||'',d.status||'']);
+    const h2=['BARCODE','TYPE','INDEX','NUMBER','SERIAL_NUMBER'];
+    const rows2=[];
+    allCoding.forEach(d=>{
+      (d.nvrs||[]).forEach((n,i)=>rows2.push([d.code,'NVR',i+1,n.num||'',n.serial||'']));
+      (d.hdds||[]).forEach((h,i)=>rows2.push([d.code,'HDD',i+1,h.num||'',h.serial||'']));
+    });
+    const wb=XLSX.utils.book_new();
+    const ws1=XLSX.utils.aoa_to_sheet([h1,...rows1]);
+    ws1['!cols']=[{wch:14},{wch:50},{wch:20},{wch:22},{wch:14},{wch:14},{wch:10}];
+    XLSX.utils.book_append_sheet(wb,'بيانات الطباعة',ws1);
+    if(rows2.length>0){
+      const ws2=XLSX.utils.aoa_to_sheet([h2,...rows2]);
+      ws2['!cols']=[{wch:14},{wch:8},{wch:6},{wch:14},{wch:30}];
+      XLSX.utils.book_append_sheet(wb,'السيريال',ws2);
+    }
+    XLSX.writeFile(wb,'VOID_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
+
 // ── INIT ──
 async function initApp(){
   try{
@@ -1806,7 +2209,7 @@ async function initApp(){
   // Load data — each independently so one failure doesn't block others
   await Promise.allSettled([
     loadStations(),loadTours(),loadMaintenance(),
-    loadCameras(),loadDelegates(),loadInventory(),loadCirculars()
+    loadCameras(),loadDelegates(),loadInventory(),loadCirculars(),loadCoding()
   ]);
   // إظهار لوحة التحكم
   goTab('dashboard', document.querySelector('.nav-item.active'));
@@ -1835,7 +2238,7 @@ function populateDistrictSelects(){
 
 // ── TABS ──
 function goTab(name,el){
-  ['dashboard','field','stations','inventory','circulars','reports','delegates','users','logs'].forEach(t=>{
+  ['dashboard','field','stations','inventory','coding','circulars','reports','delegates','users','logs'].forEach(t=>{
     const e=document.getElementById('tab-'+t);
     if(e) e.style.display=t===name?'block':'none';
   });
@@ -1851,6 +2254,7 @@ function goTab(name,el){
     const sel=document.getElementById('f-inv-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});}
   }
   if(name==='stations') renderStations();
+  if(name==='coding'){loadCoding();const sel=document.getElementById('f-coding-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='circulars'){loadCirculars();const b=document.getElementById('btn-add-circ');if(b)b.style.display=CU?.role==='admin'?'inline-flex':'none';const sel=document.getElementById('f-circ-district');if(sel&&sel.options.length<=1){DISTRICTS_LIST.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;sel.appendChild(o);});};}
   if(name==='reports') renderReports();
   if(name==='delegates'){if(CU&&CU.role!=='admin')filterDelegatesForUser();else renderDelegates();}
@@ -4057,7 +4461,6 @@ function resetDeviceRows(devices){
 
 
 
-let nvrCount=0, hddCount=0, switchCount=0;
 function animateCircle(id, value, max){
   const el=document.getElementById(id); if(!el)return;
   const r=38; const circ=2*Math.PI*r;
@@ -4264,6 +4667,343 @@ function exportVoidExcel(){
   }).catch(e=>toast('خطأ: '+e,'err'));
 }
 
+
+// ── CODING ──
+
+function addNvrRow(num='',serial=''){
+  nvrCount++;
+  const id=nvrCount;
+  const row=document.createElement('div');
+  row.id=`nvr-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:7px">NVR ${id}</div>
+    <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
+    <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" onclick="document.getElementById('nvr-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('nvr-rows').appendChild(row);
+}
+
+function addHddRow(num='',serial=''){
+  hddCount++;
+  const id=hddCount;
+  const row=document.createElement('div');
+  row.id=`hdd-${id}`;
+  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:7px">HDD ${id}</div>
+    <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
+    <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" onclick="document.getElementById('hdd-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('hdd-rows').appendChild(row);
+}
+
+function getNvrs(){
+  return Array.from(document.querySelectorAll('[id^="nvr-"]:not([id*="num"]):not([id*="sn"])'))
+    .map(r=>{const i=r.id.split('-')[1];
+      return{num:(document.getElementById(`nvr-num-${i}`)?.value||'').trim(),
+             serial:(document.getElementById(`nvr-sn-${i}`)?.value||'').trim()};
+    }).filter(x=>x.num||x.serial);
+}
+
+function getHdds(){
+  return Array.from(document.querySelectorAll('[id^="hdd-"]:not([id*="num"]):not([id*="sn"])'))
+    .map(r=>{const i=r.id.split('-')[1];
+      return{num:(document.getElementById(`hdd-num-${i}`)?.value||'').trim(),
+             serial:(document.getElementById(`hdd-sn-${i}`)?.value||'').trim()};
+    }).filter(x=>x.num||x.serial);
+}
+
+function resetRows(nvrs,hdds){
+  nvrCount=0;hddCount=0;
+  document.getElementById('nvr-rows').innerHTML='';
+  document.getElementById('hdd-rows').innerHTML='';
+  if(nvrs&&nvrs.length>0) nvrs.forEach(n=>addNvrRow(n.num,n.serial)); else addNvrRow();
+  if(hdds&&hdds.length>0) hdds.forEach(h=>addHddRow(h.num,h.serial)); else addHddRow();
+}
+
+function filterCodingStations(){
+  const dist=document.getElementById('coding-district').value;
+  const sel=document.getElementById('coding-station');
+  sel.innerHTML='<option value="">— اختر المحطة —</option>';
+  allStations.filter(s=>!dist||s.district===dist).forEach(s=>{
+    const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
+  });
+}
+
+function openCodingModal(){
+  document.getElementById('coding-ttl').textContent='ترميز موقع جديد';
+  document.getElementById('coding-eid').value='';
+  ['coding-code','coding-location','coding-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
+  document.getElementById('coding-status').value='يعمل';
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>';
+  const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+  dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
+  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  filterCodingStations();
+  resetRows([],[]);
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+function editCoding(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  document.getElementById('coding-ttl').textContent='تعديل الترميز';
+  document.getElementById('coding-eid').value=id;
+  document.getElementById('coding-code').value=d.code||'';
+  document.getElementById('coding-location').value=d.location||'';
+  document.getElementById('coding-notes').value=d.notes||'';
+  document.getElementById('coding-install-date').value=d.install_date||'';
+  document.getElementById('coding-status').value=d.status||'يعمل';
+  const ds=document.getElementById('coding-district');
+  ds.innerHTML='<option value="">— اختر —</option>';
+  DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
+  ds.value=d.district||'';ds.disabled=false;
+  filterCodingStations();
+  setTimeout(()=>{const ss=document.getElementById('coding-station');if(ss)ss.value=d.station_id||'';},150);
+  resetRows(d.nvrs||[],d.hdds||[]);
+  document.getElementById('ov-coding').classList.add('open');
+}
+
+async function saveCoding(){
+  const code=(document.getElementById('coding-code')?.value||'').trim();
+  const location=(document.getElementById('coding-location')?.value||'').trim();
+  if(!code){toast('رقم الموقع مطلوب','err');return;}
+  if(!location){toast('اسم الموقع مطلوب','err');return;}
+  const sid=document.getElementById('coding-station')?.value||'';
+  const station=allStations.find(s=>s.id==sid)||{};
+  const body={
+    code,location,
+    district:document.getElementById('coding-district')?.value||'',
+    station_id:sid||null,station_name:station.name||'',
+    install_date:document.getElementById('coding-install-date')?.value||'',
+    status:document.getElementById('coding-status')?.value||'يعمل',
+    notes:(document.getElementById('coding-notes')?.value||'').trim(),
+    nvrs:getNvrs(),hdds:getHdds()
+  };
+  const eid=parseInt(document.getElementById('coding-eid')?.value);
+  try{
+    if(eid) await api('PUT',`/api/coding/${eid}`,body);
+    else await api('POST','/api/coding',body);
+    toast('تم الحفظ ✅');closeModal('ov-coding');await loadCoding();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+async function loadCoding(){
+  try{const d=await api('GET','/api/coding');allCoding=d.devices||[];filterCoding();}
+  catch(e){const g=document.getElementById('coding-grid');if(g)g.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">تعذر التحميل</div>';}
+}
+
+function filterCoding(){
+  const q=(document.getElementById('sq-coding')?.value||'').toLowerCase();
+  const dist=document.getElementById('f-coding-district')?.value||'';
+  let f=allCoding.filter(d=>{
+    if(q&&!d.code.toLowerCase().includes(q)&&!(d.location||'').toLowerCase().includes(q)&&!(d.station_name||'').toLowerCase().includes(q)) return false;
+    if(dist&&d.district!==dist) return false;
+    return true;
+  });
+  if(CU?.role!=='admin'&&CU?.district) f=f.filter(d=>!d.district||d.district===CU.district);
+  renderCoding(f);
+}
+
+function renderCoding(list){
+  const g=document.getElementById('coding-grid');if(!g)return;
+  if(list.length===0){g.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);font-size:14px">📭 لا توجد سجلات</div>';return;}
+  const sClr={'يعمل':'#16a34a','معطل':'#dc2626','صيانة':'#d97706'};
+  g.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px">'
+  +list.map(d=>{
+    const clr=sClr[d.status]||'#888';
+    const nvrs=d.nvrs||[];const hdds=d.hdds||[];
+    return `<div style="background:#fff;border:1.5px solid #e0f2fe;border-radius:14px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#0891b2,#06b6d4);padding:10px 14px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="color:#fff;font-weight:900;font-size:15px;letter-spacing:.5px">${d.code}</div>
+          <div style="color:rgba(255,255,255,.8);font-size:11px;margin-top:2px">📌 ${d.location||'—'}</div>
+        </div>
+        <span style="background:${clr}33;color:${clr};padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700">${d.status}</span>
+      </div>
+      <div style="padding:12px 14px">
+        <div style="font-size:12px;color:var(--t2);margin-bottom:8px">⛽ ${d.station_name||'—'} | 📍 ${d.district||'—'} | 📅 ${d.install_date||'—'}</div>
+        ${nvrs.length>0?`<div style="font-size:11px;color:#1d4ed8;background:#eff6ff;border-radius:6px;padding:4px 8px;margin-bottom:4px">${nvrs.map((n,i)=>`📹 NVR${i+1}: ${n.num||'—'} | SN: ${n.serial||'—'}`).join('<br>')}</div>`:''}
+        ${hdds.length>0?`<div style="font-size:11px;color:#059669;background:#f0fdf4;border-radius:6px;padding:4px 8px;margin-bottom:8px">${hdds.map((h,i)=>`💾 HDD${i+1}: ${h.num||'—'} | SN: ${h.serial||'—'}`).join('<br>')}</div>`:''}
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" style="flex:1">✏️ تعديل</button>
+          <button onclick="printVoidLabel(${d.id})" style="background:#0891b2;color:#fff;border:none;border-radius:8px;padding:6px 14px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">🏷️ طباعة ليبل</button>
+          ${CU?.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})">🗑️</button>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+async function delCoding(id){
+  if(!confirm('حذف؟'))return;
+  try{await api('DELETE',`/api/coding/${id}`);toast('تم الحذف');await loadCoding();}
+  catch(e){toast('خطأ','err');}
+}
+
+function onScanKey(e){
+  if(e.key==='Enter'){
+    const val=document.getElementById('sq-coding').value.trim();
+    if(val) showScanResult(val); e.preventDefault();
+  }
+}
+
+function showScanResult(code){
+  api('POST','/api/scan',{code,scanned_by:CU?.username||''}).catch(()=>{});
+  const d=allCoding.find(x=>x.code.toLowerCase()===code.toLowerCase());
+  const card=document.getElementById('scan-result-card');
+  if(!d){
+    document.getElementById('src-code').textContent='❌ '+code;
+    document.getElementById('src-info').textContent='غير موجود في قاعدة البيانات';
+    card.style.background='linear-gradient(135deg,#dc2626,#ef4444)';
+  }else{
+    document.getElementById('src-code').textContent='✅ '+d.code;
+    document.getElementById('src-info').textContent=`📌 ${d.location||'—'} | ⛽ ${d.station_name||'—'} | 📍 ${d.district||'—'}`;
+    card.style.background='linear-gradient(135deg,#1d4ed8,#3b82f6)';
+    document.getElementById('sq-coding').value=code;
+    filterCoding();
+  }
+  card.style.display='block';
+}
+
+function clearScan(){
+  document.getElementById('sq-coding').value='';
+  document.getElementById('scan-result-card').style.display='none';
+  filterCoding();
+}
+
+function printVoidLabel(id){
+  const d=allCoding.find(x=>x.id===id);if(!d)return;
+  const nvrs=d.nvrs||[];const hdds=d.hdds||[];
+  const code=d.code;
+  const qrData=window.location.origin+'/scan/'+code;
+  const S='script';
+  const w=window.open('','_blank','width=580,height=580');
+  w.document.write(
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
+    +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'body{background:#e8e8e8;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
+    +'.ctrl{background:#fff;border:1px solid #ddd;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:420px}'
+    +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:3px}'
+    +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
+    +'.apply{grid-column:1/-1;background:#0891b2;color:#fff;border:none;border-radius:6px;padding:8px;cursor:pointer;font-size:13px;font-weight:bold}'
+    +'.lbl{background:#fff;border:2px solid #111;display:flex;flex-direction:column}'
+    +'.lbl-top{background:#0891b2;color:#fff;display:flex;justify-content:space-between;padding:2px 6px}'
+    +'.lbl-body{flex:1;display:flex;align-items:center;padding:3px;gap:3px}'
+    +'.qr-side{flex-shrink:0}'
+    +'.bc-side{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:2px}'
+    +'.bc-loc{font-size:7px;font-weight:bold;color:#0891b2;align-self:flex-start}'
+    +'.bc-num{font-family:monospace;font-size:11px;letter-spacing:2px;font-weight:bold;color:#000}'
+    +'.lbl-bot{border-top:1px solid #ddd;display:flex;justify-content:space-between;padding:2px 6px;background:#f9f9f9;font-size:6.5px}'
+    +'.btns{display:flex;gap:8px}'
+    +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
+    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}</style>'
+    +'</head><body>'
+    +'<div class="ctrl">'
+    +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
+    +'<div class="cg"><label>ارتفاع (مم)</label><input id="H" type="number" value="50"></div>'
+    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="90"></div>'
+    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="35"></div>'
+    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
+    +'</div>'
+    +'<div class="lbl" id="lbl">'
+    +'<div class="lbl-top" id="top"><span id="sp-st">'+(d.station_name||'—')+'</span><span id="sp-dt">'+(d.district||'—')+'</span></div>'
+    +'<div class="lbl-body">'
+    +'<div class="qr-side" id="qr"></div>'
+    +'<div class="bc-side">'
+    +'<span class="bc-loc" id="sp-loc">'+(d.location||'—')+'</span>'
+    +'<canvas id="bc"></canvas>'
+    +'<span class="bc-num" id="sp-code">'+code+'</span>'
+    +'</div>'
+    +'</div>'
+    +'<div class="lbl-bot"><span>'+code+'</span><span>'+(d.install_date||'')+'</span></div>'
+    +'</div>'
+    +'<div class="btns">'
+    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
+    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 حفظ صورة</button>'
+    +'</div>'
+    +'<'+S+'>'
+    +'function build(){'
+    +'var W=+document.getElementById("W").value||80;'
+    +'var H=+document.getElementById("H").value||50;'
+    +'var QS=+document.getElementById("QS").value||90;'
+    +'var BH=+document.getElementById("BH").value||35;'
+    +'document.getElementById("lbl").style.width=W+"mm";'
+    +'document.getElementById("lbl").style.height=H+"mm";'
+    +'var st=document.createElement("style");'
+    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
+    +'document.head.appendChild(st);'
+    +'document.getElementById("qr").innerHTML="";'
+    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
+    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2,height:BH,displayValue:false,margin:0,background:"#fff",lineColor:"#000"});}catch(e){}'
+    +'}'
+    +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},300);}'
+    +'window.onload=function(){build();};'
+    +'</'+S+'></body></html>'
+  );
+  w.document.close();
+}
+
+function exportCodingExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR - الرقم','NVR - Serial','HDD - الرقم','HDD - Serial','تاريخ التركيب','الحالة','ملاحظات'];
+    const rows=[];
+    allCoding.forEach(d=>{
+      const maxLen=Math.max((d.nvrs||[]).length,(d.hdds||[]).length,1);
+      for(let i=0;i<maxLen;i++){
+        const nvr=(d.nvrs||[])[i]||{}; const hdd=(d.hdds||[])[i]||{};
+        rows.push([i===0?d.code:'',i===0?d.location||'':'',i===0?d.district||'':'',i===0?d.station_name||'':'',
+          nvr.num||'',nvr.serial||'',hdd.num||'',hdd.serial||'',
+          i===0?d.install_date||'':'',i===0?d.status||'':'',i===0?d.notes||'':'']);
+      }
+    });
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:14},{wch:20},{wch:13},{wch:20},{wch:12},{wch:25},{wch:12},{wch:25},{wch:13},{wch:10},{wch:20}];
+    XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
+    XLSX.writeFile(wb,'ترميز_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
+
+function exportVoidExcel(){
+  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h1=['BARCODE','QR_DATA','STATION','LOCATION','DISTRICT','DATE','STATUS'];
+    const rows1=allCoding.map(d=>[d.code,window.location.origin+'/scan/'+d.code,d.station_name||'',d.location||'',d.district||'',d.install_date||'',d.status||'']);
+    const h2=['BARCODE','TYPE','INDEX','NUMBER','SERIAL_NUMBER'];
+    const rows2=[];
+    allCoding.forEach(d=>{
+      (d.nvrs||[]).forEach((n,i)=>rows2.push([d.code,'NVR',i+1,n.num||'',n.serial||'']));
+      (d.hdds||[]).forEach((h,i)=>rows2.push([d.code,'HDD',i+1,h.num||'',h.serial||'']));
+    });
+    const wb=XLSX.utils.book_new();
+    const ws1=XLSX.utils.aoa_to_sheet([h1,...rows1]);
+    ws1['!cols']=[{wch:14},{wch:50},{wch:20},{wch:22},{wch:14},{wch:14},{wch:10}];
+    XLSX.utils.book_append_sheet(wb,'بيانات الطباعة',ws1);
+    if(rows2.length>0){
+      const ws2=XLSX.utils.aoa_to_sheet([h2,...rows2]);
+      ws2['!cols']=[{wch:14},{wch:8},{wch:6},{wch:14},{wch:30}];
+      XLSX.utils.book_append_sheet(wb,'السيريال',ws2);
+    }
+    XLSX.writeFile(wb,'VOID_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(e=>toast('خطأ: '+e,'err'));
+}
 
 // ── INIT ──
 tryAutoLogin();
