@@ -280,8 +280,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 }
 
 /* LOGIN */
-#login-screen{position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;
-  background:linear-gradient(135deg,#0c1e4a 0%,#1d4ed8 50%,#1e3a8a 100%);}
+#login-screen{display:none!important;}
 .lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
   box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeup .5s cubic-bezier(.34,1.56,.64,1);}
 @keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
@@ -322,7 +321,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
 
 <!-- LOGIN -->
-<div id="login-screen" style="display:none">
+<div id="login-screen" style="display:none!important">
   <div class="lbox">
     <div class="licon">📹</div>
     <div class="ltitle">نظام كاميرات المراقبة</div>
@@ -338,7 +337,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 </div>
 
 <!-- APP -->
-<div id="app" style="display:none">
+<div id="app" style="display:block">
   <!-- TOP NAVBAR -->
   <div class="topbar" id="sidebar">
     <div class="topbar-logo">
@@ -1838,13 +1837,39 @@ tr:hover td{background:rgba(30,58,95,.03);}
 </div>
 
 <script>const API='';
-let TOKEN=localStorage.getItem('cam_token')||'';
-let CU=null,allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
+let TOKEN=localStorage.getItem('cam_token')||'dev-token';
+let CU={id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}};
+let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
 let sP_t=1,sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
 
+// ── DEV MODE (bypass login) ──
+const DEV_MODE = new URLSearchParams(location.search).has('dev');
+if(DEV_MODE) console.warn('🚧 DEV MODE — تجاوز تسجيل الدخول');
+
+const DEV_MOCK = {
+  '/api/me':         {user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}},
+  '/api/stations':   {stations:[]},
+  '/api/tours':      {tours:[]},
+  '/api/maintenance':{maintenance:[]},
+  '/api/cameras':    {cameras:[]},
+  '/api/inventory':  {inventory:[]},
+  '/api/coding':     {coding:[]},
+  '/api/circulars':  {circulars:[],reads:[]},
+  '/api/delegates':  {delegates:[]},
+  '/api/users':      {users:[]},
+  '/api/logs':       {logs:[]},
+  '/api/districts':  {districts:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']},
+};
+
 // ── API ──
 async function api(method,path,body=null){
+  if(DEV_MODE){
+    const base=path.split('?')[0].replace(/\/\d+$/,'');
+    const mock=DEV_MOCK[base]||DEV_MOCK[path]||{ok:true};
+    console.log(`[DEV] ${method} ${path}`,body||'');
+    return JSON.parse(JSON.stringify(mock));
+  }
   try{
     const r=await fetch(API+path,{method,headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},body:body?JSON.stringify(body):null});
     if(r.status===401&&path!=='/api/login'){
@@ -1889,16 +1914,9 @@ async function doLogout(){
   document.getElementById('app').style.display='none';
 }
 async function tryAutoLogin(){
-  if(!TOKEN){const ls=document.getElementById('login-screen');ls.style.display='flex';ls.style.alignItems='center';ls.style.justifyContent='center';return;}
-  try{
-    const d=await api('GET','/api/me');CU=d.user;
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    await initApp();
-  }catch(e){
-    TOKEN='';localStorage.removeItem('cam_token');
-    document.getElementById('login-screen').style.display='flex';
-  }
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('app').style.display='block';
+  await initApp();
 }
 function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
 
@@ -1985,7 +2003,7 @@ function printVoidLabel(id){
   w.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
     +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
     +'<style>'
     +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
@@ -2221,31 +2239,39 @@ function generateLabel(){
   const preview=document.getElementById('gen-preview');
   preview.style.display='flex';
 
-  // Load libs then generate after a short delay (DOM needs to render)
-  const loadLib=(src)=>new Promise((res,rej)=>{
-    const existing=document.querySelector('script[src="'+src+'"]');
-    if(existing){res();return;}
-    const s=document.createElement('script');s.src=src;s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  // Load libs — check global var existence, not just script tag presence
+  const loadLib=(src,checkGlobal)=>new Promise((res,rej)=>{
+    if(checkGlobal && typeof window[checkGlobal]!=='undefined'){res();return;}
+    // Remove any previous failed script tag for this src
+    const old=document.querySelector('script[src="'+src+'"]');
+    if(old) old.remove();
+    const s=document.createElement('script');
+    s.src=src;
+    s.onload=()=>{res();};
+    s.onerror=()=>rej(new Error('فشل تحميل: '+src));
+    document.head.appendChild(s);
   });
 
   Promise.all([
-    loadLib('https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'),
-    loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js')
+    loadLib('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js','QRCode'),
+    loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode')
   ]).then(()=>{
     setTimeout(()=>{
       // QR Code
       const qc=document.getElementById('gen-qr');
       qc.innerHTML='';
-      try{new QRCode(qc,{text:qrData,width:90,height:90,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error('QR:',e);}
+      try{
+        new QRCode(qc,{text:qrData,width:90,height:90,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.M});
+      }catch(e){console.error('QR:',e);toast('خطأ في توليد QR','err');return;}
 
-      // Barcode — use SVG element for reliability
+      // Barcode — SVG element
       const bc=document.getElementById('gen-bc');
       try{
         JsBarcode(bc,code,{format:'CODE128',width:2.5,height:40,displayValue:false,margin:2,background:'#ffffff',lineColor:'#000000'});
         toast('تم التوليد ✅');
       }catch(e){console.error('BC:',e);toast('خطأ في توليد الباركود','err');}
     },200);
-  }).catch(()=>toast('خطأ في تحميل المكتبات','err'));
+  }).catch((err)=>{console.error(err);toast('خطأ في تحميل المكتبات','err');});
 }
 
 function printGenLabel(){
@@ -2259,7 +2285,7 @@ function printGenLabel(){
   w.document.write(
     '<!DOCTYPE html><html><head><meta charset="UTF-8">'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></'+S+'>'
+    +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
     +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
     +'<style>*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
     +'body{background:#ddd;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
@@ -2363,6 +2389,891 @@ async function saveGenToList(){
     await loadCoding();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
+
+
+// ══════════════════════════════════════════
+//  NAVIGATION
+// ══════════════════════════════════════════
+
+const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
+
+function goTab(name, el){
+  ALL_TABS.forEach(t => {
+    const tab = document.getElementById('tab-'+t);
+    if(tab) tab.style.display = (t === name) ? 'block' : 'none';
+  });
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(name==='field')      { loadTours(); loadMaintenance(); }
+  if(name==='stations')   { loadStations(); }
+  if(name==='cameras')    { loadCameras(); }
+  if(name==='inventory')  { loadInventory(); }
+  if(name==='coding')     { loadCoding(); populateGenStations(); }
+  if(name==='reports')    { populateReportDistricts(); generateReport(); }
+  if(name==='delegates')  { loadDelegates(); }
+  if(name==='circulars')  { loadCirculars(); }
+  if(name==='users')      { loadUsers(); }
+  if(name==='logs')       { loadLogs(); }
+}
+
+function switchField(sub, el){
+  const tours = document.getElementById('tab-tours');
+  const maint = document.getElementById('tab-maintenance');
+  if(tours) tours.style.display = (sub==='tours')       ? 'block' : 'none';
+  if(maint) maint.style.display = (sub==='maintenance') ? 'block' : 'none';
+  document.querySelectorAll('#tab-field > div:first-child > button').forEach(b => {
+    b.style.borderBottomColor = 'transparent';
+    b.style.color = '#64748b'; b.style.fontWeight = '600';
+  });
+  if(el){
+    el.style.borderBottomColor = (sub==='maintenance') ? '#dc2626' : '#1d4ed8';
+    el.style.color = (sub==='maintenance') ? '#dc2626' : '#1d4ed8';
+    el.style.fontWeight = '700';
+  }
+}
+
+function swCodingTab(sub, el){
+  document.getElementById('cpane-list').style.display = (sub==='list') ? 'block' : 'none';
+  document.getElementById('cpane-gen').style.display  = (sub==='gen')  ? 'block' : 'none';
+  document.querySelectorAll('.coding-sub').forEach(b => b.classList.remove('active'));
+  if(el) el.classList.add('active');
+  if(sub==='gen') populateGenStations();
+}
+
+// ══════════════════════════════════════════
+//  INIT APP
+// ══════════════════════════════════════════
+
+async function initApp(){
+  if(CU){
+    const av = document.getElementById('su-av');
+    const nm = document.getElementById('su-name');
+    const rl = document.getElementById('su-role');
+    const dt = document.getElementById('su-district');
+    if(av) av.textContent = (CU.fullname||'م')[0];
+    if(nm) nm.textContent = CU.fullname||'';
+    if(rl) rl.textContent = CU.role==='admin' ? '🔑 مدير النظام' : 'مستخدم';
+    if(dt) dt.textContent = CU.district||'';
+
+    const isAdmin = CU.role==='admin';
+    ['nav-users','nav-logs','nav-delegates','admin-sect'].forEach(id=>{
+      const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
+    });
+    document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
+    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
+      const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
+    });
+    const circBtn=document.getElementById('btn-add-circ');
+    if(circBtn) circBtn.style.display=isAdmin?'':'none';
+  }
+
+  try{
+    const d=await api('GET','/api/districts');
+    DISTRICTS_LIST=d.districts||[];
+  }catch(e){
+    DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+  }
+
+  await Promise.all([loadStations(), loadTours(), loadMaintenance(), loadDelegates(), loadCirculars()]).catch(()=>{});
+  updateDashboard();
+  populateDistrictFilters();
+}
+
+// ══════════════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════════════
+
+function setCircle(id, pct){
+  const el=document.getElementById(id); if(!el) return;
+  el.style.strokeDashoffset = 239 - 239*Math.min(pct,1);
+}
+
+function updateDashboard(){
+  const tTotal=allTours.length;
+  document.getElementById('s-tours-count').textContent=tTotal;
+  const thisMonth=allTours.filter(t=>t.date?.startsWith(new Date().toISOString().slice(0,7))).length;
+  document.getElementById('s-tours-sub').textContent='هذا الشهر: '+thisMonth;
+  setCircle('circ-tours', Math.min(tTotal/50,1));
+
+  const mTotal=allMaint.length;
+  document.getElementById('s-maint-count').textContent=mTotal;
+  document.getElementById('s-cams-bad-sub').textContent='إجمالي: '+mTotal;
+  setCircle('circ-maint', Math.min(mTotal/30,1));
+
+  const stTotal=allStations.length;
+  document.getElementById('s-stations').textContent=stTotal;
+  document.getElementById('s-stations-sub').textContent='حكومية: '+allStations.filter(s=>s.type==='حكومية').length;
+  setCircle('circ-stations', Math.min(stTotal/20,1));
+
+  const now=Date.now();
+  const unvisited=allStations.filter(s=>{
+    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
+    return !last || (now-new Date(last.date).getTime())>30*864e5;
+  }).length;
+  document.getElementById('s-unvisited').textContent=unvisited;
+  setCircle('circ-reports', stTotal ? unvisited/stTotal : 0);
+
+  const badge=document.getElementById('unvisited-badge');
+  if(badge){ badge.style.display=unvisited?'':'none'; badge.textContent=unvisited; }
+
+  let camOk=0,camBad=0;
+  allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
+  document.getElementById('s-cams-ok').textContent=camOk;
+  document.getElementById('s-cams-bad').textContent=camBad;
+  const total=camOk+camBad, pct=total?Math.round(camOk/total*100):0;
+  const bar=document.getElementById('cam-status-bar');
+  if(bar) bar.style.width=pct+'%';
+  const lbl=document.getElementById('cam-pct-lbl');
+  if(lbl) lbl.textContent=total?`${pct}% تعمل (${camOk} من ${total})`:'لا بيانات';
+
+  const wt=document.getElementById('widget-tours');
+  if(wt){
+    const recent=[...allTours].sort((a,b)=>b.date>a.date?1:-1).slice(0,5);
+    wt.innerHTML=recent.length?recent.map(t=>`
+      <div style="padding:6px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px">
+        <span style="font-weight:700">${t.station_name||'—'}</span>
+        <span style="color:var(--t3)">${t.date||''}</span>
+        <span class="badge b-blue">${t.visit_type||'—'}</span>
+      </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px">لا توجد جولات</div>';
+  }
+
+  const wm=document.getElementById('widget-maint');
+  if(wm){
+    const byD={};
+    allMaint.forEach(m=>{byD[m.district||'غير محدد']=(byD[m.district||'غير محدد']||0)+1;});
+    const entries=Object.entries(byD).sort((a,b)=>b[1]-a[1]);
+    wm.innerHTML=entries.length?entries.map(([d,c])=>`
+      <div style="padding:7px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px">
+        <span style="font-weight:700">${d}</span><span class="badge b-bad">${c} عملية</span>
+      </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px">لا صيانة</div>';
+  }
+
+  const dtb=document.getElementById('dash-delegates-tb');
+  if(dtb) dtb.innerHTML=allDelegates.length?allDelegates.map(d=>`
+    <tr><td>${d.district||'—'}</td><td style="font-weight:700">${d.name||'—'}</td>
+    <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
+    <td><span class="badge b-ok">✅ مخول</span></td></tr>`).join('')
+    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">لا يوجد مخولون</td></tr>';
+}
+
+// ══════════════════════════════════════════
+//  STATIONS
+// ══════════════════════════════════════════
+
+async function loadStations(){
+  try{
+    const d=await api('GET','/api/stations');
+    allStations=d.stations||[];
+    renderStations(); populateDistrictFilters();
+  }catch(e){ toast('خطأ في تحميل المحطات','err'); }
+}
+
+function renderStations(){
+  const search=(document.getElementById('sq-stations')?.value||'').toLowerCase();
+  const distF=document.getElementById('f-st-district')?.value||'';
+  let list=allStations.filter(s=>{
+    if(CU?.role!=='admin'&&CU?.district&&s.district!==CU.district) return false;
+    if(distF&&s.district!==distF) return false;
+    if(search&&!(s.name||'').toLowerCase().includes(search)&&!s.district?.includes(search)) return false;
+    return true;
+  });
+  const govList=list.filter(s=>s.type==='حكومية');
+  const privList=list.filter(s=>s.type!=='حكومية');
+  document.getElementById('gov-count').textContent=govList.length;
+  document.getElementById('priv-count').textContent=privList.length;
+  const row=(s,i)=>{
+    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
+    const isAdmin=CU?.role==='admin';
+    return `<tr>
+      <td><span class="snum">${i+1}</span></td>
+      <td style="font-weight:700">${s.name||'—'}</td>
+      <td><span class="db">${s.district||'—'}</span></td>
+      <td style="text-align:center;color:var(--a3);font-weight:700">${s.cam_working||0}</td>
+      <td style="text-align:center;color:var(--a2);font-weight:700">${s.cam_broken||0}</td>
+      <td style="color:var(--t3);font-size:12px">${last?last.date:'—'}</td>
+      <td style="text-align:center">${isAdmin?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button> <button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}</td>
+    </tr>`;
+  };
+  const govTb=document.getElementById('stations-gov-tb');
+  const privTb=document.getElementById('stations-priv-tb');
+  if(govTb)  govTb.innerHTML=govList.length?govList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
+  if(privTb) privTb.innerHTML=privList.length?privList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
+}
+function filterStations(){ renderStations(); }
+
+function openStationModal(id){
+  if(!document.getElementById('ov-station')){
+    const div=document.createElement('div');
+    div.className='overlay'; div.id='ov-station'; div.onclick=e=>closeOv(e,'ov-station');
+    div.innerHTML=`<div class="modal modal-sm"><div class="m-title">⛽ محطة</div>
+      <input type="hidden" id="st-eid">
+      <div class="fgrid">
+        <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
+        <div class="fg"><label class="fl">القاطع *</label><select class="fi" id="st-district"></select></div>
+        <div class="fg"><label class="fl">النوع</label><select class="fi" id="st-type"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
+      </div>
+      <div class="m-footer">
+        <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
+        <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
+      </div></div>`;
+    document.body.appendChild(div);
+  }
+  const s=id?allStations.find(x=>x.id===id)||{}:{};
+  document.getElementById('st-eid').value=id||'';
+  document.getElementById('st-name').value=s.name||'';
+  document.getElementById('st-district').innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
+  document.getElementById('st-type').value=s.type||'حكومية';
+  document.getElementById('ov-station').classList.add('open');
+}
+
+async function saveStation(){
+  const id=parseInt(document.getElementById('st-eid').value)||0;
+  const body={name:document.getElementById('st-name').value.trim(), district:document.getElementById('st-district').value, type:document.getElementById('st-type').value};
+  if(!body.name||!body.district){toast('أدخل الاسم والقاطع','err');return;}
+  try{
+    if(id) await api('PUT','/api/stations/'+id,body);
+    else   await api('POST','/api/stations',body);
+    closeModal('ov-station'); toast('تم الحفظ ✅'); await loadStations();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function delStation(id){
+  if(!confirm('حذف المحطة؟'))return;
+  try{await api('DELETE','/api/stations/'+id);toast('تم الحذف');await loadStations();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+// ══════════════════════════════════════════
+//  TOURS
+// ══════════════════════════════════════════
+
+async function loadTours(){
+  try{
+    const d=await api('GET','/api/tours');
+    allTours=d.tours||[];
+    renderTours();
+  }catch(e){toast('خطأ في تحميل الجولات','err');}
+}
+
+function renderTours(){
+  const search=(document.getElementById('sq-tours')?.value||'').toLowerCase();
+  const distF=document.getElementById('f-tour-district')?.value||'';
+  const typeF=document.getElementById('f-tour-type')?.value||'';
+  let list=allTours.filter(t=>{
+    if(CU?.role!=='admin'&&CU?.district&&t.district!==CU.district)return false;
+    if(distF&&t.district!==distF)return false;
+    if(typeF&&t.visit_type!==typeF)return false;
+    if(search&&!JSON.stringify(t).toLowerCase().includes(search))return false;
+    return true;
+  }).sort((a,b)=>b.date>a.date?1:-1);
+
+  const pages=Math.max(1,Math.ceil(list.length/PP));
+  sP_t=Math.min(sP_t,pages);
+  const slice=list.slice((sP_t-1)*PP, sP_t*PP);
+  const tb=document.getElementById('tours-tb');
+  if(!tb)return;
+  tb.innerHTML=slice.length?slice.map((t,i)=>`<tr>
+    <td><span class="snum">${(sP_t-1)*PP+i+1}</span></td>
+    <td>${t.date||'—'}</td>
+    <td style="font-weight:700">${t.station_name||'—'}</td>
+    <td><span class="db">${t.district||'—'}</span></td>
+    <td><span class="badge b-blue">${t.visit_type||'—'}</span></td>
+    <td>${t.technician||'—'}</td>
+    <td>${t.file_key?`<button class="btn btn-o btn-sm" onclick="viewFile('${t.file_key}')">📷</button>`:'—'}</td>
+    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
+    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--t3)">لا توجد جولات</td></tr>';
+  renderPagination('pg-tours', sP_t, pages, p=>{sP_t=p;renderTours();});
+}
+function filterTours(){sP_t=1;renderTours();}
+
+function openTourModal(id){
+  const t=id?allTours.find(x=>x.id===id)||{}:{};
+  document.getElementById('ov-tour').classList.add('open');
+  document.getElementById('tour-eid').value=id||'';
+  document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
+  const ds=document.getElementById('tour-district');
+  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
+  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  filterTourStations();
+  if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
+  document.getElementById('tour-type').value=t.visit_type||'كشف';
+  document.getElementById('tour-tech').value=t.technician||'';
+  document.getElementById('tour-notes').value=t.notes||'';
+}
+async function saveTour(){
+  const id=parseInt(document.getElementById('tour-eid').value)||0;
+  const stId=parseInt(document.getElementById('tour-station').value)||0;
+  const st=allStations.find(s=>s.id===stId)||{};
+  const body={date:document.getElementById('tour-date').value, district:document.getElementById('tour-district').value,
+    station_id:stId, station_name:st.name||'', visit_type:document.getElementById('tour-type').value,
+    technician:document.getElementById('tour-tech').value, notes:document.getElementById('tour-notes').value};
+  if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
+  try{
+    const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
+    const tid=id||r.id;
+    if(UF.tour_img){await api('POST','/api/files/tour_'+tid,{name:UF.tour_img.name,data:UF.tour_img.data,mime:UF.tour_img.mime});delete UF.tour_img;}
+    closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+function editTour(id){openTourModal(id);}
+async function delTour(id){
+  if(!confirm('حذف الجولة؟'))return;
+  try{await api('DELETE','/api/tours/'+id);toast('تم الحذف');await loadTours();updateDashboard();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+function filterTourStations(){
+  const d=document.getElementById('tour-district')?.value||'';
+  const sel=document.getElementById('tour-station');
+  if(!sel)return;
+  const list=allStations.filter(s=>!d||s.district===d);
+  sel.innerHTML='<option value="">— اختر المحطة —</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+function exportToursCSV(){
+  const rows=[['التاريخ','المحطة','القاطع','نوع الزيارة','الفني','الملاحظات'],...allTours.map(t=>[t.date,t.station_name,t.district,t.visit_type,t.technician,t.notes])];
+  downloadCSV(rows,'جولات.csv');
+}
+
+// ══════════════════════════════════════════
+//  MAINTENANCE
+// ══════════════════════════════════════════
+
+async function loadMaintenance(){
+  try{
+    const d=await api('GET','/api/maintenance');
+    allMaint=d.maintenance||[];
+    renderMaint();
+  }catch(e){toast('خطأ في تحميل الصيانة','err');}
+}
+function renderMaint(){
+  const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
+  const distF=document.getElementById('f-maint-district')?.value||'';
+  let list=allMaint.filter(m=>{
+    if(CU?.role!=='admin'&&CU?.district&&m.district!==CU.district)return false;
+    if(distF&&m.district!==distF)return false;
+    if(search&&!JSON.stringify(m).toLowerCase().includes(search))return false;
+    return true;
+  }).sort((a,b)=>b.date>a.date?1:-1);
+  const pages=Math.max(1,Math.ceil(list.length/PP));
+  sP_m=Math.min(sP_m,pages);
+  const slice=list.slice((sP_m-1)*PP,sP_m*PP);
+  const tb=document.getElementById('maint-tb');
+  if(!tb)return;
+  tb.innerHTML=slice.length?slice.map((m,i)=>`<tr>
+    <td><span class="snum">${(sP_m-1)*PP+i+1}</span></td>
+    <td>${m.date||'—'}</td>
+    <td style="font-weight:700">${m.station_name||'—'}</td>
+    <td><span class="db">${m.district||'—'}</span></td>
+    <td>${m.device_type||'—'}</td>
+    <td style="text-align:center">${m.qty||0}</td>
+    <td>${m.reason||'—'}</td>
+    <td>${m.technician||'—'}</td>
+    <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
+    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
+  renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
+}
+function filterMaint(){sP_m=1;renderMaint();}
+function openMaintModal(id){
+  const m=id?allMaint.find(x=>x.id===id)||{}:{};
+  document.getElementById('ov-maint').classList.add('open');
+  document.getElementById('maint-eid').value=id||'';
+  document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
+  const ds=document.getElementById('maint-district');
+  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
+  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  filterMaintStations();
+  if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
+  document.getElementById('maint-device').value=m.device_type||'';
+  document.getElementById('maint-qty').value=m.qty||1;
+  document.getElementById('maint-reason').value=m.reason||'';
+  document.getElementById('maint-tech').value=m.technician||'';
+  document.getElementById('maint-notes').value=m.notes||'';
+}
+async function saveMaint(){
+  const id=parseInt(document.getElementById('maint-eid').value)||0;
+  const stId=parseInt(document.getElementById('maint-station').value)||0;
+  const st=allStations.find(s=>s.id===stId)||{};
+  const body={date:document.getElementById('maint-date').value, district:document.getElementById('maint-district').value,
+    station_id:stId, station_name:st.name||'', device_type:document.getElementById('maint-device').value,
+    qty:parseInt(document.getElementById('maint-qty').value)||1, reason:document.getElementById('maint-reason').value,
+    technician:document.getElementById('maint-tech').value, notes:document.getElementById('maint-notes').value};
+  if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
+  try{
+    id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
+    closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+function editMaint(id){openMaintModal(id);}
+async function delMaint(id){
+  if(!confirm('حذف؟'))return;
+  try{await api('DELETE','/api/maintenance/'+id);toast('تم الحذف');await loadMaintenance();updateDashboard();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+function filterMaintStations(){
+  const d=document.getElementById('maint-district')?.value||'';
+  const sel=document.getElementById('maint-station');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+function exportMaintCSV(){
+  const rows=[['التاريخ','المحطة','القاطع','الجهاز','الكمية','السبب','الفني','الملاحظات'],...allMaint.map(m=>[m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician,m.notes])];
+  downloadCSV(rows,'صيانة.csv');
+}
+
+// ══════════════════════════════════════════
+//  CAMERAS
+// ══════════════════════════════════════════
+
+async function loadCameras(){
+  try{
+    const d=await api('GET','/api/cameras');
+    allCams=d.cameras||[];
+    renderCams();
+  }catch(e){toast('خطأ في تحميل الكاميرات','err');}
+}
+function renderCams(){
+  const search=(document.getElementById('sq-cams')?.value||'').toLowerCase();
+  const stF=document.getElementById('f-cam-status')?.value||'';
+  let list=allCams.filter(c=>{
+    if(CU?.role!=='admin'&&CU?.district&&c.district!==CU.district)return false;
+    if(stF==='working'&&c.status!=='يعمل')return false;
+    if(stF==='broken'&&c.status==='يعمل')return false;
+    if(search&&!JSON.stringify(c).toLowerCase().includes(search))return false;
+    return true;
+  });
+  const pages=Math.max(1,Math.ceil(list.length/PP));
+  sP_c=Math.min(sP_c,pages);
+  const slice=list.slice((sP_c-1)*PP,sP_c*PP);
+  const tb=document.getElementById('cams-tb');
+  if(!tb)return;
+  tb.innerHTML=slice.length?slice.map((c,i)=>`<tr>
+    <td><span class="snum">${(sP_c-1)*PP+i+1}</span></td>
+    <td style="font-weight:700;font-family:monospace">${c.cam_no||'—'}</td>
+    <td>${c.station_name||'—'}</td>
+    <td><span class="db">${c.district||'—'}</span></td>
+    <td>${c.location_detail||'—'}</td>
+    <td>${c.cam_type||'—'}</td>
+    <td>${c.manufacturer||'—'}</td>
+    <td style="color:var(--t3);font-size:12px">${c.last_maintenance||'—'}</td>
+    <td><span class="badge ${c.status==='يعمل'?'b-ok':'b-bad'}">${c.status||'—'}</span></td>
+    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editCam(${c.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCam(${c.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد كاميرات</td></tr>';
+  renderPagination('pg-cams',sP_c,pages,p=>{sP_c=p;renderCams();});
+}
+function filterCams(){sP_c=1;renderCams();}
+function openCamModal(id){
+  const c=id?allCams.find(x=>x.id===id)||{}:{};
+  document.getElementById('ov-cam').classList.add('open');
+  document.getElementById('cam-eid').value=id||'';
+  const ds=document.getElementById('cam-district');
+  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${c.district===d?'selected':''}>${d}</option>`).join('');
+  filterCamStations();
+  if(c.station_id)setTimeout(()=>document.getElementById('cam-station').value=c.station_id,50);
+  ['cam-no','cam-type','cam-mfr','cam-loc','cam-last','cam-notes'].forEach((fid,idx)=>{
+    const keys=['cam_no','cam_type','manufacturer','location_detail','last_maintenance','notes'];
+    const el=document.getElementById(fid); if(el) el.value=c[keys[idx]]||'';
+  });
+  document.getElementById('cam-status').value=c.status||'يعمل';
+}
+async function saveCam(){
+  const id=parseInt(document.getElementById('cam-eid').value)||0;
+  const stId=parseInt(document.getElementById('cam-station')?.value)||0;
+  const st=allStations.find(s=>s.id===stId)||{};
+  const body={cam_no:document.getElementById('cam-no').value, station_id:stId, station_name:st.name||'',
+    district:st.district||'', location_detail:document.getElementById('cam-loc').value,
+    cam_type:document.getElementById('cam-type').value, manufacturer:document.getElementById('cam-mfr').value,
+    status:document.getElementById('cam-status').value, last_maintenance:document.getElementById('cam-last').value,
+    notes:document.getElementById('cam-notes').value};
+  try{
+    id?await api('PUT','/api/cameras/'+id,body):await api('POST','/api/cameras',body);
+    closeModal('ov-cam'); toast('تم الحفظ ✅'); await loadCameras();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+function editCam(id){openCamModal(id);}
+async function delCam(id){
+  if(!confirm('حذف الكاميرا؟'))return;
+  try{await api('DELETE','/api/cameras/'+id);toast('تم الحذف');await loadCameras();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+function filterCamStations(){
+  const d=document.getElementById('cam-district')?.value||'';
+  const sel=document.getElementById('cam-station');
+  if(!sel)return;
+  sel.innerHTML='<option value="">— اختر —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+}
+
+// ══════════════════════════════════════════
+//  INVENTORY
+// ══════════════════════════════════════════
+
+let allInventory=[];
+async function loadInventory(){
+  try{
+    const d=await api('GET','/api/inventory');
+    allInventory=d.inventory||[];
+    renderInv();
+  }catch(e){toast('خطأ في تحميل الجرد','err');}
+}
+function renderInv(){
+  const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
+  const distF=document.getElementById('f-inv-district')?.value||'';
+  const stF=document.getElementById('f-inv-status')?.value||'';
+  let list=allInventory.filter(x=>{
+    if(CU?.role!=='admin'&&CU?.district&&x.district!==CU.district)return false;
+    if(distF&&x.district!==distF)return false;
+    if(stF&&x.status!==stF)return false;
+    if(search&&!(x.station_name||'').toLowerCase().includes(search))return false;
+    return true;
+  });
+  const lbl=document.getElementById('inv-total-label');
+  if(lbl) lbl.textContent='إجمالي: '+list.length+' محطة';
+  const tb=document.getElementById('inv-tb');
+  if(!tb)return;
+  tb.innerHTML=list.length?list.map((x,i)=>`<tr>
+    <td><span class="snum">${i+1}</span></td>
+    <td style="font-weight:700">${x.station_name||'—'}</td>
+    <td><span class="db">${x.district||'—'}</span></td>
+    <td style="text-align:center">${x.dvr_count||0}</td><td>${x.dvr_spec||'—'}</td><td>${x.dvr_model||'—'}</td>
+    <td style="text-align:center">${x.hdd_count||0}</td><td>${x.hdd_size||'—'}</td>
+    <td style="text-align:center">${x.cam_count||0}</td><td>${x.cam_spec||'—'}</td><td>${x.cam_res||'—'}</td>
+    <td style="text-align:center">${x.poe_count||0}</td><td>${x.poe_spec||'—'}</td>
+    <td style="text-align:center">${x.mon_count||0}</td><td>${x.mon_spec||'—'}</td>
+    <td style="text-align:center">${x.ups_count||0}</td><td>${x.ups_spec||'—'}</td>
+    <td style="text-align:center">${x.bat_count||0}</td><td>${x.bat_spec||'—'}</td>
+    <td style="text-align:center">${x.box_count||0}</td><td>${x.box_spec||'—'}</td>
+    <td><span class="badge ${x.status==='مكتمل'?'b-ok':x.status==='معطل'?'b-bad':'b-warn'}">${x.status||'—'}</span></td>
+    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInv(${x.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="23" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد جرد</td></tr>';
+}
+function filterInv(){renderInv();}
+function openInvModal(id){document.getElementById('ov-inventory')?.classList.add('open');}
+function editInv(id){openInvModal(id);}
+async function delInv(id){
+  if(!confirm('حذف؟'))return;
+  try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+function exportInvCSV(){toast('سيتم التصدير قريباً');}
+function printInv(){window.print();}
+
+// ══════════════════════════════════════════
+//  CODING HELPERS
+// ══════════════════════════════════════════
+
+function populateGenStations(){
+  const sel=document.getElementById('gen-station');
+  if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— اختر —</option>'+allStations.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
+  if(cur) sel.value=cur;
+}
+
+function updateGenCode(){
+  const station=document.getElementById('gen-station')?.value||'';
+  const device=document.getElementById('gen-device')?.value||'NVR';
+  const num=(document.getElementById('gen-num')?.value||'001').padStart(3,'0');
+  if(!station){document.getElementById('gen-code-display').textContent='—';return '—';}
+  const stObj=allStations.find(s=>s.name===station)||{};
+  const dist=stObj.district||'';
+  const distCode={'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM','العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ'}[dist]||dist.slice(0,2).toUpperCase();
+  const code=`${device}-${distCode}-${num}`;
+  document.getElementById('gen-code-display').textContent=code;
+  return code;
+}
+
+function onGenScanKey(e){
+  if(e.key==='Enter'){ generateLabel(); e.preventDefault(); }
+}
+
+// ══════════════════════════════════════════
+//  DELEGATES
+// ══════════════════════════════════════════
+
+async function loadDelegates(){
+  try{
+    const d=await api('GET','/api/delegates');
+    allDelegates=d.delegates||[];
+    renderDelegates();
+  }catch(e){}
+}
+function renderDelegates(){
+  const tb=document.getElementById('delegates-tb');
+  if(!tb)return;
+  tb.innerHTML=allDelegates.length?allDelegates.map((d,i)=>`<tr>
+    <td><span class="snum">${i+1}</span></td>
+    <td><span class="db">${d.district||'—'}</span></td>
+    <td style="font-weight:700">${d.name||'—'}</td>
+    <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
+    <td>${CU?.role==='admin'?`<button class="btn btn-o btn-sm" onclick="editDelegate(${d.id})">✏️</button>
+        <button class="btn btn-r btn-sm" onclick="delDelegate(${d.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد مخولون</td></tr>';
+}
+function openDelegateModal(id){document.getElementById('ov-delegate')?.classList.add('open');}
+function editDelegate(id){openDelegateModal(id);}
+async function delDelegate(id){
+  if(!confirm('حذف المخول؟'))return;
+  try{await api('DELETE','/api/delegates/'+id);toast('تم الحذف');await loadDelegates();updateDashboard();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+function openDistrictModal(){toast('إضافة القواطع من خلال إعدادات النظام');}
+
+// ══════════════════════════════════════════
+//  CIRCULARS
+// ══════════════════════════════════════════
+
+let allCirculars=[];
+async function loadCirculars(){
+  try{
+    const d=await api('GET','/api/circulars');
+    allCirculars=d.circulars||[];
+    renderCirculars();
+    const unread=allCirculars.filter(c=>!(d.reads||[]).includes(c.id)).length;
+    const badge=document.getElementById('circulars-badge');
+    if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
+  }catch(e){}
+}
+function renderCirculars(){
+  const distF=document.getElementById('f-circ-district')?.value||'';
+  const typeF=document.getElementById('f-circ-type')?.value||'';
+  let list=allCirculars.filter(c=>{
+    if(distF&&c.district!==distF&&c.district!=='الكل')return false;
+    if(typeF&&c.type!==typeF)return false;
+    return true;
+  }).sort((a,b)=>b.date>a.date?1:-1);
+  const grid=document.getElementById('circulars-grid');
+  if(!grid)return;
+  grid.innerHTML=list.length?list.map(c=>`
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+        <div style="font-size:15px;font-weight:800;color:var(--text)">${c.title||'—'}</div>
+        <span class="badge b-warn">${c.type||'تعميم'}</span>
+      </div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${c.body||c.notes||''}</div>
+      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3)">
+        <span>📅 ${c.date||''}</span>
+        <span>📢 ${c.district||'الكل'}</span>
+        ${CU?.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})" style="font-size:10px;padding:2px 8px">🗑️</button>`:''}
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:40px;color:var(--t3)">لا توجد تعاميم</div>';
+}
+function filterCirculars(){renderCirculars();}
+function toggleCircForm(){
+  const f=document.getElementById('circ-add-form');
+  if(f) f.style.display=f.style.display==='none'?'block':'none';
+}
+function cancelQuickCirc(){document.getElementById('circ-add-form').style.display='none';}
+async function saveQuickCircular(){
+  const title=document.getElementById('q-circ-title')?.value.trim();
+  if(!title){toast('أدخل عنوان التعميم','err');return;}
+  const body={title, type:document.getElementById('q-circ-type')?.value||'تعميم',
+    district:'الكل', body:document.getElementById('q-circ-body')?.value||'',
+    date:new Date().toISOString().split('T')[0]};
+  try{await api('POST','/api/circulars',body);toast('تم النشر ✅');cancelQuickCirc();await loadCirculars();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function saveCircular(){
+  const title=document.getElementById('circ-title')?.value.trim();
+  if(!title){toast('أدخل عنوان التعميم','err');return;}
+  const body={title, type:document.getElementById('circ-type')?.value||'تعميم',
+    district:document.getElementById('circ-district')?.value||'الكل',
+    body:document.getElementById('circ-body')?.value||'',
+    date:new Date().toISOString().split('T')[0]};
+  try{await api('POST','/api/circulars',body);closeModal('ov-circ');toast('تم النشر ✅');await loadCirculars();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function delCircular(id){
+  if(!confirm('حذف التعميم؟'))return;
+  try{await api('DELETE','/api/circulars/'+id);toast('تم الحذف');await loadCirculars();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+// ══════════════════════════════════════════
+//  USERS
+// ══════════════════════════════════════════
+
+let allUsers=[];
+async function loadUsers(){
+  try{
+    const d=await api('GET','/api/users');
+    allUsers=d.users||[];
+    renderUsers();
+  }catch(e){toast('خطأ في تحميل المستخدمين','err');}
+}
+function renderUsers(){
+  const cards=document.getElementById('users-cards');
+  if(!cards)return;
+  cards.innerHTML=allUsers.length?allUsers.map(u=>`
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800">${(u.fullname||'م')[0]}</div>
+        <div>
+          <div style="font-weight:800">${u.fullname||'—'}</div>
+          <div style="font-size:12px;color:var(--t3)">${u.username||'—'} · ${u.role==='admin'?'مدير':'مستخدم'} ${u.district?'· '+u.district:''}</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center">
+        <span class="badge ${u.active?'b-ok':'b-bad'}">${u.active?'✅ فعّال':'❌ موقوف'}</span>
+        <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
+        ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:30px;color:var(--t3)">لا يوجد مستخدمون</div>';
+}
+function openUserModal(id){document.getElementById('ov-user')?.classList.add('open');}
+function editUser(id){openUserModal(id);}
+async function delUser(id){
+  if(!confirm('حذف المستخدم؟'))return;
+  try{await api('DELETE','/api/users/'+id);toast('تم الحذف');await loadUsers();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+// ══════════════════════════════════════════
+//  LOGS
+// ══════════════════════════════════════════
+
+async function loadLogs(){
+  const limit=document.getElementById('log-limit')?.value||100;
+  try{
+    const d=await api('GET','/api/logs?limit='+limit);
+    const tb=document.getElementById('logs-tb');
+    if(!tb)return;
+    const logs=d.logs||[];
+    tb.innerHTML=logs.length?logs.map((l,i)=>`<tr>
+      <td><span class="snum">${i+1}</span></td>
+      <td style="font-weight:700">${l.fullname||l.username||'—'}</td>
+      <td>${l.action||'—'}</td>
+      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${l.details||'—'}</td>
+      <td style="font-family:monospace;font-size:11px">${l.ip||'—'}</td>
+      <td style="color:var(--t3);font-size:12px">${l.time||'—'}</td>
+    </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد سجل</td></tr>';
+  }catch(e){toast('خطأ في تحميل السجل','err');}
+}
+
+// ══════════════════════════════════════════
+//  REPORTS
+// ══════════════════════════════════════════
+
+function populateReportDistricts(){
+  ['r-district'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    sel.innerHTML='<option value="">الكل</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+  });
+  generateReport();
+}
+function generateReport(){
+  const from=document.getElementById('r-from')?.value||'';
+  const to=document.getElementById('r-to')?.value||'9999';
+  const dist=document.getElementById('r-district')?.value||'';
+  let list=allTours.filter(t=>{
+    if(from&&t.date<from)return false;
+    if(to&&t.date>to)return false;
+    if(dist&&t.district!==dist)return false;
+    return true;
+  });
+  const res=document.getElementById('report-result');
+  if(!res)return;
+  const byType={};
+  list.forEach(t=>{byType[t.visit_type||'غير محدد']=(byType[t.visit_type||'غير محدد']||0)+1;});
+  res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:var(--p1)">${list.length}</div><div style="font-size:12px;color:var(--t3)">إجمالي الجولات</div></div>
+    ${Object.entries(byType).map(([k,v])=>`<div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--p2)">${v}</div><div style="font-size:12px;color:var(--t3)">${k}</div></div>`).join('')}
+  </div>`;
+}
+function generateMaintReport(){
+  const from=document.getElementById('rm-from')?.value||'';
+  const to=document.getElementById('rm-to')?.value||'9999';
+  let list=allMaint.filter(m=>(!from||m.date>=from)&&(!to||m.date<=to));
+  const res=document.getElementById('maint-report-result');
+  if(!res)return;
+  const qty=list.reduce((s,m)=>s+(+m.qty||0),0);
+  res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:#dc2626">${list.length}</div><div style="font-size:12px;color:var(--t3)">عمليات صيانة</div></div>
+    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:#d97706">${qty}</div><div style="font-size:12px;color:var(--t3)">قطعة مُصرَّفة</div></div>
+  </div>`;
+}
+
+// ══════════════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════════════
+
+function populateDistrictFilters(){
+  ['f-tour-district','f-maint-district','f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
+    const sel=document.getElementById(id);
+    if(!sel)return;
+    const cur=sel.value;
+    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+    sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(cur) sel.value=cur;
+  });
+}
+
+function renderPagination(containerId, current, total, onChange){
+  const el=document.getElementById(containerId);
+  if(!el||total<=1){if(el)el.innerHTML='';return;}
+  let html='';
+  if(current>1) html+=`<button class="pg-btn" onclick="(${onChange.toString()})(${current-1})">›</button>`;
+  for(let i=1;i<=total;i++){
+    if(i===1||i===total||Math.abs(i-current)<=1)
+      html+=`<button class="pg-btn ${i===current?'active':''}" onclick="(${onChange.toString()})(${i})">${i}</button>`;
+    else if(Math.abs(i-current)===2) html+='<span style="padding:0 4px;color:var(--t3)">…</span>';
+  }
+  if(current<total) html+=`<button class="pg-btn" onclick="(${onChange.toString()})(${current+1})">‹</button>`;
+  el.innerHTML=html;
+}
+
+function downloadCSV(rows, filename){
+  const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=document.createElement('a');
+  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
+  a.download=filename; a.click();
+}
+
+function openChangePw(){document.getElementById('ov-chpw')?.classList.add('open');}
+async function doChangePw(){
+  const oldPw=document.getElementById('pw-old').value;
+  const newPw=document.getElementById('pw-new').value;
+  const conPw=document.getElementById('pw-con').value;
+  if(newPw!==conPw){toast('كلمتا المرور غير متطابقتين','err');return;}
+  if(newPw.length<4){toast('كلمة المرور قصيرة جداً','err');return;}
+  try{
+    await api('PUT','/api/users/'+CU.id,{old_password:oldPw,password:newPw});
+    closeModal('ov-chpw'); toast('تم التغيير ✅');
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+async function viewFile(key){
+  try{
+    const d=await api('GET','/api/files/'+key);
+    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
+    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
+  }catch(e){toast('خطأ في تحميل الملف','err');}
+}
+
+async function doUpload(event, key){
+  const file=event.target.files[0]; if(!file)return;
+  const toB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});
+  const data=await toB64(file);
+  UF[key]={name:file.name,data,mime:file.type};
+  const stat=document.getElementById('us-'+key);
+  if(stat){stat.textContent=file.name;}
+  const box=event.target.closest('.up-box');
+  if(box) box.classList.add('hf');
+}
+function rmFile(key, e){
+  e?.stopPropagation();
+  delete UF[key];
+  const stat=document.getElementById('us-'+key);
+  if(stat) stat.textContent='صورة أو PDF';
+  const box=e?.target?.closest('.up-box');
+  if(box) box.classList.remove('hf');
+}
+
+function printGovStationsReport(){window.print();}
+
 
 // ── INIT ──
 tryAutoLogin();</script>
