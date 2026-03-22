@@ -1062,28 +1062,28 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <label style="font-size:11px;font-weight:700;color:var(--p1)">📐 عرض الليبل (مم)</label>
                     <input type="number" id="ctrl-lbl-w" value="80" min="40" max="200"
-                      oninput="rebuildLabel()"
+                      oninput="saveLabelSizes();rebuildLabel()"
                       style="border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:var(--p1);text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
 
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <label style="font-size:11px;font-weight:700;color:var(--p1)">📏 ارتفاع الليبل (مم)</label>
                     <input type="number" id="ctrl-lbl-h" value="50" min="20" max="150"
-                      oninput="rebuildLabel()"
+                      oninput="saveLabelSizes();rebuildLabel()"
                       style="border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:var(--p1);text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
 
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <label style="font-size:11px;font-weight:700;color:#7c3aed">◼ حجم QR (بكسل)</label>
                     <input type="number" id="ctrl-qr-size" value="80" min="30" max="300"
-                      oninput="rebuildLabel()"
+                      oninput="saveLabelSizes();rebuildLabel()"
                       style="border:1.5px solid #ddd6fe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:#7c3aed;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
 
                   <div style="display:flex;flex-direction:column;gap:5px">
                     <label style="font-size:11px;font-weight:700;color:#0891b2">▌ ارتفاع الباركود (بكسل)</label>
                     <input type="number" id="ctrl-bc-h" value="40" min="15" max="200"
-                      oninput="rebuildLabel()"
+                      oninput="saveLabelSizes();rebuildLabel()"
                       style="border:1.5px solid #a5f3fc;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:#0891b2;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
 
@@ -2651,7 +2651,7 @@ function goTab(name, el){
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='inventory')  { loadInventory(); }
-  if(name==='coding')     { loadCoding(); populateGenStations(); }
+  if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
   if(name==='reports')    { populateReportDistricts(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
   if(name==='circulars')  { loadCirculars(); }
@@ -2771,8 +2771,15 @@ function updateDashboard(){
   const badge=document.getElementById('unvisited-badge');
   if(badge){ badge.style.display=unvisited?'':'none'; badge.textContent=unvisited; }
 
+  // احصائيات الكاميرات من الجرد أو من المحطات
   let camOk=0,camBad=0;
-  allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
+  if(allInventory&&allInventory.length){
+    allInventory.forEach(x=>{camOk+=(+x.cam_count||0);});
+    allStations.forEach(s=>{camBad+=(+s.cam_broken||0);});
+    camOk=Math.max(0,camOk-camBad);
+  } else {
+    allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
+  }
   document.getElementById('s-cams-ok').textContent=camOk;
   document.getElementById('s-cams-bad').textContent=camBad;
   const total=camOk+camBad, pct=total?Math.round(camOk/total*100):0;
@@ -3011,8 +3018,21 @@ function filterTourStations(){
   sel.innerHTML='<option value="">— اختر المحطة —</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 }
 function exportToursCSV(){
-  const rows=[['التاريخ','المحطة','القاطع','نوع الزيارة','الفني','الملاحظات'],...allTours.map(t=>[t.date,t.station_name,t.district,t.visit_type,t.technician,t.notes])];
-  downloadCSV(rows,'جولات.csv');
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(typeof XLSX!=='undefined'){res();return;}
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['التاريخ','المحطة','القاطع','نوع الزيارة','الفني','الملاحظات'];
+    const rows=allTours.map(t=>[t.date,t.station_name,t.district,t.visit_type,t.technician,t.notes]);
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:12},{wch:16},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,'الجولات',ws);
+    XLSX.writeFile(wb,'جولات_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(()=>toast('خطأ','err'));
 }
 
 // ══════════════════════════════════════════
@@ -3050,7 +3070,7 @@ function renderMaint(){
     <td>${m.reason||'—'}</td>
     <td>${m.technician||'—'}</td>
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
-    <td>${['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'].map(k=>`<button class="btn btn-o btn-sm" style="font-size:10px;padding:2px 6px;margin:1px" onclick="viewFile('maint_${m.id}_${k}')" title="${k}">📎</button>`).join('')}</td>
+    <td><button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})" title="عرض الملفات المرفوعة">📎 ملفات</button></td>
     <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
   </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
@@ -3108,8 +3128,21 @@ function filterMaintStations(){
   sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 }
 function exportMaintCSV(){
-  const rows=[['التاريخ','المحطة','القاطع','الجهاز','الكمية','السبب','الفني','الملاحظات'],...allMaint.map(m=>[m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician,m.notes])];
-  downloadCSV(rows,'صيانة.csv');
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(typeof XLSX!=='undefined'){res();return;}
+    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['التاريخ','المحطة','القاطع','الجهاز','الكمية','السبب','الفني','الملاحظات'];
+    const rows=allMaint.map(m=>[m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician,m.notes]);
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:14},{wch:8},{wch:20},{wch:16},{wch:30}];
+    XLSX.utils.book_append_sheet(wb,'الصيانة',ws);
+    XLSX.writeFile(wb,'صيانة_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(()=>toast('خطأ','err'));
 }
 
 // ══════════════════════════════════════════
@@ -3241,14 +3274,86 @@ function renderInv(){
   </tr>`).join(''):'<tr><td colspan="23" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد جرد</td></tr>';
 }
 function filterInv(){renderInv();}
-function openInvModal(id){document.getElementById('ov-inventory')?.classList.add('open');}
+function openInvModal(id){
+  const m=id?allInventory.find(x=>x.id===id)||{}:{};
+  document.getElementById('inv-eid').value=id||'';
+  // Populate station select
+  const ss=document.getElementById('inv-station');
+  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
+  document.getElementById('inv-status').value=m.status||'مكتمل';
+  const fields={
+    'inv-dvr-count':'dvr_count','inv-dvr-spec':'dvr_spec','inv-dvr-model':'dvr_model',
+    'inv-hdd-count':'hdd_count','inv-hdd-size':'hdd_size',
+    'inv-cam-count':'cam_count','inv-cam-spec':'cam_spec',
+    'inv-poe-count':'poe_count','inv-poe-spec':'poe_spec',
+    'inv-mon-count':'mon_count','inv-mon-spec':'mon_spec',
+    'inv-ups-count':'ups_count','inv-ups-spec':'ups_spec',
+    'inv-bat-count':'bat_count','inv-bat-spec':'bat_spec',
+    'inv-box-count':'box_count','inv-box-spec':'box_spec',
+    'inv-notes':'notes'
+  };
+  Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
+  const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
+  document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
+  document.getElementById('ov-inv').classList.add('open');
+}
 function editInv(id){openInvModal(id);}
+
+async function saveInv(){
+  const id=parseInt(document.getElementById('inv-eid').value)||0;
+  const stId=parseInt(document.getElementById('inv-station').value)||0;
+  if(!stId){toast('اختر المحطة أولاً','err');return;}
+  const st=allStations.find(s=>s.id===stId)||{};
+  const g=id=>parseInt(document.getElementById(id)?.value)||0;
+  const v=id=>document.getElementById(id)?.value||'';
+  const body={station_id:stId,station_name:st.name||'',district:st.district||'',
+    status:v('inv-status'),
+    dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
+    hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
+    cam_count:g('inv-cam-count'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
+    poe_count:g('inv-poe-count'),poe_spec:v('inv-poe-spec'),
+    mon_count:g('inv-mon-count'),mon_spec:v('inv-mon-spec'),
+    ups_count:g('inv-ups-count'),ups_spec:v('inv-ups-spec'),
+    bat_count:g('inv-bat-count'),bat_spec:v('inv-bat-spec'),
+    box_count:g('inv-box-count'),box_spec:v('inv-box-spec'),
+    notes:v('inv-notes')};
+  try{
+    id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
+    closeModal('ov-inv');toast('تم الحفظ ✅');await loadInventory();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
 async function delInv(id){
   if(!confirm('حذف؟'))return;
   try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
   catch(e){toast('خطأ: '+e.message,'err');}
 }
-function exportInvCSV(){toast('سيتم التصدير قريباً');}
+function exportInvCSV(){
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(typeof XLSX!=='undefined'){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    const h=['المحطة','القاطع','الحالة','DVR/NVR عدد','DVR مواصفات','DVR موديل',
+      'HDD عدد','HDD حجم','كاميرات عدد','كاميرات مواصفات','كاميرات دقة',
+      'POE عدد','POE مواصفات','شاشات عدد','شاشات مواصفات',
+      'UPS عدد','UPS مواصفات','بطاريات عدد','بطاريات مواصفات',
+      'بوكسات عدد','بوكسات مواصفات','ملاحظات'];
+    const rows=allInventory.map(x=>[x.station_name,x.district,x.status,
+      x.dvr_count,x.dvr_spec,x.dvr_model,x.hdd_count,x.hdd_size,
+      x.cam_count,x.cam_spec,x.cam_res,x.poe_count,x.poe_spec,
+      x.mon_count,x.mon_spec,x.ups_count,x.ups_spec,x.bat_count,x.bat_spec,
+      x.box_count,x.box_spec,x.notes]);
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!cols']=[{wch:20},{wch:12},{wch:10},...Array(19).fill({wch:12})];
+    XLSX.utils.book_append_sheet(wb,'جرد الكاميرات',ws);
+    XLSX.writeFile(wb,'جرد_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('تم التصدير ✅');
+  }).catch(()=>toast('خطأ في تحميل مكتبة Excel','err'));
+}
 function printInv(){window.print();}
 
 // ══════════════════════════════════════════
@@ -3369,26 +3474,32 @@ async function loadCirculars(){
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
   const typeF=document.getElementById('f-circ-type')?.value||'';
-  let list=allCirculars.filter(c=>{
+  let list=[...allCirculars].filter(c=>{
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
     return true;
   }).sort((a,b)=>b.date>a.date?1:-1);
   const grid=document.getElementById('circulars-grid');
   if(!grid)return;
+  const typeColor={'تعميم':'b-navy','تبليغ':'b-warn','أمر إداري':'b-bad','عام':'b-ok'};
   grid.innerHTML=list.length?list.map(c=>`
-    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px;margin-bottom:12px">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
-        <div style="font-size:15px;font-weight:800;color:var(--text)">${c.title||'—'}</div>
-        <span class="badge b-warn">${c.type||'تعميم'}</span>
+    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
+        <div style="font-size:15px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
+        <span class="badge ${typeColor[c.type]||'b-blue'}">${c.type||'تعميم'}</span>
       </div>
-      <div style="font-size:13px;color:var(--t2);margin-bottom:8px">${c.body||c.notes||''}</div>
-      <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t3)">
-        <span>📅 ${c.date||''}</span>
-        <span>📢 ${c.district||'الكل'}</span>
-        ${CU?.role==='admin'?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})" style="font-size:10px;padding:2px 8px">🗑️</button>`:''}
+      ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.7;background:var(--bg2);border-radius:8px;padding:10px 12px">${c.body||c.notes}</div>`:''}
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3)">
+        <div style="display:flex;gap:12px">
+          <span>📅 ${c.date||''}</span>
+          <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
+        </div>
+        <div style="display:flex;gap:6px">
+          ${c.files&&c.files.length?`<button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>`:''}
+          ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
+        </div>
       </div>
-    </div>`).join(''):'<div style="text-align:center;padding:40px;color:var(--t3)">لا توجد تعاميم</div>';
+    </div>`).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
 }
 function filterCirculars(){renderCirculars();}
 function toggleCircForm(){
@@ -3436,23 +3547,90 @@ async function loadUsers(){
 function renderUsers(){
   const cards=document.getElementById('users-cards');
   if(!cards)return;
-  cards.innerHTML=allUsers.length?allUsers.map(u=>`
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-      <div style="display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:10px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800">${(u.fullname||'م')[0]}</div>
-        <div>
-          <div style="font-weight:800">${u.fullname||'—'}</div>
-          <div style="font-size:12px;color:var(--t3)">${u.username||'—'} · ${u.role==='admin'?'مدير':'مستخدم'} ${u.district?'· '+u.district:''}</div>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <span class="badge ${u.active?'b-ok':'b-bad'}">${u.active?'✅ فعّال':'❌ موقوف'}</span>
-        <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
-        ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
-      </div>
-    </div>`).join(''):'<div style="text-align:center;padding:30px;color:var(--t3)">لا يوجد مستخدمون</div>';
+  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
+  cards.innerHTML=`
+    <table width="100%" style="border-collapse:collapse;font-size:14px">
+      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
+        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
+        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
+      </tr></thead>
+      <tbody>${allUsers.map(u=>{
+        const perms=u.perms||{};
+        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
+          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير',inventory:'جرد'})
+            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 14px;font-weight:700">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
+              ${u.fullname||'—'}
+            </div>
+          </td>
+          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
+          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
+          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
+          <td style="padding:10px 14px">${permBadges}</td>
+          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
+          <td style="padding:10px 14px;text-align:center">
+            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
+            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
 }
-function openUserModal(id){document.getElementById('ov-user')?.classList.add('open');}
+function openUserModal(id){
+  const u=id?allUsers.find(x=>x.id===id)||{}:{};
+  document.getElementById('u-eid').value=id||'';
+  document.getElementById('u-fn').value=u.fullname||'';
+  document.getElementById('u-un').value=u.username||'';
+  document.getElementById('u-pw').value='';
+  document.getElementById('u-role').value=u.role||'viewer';
+  const ds=document.getElementById('u-district');
+  ds.innerHTML='<option value="">— بدون تقييد —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${u.district===d?'selected':''}>${d}</option>`).join('');
+  const perms=u.perms||{};
+  ['edit','del','files','reports','inventory'].forEach(p=>{
+    const el=document.getElementById('p-'+p);
+    if(el){el.classList.toggle('on', perms[p]===true);}
+  });
+  toggleUserPerms();
+  document.getElementById('ov-user').classList.add('open');
+}
+function toggleUserPerms(){
+  const role=document.getElementById('u-role')?.value;
+  const permsDiv=document.getElementById('u-perms');
+  const distRow=document.getElementById('u-district-row');
+  if(permsDiv) permsDiv.style.display=role==='admin'?'none':'grid';
+  if(distRow)  distRow.style.display=role==='admin'?'none':'block';
+}
+async function saveUser(){
+  const id=parseInt(document.getElementById('u-eid').value)||0;
+  const fn=document.getElementById('u-fn').value.trim();
+  const un=document.getElementById('u-un').value.trim();
+  const pw=document.getElementById('u-pw').value;
+  const role=document.getElementById('u-role').value;
+  const district=document.getElementById('u-district').value;
+  if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
+  if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
+  const perms={
+    edit:  document.getElementById('p-edit')?.classList.contains('on'),
+    del:   document.getElementById('p-del')?.classList.contains('on'),
+    files: document.getElementById('p-files')?.classList.contains('on'),
+    reports:document.getElementById('p-reports')?.classList.contains('on'),
+    inventory:document.getElementById('p-inventory')?.classList.contains('on'),
+  };
+  const body={fullname:fn,username:un,role,district,perms};
+  if(pw) body.password=pw;
+  try{
+    id?await api('PUT','/api/users/'+id,body):await api('POST','/api/users',body);
+    closeModal('ov-user');toast('تم الحفظ ✅');await loadUsers();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
 function editUser(id){openUserModal(id);}
 async function delUser(id){
   if(!confirm('حذف المستخدم؟'))return;
@@ -3584,14 +3762,26 @@ async function viewFile(key){
 }
 
 async function doUpload(event, key){
-  const file=event.target.files[0]; if(!file)return;
-  const toB64=f=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result.split(',')[1]);r.onerror=rej;r.readAsDataURL(f);});
-  const data=await toB64(file);
-  UF[key]={name:file.name,data,mime:file.type};
-  const stat=document.getElementById('us-'+key);
-  if(stat){stat.textContent=file.name;}
-  const box=event.target.closest('.up-box');
-  if(box) box.classList.add('hf');
+  try{
+    const file=event.target.files[0]; if(!file)return;
+    // حد أقصى 5MB
+    if(file.size>5*1024*1024){toast('حجم الملف كبير — الحد الأقصى 5MB','err');event.target.value='';return;}
+    const toB64=f=>new Promise((res,rej)=>{
+      const r=new FileReader();
+      r.onload=()=>res(r.result.split(',')[1]);
+      r.onerror=()=>rej(new Error('فشل قراءة الملف'));
+      r.readAsDataURL(f);
+    });
+    const data=await toB64(file);
+    UF[key]={name:file.name,data,mime:file.type||'application/octet-stream'};
+    const stat=document.getElementById('us-'+key);
+    if(stat) stat.textContent=file.name;
+    const box=event.target.closest('.up-box');
+    if(box) box.classList.add('hf');
+  }catch(e){
+    toast('خطأ في رفع الملف: '+e.message,'err');
+    console.error('doUpload error:',e);
+  }
 }
 function rmFile(key, e){
   e?.stopPropagation();
@@ -3605,6 +3795,56 @@ function rmFile(key, e){
 function printGovStationsReport(){window.print();}
 
 
+
+function showMaintFiles(mid){
+  const keys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
+  const labels={'maint_img':'صورة 1','maint_img2':'صورة 2','maint_img3':'صورة 3',
+    'maint_rep':'سجل اشتغال 1','maint_rep2':'سجل اشتغال 2','maint_rep3':'سجل اشتغال 3',
+    'maint_tawkeef':'تكليف 1','maint_tawkeef2':'تكليف 2'};
+  // بناء نافذة صغيرة لعرض الملفات
+  let ov=document.getElementById('ov-maint-files');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='ov-maint-files';
+    ov.className='overlay';
+    ov.onclick=e=>{if(e.target===ov)ov.classList.remove('open');};
+    ov.innerHTML=`<div class="modal modal-sm"><div class="m-title">📎 ملفات الصيانة</div><div id="maint-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"></div><div class="m-footer"><button class="btn btn-o" onclick="closeModal('ov-maint-files')">إغلاق</button></div></div>`;
+    document.body.appendChild(ov);
+  }
+  const list=document.getElementById('maint-files-list');
+  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:10px">جاري التحميل...</div>';
+  ov.classList.add('open');
+  Promise.all(keys.map(k=>api('GET','/api/files/maint_'+mid+'_'+k).then(d=>({k,d})).catch(()=>null)))
+    .then(results=>{
+      const found=results.filter(r=>r&&r.d&&r.d.data);
+      list.innerHTML=found.length?found.map(({k,d})=>`
+        <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px">
+          <span style="font-weight:600">${labels[k]||k}</span>
+          <div style="display:flex;gap:6px">
+            ${d.mime?.startsWith('image/')?`<button class="btn btn-o btn-sm" onclick="openLB('data:${d.mime};base64,${d.data}')">👁️ عرض</button>`:''}
+            <button class="btn btn-p btn-sm" onclick="(()=>{const a=document.createElement('a');a.href='data:${d.mime};base64,${d.data}';a.download='${d.name||k}';a.click();})()">⬇️ تحميل</button>
+          </div>
+        </div>`).join('')
+      :'<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
+    });
+}
+
+function saveLabelSizes(){
+  const s={w:document.getElementById('ctrl-lbl-w')?.value,
+           h:document.getElementById('ctrl-lbl-h')?.value,
+           qr:document.getElementById('ctrl-qr-size')?.value,
+           bc:document.getElementById('ctrl-bc-h')?.value};
+  localStorage.setItem('lbl_sizes',JSON.stringify(s));
+}
+function loadLabelSizes(){
+  try{
+    const s=JSON.parse(localStorage.getItem('lbl_sizes')||'{}');
+    if(s.w){document.getElementById('ctrl-lbl-w').value=s.w;}
+    if(s.h){document.getElementById('ctrl-lbl-h').value=s.h;}
+    if(s.qr){document.getElementById('ctrl-qr-size').value=s.qr;}
+    if(s.bc){document.getElementById('ctrl-bc-h').value=s.bc;}
+  }catch(e){}
+}
 // ── INIT ──
 tryAutoLogin();</script>
 </body>
