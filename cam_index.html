@@ -2065,7 +2065,7 @@ async function tryAutoLogin(){
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='block';
 
-  // 1. جرب التوكن المحفوظ أولاً
+  // 1. جرب التوكن المحفوظ
   if(TOKEN){
     try{
       const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
@@ -2074,15 +2074,59 @@ async function tryAutoLogin(){
     TOKEN=''; localStorage.removeItem('cam_token');
   }
 
-  // 2. جرب auto-login بالمعلومات المخزنة
+  // 2. جرب بيانات الدخول المحفوظة
   const saved=LS.get('login_creds');
   if(saved){
     const ok=await silentLoginWith(saved.u, saved.p);
     if(ok){ SERVER_ONLINE=true; await initApp(); return; }
   }
 
-  // 3. ما في اتصال أو بيانات دخول — أظهر نافذة دخول صغيرة فوق الواجهة
-  showMiniLogin();
+  // 3. جرب الدخول التلقائي بالبيانات الافتراضية
+  const autoOk=await silentLoginWith(AUTO_USER, AUTO_PASS);
+  if(autoOk){ SERVER_ONLINE=true; await initApp(); return; }
+
+  // 4. كل المحاولات فشلت — افتح البرنامج مع طلب دخول في الشريط العلوي
+  SERVER_ONLINE=false;
+  CU={id:0,fullname:'زائر',username:'guest',role:'viewer',district:'',active:true,
+      perms:{view:true,edit:false,del:false,files:false,reports:true}};
+  await initApp();
+  showTopbarLogin();
+}
+
+function showTopbarLogin(){
+  // أضف زر دخول في الشريط العلوي بدل حجب الواجهة
+  const tb=document.getElementById('sidebar');
+  if(!tb||document.getElementById('topbar-login-form'))return;
+  const bar=document.createElement('div');
+  bar.id='topbar-login-form';
+  bar.style.cssText='background:#1d4ed8;padding:6px 16px;display:flex;align-items:center;gap:8px;font-family:Cairo,sans-serif;flex-wrap:wrap;justify-content:center';
+  bar.innerHTML=
+    '<span style="color:#bfdbfe;font-size:12px;font-weight:600">🔐 سجل دخول للوصول الكامل</span>'+
+    '<input id="tl-u" type="text" value="admin" placeholder="المستخدم" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:100px">'+
+    '<input id="tl-p" type="password" placeholder="كلمة المرور" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:110px" onkeydown="doTopbarLoginOnEnter(event)">'+
+    '<button onclick="doTopbarLogin()" style="background:#fff;color:#1d4ed8;border:none;border-radius:6px;padding:5px 14px;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer">دخول</button>'+
+    '<span id="tl-err" style="color:#fca5a5;font-size:11px;display:none"></span>';
+  tb.appendChild(bar);
+}
+
+function doTopbarLoginOnEnter(e){if(e.key==='Enter')doTopbarLogin();}
+async function doTopbarLogin(){
+  const u=(document.getElementById('tl-u')?.value||'').trim();
+  const p=document.getElementById('tl-p')?.value||'';
+  const errEl=document.getElementById('tl-err');
+  const btn=document.querySelector('#topbar-login-form button');
+  if(btn){btn.disabled=true;btn.textContent='...';}
+  const ok=await silentLoginWith(u,p);
+  if(ok){
+    LS.set('login_creds',{u,p});
+    SERVER_ONLINE=true;
+    const bar=document.getElementById('topbar-login-form');
+    if(bar)bar.remove();
+    await initApp();
+  } else {
+    if(errEl){errEl.textContent='بيانات خاطئة';errEl.style.display='block';}
+    if(btn){btn.disabled=false;btn.textContent='دخول';}
+  }
 }
 
 function showMiniLogin(errMsg){
