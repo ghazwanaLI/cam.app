@@ -3783,27 +3783,70 @@ function printGovStationsReport(){window.print();}
 
 function showMaintFiles(mid){
 const keys=[‘maint_img’,‘maint_img2’,‘maint_img3’,‘maint_rep’,‘maint_rep2’,‘maint_rep3’,‘maint_tawkeef’,‘maint_tawkeef2’];
-const labels={‘maint_img’:‘صورة 1’,‘maint_img2’:‘صورة 2’,‘maint_img3’:‘صورة 3’,
-‘maint_rep’:‘سجل اشتغال 1’,‘maint_rep2’:‘سجل اشتغال 2’,‘maint_rep3’:‘سجل اشتغال 3’,
-‘maint_tawkeef’:‘تكليف 1’,‘maint_tawkeef2’:‘تكليف 2’};
-// بناء نافذة صغيرة لعرض الملفات
+const labels={maint_img:‘صورة 1’,maint_img2:‘صورة 2’,maint_img3:‘صورة 3’,
+maint_rep:‘سجل 1’,maint_rep2:‘سجل 2’,maint_rep3:‘سجل 3’,
+maint_tawkeef:‘تكليف 1’,maint_tawkeef2:‘تكليف 2’};
 let ov=document.getElementById(‘ov-maint-files’);
 if(!ov){
 ov=document.createElement(‘div’);
 ov.id=‘ov-maint-files’;
 ov.className=‘overlay’;
-ov.onclick=e=>{if(e.target===ov)ov.classList.remove(‘open’);};
-ov.innerHTML=`<div class="modal modal-sm"><div class="m-title">📎 ملفات الصيانة</div><div id="maint-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"></div><div class="m-footer"><button class="btn btn-o" onclick="closeModal('ov-maint-files')">إغلاق</button></div></div>`;
+ov.onclick=function(e){if(e.target===ov)closeModal(‘ov-maint-files’);};
+const inner=document.createElement(‘div’);
+inner.className=‘modal modal-sm’;
+const titleEl=document.createElement(‘div’); titleEl.className=‘m-title’; titleEl.textContent=‘📎 ملفات الصيانة’;
+const bodyEl=document.createElement(‘div’); bodyEl.id=‘maint-files-list’; bodyEl.style.cssText=‘display:flex;flex-direction:column;gap:8px;padding:4px 0’;
+const footerEl=document.createElement(‘div’); footerEl.className=‘m-footer’;
+const closeBtn=document.createElement(‘button’); closeBtn.className=‘btn btn-o’; closeBtn.textContent=‘إغلاق’;
+closeBtn.onclick=function(){closeModal(‘ov-maint-files’);};
+footerEl.appendChild(closeBtn);
+inner.appendChild(titleEl); inner.appendChild(bodyEl); inner.appendChild(footerEl);
+ov.appendChild(inner);
 document.body.appendChild(ov);
 }
 const list=document.getElementById(‘maint-files-list’);
 list.innerHTML=’<div style="color:var(--t3);text-align:center;padding:10px">جاري التحميل…</div>’;
 ov.classList.add(‘open’);
-Promise.all(keys.map(k=>api(‘GET’,’/api/files/maint_’+mid+’_’+k).then(d=>({k,d})).catch(()=>null)))
-.then(results=>{
-const found=results.filter(r=>r&&r.d&&r.d.data);
-list.innerHTML=found.length?found.map(({k,d})=>` <div style="display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px"> <span style="font-weight:600">${labels[k]||k}</span> <div style="display:flex;gap:6px"> ${d.mime?.startsWith('image/')?`<button class="btn btn-o btn-sm" onclick="openLB('data:${d.mime};base64,${d.data}')">👁️ عرض</button>`:''} <button class="btn btn-p btn-sm" onclick="(()=>{const a=document.createElement('a');a.href='data:${d.mime};base64,${d.data}';a.download='${d.name||k}';a.click();})()">⬇️ تحميل</button> </div> </div>`).join(’’)
-:’<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>’;
+Promise.all(keys.map(function(k){
+return api(‘GET’,’/api/files/maint_’+mid+’_’+k).then(function(d){return {k:k,d:d};}).catch(function(){return null;});
+})).then(function(results){
+const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+if(!found.length){
+list.innerHTML=’<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>’;
+return;
+}
+list.innerHTML=’’;
+found.forEach(function(item){
+const k=item.k; const d=item.d;
+const row=document.createElement(‘div’);
+row.style.cssText=‘display:flex;align-items:center;justify-content:space-between;background:var(–bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px’;
+const lbl=document.createElement(‘span’);
+lbl.style.fontWeight=‘600’;
+lbl.textContent=labels[k]||k;
+row.appendChild(lbl);
+const btns=document.createElement(‘div’);
+btns.style.display=‘flex’;
+btns.style.gap=‘6px’;
+if(d.mime&&d.mime.startsWith(‘image/’)){
+const vBtn=document.createElement(‘button’);
+vBtn.className=‘btn btn-o btn-sm’;
+vBtn.textContent=‘👁️ عرض’;
+vBtn.onclick=function(){openLB(‘data:’+d.mime+’;base64,’+d.data);};
+btns.appendChild(vBtn);
+}
+const dBtn=document.createElement(‘button’);
+dBtn.className=‘btn btn-p btn-sm’;
+dBtn.textContent=‘⬇️ تحميل’;
+dBtn.onclick=function(){
+const a=document.createElement(‘a’);
+a.href=‘data:’+(d.mime||‘application/octet-stream’)+’;base64,’+d.data;
+a.download=d.name||k;
+a.click();
+};
+btns.appendChild(dBtn);
+row.appendChild(btns);
+list.appendChild(row);
+});
 });
 }
 
