@@ -2471,11 +2471,11 @@ function exportVoidExcel(){
     const wb=XLSX.utils.book_new();
     const ws1=XLSX.utils.aoa_to_sheet([h1,...rows1]);
     ws1['!cols']=[{wch:14},{wch:50},{wch:20},{wch:22},{wch:14},{wch:14},{wch:10}];
-    XLSX.utils.book_append_sheet(wb,'بيانات الطباعة',ws1);
+    XLSX.utils.book_append_sheet(wb,ws1,'بيانات الطباعة');
     if(rows2.length>0){
       const ws2=XLSX.utils.aoa_to_sheet([h2,...rows2]);
       ws2['!cols']=[{wch:14},{wch:8},{wch:6},{wch:14},{wch:30}];
-      XLSX.utils.book_append_sheet(wb,'السيريال',ws2);
+      XLSX.utils.book_append_sheet(wb,ws2,'السيريال');
     }
     (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='VOID_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
@@ -2734,7 +2734,7 @@ async function exportGoLabel(){
       {wch:10},{wch:30},{wch:10},{wch:30},
       {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
     ];
-    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'GoLabel_Data');
 
     // تحميل الملف في المتصفح
     const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
@@ -2776,7 +2776,7 @@ function exportCodingExcel(){
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:14},{wch:20},{wch:13},{wch:20},{wch:12},{wch:25},{wch:12},{wch:25},{wch:13},{wch:10},{wch:20}];
-    XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'ترميز الأجهزة');
     const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
     const blob=new Blob([wbout],{type:'application/octet-stream'});
     const url=URL.createObjectURL(blob);
@@ -3452,7 +3452,7 @@ function exportToursCSV(){
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:12},{wch:16},{wch:30}];
-    XLSX.utils.book_append_sheet(wb,'الجولات',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'الجولات');
     (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جولات_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ','err'));
@@ -3562,7 +3562,7 @@ function exportMaintCSV(){
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:14},{wch:8},{wch:20},{wch:16},{wch:30}];
-    XLSX.utils.book_append_sheet(wb,'الصيانة',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'الصيانة');
     (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='صيانة_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ','err'));
@@ -3772,7 +3772,7 @@ function exportInvCSV(){
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:20},{wch:12},{wch:10},...Array(19).fill({wch:12})];
-    XLSX.utils.book_append_sheet(wb,'جرد الكاميرات',ws);
+    XLSX.utils.book_append_sheet(wb,ws,'جرد الكاميرات');
     (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جرد_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ في تحميل مكتبة Excel','err'));
