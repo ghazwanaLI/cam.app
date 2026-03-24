@@ -2,7 +2,12 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="كاميرات المراقبة">
+<meta name="theme-color" content="#1d4ed8">
 <title>نظام كاميرات المراقبة</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='75' x='50' text-anchor='middle' font-size='65'>📹</text></svg>">
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
@@ -762,6 +767,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
               <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
               <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
+              <button onclick="event.stopPropagation();printPrivStationsReport()"
+                style="background:none;border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">
+                🖨️ طباعة
+              </button>
               <span style="flex:1"></span>
               <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s">▲</span>
             </div>
@@ -1674,8 +1683,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </select>
       </div>
       <div class="fg full" id="u-district-row">
-        <label class="fl">القاطع المخصص</label>
-        <select class="fi" id="u-district"><option value="">— بدون تقييد —</option></select>
+        <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span></label>
+        <div id="u-districts-wrap" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:10px;max-height:140px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px">
+          <!-- تُملأ ديناميكياً -->
+        </div>
+        <input type="hidden" id="u-district" value="">
       </div>
     </div>
     <div id="u-perms" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -3902,7 +3914,10 @@ async function loadCirculars(){
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
   const typeF=document.getElementById('f-circ-type')?.value||'';
+  const myDist = CU?.role!=='admin'?CU?.district||'':'';
   let list=[...allCirculars].filter(c=>{
+    // المخول: يرى تعاميم قاطعه أو الموجهة للكل فقط
+    if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
     return true;
@@ -4055,12 +4070,21 @@ function openUserModal(id){
   document.getElementById('u-un').value=u.username||'';
   document.getElementById('u-pw').value='';
   document.getElementById('u-role').value=u.role||'viewer';
-  const ds=document.getElementById('u-district');
-  ds.innerHTML='<option value="">— بدون تقييد —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${u.district===d?'selected':''}>${d}</option>`).join('');
+
+  // دعم عدة قواطع
+  const userDistricts = Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
+  const wrap=document.getElementById('u-districts-wrap');
+  if(wrap){
+    wrap.innerHTML=DISTRICTS_LIST.map(d=>`
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;white-space:nowrap">
+        <input type="checkbox" value="${d}" ${userDistricts.includes(d)?'checked':''} style="width:15px;height:15px;cursor:pointer">
+        ${d}
+      </label>`).join('');
+  }
   const perms=u.perms||{};
   ['edit','del','files','reports','inventory'].forEach(p=>{
     const el=document.getElementById('p-'+p);
-    if(el){el.classList.toggle('on', perms[p]===true);}
+    if(el) el.classList.toggle('on', perms[p]===true);
   });
   toggleUserPerms();
   document.getElementById('ov-user').classList.add('open');
@@ -4078,7 +4102,10 @@ async function saveUser(){
   const un=document.getElementById('u-un').value.trim();
   const pw=document.getElementById('u-pw').value;
   const role=document.getElementById('u-role').value;
-  const district=document.getElementById('u-district').value;
+  // جمع القواطع المختارة
+  const checkedDistricts=Array.from(document.querySelectorAll('#u-districts-wrap input[type=checkbox]:checked')).map(x=>x.value);
+  const district=checkedDistricts.length===1?checkedDistricts[0]:(checkedDistricts.length===0?'':'');
+  const districts=checkedDistricts;
   if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
   if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
   const perms={
@@ -4088,7 +4115,7 @@ async function saveUser(){
     reports:document.getElementById('p-reports')?.classList.contains('on'),
     inventory:document.getElementById('p-inventory')?.classList.contains('on'),
   };
-  const body={fullname:fn,username:un,role,district,perms};
+  const body={fullname:fn,username:un,role,district,districts,perms};
   if(pw) body.password=pw;
   try{
     id?await api('PUT','/api/users/'+id,body):await api('POST','/api/users',body);
@@ -4149,23 +4176,46 @@ function populateReportDistricts(){
 function generateReport(){
   const from=document.getElementById('r-from')?.value||'';
   const to=document.getElementById('r-to')?.value||'9999';
-  // قاطع المخول يتجاوز الفلتر
   const myDist=CU?.role!=='admin'&&CU?.district?CU.district:'';
   const dist=myDist||document.getElementById('r-district')?.value||'';
-  let list=allTours.filter(t=>{
+  let tours=allTours.filter(t=>{
     if(from&&t.date<from)return false;
     if(to&&t.date>to)return false;
     if(dist&&t.district!==dist)return false;
     return true;
   });
+  let maints=allMaint.filter(m=>{
+    if(from&&m.date<from)return false;
+    if(to&&m.date>to)return false;
+    if(dist&&m.district!==dist)return false;
+    return true;
+  });
   const res=document.getElementById('report-result');
   if(!res)return;
   const byType={};
-  list.forEach(t=>{byType[t.visit_type||'غير محدد']=(byType[t.visit_type||'غير محدد']||0)+1;});
-  res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:var(--p1)">${list.length}</div><div style="font-size:12px;color:var(--t3)">إجمالي الجولات</div></div>
-    ${Object.entries(byType).map(([k,v])=>`<div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:22px;font-weight:900;color:var(--p2)">${v}</div><div style="font-size:12px;color:var(--t3)">${k}</div></div>`).join('')}
-  </div>`;
+  tours.forEach(t=>{byType[t.visit_type||'غير محدد']=(byType[t.visit_type||'غير محدد']||0)+1;});
+  const colors=['#1d4ed8','#0891b2','#16a34a','#7c3aed','#d97706','#dc2626'];
+  const typeCards=Object.entries(byType).map(([k,v],i)=>
+    `<div style="background:${colors[i%colors.length]}15;border:1.5px solid ${colors[i%colors.length]}30;border-radius:10px;padding:10px;text-align:center">
+      <div style="font-size:20px;font-weight:900;color:${colors[i%colors.length]}">${v}</div>
+      <div style="font-size:11px;color:#475569;margin-top:2px">${k}</div>
+    </div>`).join('');
+  res.innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
+      <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:10px;padding:12px;text-align:center;color:#fff">
+        <div style="font-size:24px;font-weight:900">${tours.length}</div>
+        <div style="font-size:11px;opacity:.85">جولة ميدانية</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:10px;padding:12px;text-align:center;color:#fff">
+        <div style="font-size:24px;font-weight:900">${maints.length}</div>
+        <div style="font-size:11px;opacity:.85">عملية صيانة</div>
+      </div>
+      <div style="background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;padding:12px;text-align:center;color:#fff">
+        <div style="font-size:24px;font-weight:900">${new Set(tours.map(t=>t.station_id)).size}</div>
+        <div style="font-size:11px;opacity:.85">محطة تمت زيارتها</div>
+      </div>
+    </div>
+    ${typeCards?`<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px">أنواع الزيارات</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${typeCards}</div>`:''}`;
 }
 function generateMaintReport(){
   const from=document.getElementById('rm-from')?.value||'';
@@ -4517,15 +4567,32 @@ function printCodingList(){
 }
 
 // ── طباعة المحطات الحكومية ──
-function printGovStationsReport(){
-  const list=allStations.filter(s=>s.type==='حكومية');
+function _printStations(type){
+  const distF=document.getElementById('f-st-district')?.value||'';
+  let list=allStations.filter(s=>{
+    if(type==='gov'&&s.type!=='حكومية')return false;
+    if(type==='priv'&&s.type==='حكومية')return false;
+    if(distF&&s.district!==distF)return false;
+    return true;
+  });
+  const label=type==='gov'?'المحطات الحكومية':'المحطات الأهلية';
+  const color=type==='gov'?'#1d4ed8':'#d97706';
+  const title=label+(distF?' — '+distF:'');
   const tbl='<table>'
-    +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>كاميرات تعمل</th><th>كاميرات معطلة</th><th>الإجمالي</th></tr></thead>'
-    +'<tbody>'+list.map((s,i)=>{const tot=(+s.cam_working||0)+(+s.cam_broken||0);return`<tr><td>${i+1}</td><td style="font-weight:700">${s.name||'—'}</td><td>${s.district||'—'}</td><td style="color:green;text-align:center">${s.cam_working||0}</td><td style="color:red;text-align:center">${s.cam_broken||0}</td><td style="text-align:center">${tot}</td></tr>`;}).join('')
+    +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>✅ تعمل</th><th>❌ معطلة</th><th>الإجمالي</th></tr></thead>'
+    +'<tbody>'+list.map((s,i)=>{
+      const tot=(+s.cam_working||0)+(+s.cam_broken||0);
+      return '<tr><td>'+( i+1)+'</td><td style="font-weight:700">'+s.name+'</td><td>'+s.district+'</td>'
+        +'<td style="color:green;text-align:center">'+(s.cam_working||0)+'</td>'
+        +'<td style="color:red;text-align:center">'+(s.cam_broken||0)+'</td>'
+        +'<td style="text-align:center">'+tot+'</td></tr>';
+    }).join('')
     +'</tbody></table>'
     +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' محطة</div>';
-  _openPrintWindow('المحطات الحكومية', tbl);
+  _openPrintWindow(title, tbl, 'thead tr{background:'+color+'!important}');
 }
+function printGovStationsReport(){ _printStations('gov'); }
+function printPrivStationsReport(){ _printStations('priv'); }
 
 // ── طباعة مستندات الصيانة ──
 function printMaintDocs(){ printMaintTable(); }
