@@ -2743,7 +2743,7 @@ async function exportGoLabel(){
     const url   = URL.createObjectURL(blob);
     const a     = document.createElement('a');
     a.href      = url;
-    a.download  = 'GoLabel_'+new Date().toISOString().split('T')[0]+'.xlsx';
+    a.download  = 'GoLabel_Data.xlsx'; // نفس الاسم دائماً — GoLabel يقرأه تلقائياً
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
