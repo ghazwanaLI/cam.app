@@ -4218,6 +4218,68 @@ function loadLabelSizes(){
   }
 })();
 
+function printCamReport(type){
+  const list=type==='gov'?allStations.filter(s=>s.type==='حكومية'):allStations.filter(s=>s.type!=='حكومية');
+  const title=type==='gov'?'الكاميرات الحكومية':'الكاميرات الأهلية';
+  const w=window.open('','_blank','width=700,height=600');
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+    +'<style>body{font-family:Cairo,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}'
+    +'th{background:#1d4ed8;color:#fff;padding:8px}td{border:1px solid #ddd;padding:7px}'
+    +'@media print{button{display:none}}</style></head><body>'
+    +'<h2 style="color:#1d4ed8">تقرير '+title+'</h2>'
+    +'<p>العدد: '+list.length+' محطة — '+new Date().toLocaleDateString('ar-IQ')+'</p>'
+    +'<button onclick="window.print()" style="margin-bottom:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">🖨️ طباعة</button>'
+    +'<table><thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>يعمل</th><th>معطل</th></tr></thead>'
+    +'<tbody>'+list.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+(s.name||'—')+'</td><td>'+(s.district||'—')+'</td>'
+      +'<td style="color:green;text-align:center">'+(s.cam_working||0)+'</td>'
+      +'<td style="color:red;text-align:center">'+(s.cam_broken||0)+'</td></tr>').join('')
+    +'</tbody></table></body></html>');
+  w.document.close();
+}
+
+function viewCircFiles(cid){
+  const keys=['circ_1','circ_2','circ_3'];
+  const labels={circ_1:'مرفق 1',circ_2:'مرفق 2',circ_3:'مرفق 3'};
+  let ov=document.getElementById('ov-circ-files');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='ov-circ-files'; ov.className='overlay';
+    ov.onclick=function(e){if(e.target===ov)closeModal('ov-circ-files');};
+    const inner=document.createElement('div'); inner.className='modal modal-sm';
+    const ttl=document.createElement('div'); ttl.className='m-title'; ttl.textContent='📎 مرفقات التعميم';
+    const bdy=document.createElement('div'); bdy.id='circ-files-list';
+    bdy.style.cssText='display:flex;flex-direction:column;gap:8px;padding:4px 0;min-height:60px';
+    const ftr=document.createElement('div'); ftr.className='m-footer';
+    const cls=document.createElement('button'); cls.className='btn btn-o'; cls.textContent='إغلاق';
+    cls.onclick=function(){closeModal('ov-circ-files');};
+    ftr.appendChild(cls); inner.appendChild(ttl); inner.appendChild(bdy); inner.appendChild(ftr);
+    ov.appendChild(inner); document.body.appendChild(ov);
+  }
+  const list=document.getElementById('circ-files-list');
+  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:16px">جاري التحميل...</div>';
+  ov.classList.add('open');
+  Promise.all(keys.map(function(k){
+    return api('GET','/api/files/circ_'+cid+'_'+k).then(function(d){return {k:k,d:d};}).catch(function(){return null;});
+  })).then(function(results){
+    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+    if(!found.length){list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد مرفقات</div>';return;}
+    list.innerHTML='';
+    found.forEach(function(item){
+      const k=item.k,d=item.d;
+      const row=document.createElement('div');
+      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px';
+      const lbl=document.createElement('span'); lbl.style.fontWeight='600'; lbl.textContent=labels[k]||k;
+      const bts=document.createElement('div'); bts.style.cssText='display:flex;gap:6px';
+      if(d.mime&&d.mime.startsWith('image/')){
+        const vb=document.createElement('button'); vb.className='btn btn-o btn-sm'; vb.textContent='👁️ عرض';
+        vb.onclick=function(){openLB('data:'+d.mime+';base64,'+d.data);}; bts.appendChild(vb);
+      }
+      const db=document.createElement('button'); db.className='btn btn-p btn-sm'; db.textContent='⬇️ تحميل';
+      db.onclick=function(){const a=document.createElement('a');a.href='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;a.download=d.name||k;a.click();};
+      bts.appendChild(db); row.appendChild(lbl); row.appendChild(bts); list.appendChild(row);
+    });
+  });
+}
+
 tryAutoLogin();</script>
 </body>
 </html>
