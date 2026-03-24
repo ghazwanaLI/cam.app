@@ -1103,7 +1103,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                     <div style="font-size:10px;font-weight:700;color:#0891b2;margin-bottom:6px;letter-spacing:.5px">▌ ارتفاع الباركود</div>
                     <div style="display:flex;align-items:center;gap:6px">
                       <button onclick="stepVal('ctrl-bc-h',-0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">−</button>
-                      <input type="number" id="ctrl-bc-h" value="1.5" min="0.3" max="10" step="0.5"
+                      <input type="number" id="ctrl-bc-h" value="1.2" min="0.3" max="10" step="0.5"
                         style="flex:1;border:1.5px solid #a5f3fc;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#0891b2;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
                       <button onclick="stepVal('ctrl-bc-h',0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">+</button>
                     </div>
@@ -2223,7 +2223,7 @@ let nvrCount=0, hddCount=0;
 async function loadCoding(){
   try{
     const d=await api('GET','/api/coding');
-    allCoding=d.coding||[];
+    allCoding=d.coding||d.devices||[];
     renderCoding();
   }catch(e){ toast('خطأ في تحميل الترميز: '+e.message,'err'); }
 }
@@ -2645,117 +2645,96 @@ function stepVal(id, delta){
 }
 function clampSizes(){
   const h = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
+  const w = parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5;
   let qr  = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
-  let bc  = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.5;
+  let bc  = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2;
   let changed = false;
-  const maxContent = Math.max(0.3, h - 0.3); // هامش 3mm
-  if(qr > maxContent){ qr = +maxContent.toFixed(1); document.getElementById('ctrl-qr-size').value=qr; changed=true; }
-  if(bc > maxContent){ bc = +maxContent.toFixed(1); document.getElementById('ctrl-bc-h').value=bc; changed=true; }
+  const maxQR = Math.max(0.3, h - 0.2);   // QR لا يتجاوز ارتفاع الملصق
+  const maxBC = Math.max(0.2, h - 0.4);   // باركود يترك هامش للنص
+  if(qr > maxQR){ qr = +maxQR.toFixed(1); document.getElementById('ctrl-qr-size').value=qr; changed=true; }
+  if(bc > maxBC){ bc = +maxBC.toFixed(1); document.getElementById('ctrl-bc-h').value=bc; changed=true; }
   const hint = document.getElementById('size-hint');
   if(hint) hint.style.display = changed ? 'block' : 'none';
 }
 
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  const R = 37.8; // 1cm = 37.8px at 96dpi
+  clampSizes();
+
+  const R    = 37.8; // 1cm = 37.8px
+  const PAD  = 6;    // padding داخلي px
+  const GAP  = 5;    // فراغ بين QR والباركود px
+  const TEXT = 12;   // ارتفاع سطر الكود px
 
   const lblW_cm = parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5;
   const lblH_cm = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
   const qr_cm   = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
-  const bc_cm   = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.5;
+  const bc_cm   = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2;
 
-  const PADDING = 8; // px داخلي
-  const GAP     = 6; // فراغ بين QR والباركود
-
-  // أبعاد الملصق بالبكسل
   const lblW = Math.round(lblW_cm * R);
   const lblH = Math.round(lblH_cm * R);
 
-  // حجم QR — مقيّد بارتفاع الملصق ناقص الـ padding
-  const maxQR  = lblH - PADDING * 2;
-  const qrPx   = Math.min(Math.round(qr_cm * R), maxQR);
+  // حجم QR محدود بالارتفاع الداخلي للملصق
+  const innerH = lblH - PAD * 2;
+  const qrPx   = Math.max(20, Math.min(Math.round(qr_cm * R), innerH));
 
-  // ارتفاع الباركود — مقيّد بارتفاع الملصق ناقص padding والنص
-  const maxBCH = lblH - PADDING * 2 - 14; // 14px للنص
-  const bcHpx  = Math.min(Math.round(bc_cm * R), maxBCH);
+  // ارتفاع الباركود محدود بالارتفاع الداخلي ناقص النص
+  const bcHpx  = Math.max(10, Math.min(Math.round(bc_cm * R), innerH - TEXT));
 
-  // عرض الباركود = عرض الملصق - عرض QR - gap - padding*2
-  const bcWpx  = Math.max(40, lblW - qrPx - GAP - PADDING * 2);
+  // عرض الباركود = المساحة المتبقية بعد QR والفراغ
+  const bcWpx  = Math.max(30, lblW - qrPx - GAP - PAD * 2);
 
-  // ── 1. ضبط الملصق ──
+  // ── الملصق ──
   const lbl = document.getElementById('gen-lbl');
   if(lbl){
-    lbl.style.cssText = [
-      'background:#fff',
-      'border:2px solid #222',
-      'border-radius:4px',
-      'box-shadow:0 2px 8px rgba(0,0,0,.15)',
-      'padding:'+PADDING+'px',
-      'display:inline-flex',
-      'flex-direction:column',
-      'gap:4px',
-      'width:'+lblW+'px',
-      'min-width:'+lblW+'px',
-      'max-width:'+lblW+'px',
-      'height:'+lblH+'px',
-      'min-height:'+lblH+'px',
-      'overflow:hidden',
-      'box-sizing:border-box',
-    ].join(';');
+    lbl.style.cssText='background:#fff;border:2px solid #111;border-radius:3px;'
+      +'box-shadow:0 1px 6px rgba(0,0,0,.2);padding:'+PAD+'px;'
+      +'display:inline-flex;flex-direction:column;gap:3px;'
+      +'width:'+lblW+'px;min-width:'+lblW+'px;max-width:'+lblW+'px;'
+      +'height:'+lblH+'px;min-height:'+lblH+'px;max-height:'+lblH+'px;'
+      +'overflow:hidden;box-sizing:border-box;';
   }
 
-  // ── 2. رأس الملصق (المحطة والجهاز) ──
-  const hdr = lbl?.querySelector('.lbl-header');
-  if(hdr) hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;width:100%;flex-shrink:0';
-
-  // ── 3. Barcode ──
+  // ── الباركود — نولّده أولاً ثم نقص العرض ──
   const bc = document.getElementById('gen-bc');
   if(bc && typeof JsBarcode !== 'undefined'){
-    bc.removeAttribute('width');
-    bc.removeAttribute('height');
-    bc.style.cssText='display:block;overflow:hidden;flex-shrink:0;';
+    bc.removeAttribute('width'); bc.removeAttribute('height');
+    bc.style.cssText='display:block;overflow:hidden;max-width:'+bcWpx+'px;';
     try{
-      // حساب عدد الأعمدة بالنسبة للعرض المتاح
-      const barW = Math.max(1, Math.floor(bcWpx / (_genCode.length * 11 + 20)));
       JsBarcode(bc, _genCode, {
         format:'CODE128',
-        width: Math.max(1, Math.min(3, barW)),
+        width: 1.2,
         height: bcHpx,
         displayValue: false,
         margin: 0,
-        background: '#ffffff',
-        lineColor: '#000000'
+        background:'#ffffff',
+        lineColor:'#000000'
       });
-      // قص الباركود لعرض محدد
+      // اجبر العرض بعد التوليد
       bc.setAttribute('width', bcWpx);
-      bc.style.width  = bcWpx + 'px';
-      bc.style.height = bcHpx + 'px';
-    }catch(e){ console.error('BC:',e); }
+      bc.setAttribute('height', bcHpx);
+      bc.style.width  = bcWpx+'px';
+      bc.style.height = bcHpx+'px';
+      bc.style.maxWidth = bcWpx+'px';
+    }catch(e){ console.error('BC:',e); toast('خطأ باركود','err'); }
   }
 
-  // ── 4. QR Code ──
+  // ── QR Code ──
   const qWrap = document.getElementById('gen-qr');
   if(qWrap && typeof QRCode !== 'undefined'){
-    qWrap.innerHTML = '';
-    qWrap.style.cssText = [
-      'flex-shrink:0',
-      'line-height:0',
-      'width:'+qrPx+'px',
-      'height:'+qrPx+'px',
-      'min-width:'+qrPx+'px',
-      'min-height:'+qrPx+'px',
-      'overflow:hidden',
-    ].join(';');
+    qWrap.innerHTML='';
+    qWrap.style.cssText='flex-shrink:0;line-height:0;overflow:hidden;'
+      +'width:'+qrPx+'px;height:'+qrPx+'px;min-width:'+qrPx+'px;min-height:'+qrPx+'px;';
     try{
-      new QRCode(qWrap, {
+      new QRCode(qWrap,{
         text:_genQrData, width:qrPx, height:qrPx,
         colorDark:'#000000', colorLight:'#ffffff',
         correctLevel:QRCode.CorrectLevel.M
       });
       setTimeout(()=>{
-        const inner = qWrap.querySelector('img,canvas');
-        if(inner) inner.style.cssText='width:'+qrPx+'px!important;height:'+qrPx+'px!important;display:block!important;max-width:none!important;';
-      }, 150);
+        const inner=qWrap.querySelector('img,canvas');
+        if(inner) inner.style.cssText='width:'+qrPx+'px;height:'+qrPx+'px;display:block;max-width:none;';
+      },200);
     }catch(e){ console.error('QR:',e); }
   }
 }
