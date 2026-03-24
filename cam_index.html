@@ -1051,66 +1051,83 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <button class="btn btn-p" onclick="generateLabel()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">⚡ توليد الباركود والQR</button>
             </div>
             <!-- المعاينة -->
-            <div id="gen-preview" style="display:none;flex-direction:column;align-items:flex-start;gap:16px">
-              <div style="font-size:13px;font-weight:800;color:var(--text)">📋 معاينة الليبل</div>
+            <div id="gen-preview" style="display:none;flex-direction:column;align-items:flex-start;gap:14px">
 
-              <!-- ضبط الأحجام بالأرقام -->
-              <div style="background:var(--bg2);border:1.5px solid var(--border);border-radius:12px;padding:14px;width:100%">
-                <div style="font-size:12px;font-weight:800;color:var(--p1);margin-bottom:12px">⚙️ ضبط الأحجام — يتحدث فوراً عند التغيير</div>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+              <!-- ── ضبط الأحجام ── -->
+              <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;width:100%">
+                <div style="font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:12px">⚙️ ضبط أحجام الملصق</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
 
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:var(--p1)">📐 عرض الليبل (مم)</label>
-                    <input type="number" id="ctrl-lbl-w" value="80" min="40" max="200"
-                      oninput="saveLabelSizes();rebuildLabel()"
-                      style="border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:var(--p1);text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  <!-- عرض الليبل -->
+                  <div>
+                    <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:6px">📐 عرض الملصق (مم)</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="range" id="ctrl-lbl-w" min="40" max="180" value="80" step="5"
+                        oninput="document.getElementById('v-lbl-w').textContent=this.value;rebuildLabel()"
+                        style="flex:1;accent-color:#1d4ed8">
+                      <span id="v-lbl-w" style="font-size:13px;font-weight:800;color:#1d4ed8;min-width:36px;text-align:center">80</span>
+                    </div>
                   </div>
 
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:var(--p1)">📏 ارتفاع الليبل (مم)</label>
-                    <input type="number" id="ctrl-lbl-h" value="50" min="20" max="150"
-                      oninput="saveLabelSizes();rebuildLabel()"
-                      style="border:1.5px solid #bfdbfe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:var(--p1);text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  <!-- ارتفاع الليبل -->
+                  <div>
+                    <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:6px">📏 ارتفاع الملصق (مم)</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="range" id="ctrl-lbl-h" min="20" max="120" value="50" step="5"
+                        oninput="document.getElementById('v-lbl-h').textContent=this.value;rebuildLabel()"
+                        style="flex:1;accent-color:#1d4ed8">
+                      <span id="v-lbl-h" style="font-size:13px;font-weight:800;color:#1d4ed8;min-width:36px;text-align:center">50</span>
+                    </div>
                   </div>
 
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#7c3aed">◼ حجم QR (بكسل)</label>
-                    <input type="number" id="ctrl-qr-size" value="80" min="30" max="300"
-                      oninput="saveLabelSizes();rebuildLabel()"
-                      style="border:1.5px solid #ddd6fe;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:#7c3aed;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  <!-- حجم QR -->
+                  <div>
+                    <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:6px">◼ حجم QR Code (بكسل)</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="range" id="ctrl-qr-size" min="40" max="200" value="80" step="5"
+                        oninput="document.getElementById('v-qr').textContent=this.value;rebuildLabel()"
+                        style="flex:1;accent-color:#7c3aed">
+                      <span id="v-qr" style="font-size:13px;font-weight:800;color:#7c3aed;min-width:36px;text-align:center">80</span>
+                    </div>
                   </div>
 
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#0891b2">▌ ارتفاع الباركود (بكسل)</label>
-                    <input type="number" id="ctrl-bc-h" value="40" min="15" max="200"
-                      oninput="saveLabelSizes();rebuildLabel()"
-                      style="border:1.5px solid #a5f3fc;border-radius:8px;padding:7px 10px;font-size:14px;font-weight:800;color:#0891b2;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  <!-- ارتفاع الباركود -->
+                  <div>
+                    <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:6px">▌ ارتفاع الباركود (بكسل)</label>
+                    <div style="display:flex;align-items:center;gap:8px">
+                      <input type="range" id="ctrl-bc-h" min="20" max="120" value="50" step="5"
+                        oninput="document.getElementById('v-bc').textContent=this.value;rebuildLabel()"
+                        style="flex:1;accent-color:#0891b2">
+                      <span id="v-bc" style="font-size:13px;font-weight:800;color:#0891b2;min-width:36px;text-align:center">50</span>
+                    </div>
                   </div>
 
                 </div>
               </div>
 
-              <!-- معاينة الليبل -->
-              <div style="display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;overflow:auto">
-                <div id="gen-lbl" style="background:#fff;border:2px solid #111;padding:10px;display:inline-block;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.1)">
-                  <div style="display:flex;justify-content:space-between;gap:16px;margin-bottom:8px">
+              <!-- ── معاينة الملصق ── -->
+              <div style="width:100%;overflow-x:auto;display:flex;flex-direction:column;align-items:center;gap:10px">
+                <div id="gen-lbl" style="background:#fff;border:2px solid #222;padding:10px;display:inline-flex;flex-direction:column;gap:8px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.12)">
+                  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
                     <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2;white-space:nowrap"></span>
-                    <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
+                    <span id="gl-device"  style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
                   </div>
-                  <div style="display:flex;gap:10px;align-items:flex-start">
-                    <div id="gen-qr" style="flex-shrink:0;line-height:0;border:1px solid #eee"></div>
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
-                      <svg id="gen-bc"></svg>
+                  <div style="display:flex;gap:10px;align-items:center">
+                    <div id="gen-qr" style="flex-shrink:0;line-height:0"></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
+                      <svg id="gen-bc" style="display:block"></svg>
                       <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;white-space:nowrap"></div>
                     </div>
                   </div>
                 </div>
+
                 <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
                   <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
                   <button class="btn btn-o" onclick="saveGenImg()">💾 حفظ صورة</button>
                   <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
                 </div>
               </div>
+
             </div>
           </div>
         </div>
@@ -2581,34 +2598,15 @@ function getLabelSizes(){
 
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  const {qrSize, bcH, lblW} = getLabelSizes();
+  const {qrSize, bcH, lblW, lblH} = getLabelSizes();
 
-  // ── QR Code — استخدام div بدل canvas (أكثر توافقاً) ──
-  const qWrap = document.getElementById('gen-qr');
-  if(qWrap && typeof QRCode !== 'undefined'){
-    qWrap.innerHTML = '';
-    qWrap.style.width  = qrSize + 'px';
-    qWrap.style.height = qrSize + 'px';
-    qWrap.style.flexShrink = '0';
-    try{
-      new QRCode(qWrap, {
-        text: _genQrData,
-        width: qrSize,
-        height: qrSize,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: QRCode.CorrectLevel.M
-      });
-      // اجبر الصورة الداخلية على الحجم
-      setTimeout(()=>{
-        const inner = qWrap.querySelector('img,canvas');
-        if(inner){
-          inner.style.width  = qrSize+'px';
-          inner.style.height = qrSize+'px';
-          inner.style.display = 'block';
-        }
-      }, 50);
-    }catch(e){ console.error('QR error:',e); toast('خطأ QR: '+e.message,'err'); }
+  // ── ضبط حجم الملصق الكلي ──
+  const lbl = document.getElementById('gen-lbl');
+  if(lbl){
+    // تحويل mm إلى px تقريبي للمعاينة (96dpi: 1mm = 3.78px)
+    const wPx = Math.round(lblW * 3.78);
+    lbl.style.width    = wPx + 'px';
+    lbl.style.minWidth = wPx + 'px';
   }
 
   // ── Barcode ──
@@ -2619,15 +2617,33 @@ function rebuildLabel(){
     bc.style.cssText = 'display:block;';
     try{
       JsBarcode(bc, _genCode, {
-        format: 'CODE128',
-        width: 2,
-        height: bcH,
-        displayValue: false,
-        margin: 4,
-        background: '#ffffff',
-        lineColor: '#000000'
+        format:'CODE128', width:1.8, height:bcH,
+        displayValue:false, margin:6,
+        background:'#ffffff', lineColor:'#000000'
       });
-    }catch(e){ console.error('BC error:',e); toast('خطأ باركود: '+e.message,'err'); }
+    }catch(e){ console.error('BC:',e); }
+  }
+
+  // ── QR Code ──
+  const qWrap = document.getElementById('gen-qr');
+  if(qWrap && typeof QRCode !== 'undefined'){
+    qWrap.innerHTML = '';
+    qWrap.style.width     = qrSize+'px';
+    qWrap.style.height    = qrSize+'px';
+    qWrap.style.minWidth  = qrSize+'px';
+    qWrap.style.minHeight = qrSize+'px';
+    qWrap.style.flexShrink = '0';
+    try{
+      new QRCode(qWrap, {
+        text:_genQrData, width:qrSize, height:qrSize,
+        colorDark:'#000000', colorLight:'#ffffff',
+        correctLevel:QRCode.CorrectLevel.M
+      });
+      setTimeout(()=>{
+        const inner = qWrap.querySelector('img,canvas');
+        if(inner) inner.style.cssText='width:'+qrSize+'px;height:'+qrSize+'px;display:block;';
+      },150);
+    }catch(e){ console.error('QR:',e); }
   }
 }
 
