@@ -86,6 +86,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   scrollbar-width:none;flex-direction:row;width:100%;
 }
 .nav-item{
+  font-size:14px;
   display:flex;align-items:center;flex-direction:row;gap:6px;padding:10px 16px;
   cursor:pointer;transition:all .18s;color:#64748b;
   font-size:15px;font-weight:600;white-space:nowrap;position:relative;
@@ -366,11 +367,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span>الجولات والصيانة<span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
+      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
-      <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span>جرد الكاميرات</div>
-      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span>ترميز الأجهزة</div>
+      <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
       <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
       <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
@@ -512,7 +513,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <div class="sec-title"><div class="sdot" style="background:#1d4ed8"></div>🏛️ إحصائية الكاميرات الحكومية</div>
                 <button onclick="printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:var(--p1)">🖨️ تقرير</button>
               </div>
-              <div id="gov-cams-stats" style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+              <div id="gov-cams-stats" style="padding:12px 14px"></div>
             </div>
 
             <!-- Private Stats -->
@@ -521,7 +522,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 إحصائية الكاميرات الأهلية</div>
                 <button onclick="printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">🖨️ تقرير</button>
               </div>
-              <div id="priv-cams-stats" style="padding:10px 14px;display:grid;grid-template-columns:1fr 1fr;gap:8px"></div>
+              <div id="priv-cams-stats" style="padding:12px 14px"></div>
             </div>
 
           </div>
@@ -744,7 +745,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="ناقص">ناقص</option>
                 <option value="معطل">معطل</option>
               </select>
-              <button class="btn btn-o btn-sm" onclick="exportInvCSV()">📊 تصدير Excel</button>
+              <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
               <button class="btn btn-o btn-sm" onclick="printInv()">🖨️ طباعة</button>
               <button class="btn btn-o btn-sm" onclick="loadInventory()">🔄</button>
             </div>
@@ -959,7 +960,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <!-- Sub-tabs -->
         <div style="display:flex;border-bottom:2px solid var(--border);background:var(--bg2);padding:0 14px">
           <button onclick="swCodingTab('list',this)" class="coding-sub active" id="csub-list">📋 السجل</button>
-          <button onclick="swCodingTab('gen',this)" class="coding-sub" id="csub-gen">🏷️ توليد باركود</button>
         </div>
 
         <!-- السجل -->
@@ -1015,150 +1015,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
         </div><!-- /cpane-list -->
 
-        <!-- توليد باركود -->
-        <div id="cpane-gen" style="display:none">
-        <div class="section">
-          <div class="sec-hdr"><div class="sec-title"><div class="sdot" style="background:#7c3aed"></div>🏷️ توليد باركود وQR Code</div></div>
-          <div style="padding:16px;display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start">
-            <!-- النموذج -->
-            <div style="display:flex;flex-direction:column;gap:10px">
-              <div><label class="fl">اسم المحطة *</label>
-                <select class="fi" id="gen-station" onchange="updateGenCode()">
-                  <option value="">— اختر —</option>
-                </select>
-              </div>
-              <div><label class="fl">نوع الجهاز *</label>
-                <select class="fi" id="gen-device" onchange="updateGenCode()">
-                  <option value="NVR">NVR — جهاز تسجيل شبكي</option>
-                  <option value="DVR">DVR — جهاز تسجيل رقمي</option>
-                  <option value="CAM">CAM — كاميرا</option>
-                  <option value="POE">POE — سويج POE</option>
-                  <option value="UPS">UPS — عاكس كهربائي</option>
-                  <option value="HDD">HDD — هارد ديسك</option>
-                </select>
-              </div>
-              <div><label class="fl">رقم الجهاز</label>
-                <input class="fi" id="gen-num" type="text" placeholder="001" oninput="updateGenCode()">
-              </div>
-              <div id="gen-distcode-wrap" style="display:none">
-                <label class="fl" style="color:#d97706">⚠️ كود القاطع (Latin) *</label>
-                <input class="fi" id="gen-distcode" type="text" placeholder="مثال: NK أو D09"
-                  style="direction:ltr;border-color:#d97706;text-transform:uppercase"
-                  oninput="this.value=this.value.replace(/[^A-Za-z0-9]/g,'').toUpperCase();updateGenCode()">
-                <div style="font-size:10px;color:#94a3b8;margin-top:3px">القاطع غير موجود في القائمة — أدخل اختصاراً بالأحرف اللاتينية</div>
-              </div>
-              <div><label class="fl">Serial Number</label>
-                <input class="fi" id="gen-serial" type="text" placeholder="امسح أو أدخل يدوياً..." style="direction:ltr" onkeydown="onGenScanKey(event)">
-              </div>
-              <div style="background:var(--bg2);border-radius:10px;padding:12px;border:1.5px solid rgba(8,145,178,.2)">
-                <div style="font-size:11px;color:var(--t3);margin-bottom:4px">الكود المولّد تلقائياً</div>
-                <div id="gen-code-display" style="font-size:20px;font-weight:900;color:#0891b2;font-family:monospace;letter-spacing:2px">—</div>
-              </div>
-              <button class="btn btn-p" onclick="generateLabel()" style="background:linear-gradient(135deg,#7c3aed,#8b5cf6)">⚡ توليد الباركود والQR</button>
-            </div>
-            <!-- المعاينة -->
-            <div id="gen-preview" style="display:none;flex-direction:column;align-items:flex-start;gap:14px">
 
-              <!-- ── ضبط الأحجام ── -->
-              <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;width:100%">
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-                  <span style="font-size:13px;font-weight:800;color:#1d4ed8">⚙️ أحجام الملصق</span>
-                  <span style="font-size:11px;color:#94a3b8;background:#e2e8f0;padding:2px 8px;border-radius:20px">الوحدة: سنتيمتر</span>
-                </div>
-
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
-
-                  <!-- طول الملصق -->
-                  <div style="background:#eff6ff;border-radius:10px;padding:10px">
-                    <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:6px;letter-spacing:.5px">📐 طول الملصق</div>
-                    <div style="display:flex;align-items:center;gap:6px">
-                      <button onclick="stepVal('ctrl-lbl-w',-0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">−</button>
-                      <input type="number" id="ctrl-lbl-w" value="5" min="1" max="30" step="0.5"
-                        style="flex:1;border:1.5px solid #bfdbfe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
-                      <button onclick="stepVal('ctrl-lbl-w',0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">+</button>
-                    </div>
-                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
-                  </div>
-
-                  <!-- ارتفاع الملصق -->
-                  <div style="background:#eff6ff;border-radius:10px;padding:10px">
-                    <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:6px;letter-spacing:.5px">📏 ارتفاع الملصق</div>
-                    <div style="display:flex;align-items:center;gap:6px">
-                      <button onclick="stepVal('ctrl-lbl-h',-0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">−</button>
-                      <input type="number" id="ctrl-lbl-h" value="2.5" min="0.5" max="30" step="0.5"
-                        style="flex:1;border:1.5px solid #bfdbfe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
-                      <button onclick="stepVal('ctrl-lbl-h',0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">+</button>
-                    </div>
-                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
-                  </div>
-
-                  <!-- حجم QR -->
-                  <div style="background:#f5f3ff;border-radius:10px;padding:10px">
-                    <div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:6px;letter-spacing:.5px">◼ حجم QR Code</div>
-                    <div style="display:flex;align-items:center;gap:6px">
-                      <button onclick="stepVal('ctrl-qr-size',-0.5)" style="width:30px;height:30px;border:1.5px solid #ddd6fe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#7c3aed;flex-shrink:0">−</button>
-                      <input type="number" id="ctrl-qr-size" value="2" min="0.5" max="10" step="0.5"
-                        style="flex:1;border:1.5px solid #ddd6fe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#7c3aed;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
-                      <button onclick="stepVal('ctrl-qr-size',0.5)" style="width:30px;height:30px;border:1.5px solid #ddd6fe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#7c3aed;flex-shrink:0">+</button>
-                    </div>
-                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
-                  </div>
-
-                  <!-- ارتفاع الباركود -->
-                  <div style="background:#ecfeff;border-radius:10px;padding:10px">
-                    <div style="font-size:10px;font-weight:700;color:#0891b2;margin-bottom:6px;letter-spacing:.5px">▌ ارتفاع الباركود</div>
-                    <div style="display:flex;align-items:center;gap:6px">
-                      <button onclick="stepVal('ctrl-bc-h',-0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">−</button>
-                      <input type="number" id="ctrl-bc-h" value="1.2" min="0.3" max="10" step="0.5"
-                        style="flex:1;border:1.5px solid #a5f3fc;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#0891b2;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
-                      <button onclick="stepVal('ctrl-bc-h',0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">+</button>
-                    </div>
-                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
-                  </div>
-
-                </div>
-
-                <div id="size-hint" style="font-size:11px;color:#f59e0b;margin-bottom:8px;display:none;background:#fffbeb;border-radius:6px;padding:6px 10px">
-                  ⚠️ تم تعديل القيم لتناسب حجم الملصق
-                </div>
-
-                <button onclick="rebuildLabel()" class="btn btn-p"
-                  style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);font-size:14px;padding:11px;border-radius:10px">
-                  ✅ تطبيق وتحديث المعاينة
-                </button>
-              </div>
-
-              <!-- ── معاينة الملصق ── -->
-              <div style="width:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:2px 0">
-                <div style="font-size:10px;color:#94a3b8">📋 معاينة — الحجم الفعلي على الشاشة</div>
-
-                <div id="gen-lbl" style="background:#fff;border:2px solid #222;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);box-sizing:border-box;overflow:hidden;display:inline-flex;flex-direction:column;padding:6px">
-                  <!-- رأس الملصق -->
-                  <div class="lbl-header" style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;flex-shrink:0">
-                    <span id="gl-station" style="font-size:9px;font-weight:900;color:#0891b2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%"></span>
-                    <span id="gl-device"  style="font-size:9px;font-weight:700;color:#7c3aed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44%"></span>
-                  </div>
-                  <!-- محتوى الملصق: QR + باركود -->
-                  <div style="display:flex;gap:6px;align-items:center;flex:1;min-height:0">
-                    <div id="gen-qr" style="flex-shrink:0;line-height:0;overflow:hidden"></div>
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden">
-                      <svg id="gen-bc" style="display:block;max-width:100%"></svg>
-                      <div id="gen-num-label" style="font-family:monospace;font-size:8px;letter-spacing:1px;font-weight:bold;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%"></div>
-                    </div>
-                  </div>
-                </div>
-
-                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px">
-                  <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
-                  <button class="btn btn-o" onclick="saveGenImg()">💾 حفظ صورة</button>
-                  <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-        </div><!-- /cpane-gen -->
 
       </div>
 
@@ -3240,6 +3097,42 @@ function updateDashboard(){
     <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
     <td><span class="badge b-ok">✅ مخول</span></td></tr>`).join('')
     :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">لا يوجد مخولون</td></tr>';
+
+  // ── إحصائيات الحكومية والأهلية ──
+  const govSt  = allStations.filter(s=>s.type==='حكومية');
+  const privSt = allStations.filter(s=>s.type!=='حكومية');
+
+  function statCard(label, value, color){
+    return `<div style="background:#fff;border:1.5px solid ${color}22;border-radius:10px;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+      <span style="font-size:13px;color:#475569;font-weight:600">${label}</span>
+      <span style="font-size:20px;font-weight:900;color:${color}">${value}</span>
+    </div>`;
+  }
+  function districtRows(list){
+    const byD={};
+    list.forEach(s=>{byD[s.district||'غير محدد']=(byD[s.district||'غير محدد']||[]).concat(s);});
+    return Object.entries(byD).map(([d,ss])=>`
+      <div style="background:#f8fafc;border-radius:8px;padding:8px 12px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:12px;font-weight:700;color:#1e3a5f">${d}</span>
+        <span class="badge b-blue" style="font-size:11px">${ss.length} محطة</span>
+      </div>`).join('');
+  }
+
+  const govDiv=document.getElementById('gov-cams-stats');
+  if(govDiv) govDiv.innerHTML=
+    statCard('عدد المحطات', govSt.length, '#1d4ed8')
+    +statCard('إجمالي الكاميرات', govSt.reduce((a,s)=>(a+((+s.cam_working||0)+(+s.cam_broken||0))),0), '#0891b2')
+    +statCard('كاميرات تعمل', govSt.reduce((a,s)=>(a+(+s.cam_working||0)),0), '#16a34a')
+    +statCard('كاميرات معطلة', govSt.reduce((a,s)=>(a+(+s.cam_broken||0)),0), '#dc2626')
+    +(govSt.length?'<div style="font-size:11px;font-weight:700;color:#475569;margin:8px 0 4px">توزيع القواطع</div>'+districtRows(govSt):'');
+
+  const privDiv=document.getElementById('priv-cams-stats');
+  if(privDiv) privDiv.innerHTML=
+    statCard('عدد المحطات', privSt.length, '#d97706')
+    +statCard('إجمالي الكاميرات', privSt.reduce((a,s)=>(a+((+s.cam_working||0)+(+s.cam_broken||0))),0), '#0891b2')
+    +statCard('كاميرات تعمل', privSt.reduce((a,s)=>(a+(+s.cam_working||0)),0), '#16a34a')
+    +statCard('كاميرات معطلة', privSt.reduce((a,s)=>(a+(+s.cam_broken||0)),0), '#dc2626')
+    +(privSt.length?'<div style="font-size:11px;font-weight:700;color:#475569;margin:8px 0 4px">توزيع القواطع</div>'+districtRows(privSt):'');
 }
 
 // ══════════════════════════════════════════
@@ -3752,32 +3645,58 @@ async function delInv(id){
   try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
   catch(e){toast('خطأ: '+e.message,'err');}
 }
-function exportInvCSV(){
-  const loadXLSX=()=>new Promise((res,rej)=>{
+async function exportInvExcel(){
+  if(!allInventory.length){
+    toast('جاري تحميل البيانات...');
+    try{ await loadInventory(); }catch(e){}
+  }
+  if(!allInventory.length){ toast('لا توجد بيانات جرد','err'); return; }
+  const loadLib=(src)=>new Promise((res,rej)=>{
     if(typeof XLSX!=='undefined'){res();return;}
     const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    s.src=src; s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
   });
-  loadXLSX().then(()=>{
-    const h=['المحطة','القاطع','الحالة','DVR/NVR عدد','DVR مواصفات','DVR موديل',
-      'HDD عدد','HDD حجم','كاميرات عدد','كاميرات مواصفات','كاميرات دقة',
-      'POE عدد','POE مواصفات','شاشات عدد','شاشات مواصفات',
-      'UPS عدد','UPS مواصفات','بطاريات عدد','بطاريات مواصفات',
+  try{
+    await loadLib('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
+      .catch(()=>loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'));
+  }catch(e){ toast('تعذّر تحميل مكتبة Excel','err'); return; }
+  try{
+    const h=['المحطة','القاطع','الحالة',
+      'DVR/NVR عدد','DVR مواصفات','DVR موديل',
+      'HDD عدد','HDD حجم',
+      'كاميرات عدد','كاميرات مواصفات','كاميرات دقة',
+      'POE عدد','POE مواصفات',
+      'شاشات عدد','شاشات مواصفات',
+      'UPS عدد','UPS مواصفات',
+      'بطاريات عدد','بطاريات مواصفات',
       'بوكسات عدد','بوكسات مواصفات','ملاحظات'];
-    const rows=allInventory.map(x=>[x.station_name,x.district,x.status,
-      x.dvr_count,x.dvr_spec,x.dvr_model,x.hdd_count,x.hdd_size,
-      x.cam_count,x.cam_spec,x.cam_res,x.poe_count,x.poe_spec,
-      x.mon_count,x.mon_spec,x.ups_count,x.ups_spec,x.bat_count,x.bat_spec,
-      x.box_count,x.box_spec,x.notes]);
+    const rows=allInventory.map(x=>[
+      x.station_name||'',x.district||'',x.status||'',
+      x.dvr_count||'',x.dvr_spec||'',x.dvr_model||'',
+      x.hdd_count||'',x.hdd_size||'',
+      x.cam_count||'',x.cam_spec||'',x.cam_res||'',
+      x.poe_count||'',x.poe_spec||'',
+      x.mon_count||'',x.mon_spec||'',
+      x.ups_count||'',x.ups_spec||'',
+      x.bat_count||'',x.bat_spec||'',
+      x.box_count||'',x.box_spec||'',x.notes||''
+    ]);
     const wb=XLSX.utils.book_new();
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:20},{wch:12},{wch:10},...Array(19).fill({wch:12})];
+    ws['!cols']=[{wch:22},{wch:12},{wch:10},...Array(19).fill({wch:14})];
     XLSX.utils.book_append_sheet(wb,ws,'جرد الكاميرات');
-    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جرد_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
-    toast('تم التصدير ✅');
-  }).catch(()=>toast('خطأ في تحميل مكتبة Excel','err'));
+    const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.xlsx';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
+    toast('✅ تم تصدير الجرد — '+allInventory.length+' محطة');
+  }catch(err){ toast('خطأ: '+(err.message||err),'err'); }
 }
+function exportInvCSV(){ exportInvExcel(); }
 function printInv(){window.print();}
 
 // ══════════════════════════════════════════
@@ -3900,7 +3819,7 @@ function renderCirculars(){
           <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
         </div>
         <div style="display:flex;gap:6px">
-          ${c.files&&c.files.length?`<button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>`:''}
+          <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
           ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
         </div>
       </div>
