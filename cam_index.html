@@ -2701,14 +2701,15 @@ async function exportGoLabel(){
     toast('جاري بناء الملف...');
     const origin=window.location.origin;
 
+    // أسماء أعمدة GoLabel — بدون مسافات أو أحرف خاصة
     const header=[
       'Barcode','QR_Data',
       'Station','Location','District',
-      'Install_Date','Status',
-      'NVR1_Num','NVR1_Serial',
-      'NVR2_Num','NVR2_Serial',
-      'HDD1_Num','HDD1_Serial',
-      'HDD2_Num','HDD2_Serial',
+      'InstallDate','Status',
+      'NVR1Num','NVR1Serial',
+      'NVR2Num','NVR2Serial',
+      'HDD1Num','HDD1Serial',
+      'HDD2Num','HDD2Serial',
       'Notes'
     ];
 
@@ -2738,7 +2739,7 @@ async function exportGoLabel(){
 
     // تحميل الملف في المتصفح
     const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
-    const blob  = new Blob([wbout], {type:'application/octet-stream'});
+    const blob  = new Blob([wbout], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
     const url   = URL.createObjectURL(blob);
     const a     = document.createElement('a');
     a.href      = url;
