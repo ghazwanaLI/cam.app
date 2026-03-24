@@ -2666,64 +2666,83 @@ function clearScan(){
   filterCoding();
 }
 
-function exportGoLabel(){
-  if(!allCoding.length){toast('لا توجد بيانات في السجل','err');return;}
-  const loadXLSX=()=>new Promise((res,rej)=>{
+async function exportGoLabel(){
+  // تحميل البيانات أولاً إذا لم تكن محملة
+  if(!allCoding.length){
+    toast('جاري تحميل البيانات...');
+    try{ await loadCoding(); }catch(e){}
+  }
+  if(!allCoding.length){
+    toast('لا توجد بيانات في السجل','err');
+    return;
+  }
+
+  toast('جاري التصدير...');
+
+  // تحميل مكتبة XLSX
+  await new Promise((res,rej)=>{
     if(typeof XLSX!=='undefined'){res();return;}
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=()=>{ if(typeof XLSX!=='undefined') res(); else rej(new Error('XLSX load failed')); };
-    s.onerror=()=>rej(new Error('فشل تحميل مكتبة Excel'));
+    s.onload=()=>res();
+    s.onerror=()=>rej('فشل تحميل مكتبة Excel');
     document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    try{
-      const origin=window.location.origin;
-      const header=[
-        'Barcode','QR_Data','Station','Location',
-        'District','Device_Type','Install_Date','Status',
-        'NVR_Num','NVR_Serial','HDD_Num','HDD_Serial','Notes'
+  }).catch(e=>{ toast(''+e,'err'); throw e; });
+
+  try{
+    const origin=window.location.origin;
+
+    // صف لكل جهاز — كل NVR/HDD في عمود منفصل (أفضل لـ GoLabel)
+    const header=[
+      'Barcode',
+      'QR_Data',
+      'Station',
+      'Location',
+      'District',
+      'Install_Date',
+      'Status',
+      'NVR1_Num','NVR1_Serial',
+      'NVR2_Num','NVR2_Serial',
+      'HDD1_Num','HDD1_Serial',
+      'HDD2_Num','HDD2_Serial',
+      'Notes'
+    ];
+
+    const rows=allCoding.map(d=>{
+      const nvrs=d.nvrs||[];
+      const hdds=d.hdds||[];
+      return [
+        d.code||'',
+        origin+'/scan/'+encodeURIComponent(d.code||''),
+        d.station_name||'',
+        d.location||'',
+        d.district||'',
+        d.install_date||'',
+        d.status||'يعمل',
+        (nvrs[0]||{}).num||'',    (nvrs[0]||{}).serial||'',
+        (nvrs[1]||{}).num||'',    (nvrs[1]||{}).serial||'',
+        (hdds[0]||{}).num||'',    (hdds[0]||{}).serial||'',
+        (hdds[1]||{}).num||'',    (hdds[1]||{}).serial||'',
+        d.notes||''
       ];
-      const rows=[];
-      allCoding.forEach(d=>{
-        const nvrs=d.nvrs||[]; const hdds=d.hdds||[];
-        const maxLen=Math.max(nvrs.length,hdds.length,1);
-        for(let i=0;i<maxLen;i++){
-          const nvr=nvrs[i]||{}; const hdd=hdds[i]||{};
-          const f=i===0;
-          rows.push([
-            f?(d.code||''):'',
-            f?(origin+'/scan/'+encodeURIComponent(d.code||'')):'',
-            f?(d.station_name||''):'',
-            f?(d.location||''):'',
-            f?(d.district||''):'',
-            f?(d.device_type||''):'',
-            f?(d.install_date||''):'',
-            f?(d.status||''):'',
-            nvr.num||'', nvr.serial||'',
-            hdd.num||'', hdd.serial||'',
-            f?(d.notes||''):'',
-          ]);
-        }
-      });
-      const wb=XLSX.utils.book_new();
-      const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-      ws['!cols']=[
-        {wch:16},{wch:50},{wch:22},{wch:22},{wch:12},{wch:12},
-        {wch:14},{wch:10},{wch:10},{wch:28},{wch:10},{wch:28},{wch:20}
-      ];
-      XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
-      const date=new Date().toISOString().split('T')[0];
-      XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
-      toast('تم التصدير ✅ — '+allCoding.length+' جهاز');
-    }catch(err){
-      console.error('GoLabel export error:',err);
-      toast('خطأ في التصدير: '+err.message,'err');
-    }
-  }).catch(e=>{
-    console.error('XLSX load error:',e);
-    toast('خطأ في تحميل مكتبة Excel: '+e.message,'err');
-  });
+    });
+
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+    ws['!cols']=[
+      {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
+      {wch:10},{wch:30},{wch:10},{wch:30},
+      {wch:10},{wch:30},{wch:10},{wch:30},
+      {wch:22}
+    ];
+    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+    const date=new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
+    toast('✅ تم التصدير — '+allCoding.length+' جهاز جاهز لـ GoLabel');
+  }catch(err){
+    console.error('GoLabel export error:',err);
+    toast('خطأ في التصدير: '+(err.message||err),'err');
+  }
 }
 
 function exportCodingExcel(){
