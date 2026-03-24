@@ -1098,7 +1098,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                     <span id="gl-device" style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
                   </div>
                   <div style="display:flex;gap:10px;align-items:flex-start">
-                    <canvas id="gen-qr" style="flex-shrink:0;display:block;border:1px solid #eee"></canvas>
+                    <div id="gen-qr" style="flex-shrink:0;line-height:0;border:1px solid #eee"></div>
                     <div style="display:flex;flex-direction:column;align-items:center;gap:4px">
                       <svg id="gen-bc"></svg>
                       <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;white-space:nowrap"></div>
@@ -2581,40 +2581,34 @@ function getLabelSizes(){
 
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  const {qrSize, bcH} = getLabelSizes();
+  const {qrSize, bcH, lblW} = getLabelSizes();
 
-  // ── QR Code على canvas مباشرة ──
-  const qCanvas = document.getElementById('gen-qr');
-  if(qCanvas && typeof QRCode !== 'undefined'){
-    qCanvas.width  = qrSize;
-    qCanvas.height = qrSize;
-    qCanvas.style.width  = qrSize + 'px';
-    qCanvas.style.height = qrSize + 'px';
+  // ── QR Code — استخدام div بدل canvas (أكثر توافقاً) ──
+  const qWrap = document.getElementById('gen-qr');
+  if(qWrap && typeof QRCode !== 'undefined'){
+    qWrap.innerHTML = '';
+    qWrap.style.width  = qrSize + 'px';
+    qWrap.style.height = qrSize + 'px';
+    qWrap.style.flexShrink = '0';
     try{
-      // استخدم QRCode مع canvas مباشرة
-      const ctx = qCanvas.getContext('2d');
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, qrSize, qrSize);
-      // توليد QR في div مؤقت ثم نسخه للـ canvas
-      const tmp = document.createElement('div');
-      tmp.style.cssText = 'position:absolute;left:-9999px;top:-9999px;';
-      document.body.appendChild(tmp);
-      new QRCode(tmp, {text:_genQrData, width:qrSize, height:qrSize,
-        colorDark:'#000000', colorLight:'#ffffff', correctLevel:QRCode.CorrectLevel.M});
+      new QRCode(qWrap, {
+        text: _genQrData,
+        width: qrSize,
+        height: qrSize,
+        colorDark: '#000000',
+        colorLight: '#ffffff',
+        correctLevel: QRCode.CorrectLevel.M
+      });
+      // اجبر الصورة الداخلية على الحجم
       setTimeout(()=>{
-        const src = tmp.querySelector('canvas,img');
-        if(src){
-          if(src.tagName==='CANVAS'){
-            ctx.drawImage(src, 0, 0, qrSize, qrSize);
-          } else {
-            const img = new Image();
-            img.onload = ()=>{ ctx.drawImage(img, 0, 0, qrSize, qrSize); };
-            img.src = src.src;
-          }
+        const inner = qWrap.querySelector('img,canvas');
+        if(inner){
+          inner.style.width  = qrSize+'px';
+          inner.style.height = qrSize+'px';
+          inner.style.display = 'block';
         }
-        document.body.removeChild(tmp);
-      }, 100);
-    }catch(e){ console.error('QR:',e); }
+      }, 50);
+    }catch(e){ console.error('QR error:',e); toast('خطأ QR: '+e.message,'err'); }
   }
 
   // ── Barcode ──
@@ -2622,14 +2616,18 @@ function rebuildLabel(){
   if(bc && typeof JsBarcode !== 'undefined'){
     bc.removeAttribute('width');
     bc.removeAttribute('height');
-    bc.style.display = 'block';
+    bc.style.cssText = 'display:block;';
     try{
       JsBarcode(bc, _genCode, {
-        format:'CODE128', width:2, height:bcH,
-        displayValue:false, margin:4,
-        background:'#ffffff', lineColor:'#000000'
+        format: 'CODE128',
+        width: 2,
+        height: bcH,
+        displayValue: false,
+        margin: 4,
+        background: '#ffffff',
+        lineColor: '#000000'
       });
-    }catch(e){ console.error('BC:',e); }
+    }catch(e){ console.error('BC error:',e); toast('خطأ باركود: '+e.message,'err'); }
   }
 }
 
@@ -2652,13 +2650,16 @@ function generateLabel(){
 
   const preview=document.getElementById('gen-preview');
   preview.style.display='flex';
-  applyLabelSize();
 
   Promise.all([
     _loadLib('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js','QRCode'),
     _loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode')
-  ]).then(()=>{ setTimeout(()=>{ rebuildLabel(); toast('تم التوليد ✅'); },200); })
-    .catch(err=>{ console.error(err); toast('خطأ في تحميل المكتبات','err'); });
+  ]).then(()=>{
+    setTimeout(()=>{
+      rebuildLabel();
+      toast('تم التوليد ✅');
+    }, 300);
+  }).catch(err=>{ console.error(err); toast('خطأ في تحميل المكتبات — تحقق من الإنترنت','err'); });
 }
 
 function printGenLabel(){
@@ -3999,10 +4000,10 @@ function saveLabelSizes(){
 function loadLabelSizes(){
   try{
     const s=JSON.parse(localStorage.getItem('lbl_sizes')||'{}');
-    if(s.w){document.getElementById('ctrl-lbl-w').value=s.w;}
-    if(s.h){document.getElementById('ctrl-lbl-h').value=s.h;}
-    if(s.qr){document.getElementById('ctrl-qr-size').value=s.qr;}
-    if(s.bc){document.getElementById('ctrl-bc-h').value=s.bc;}
+    if(s.w){const e=document.getElementById('ctrl-lbl-w');if(e)e.value=s.w;}
+    if(s.h){const e=document.getElementById('ctrl-lbl-h');if(e)e.value=s.h;}
+    if(s.qr){const e=document.getElementById('ctrl-qr-size');if(e)e.value=s.qr;}
+    if(s.bc){const e=document.getElementById('ctrl-bc-h');if(e)e.value=s.bc;}
   }catch(e){}
 }
 // ── INIT ──
