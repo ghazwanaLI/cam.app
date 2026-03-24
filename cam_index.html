@@ -2667,91 +2667,82 @@ function clearScan(){
 }
 
 async function exportGoLabel(){
-  // تحميل البيانات أولاً إذا لم تكن محملة
   if(!allCoding.length){
     toast('جاري تحميل البيانات...');
     try{ await loadCoding(); }catch(e){}
   }
-  if(!allCoding.length){
-    toast('لا توجد بيانات في السجل','err');
-    return;
-  }
+  if(!allCoding.length){ toast('لا توجد بيانات في السجل','err'); return; }
 
-  // بناء البيانات
-  const origin = window.location.origin;
-  const header = [
-    'Barcode','QR_Data','Station','Location','District',
-    'Install_Date','Status',
-    'NVR1_Num','NVR1_Serial','NVR2_Num','NVR2_Serial',
-    'HDD1_Num','HDD1_Serial','HDD2_Num','HDD2_Serial',
-    'Notes'
-  ];
-  const rows = allCoding.map(d=>{
-    const n=d.nvrs||[], h=d.hdds||[];
-    return [
-      d.code||'',
-      origin+'/scan/'+encodeURIComponent(d.code||''),
-      d.station_name||'', d.location||'', d.district||'',
-      d.install_date||'', d.status||'يعمل',
-      (n[0]||{}).num||'',(n[0]||{}).serial||'',
-      (n[1]||{}).num||'',(n[1]||{}).serial||'',
-      (h[0]||{}).num||'',(h[0]||{}).serial||'',
-      (h[1]||{}).num||'',(h[1]||{}).serial||'',
-      d.notes||''
-    ];
-  });
+  toast('جاري تحميل مكتبة Excel...');
 
-  const date = new Date().toISOString().split('T')[0];
-
-  // محاولة 1: تحميل XLSX من CDN
-  const tryXLSX = (src) => new Promise((res,rej)=>{
+  // تحميل XLSX — 3 مصادر احتياطية
+  const load=(src)=>new Promise((res,rej)=>{
     if(typeof XLSX!=='undefined'){res();return;}
     const s=document.createElement('script');
     s.src=src; s.onload=()=>res(); s.onerror=()=>rej();
     document.head.appendChild(s);
   });
 
-  const cdns = [
-    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
-    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
-    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
-  ];
-
-  let loaded = typeof XLSX !== 'undefined';
-  if(!loaded){
-    toast('جاري تحميل مكتبة Excel...');
-    for(const cdn of cdns){
-      try{ await tryXLSX(cdn); loaded=true; break; }catch(e){}
-    }
+  try{
+    await load('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
+      .catch(()=>load('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'))
+      .catch(()=>load('https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'));
+  }catch(e){
+    toast('تعذّر تحميل مكتبة Excel — تحقق من الاتصال بالإنترنت','err');
+    return;
   }
 
-  if(loaded && typeof XLSX !== 'undefined'){
-    // تصدير XLSX
-    try{
-      const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.aoa_to_sheet([header,...rows]);
-      ws['!cols']=[
-        {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
-        {wch:10},{wch:30},{wch:10},{wch:30},
-        {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
+  if(typeof XLSX==='undefined'){
+    toast('مكتبة Excel غير متوفرة','err');
+    return;
+  }
+
+  try{
+    toast('جاري بناء الملف...');
+    const origin=window.location.origin;
+
+    const header=[
+      'Barcode','QR_Data',
+      'Station','Location','District',
+      'Install_Date','Status',
+      'NVR1_Num','NVR1_Serial',
+      'NVR2_Num','NVR2_Serial',
+      'HDD1_Num','HDD1_Serial',
+      'HDD2_Num','HDD2_Serial',
+      'Notes'
+    ];
+
+    const rows=allCoding.map(d=>{
+      const n=d.nvrs||[], h=d.hdds||[];
+      return [
+        d.code||'',
+        origin+'/scan/'+encodeURIComponent(d.code||''),
+        d.station_name||'', d.location||'', d.district||'',
+        d.install_date||'', d.status||'يعمل',
+        (n[0]||{}).num||'',(n[0]||{}).serial||'',
+        (n[1]||{}).num||'',(n[1]||{}).serial||'',
+        (h[0]||{}).num||'',(h[0]||{}).serial||'',
+        (h[1]||{}).num||'',(h[1]||{}).serial||'',
+        d.notes||''
       ];
-      XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
-      XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
-      toast('✅ تم التصدير — '+allCoding.length+' جهاز');
-      return;
-    }catch(e){ console.error('XLSX write error:',e); }
-  }
+    });
 
-  // fallback: تصدير CSV (يفتح في Excel)
-  const esc = v => '"'+String(v).replace(/"/g,'""')+'"';
-  const bom='\uFEFF'; const csv=bom+[header,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
-  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = 'GoLabel_'+date+'.csv';
-  a.click();
-  toast('✅ تم التصدير CSV — '+allCoding.length+' جهاز (يفتح في Excel)');
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+    ws['!cols']=[
+      {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
+      {wch:10},{wch:30},{wch:10},{wch:30},
+      {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
+    ];
+    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+    XLSX.writeFile(wb,'GoLabel_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    toast('✅ تم التصدير — '+allCoding.length+' جهاز');
+  }catch(err){
+    console.error('Excel export error:',err);
+    toast('خطأ في إنشاء الملف: '+(err.message||err),'err');
+  }
 }
+
 
 function exportCodingExcel(){
   if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
