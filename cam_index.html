@@ -1267,41 +1267,17 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <label class="fl" style="margin-bottom:12px;display:block">📎 المرفقات والمستندات</label>
 
-        <!-- صور العطل — 3 صور -->
+        <!-- صور العطل — رفع دفعة واحدة -->
         <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل (حتى 3 صور)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 1</div>
-              <div class="up-box" id="ub-maint-img">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img')">
-                <button class="up-rm" onclick="rmFile('maint_img',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة العطل</div>
-                <div class="up-stat" id="us-maint_img">صورة أو PDF</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 2</div>
-              <div class="up-box" id="ub-maint-img2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img2')">
-                <button class="up-rm" onclick="rmFile('maint_img2',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة إضافية</div>
-                <div class="up-stat" id="us-maint_img2">صورة أو PDF</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 3</div>
-              <div class="up-box" id="ub-maint-img3">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img3')">
-                <button class="up-rm" onclick="rmFile('maint_img3',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة إضافية</div>
-                <div class="up-stat" id="us-maint_img3">صورة أو PDF</div>
-              </div>
-            </div>
-          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل</div>
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s"
+            onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
+            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
+            <div style="font-size:28px">📸</div>
+            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
+            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
+          </label>
+          <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         </div>
 
         <!-- سجلات الاشتغال — 3 سجلات -->
@@ -3322,6 +3298,7 @@ function renderStations(){
       <td><span class="snum">${i+1}</span></td>
       <td style="font-weight:700">${s.name||'—'}</td>
       <td><span class="db">${s.district||'—'}</span></td>
+      ${s.type!=='حكومية'?`<td><span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}">${s.station_status||'تعمل'}</span></td>`:'<td>—</td>'}
       <td style="text-align:center;color:var(--a3);font-weight:700">${s.cam_working||0}</td>
       <td style="text-align:center;color:var(--a2);font-weight:700">${s.cam_broken||0}</td>
       <td style="color:var(--t3);font-size:12px">${last?last.date:'—'}</td>
@@ -3370,7 +3347,14 @@ function openStationModal(id){
       <div class="fgrid">
         <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
         <div class="fg"><label class="fl">القاطع *</label><select class="fi" id="st-district"></select></div>
-        <div class="fg"><label class="fl">النوع</label><select class="fi" id="st-type"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
+        <div class="fg"><label class="fl">النوع</label><select class="fi" id="st-type" onchange="toggleStStatus()"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
+        <div class="fg" id="st-status-row" style="display:none"><label class="fl">حالة المحطة</label>
+          <select class="fi" id="st-status">
+            <option value="تعمل">🟢 تعمل</option>
+            <option value="متوقفة">🔴 متوقفة</option>
+            <option value="صيانة">🟡 تحت الصيانة</option>
+          </select>
+        </div>
       </div>
       <div class="m-footer">
         <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
@@ -3383,12 +3367,18 @@ function openStationModal(id){
   document.getElementById('st-name').value=s.name||'';
   document.getElementById('st-district').innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
   document.getElementById('st-type').value=s.type||'حكومية';
+  const statusRow=document.getElementById('st-status-row');
+  if(statusRow) statusRow.style.display=(s.type==='أهلية')?'':'none';
+  const stSt=document.getElementById('st-status');
+  if(stSt) stSt.value=s.station_status||'تعمل';
   document.getElementById('ov-station').classList.add('open');
 }
 
 async function saveStation(){
   const id=parseInt(document.getElementById('st-eid').value)||0;
-  const body={name:document.getElementById('st-name').value.trim(), district:document.getElementById('st-district').value, type:document.getElementById('st-type').value};
+  const stType=document.getElementById('st-type').value;
+  const body={name:document.getElementById('st-name').value.trim(), district:document.getElementById('st-district').value, type:stType,
+    station_status:stType==='أهلية'?(document.getElementById('st-status')?.value||'تعمل'):'تعمل'};
   if(!body.name||!body.district){toast('أدخل الاسم والقاطع','err');return;}
   try{
     if(id) await api('PUT','/api/stations/'+id,body);
@@ -4866,6 +4856,193 @@ function getOthers(){
         serial:(document.getElementById('other-sn-'+i)?.value||'').trim()
       };
     }).filter(x=>x.type||x.num||x.serial);
+}
+
+// رفع ملفات متعددة دفعة واحدة
+function doMultiUpload(event, prefix){
+  const files=Array.from(event.target.files);
+  if(!files.length) return;
+  const preview=document.getElementById(prefix.replace('_','_').split('_')[0]+'-'+prefix.split('_')[1]+'-preview')
+    ||document.getElementById(prefix+'-preview')
+    ||document.getElementById('maint-img-preview');
+  if(preview) preview.innerHTML='';
+  files.forEach((file,idx)=>{
+    const key=prefix+(idx>0?'_'+(idx+1):'');
+    const reader=new FileReader();
+    reader.onload=function(e){
+      const data=e.target.result.split(',')[1];
+      UF[key]={name:file.name,data,mime:file.type};
+      // عرض مصغّر
+      if(preview&&file.type.startsWith('image/')){
+        const thumb=document.createElement('div');
+        thumb.style.cssText='position:relative;width:70px;height:70px';
+        const img=document.createElement('img');
+        img.src=e.target.result;
+        img.style.cssText='width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)';
+        const rm=document.createElement('button');
+        rm.textContent='✕'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1';
+        rm.onclick=function(){delete UF[key];thumb.remove();};
+        thumb.appendChild(img); thumb.appendChild(rm);
+        if(preview) preview.appendChild(thumb);
+      } else if(preview){
+        const lbl=document.createElement('div');
+        lbl.style.cssText='background:var(--bg2);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px';
+        lbl.innerHTML='📄 '+file.name.substring(0,20);
+        const rm=document.createElement('button');
+        rm.textContent='✕'; rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px';
+        rm.onclick=function(){delete UF[key];lbl.remove();};
+        lbl.appendChild(rm); preview.appendChild(lbl);
+      }
+    };
+    reader.readAsDataURL(file);
+  });
+  toast('تم تحميل '+files.length+' ملف');
+}
+
+// إظهار/إخفاء حقل الحالة بحسب نوع المحطة
+function toggleStStatus(){
+  const t=document.getElementById('st-type')?.value;
+  const row=document.getElementById('st-status-row');
+  if(row) row.style.display=t==='أهلية'?'':'none';
+}
+
+// ══ مسح الباركود عبر كاميرا الجهاز ══
+function startCameraScan(target){
+  const inp = typeof target==='string' ? document.getElementById(target) : target;
+  if(!inp){ toast('حقل غير موجود','err'); return; }
+
+  let ov=document.getElementById('ov-cam-scan');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='ov-cam-scan';
+    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px';
+
+    const title=document.createElement('div');
+    title.style.cssText='color:#fff;font-size:15px;font-weight:700;font-family:Cairo,sans-serif;text-align:center';
+    title.textContent='📷 وجّه الكاميرا نحو الباركود أو السيريال';
+
+    const videoWrap=document.createElement('div');
+    videoWrap.style.cssText='position:relative;width:min(380px,90vw)';
+
+    const video=document.createElement('video');
+    video.id='cam-scan-video';
+    video.style.cssText='width:100%;border-radius:12px;border:3px solid #3b82f6;display:block;background:#000';
+    video.setAttribute('playsinline','');
+    video.setAttribute('autoplay','');
+    video.setAttribute('muted','');
+
+    // إطار التصويب
+    const frame=document.createElement('div');
+    frame.style.cssText='position:absolute;inset:0;border-radius:12px;pointer-events:none;box-shadow:inset 0 0 0 3px #3b82f6';
+
+    videoWrap.appendChild(video);
+    videoWrap.appendChild(frame);
+
+    const hint=document.createElement('div');
+    hint.id='cam-scan-hint';
+    hint.style.cssText='color:#94a3b8;font-size:13px;font-family:Cairo,sans-serif;text-align:center;max-width:300px';
+    hint.textContent='جاري تشغيل الكاميرا...';
+
+    // حقل إدخال يدوي احتياطي
+    const manualWrap=document.createElement('div');
+    manualWrap.style.cssText='display:flex;gap:8px;width:min(380px,90vw)';
+    const manualInp=document.createElement('input');
+    manualInp.id='cam-scan-manual';
+    manualInp.type='text';
+    manualInp.placeholder='أو أدخل السيريال يدوياً...';
+    manualInp.style.cssText='flex:1;padding:10px 14px;border:1.5px solid #475569;border-radius:8px;background:#1e293b;color:#fff;font-family:Cairo,sans-serif;font-size:13px;direction:ltr';
+    const manualBtn=document.createElement('button');
+    manualBtn.textContent='✅ تأكيد';
+    manualBtn.style.cssText='padding:10px 16px;background:#3b82f6;color:#fff;border:none;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700';
+    manualBtn.onclick=function(){
+      const val=manualInp.value.trim();
+      if(!val){ toast('أدخل السيريال','err'); return; }
+      _finishScan(val);
+    };
+    manualInp.onkeydown=function(e){ if(e.key==='Enter') manualBtn.click(); };
+    manualWrap.appendChild(manualInp);
+    manualWrap.appendChild(manualBtn);
+
+    const closeBtn=document.createElement('button');
+    closeBtn.style.cssText='background:#475569;color:#fff;border:none;border-radius:8px;padding:10px 28px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer';
+    closeBtn.textContent='✕ إغلاق';
+    closeBtn.onclick=function(){ stopCameraStream(); ov.style.display='none'; };
+
+    ov.appendChild(title);
+    ov.appendChild(videoWrap);
+    ov.appendChild(hint);
+    ov.appendChild(manualWrap);
+    ov.appendChild(closeBtn);
+    document.body.appendChild(ov);
+  }
+
+  ov.style.display='flex';
+  ov._target=inp;
+  document.getElementById('cam-scan-manual').value='';
+  startCameraStream();
+}
+
+function _finishScan(val){
+  stopCameraStream();
+  const ov=document.getElementById('ov-cam-scan');
+  if(ov) ov.style.display='none';
+  const inp=ov?ov._target:null;
+  if(inp){
+    inp.value=val;
+    inp.dispatchEvent(new Event('input'));
+    inp.focus();
+  }
+  toast('✅ تم المسح: '+val.substring(0,30));
+}
+
+let _camStream=null, _scanInterval=null;
+
+function startCameraStream(){
+  const video=document.getElementById('cam-scan-video');
+  const hint=document.getElementById('cam-scan-hint');
+  if(!video) return;
+  // أوقف أي stream سابق
+  stopCameraStream();
+
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    if(hint) hint.textContent='⚠️ الكاميرا غير مدعومة في هذا المتصفح — استخدم الإدخال اليدوي';
+    return;
+  }
+
+  navigator.mediaDevices.getUserMedia({video:{facingMode:'environment',width:{ideal:1280},height:{ideal:720}}})
+    .then(function(stream){
+      _camStream=stream;
+      video.srcObject=stream;
+      video.play().catch(()=>{});
+      if(hint) hint.textContent='حرّك الكاميرا حتى يكون الباركود واضحاً في المنتصف';
+
+      if('BarcodeDetector' in window){
+        const bd=new BarcodeDetector({formats:['code_128','code_39','code_93','qr_code','ean_13','ean_8','data_matrix','pdf417']});
+        _scanInterval=setInterval(function(){
+          if(!video.readyState||video.readyState<2) return;
+          bd.detect(video).then(function(barcodes){
+            if(barcodes&&barcodes.length){
+              const raw=barcodes[0].rawValue;
+              // استخراج الكود المفيد
+              const val=extractCodeFromScan?extractCodeFromScan(raw):raw;
+              _finishScan(val);
+            }
+          }).catch(function(){});
+        },300);
+      } else {
+        if(hint) hint.textContent='📱 المسح التلقائي غير متاح في هذا المتصفح — يمكنك الإدخال اليدوي أدناه';
+      }
+    })
+    .catch(function(e){
+      if(hint) hint.textContent='⚠️ تعذّر الوصول للكاميرا: '+(e.message||e)+' — استخدم الإدخال اليدوي';
+    });
+}
+
+function stopCameraStream(){
+  if(_scanInterval){ clearInterval(_scanInterval); _scanInterval=null; }
+  if(_camStream){ _camStream.getTracks().forEach(function(t){t.stop();}); _camStream=null; }
+  const video=document.getElementById('cam-scan-video');
+  if(video){ video.srcObject=null; }
 }
 
 tryAutoLogin();</script>
