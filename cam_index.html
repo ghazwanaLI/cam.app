@@ -2544,20 +2544,51 @@ function onScanKey(e){
 
 function showScanResult(code){
   api('POST','/api/scan',{code,scanned_by:CU?.username||''}).catch(()=>{});
-  const d=allCoding.find(x=>x.code.toLowerCase()===code.toLowerCase());
-  const card=document.getElementById('scan-result-card');
+  // استخرج الكود الأساسي فقط (قبل | )
+  const bareCode = code.split('|')[0].trim();
+  const d = allCoding.find(x => x.code.toLowerCase()===bareCode.toLowerCase());
+
   if(!d){
-    document.getElementById('src-code').textContent='❌ '+code;
-    document.getElementById('src-info').textContent='غير موجود في قاعدة البيانات';
-    card.style.background='linear-gradient(135deg,#dc2626,#ef4444)';
-  }else{
-    document.getElementById('src-code').textContent='✅ '+d.code;
-    document.getElementById('src-info').textContent=`📌 ${d.location||'—'} | ⛽ ${d.station_name||'—'} | 📍 ${d.district||'—'}`;
-    card.style.background='linear-gradient(135deg,#1d4ed8,#3b82f6)';
-    document.getElementById('sq-coding').value=code;
-    filterCoding();
+    // لم يُوجد — بطاقة خطأ بسيطة
+    const card=document.getElementById('scan-result-card');
+    card.style.cssText='display:block;background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:12px;padding:14px 18px;color:#fff;min-width:240px';
+    document.getElementById('src-code').textContent='❌ '+bareCode;
+    document.getElementById('src-location').textContent='غير موجود في قاعدة البيانات';
+    document.getElementById('src-station').textContent='';
+    document.getElementById('src-status').innerHTML='';
+    return;
   }
-  card.style.display='block';
+
+  // وُجد — أظهر نافذة كاملة بكل البيانات
+  document.getElementById('sq-coding').value=bareCode;
+  filterCoding();
+
+  // بناء بطاقة التفاصيل
+  const nvrs=(d.nvrs||[]).map(n=>`<span style="background:rgba(255,255,255,.15);border-radius:4px;padding:2px 6px;margin:2px;display:inline-block">NVR ${n.num||''}${n.serial?' — '+n.serial:''}</span>`).join('');
+  const hdds=(d.hdds||[]).map(h=>`<span style="background:rgba(255,255,255,.15);border-radius:4px;padding:2px 6px;margin:2px;display:inline-block">HDD ${h.num||''}${h.serial?' — '+h.serial:''}</span>`).join('');
+  const stColor = d.status==='يعمل'?'#22c55e':d.status==='معطل'?'#ef4444':'#f59e0b';
+
+  const card=document.getElementById('scan-result-card');
+  card.style.cssText='display:block;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:14px;padding:16px 18px;color:#fff;min-width:280px;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
+
+  document.getElementById('src-code').innerHTML=
+    '<span style="font-size:15px;font-weight:900;letter-spacing:1.5px;font-family:monospace;color:#60a5fa">'+d.code+'</span>';
+
+  document.getElementById('src-location').innerHTML=
+    '<div style="margin:8px 0 4px;display:flex;flex-direction:column;gap:5px">'
+    +'<div>📌 <b>'+( d.location||'—')+'</b></div>'
+    +'<div>⛽ المحطة: <b>'+(d.station_name||'—')+'</b></div>'
+    +'<div>📍 القاطع: <b>'+(d.district||'—')+'</b></div>'
+    +'<div>📅 تاريخ التركيب: '+(d.install_date||'—')+'</div>'
+    +(nvrs?'<div style="margin-top:4px">📹 '+nvrs+'</div>':'')
+    +(hdds?'<div style="margin-top:2px">💾 '+hdds+'</div>':'')
+    +(d.notes?'<div style="margin-top:4px;font-size:11px;opacity:.8">📝 '+(d.notes)+'</div>':'')
+    +'</div>';
+
+  document.getElementById('src-station').innerHTML='';
+  document.getElementById('src-status').innerHTML=
+    '<span style="background:'+stColor+';color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700">'+(d.status||'—')+'</span>'
+    +'<button onclick="clearScan()" style="margin-right:8px;background:rgba(255,255,255,.15);border:none;border-radius:6px;padding:3px 10px;color:#fff;cursor:pointer;font-size:11px;font-family:Cairo,sans-serif">✕ إغلاق</button>';
 }
 
 function clearScan(){
@@ -2951,6 +2982,15 @@ async function initApp(){
   }
   updateDashboard();
   populateDistrictFilters();
+
+  // إذا جاء من مسح QR مباشر
+  if(window._scanCode){
+    goTab('coding', document.querySelector('[onclick*="coding"]'));
+    setTimeout(()=>{
+      showScanResult(window._scanCode);
+      window._scanCode=null;
+    },500);
+  }
 }
 
 // ══════════════════════════════════════════
@@ -4082,6 +4122,18 @@ function loadLabelSizes(){
   }catch(e){}
 }
 // ── INIT ──
+// إذا تم فتح الصفحة من مسح QR: /scan/CODE|...
+(function detectScanUrl(){
+  const path = window.location.pathname;
+  if(path.startsWith('/scan/')){
+    const raw = decodeURIComponent(path.replace('/scan/','')).split('|')[0].trim();
+    if(raw){
+      // احفظ الكود للعرض بعد تحميل البيانات
+      window._scanCode = raw;
+    }
+  }
+})();
+
 tryAutoLogin();</script>
 </body>
 </html>
