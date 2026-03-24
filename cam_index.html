@@ -316,6 +316,38 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 .coding-sub{padding:10px 18px;border:none;background:transparent;font-family:Cairo,sans-serif;font-size:14px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
 .coding-sub.active{color:#0891b2;font-weight:700;border-bottom:2px solid #0891b2;background:#fff}
+
+/* ── تنقلات الصفحات ── */
+.tab-page{
+  animation: none;
+}
+@keyframes tabFadeSlide{
+  from{ opacity:0; transform:translateY(18px); }
+  to{   opacity:1; transform:translateY(0);    }
+}
+@keyframes tabFadeSlideLeft{
+  from{ opacity:0; transform:translateX(30px); }
+  to{   opacity:1; transform:translateX(0);    }
+}
+.tab-enter{
+  animation: tabFadeSlide .35s cubic-bezier(.22,.68,0,1.2) both;
+}
+.nav-item{
+  transition: color .2s, background .2s, border-color .2s, transform .15s;
+}
+.nav-item:active{ transform: scale(.95); }
+
+/* تأثير ضغط الأزرار */
+.btn{ transition: transform .12s, box-shadow .12s, opacity .12s; }
+.btn:active{ transform: scale(.95); opacity:.85; }
+
+/* تأثير البطاقات */
+.section{
+  transition: box-shadow .2s, transform .2s;
+}
+.section:hover{
+  box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
 </style>
 </head>
 <body>
@@ -2919,7 +2951,17 @@ const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding',
 function goTab(name, el){
   ALL_TABS.forEach(t => {
     const tab = document.getElementById('tab-'+t);
-    if(tab) tab.style.display = (t === name) ? 'block' : 'none';
+    if(!tab) return;
+    if(t === name){
+      tab.style.display = 'block';
+      // إضافة animation class وإزالتها بعد الانتهاء
+      tab.classList.remove('tab-enter');
+      void tab.offsetWidth; // reflow لتفعيل الـ animation مجدداً
+      tab.classList.add('tab-enter');
+      tab.addEventListener('animationend', ()=>tab.classList.remove('tab-enter'), {once:true});
+    } else {
+      tab.style.display = 'none';
+    }
   });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
@@ -2938,8 +2980,15 @@ function goTab(name, el){
 function switchField(sub, el){
   const tours = document.getElementById('tab-tours');
   const maint = document.getElementById('tab-maintenance');
-  if(tours) tours.style.display = (sub==='tours')       ? 'block' : 'none';
-  if(maint) maint.style.display = (sub==='maintenance') ? 'block' : 'none';
+  [tours, maint].forEach(t=>{ if(t) t.style.display='none'; });
+  const active = sub==='tours' ? tours : maint;
+  if(active){
+    active.style.display='block';
+    active.classList.remove('tab-enter');
+    void active.offsetWidth;
+    active.classList.add('tab-enter');
+    active.addEventListener('animationend',()=>active.classList.remove('tab-enter'),{once:true});
+  }
   document.querySelectorAll('#tab-field > div:first-child > button').forEach(b => {
     b.style.borderBottomColor = 'transparent';
     b.style.color = '#64748b'; b.style.fontWeight = '600';
@@ -3879,12 +3928,39 @@ async function saveQuickCircular(){
 async function saveCircular(){
   const title=document.getElementById('circ-title')?.value.trim();
   if(!title){toast('أدخل عنوان التعميم','err');return;}
-  const body={title, type:document.getElementById('circ-type')?.value||'تعميم',
+  const body={
+    title,
+    type:document.getElementById('circ-type')?.value||'تعميم',
     district:document.getElementById('circ-district')?.value||'الكل',
     body:document.getElementById('circ-body')?.value||'',
-    date:new Date().toISOString().split('T')[0]};
-  try{await api('POST','/api/circulars',body);closeModal('ov-circ');toast('تم النشر ✅');await loadCirculars();}
-  catch(e){toast('خطأ: '+e.message,'err');}
+    date:new Date().toISOString().split('T')[0]
+  };
+  try{
+    const res=await api('POST','/api/circulars',body);
+    const cid=res.circular?.id||res.id;
+
+    // رفع الملفات المرفقة
+    if(cid){
+      const fileKeys=['circ_1','circ_2','circ_3'];
+      const uploads=fileKeys.filter(k=>UF[k]);
+      await Promise.all(uploads.map(k=>
+        api('POST','/api/files/circ_'+cid+'_'+k, {
+          name:UF[k].name, data:UF[k].data, mime:UF[k].mime
+        }).catch(e=>console.error('file upload error:',k,e))
+      ));
+      // تنظيف حقول الملفات
+      fileKeys.forEach(k=>{
+        delete UF[k];
+        const st=document.getElementById('us-'+k);
+        if(st) st.textContent='صورة أو PDF';
+        const box=document.getElementById('ub-'+k.replace('_','-'));
+        if(box) box.classList.remove('hf');
+      });
+    }
+    closeModal('ov-circ');
+    toast('تم النشر ✅'+(uploads?.length?' مع '+uploads.length+' مرفق':''));
+    await loadCirculars();
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
 }
 async function delCircular(id){
   if(!confirm('حذف التعميم؟'))return;
