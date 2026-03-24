@@ -4349,7 +4349,9 @@ function showMaintFiles(mid){
   list.innerHTML='<div style="color:var(--t3);text-align:center;padding:10px">جاري التحميل...</div>';
   ov.classList.add('open');
   Promise.all(keys.map(function(k){
-    return api('GET','/api/files/maint_'+mid+'_'+k).then(function(d){return {k:k,d:d};}).catch(function(){return null;});
+    return api('GET','/api/files/maint_'+mid+'_'+k)
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
     if(!found.length){
@@ -4460,7 +4462,12 @@ function viewCircFiles(cid){
   list.innerHTML='<div style="color:var(--t3);text-align:center;padding:16px">جاري التحميل...</div>';
   ov.classList.add('open');
   Promise.all(keys.map(function(k){
-    return api('GET','/api/files/circ_'+cid+'_'+k).then(function(d){return {k:k,d:d};}).catch(function(){return null;});
+    return api('GET','/api/files/circ_'+cid+'_'+k)
+      .then(function(res){
+        // السيرفر قد يرجع {file:{...}} أو مباشرة {data,name,mime}
+        const d = res.file||res;
+        return (d&&d.data)?{k:k,d:d}:null;
+      }).catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
     if(!found.length){list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد مرفقات</div>';return;}
