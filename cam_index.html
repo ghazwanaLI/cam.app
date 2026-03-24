@@ -2657,83 +2657,68 @@ function clampSizes(){
   if(hint) hint.style.display = changed ? 'block' : 'none';
 }
 
+// حساب الأبعاد من الإعدادات
+function getSizes(){
+  const R=37.8, PAD=6, GAP=5, TEXT=12;
+  const lblW_cm = Math.max(1, parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5);
+  const lblH_cm = Math.max(0.5, parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5);
+  const qr_cm   = Math.max(0.3, parseFloat(document.getElementById('ctrl-qr-size')?.value)||2);
+  const bc_cm   = Math.max(0.2, parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2);
+  const lblW=Math.round(lblW_cm*R), lblH=Math.round(lblH_cm*R);
+  const innerH=lblH-PAD*2;
+  const qrPx=Math.max(20, Math.min(Math.round(qr_cm*R), innerH));
+  const bcHpx=Math.max(10, Math.min(Math.round(bc_cm*R), innerH-TEXT));
+  const bcWpx=Math.max(30, lblW-qrPx-GAP-PAD*2);
+  return {lblW_cm,lblH_cm,lblW,lblH,qrPx,bcHpx,bcWpx,PAD};
+}
+
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  clampSizes();
+  const s=getSizes();
 
-  const R    = 37.8; // 1cm = 37.8px
-  const PAD  = 6;    // padding داخلي px
-  const GAP  = 5;    // فراغ بين QR والباركود px
-  const TEXT = 12;   // ارتفاع سطر الكود px
-
-  const lblW_cm = parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5;
-  const lblH_cm = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
-  const qr_cm   = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
-  const bc_cm   = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2;
-
-  const lblW = Math.round(lblW_cm * R);
-  const lblH = Math.round(lblH_cm * R);
-
-  // حجم QR محدود بالارتفاع الداخلي للملصق
-  const innerH = lblH - PAD * 2;
-  const qrPx   = Math.max(20, Math.min(Math.round(qr_cm * R), innerH));
-
-  // ارتفاع الباركود محدود بالارتفاع الداخلي ناقص النص
-  const bcHpx  = Math.max(10, Math.min(Math.round(bc_cm * R), innerH - TEXT));
-
-  // عرض الباركود = المساحة المتبقية بعد QR والفراغ
-  const bcWpx  = Math.max(30, lblW - qrPx - GAP - PAD * 2);
-
-  // ── الملصق ──
-  const lbl = document.getElementById('gen-lbl');
+  // ── 1. الملصق ──
+  const lbl=document.getElementById('gen-lbl');
   if(lbl){
     lbl.style.cssText='background:#fff;border:2px solid #111;border-radius:3px;'
-      +'box-shadow:0 1px 6px rgba(0,0,0,.2);padding:'+PAD+'px;'
+      +'box-shadow:0 1px 6px rgba(0,0,0,.2);padding:'+s.PAD+'px;'
       +'display:inline-flex;flex-direction:column;gap:3px;'
-      +'width:'+lblW+'px;min-width:'+lblW+'px;max-width:'+lblW+'px;'
-      +'height:'+lblH+'px;min-height:'+lblH+'px;max-height:'+lblH+'px;'
+      +'width:'+s.lblW+'px;min-width:'+s.lblW+'px;max-width:'+s.lblW+'px;'
+      +'height:'+s.lblH+'px;min-height:'+s.lblH+'px;max-height:'+s.lblH+'px;'
       +'overflow:hidden;box-sizing:border-box;';
   }
 
-  // ── الباركود — نولّده أولاً ثم نقص العرض ──
-  const bc = document.getElementById('gen-bc');
-  if(bc && typeof JsBarcode !== 'undefined'){
+  // ── 2. الباركود ──
+  const bc=document.getElementById('gen-bc');
+  if(bc && typeof JsBarcode!=='undefined'){
     bc.removeAttribute('width'); bc.removeAttribute('height');
-    bc.style.cssText='display:block;overflow:hidden;max-width:'+bcWpx+'px;';
     try{
       JsBarcode(bc, _genCode, {
-        format:'CODE128',
-        width: 1.2,
-        height: bcHpx,
-        displayValue: false,
-        margin: 0,
-        background:'#ffffff',
-        lineColor:'#000000'
+        format:'CODE128', width:1.2, height:s.bcHpx,
+        displayValue:false, margin:0,
+        background:'#ffffff', lineColor:'#000000'
       });
-      // اجبر العرض بعد التوليد
-      bc.setAttribute('width', bcWpx);
-      bc.setAttribute('height', bcHpx);
-      bc.style.width  = bcWpx+'px';
-      bc.style.height = bcHpx+'px';
-      bc.style.maxWidth = bcWpx+'px';
-    }catch(e){ console.error('BC:',e); toast('خطأ باركود','err'); }
+      bc.setAttribute('width',  s.bcWpx);
+      bc.setAttribute('height', s.bcHpx);
+      bc.style.cssText='display:block;width:'+s.bcWpx+'px;height:'+s.bcHpx+'px;overflow:hidden;flex-shrink:0;';
+    }catch(e){ console.error('BC:',e); }
   }
 
-  // ── QR Code ──
-  const qWrap = document.getElementById('gen-qr');
-  if(qWrap && typeof QRCode !== 'undefined'){
+  // ── 3. QR Code ──
+  const qWrap=document.getElementById('gen-qr');
+  if(qWrap && typeof QRCode!=='undefined'){
     qWrap.innerHTML='';
     qWrap.style.cssText='flex-shrink:0;line-height:0;overflow:hidden;'
-      +'width:'+qrPx+'px;height:'+qrPx+'px;min-width:'+qrPx+'px;min-height:'+qrPx+'px;';
+      +'width:'+s.qrPx+'px;height:'+s.qrPx+'px;'
+      +'min-width:'+s.qrPx+'px;min-height:'+s.qrPx+'px;';
     try{
       new QRCode(qWrap,{
-        text:_genQrData, width:qrPx, height:qrPx,
+        text:_genQrData, width:s.qrPx, height:s.qrPx,
         colorDark:'#000000', colorLight:'#ffffff',
         correctLevel:QRCode.CorrectLevel.M
       });
       setTimeout(()=>{
         const inner=qWrap.querySelector('img,canvas');
-        if(inner) inner.style.cssText='width:'+qrPx+'px;height:'+qrPx+'px;display:block;max-width:none;';
+        if(inner) inner.style.cssText='width:'+s.qrPx+'px;height:'+s.qrPx+'px;display:block;max-width:none;';
       },200);
     }catch(e){ console.error('QR:',e); }
   }
@@ -2774,10 +2759,9 @@ function printGenLabel(){
   const code=document.getElementById('gen-code-display').textContent;
   const station=document.getElementById('gl-station').textContent;
   const device=document.getElementById('gl-device').textContent;
-  const sz=getLabelSizes();
-  const lblW=sz.lblW_mm, lblH=sz.lblH_mm;
-  const qrSize=sz.qrSize, bcH=sz.bcH;
-  const bcW=Math.max(60, sz.lblW - sz.qrSize - 30);
+  const s=getSizes();
+  const lblW=Math.round(s.lblW_cm*10), lblH=Math.round(s.lblH_cm*10); // mm
+  const qrSize=s.qrPx, bcH=s.bcHpx, bcW=s.bcWpx;
   const qrData=_genQrData||window.location.origin+'/scan/'+code;
   const S='script';
   const w=window.open('','_blank','width=620,height=560');
@@ -2798,9 +2782,9 @@ function printGenLabel(){
     +'.btn{padding:8px 20px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
     +'@media print{@page{size:'+lblW+'mm '+lblH+'mm;margin:0}.btns{display:none!important}body{background:#fff;padding:0}}'
     +'<\/style><\/head><body>'
-    +'<div class="lbl" id="lbl" style="width:'+lblW+'mm">'
+    +'<div class="lbl" id="lbl" style="width:'+lblW+'mm;height:'+lblH+'mm;">'
     +'<div class="lbl-info"><span style="color:#0891b2">'+station+'</span><span style="color:#7c3aed">'+device+'</span></div>'
-    +'<div class="lbl-body"><div id="qr"></div>'
+    +'<div class="lbl-body"><div id="qr" style="flex-shrink:0"></div>'
     +'<div class="bc-wrap"><canvas id="bc" style="width:100%"></canvas>'
     +'<div class="bc-num">'+code+'</div></div></div></div>'
     +'<div class="btns">'
