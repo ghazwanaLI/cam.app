@@ -1123,22 +1123,26 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </div>
 
               <!-- ── معاينة الملصق ── -->
-              <div style="width:100%;overflow-x:auto;display:flex;flex-direction:column;align-items:center;gap:10px">
-                <div id="gen-lbl" style="background:#fff;border:2px solid #222;padding:10px;display:inline-flex;flex-direction:column;gap:8px;border-radius:4px;box-shadow:0 2px 12px rgba(0,0,0,.12)">
-                  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px">
-                    <span id="gl-station" style="font-size:11px;font-weight:900;color:#0891b2;white-space:nowrap"></span>
-                    <span id="gl-device"  style="font-size:11px;font-weight:700;color:#7c3aed;white-space:nowrap"></span>
+              <div style="width:100%;overflow:auto;display:flex;flex-direction:column;align-items:center;gap:8px;padding:2px 0">
+                <div style="font-size:10px;color:#94a3b8">📋 معاينة — الحجم الفعلي على الشاشة</div>
+
+                <div id="gen-lbl" style="background:#fff;border:2px solid #222;border-radius:4px;box-shadow:0 2px 8px rgba(0,0,0,.15);box-sizing:border-box;overflow:hidden;display:inline-flex;flex-direction:column;padding:6px">
+                  <!-- رأس الملصق -->
+                  <div class="lbl-header" style="display:flex;justify-content:space-between;align-items:center;width:100%;margin-bottom:4px;flex-shrink:0">
+                    <span id="gl-station" style="font-size:9px;font-weight:900;color:#0891b2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:55%"></span>
+                    <span id="gl-device"  style="font-size:9px;font-weight:700;color:#7c3aed;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:44%"></span>
                   </div>
-                  <div style="display:flex;gap:10px;align-items:center">
-                    <div id="gen-qr" style="flex-shrink:0;line-height:0"></div>
-                    <div style="display:flex;flex-direction:column;align-items:center;gap:3px">
-                      <svg id="gen-bc" style="display:block"></svg>
-                      <div id="gen-num-label" style="font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;white-space:nowrap"></div>
+                  <!-- محتوى الملصق: QR + باركود -->
+                  <div style="display:flex;gap:6px;align-items:center;flex:1;min-height:0">
+                    <div id="gen-qr" style="flex-shrink:0;line-height:0;overflow:hidden"></div>
+                    <div style="display:flex;flex-direction:column;align-items:center;gap:2px;flex:1;min-width:0;overflow:hidden">
+                      <svg id="gen-bc" style="display:block;max-width:100%"></svg>
+                      <div id="gen-num-label" style="font-family:monospace;font-size:8px;letter-spacing:1px;font-weight:bold;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%"></div>
                     </div>
                   </div>
                 </div>
 
-                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+                <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:2px">
                   <button class="btn btn-p" onclick="printGenLabel()" style="background:#0891b2">🖨️ طباعة</button>
                   <button class="btn btn-o" onclick="saveGenImg()">💾 حفظ صورة</button>
                   <button class="btn btn-p" onclick="saveGenToList()" style="background:#16a34a">📥 حفظ في السجل</button>
@@ -2653,43 +2657,104 @@ function clampSizes(){
 
 function rebuildLabel(){
   if(!_genQrData || !_genCode) return;
-  const sz = getLabelSizes();
+  const R = 37.8; // 1cm = 37.8px at 96dpi
 
-  // ── ضبط عرض الملصق ──
+  const lblW_cm = parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5;
+  const lblH_cm = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
+  const qr_cm   = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
+  const bc_cm   = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.5;
+
+  const PADDING = 8; // px داخلي
+  const GAP     = 6; // فراغ بين QR والباركود
+
+  // أبعاد الملصق بالبكسل
+  const lblW = Math.round(lblW_cm * R);
+  const lblH = Math.round(lblH_cm * R);
+
+  // حجم QR — مقيّد بارتفاع الملصق ناقص الـ padding
+  const maxQR  = lblH - PADDING * 2;
+  const qrPx   = Math.min(Math.round(qr_cm * R), maxQR);
+
+  // ارتفاع الباركود — مقيّد بارتفاع الملصق ناقص padding والنص
+  const maxBCH = lblH - PADDING * 2 - 14; // 14px للنص
+  const bcHpx  = Math.min(Math.round(bc_cm * R), maxBCH);
+
+  // عرض الباركود = عرض الملصق - عرض QR - gap - padding*2
+  const bcWpx  = Math.max(40, lblW - qrPx - GAP - PADDING * 2);
+
+  // ── 1. ضبط الملصق ──
   const lbl = document.getElementById('gen-lbl');
   if(lbl){
-    lbl.style.width    = sz.lblW + 'px';
-    lbl.style.minWidth = sz.lblW + 'px';
+    lbl.style.cssText = [
+      'background:#fff',
+      'border:2px solid #222',
+      'border-radius:4px',
+      'box-shadow:0 2px 8px rgba(0,0,0,.15)',
+      'padding:'+PADDING+'px',
+      'display:inline-flex',
+      'flex-direction:column',
+      'gap:4px',
+      'width:'+lblW+'px',
+      'min-width:'+lblW+'px',
+      'max-width:'+lblW+'px',
+      'height:'+lblH+'px',
+      'min-height:'+lblH+'px',
+      'overflow:hidden',
+      'box-sizing:border-box',
+    ].join(';');
   }
 
-  // ── Barcode ──
+  // ── 2. رأس الملصق (المحطة والجهاز) ──
+  const hdr = lbl?.querySelector('.lbl-header');
+  if(hdr) hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;width:100%;flex-shrink:0';
+
+  // ── 3. Barcode ──
   const bc = document.getElementById('gen-bc');
   if(bc && typeof JsBarcode !== 'undefined'){
-    bc.removeAttribute('width'); bc.removeAttribute('height');
-    bc.style.cssText = 'display:block;';
+    bc.removeAttribute('width');
+    bc.removeAttribute('height');
+    bc.style.cssText='display:block;overflow:hidden;flex-shrink:0;';
     try{
+      // حساب عدد الأعمدة بالنسبة للعرض المتاح
+      const barW = Math.max(1, Math.floor(bcWpx / (_genCode.length * 11 + 20)));
       JsBarcode(bc, _genCode, {
-        format:'CODE128', width:1.8, height:sz.bcH,
-        displayValue:false, margin:6,
-        background:'#ffffff', lineColor:'#000000'
+        format:'CODE128',
+        width: Math.max(1, Math.min(3, barW)),
+        height: bcHpx,
+        displayValue: false,
+        margin: 0,
+        background: '#ffffff',
+        lineColor: '#000000'
       });
+      // قص الباركود لعرض محدد
+      bc.setAttribute('width', bcWpx);
+      bc.style.width  = bcWpx + 'px';
+      bc.style.height = bcHpx + 'px';
     }catch(e){ console.error('BC:',e); }
   }
 
-  // ── QR Code ──
+  // ── 4. QR Code ──
   const qWrap = document.getElementById('gen-qr');
   if(qWrap && typeof QRCode !== 'undefined'){
     qWrap.innerHTML = '';
-    qWrap.style.cssText = 'flex-shrink:0;line-height:0;width:'+sz.qrSize+'px;height:'+sz.qrSize+'px;min-width:'+sz.qrSize+'px;min-height:'+sz.qrSize+'px;';
+    qWrap.style.cssText = [
+      'flex-shrink:0',
+      'line-height:0',
+      'width:'+qrPx+'px',
+      'height:'+qrPx+'px',
+      'min-width:'+qrPx+'px',
+      'min-height:'+qrPx+'px',
+      'overflow:hidden',
+    ].join(';');
     try{
       new QRCode(qWrap, {
-        text:_genQrData, width:sz.qrSize, height:sz.qrSize,
+        text:_genQrData, width:qrPx, height:qrPx,
         colorDark:'#000000', colorLight:'#ffffff',
         correctLevel:QRCode.CorrectLevel.M
       });
       setTimeout(()=>{
         const inner = qWrap.querySelector('img,canvas');
-        if(inner) inner.style.cssText='width:'+sz.qrSize+'px;height:'+sz.qrSize+'px;display:block;';
+        if(inner) inner.style.cssText='width:'+qrPx+'px!important;height:'+qrPx+'px!important;display:block!important;max-width:none!important;';
       }, 150);
     }catch(e){ console.error('QR:',e); }
   }
