@@ -2544,14 +2544,28 @@ function onScanKey(e){
   if(e.key==='Enter'){
     const raw=document.getElementById('sq-coding').value.trim();
     if(!raw) return;
-    const code=extractCodeFromScan(raw);
+    const {code} = smartFindCode(raw);
     document.getElementById('sq-coding').value=code;
-    showScanResult(code);
+    showScanResult(raw); // نمرر الخام — showScanResult يستدعي smartFindCode
     e.preventDefault();
   }
 }
 
 // استخراج الكود النظيف من أي صيغة مسح
+// خريطة تحويل أحرف الكيبورد العربي → لاتيني
+const _KB_AR = {
+  'ض':'Q','ص':'W','ث':'E','ق':'R','ف':'T','غ':'Y','ع':'U','ه':'I','خ':'O','ح':'P',
+  'ش':'A','س':'S','ي':'D','ب':'F','ل':'G','ا':'H','ت':'J','ن':'K','م':'L',
+  'ئ':'Z','ء':'X','ؤ':'C','ر':'V','لا':'B','ى':'N','ة':'M',
+  // رموز شائعة تتحول بالكيبورد العربي
+  ':':'-','؛':';','؟':'?','،':','
+};
+
+function fixKeyboardLayout(s){
+  // حوّل كل حرف عبر الخريطة إذا موجود
+  return s.split('').map(c => _KB_AR[c]||c).join('');
+}
+
 function extractCodeFromScan(raw){
   try{
     let s = raw.trim();
@@ -2564,16 +2578,39 @@ function extractCodeFromScan(raw){
     else if(s.includes('|')){
       s = s.split('|')[0].trim();
     }
-    // تنظيف: أبقِ فقط أحرف ASCII المسموحة لكود الباركود
+    // تنظيف الأحرف غير ASCII
     s = s.replace(/[^ -~]/g,'').trim();
     return s||raw;
   }catch(e){ return raw; }
 }
 
+// بحث ذكي: يجرب الكود المباشر، ثم يجرب تصحيح الكيبورد، ثم يبحث بالأرقام
+function smartFindCode(raw){
+  const s = extractCodeFromScan(raw);
+  // 1. بحث مباشر
+  let d = allCoding.find(x => x.code.toLowerCase()===s.toLowerCase());
+  if(d) return {d, code:s};
+  // 2. تصحيح الكيبورد العربي ثم بحث
+  const fixed = fixKeyboardLayout(s).toUpperCase();
+  d = allCoding.find(x => x.code.toUpperCase()===fixed);
+  if(d) return {d, code:d.code};
+  // 3. البحث بالأرقام فقط (الجزء الأخير من الكود مثل 001)
+  const numPart = s.replace(/[^0-9]/g,'');
+  if(numPart.length>=3){
+    d = allCoding.find(x => x.code.replace(/[^0-9]/g,'')===numPart);
+    if(d) return {d, code:d.code};
+  }
+  // 4. البحث بتطابق جزئي للأرقام والفواصل
+  const pattern = s.replace(/[a-zA-Z؀-ۿ:{}]/g,'.');
+  const rx = new RegExp('^'+pattern+'$','i');
+  d = allCoding.find(x => rx.test(x.code));
+  if(d) return {d, code:d.code};
+  return {d:null, code:s};
+}
+
 function showScanResult(code){
-  const bareCode = extractCodeFromScan(code);
+  const {d, code:bareCode} = smartFindCode(code);
   api('POST','/api/scan',{code:bareCode,scanned_by:CU?.username||''}).catch(()=>{});
-  const d = allCoding.find(x => x.code.toLowerCase()===bareCode.toLowerCase());
 
   if(!d){
     // لم يُوجد — بطاقة خطأ بسيطة
