@@ -264,10 +264,19 @@ tr:hover td{background:rgba(30,58,95,.03);}
   .stats-grid{grid-template-columns:1fr 1fr;gap:10px;}
   .content{padding:12px;}
   .fgrid{grid-template-columns:1fr;}
-  table{min-width:700px;}
+  /* الجداول تمرير أفقي على الموبايل */
+  .table-wrap, .section { overflow-x:auto; }
+  table{min-width:600px;}
+  /* التبويبات تمرير للأسفل */
+  #tab-field, #tab-coding, #tab-inventory, #tab-stations{
+    overflow-y:auto;
+    padding-bottom:40px;
+  }
   .topbar-logo{padding:8px 12px;}
   .tb-name{font-size:12px;}
   .nav-item{padding:8px 10px;font-size:11px;}
+  /* أزرار الشريط العلوي - تمرير أفقي */
+  .topbar-nav{ overflow-x:auto; flex-wrap:nowrap!important; -webkit-overflow-scrolling:touch; }
 }
 @media(max-width:420px){
   .stats-grid{grid-template-columns:1fr 1fr;}
@@ -347,6 +356,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
 }
 .section:hover{
   box-shadow: 0 4px 20px rgba(0,0,0,.08);
+}
+
+/* إحصائيات جانبية - موبايل */
+@media(max-width:600px){
+  #cam-stats-section{ grid-template-columns:1fr!important; }
 }
 </style>
 </head>
@@ -542,34 +556,34 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <!-- Bottom: Stats + Delegates -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
 
-          <!-- Camera Stats Split -->
-          <div style="display:flex;flex-direction:column;gap:12px">
+          <!-- Camera Stats Side by Side — admin only -->
+          <div id="cam-stats-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
 
             <!-- Government Stats -->
             <div class="section">
-              <div class="sec-hdr" style="cursor:pointer" onclick="toggleStatSection('gov-stat-body',this)">
-                <div class="sec-title"><div class="sdot" style="background:#1d4ed8"></div>🏛️ إحصائية الكاميرات الحكومية</div>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <button onclick="event.stopPropagation();printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:var(--p1)">🖨️</button>
-                  <span id="gov-stat-arrow" style="font-size:18px;transition:.3s;display:inline-block">▲</span>
+              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('gov-stat-body',this)">
+                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#1d4ed8"></div>🏛️ الحكومية</div>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <button onclick="event.stopPropagation();printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:var(--p1)">🖨️</button>
+                  <span id="gov-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
                 </div>
               </div>
-              <div id="gov-stat-body" style="padding:14px">
-                <div id="gov-cams-stats" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center"></div>
+              <div id="gov-stat-body" style="padding:10px;display:none">
+                <div id="gov-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
               </div>
             </div>
 
             <!-- Private Stats -->
             <div class="section">
-              <div class="sec-hdr" style="cursor:pointer" onclick="toggleStatSection('priv-stat-body',this)">
-                <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 إحصائية الكاميرات الأهلية</div>
-                <div style="display:flex;align-items:center;gap:6px">
-                  <button onclick="event.stopPropagation();printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:8px;padding:4px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">🖨️</button>
-                  <span id="priv-stat-arrow" style="font-size:18px;transition:.3s;display:inline-block">▲</span>
+              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('priv-stat-body',this)">
+                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#d97706"></div>🏪 الأهلية</div>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <button onclick="event.stopPropagation();printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:#d97706">🖨️</button>
+                  <span id="priv-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
                 </div>
               </div>
-              <div id="priv-stat-body" style="padding:14px">
-                <div id="priv-cams-stats" style="display:flex;flex-wrap:wrap;gap:16px;justify-content:center"></div>
+              <div id="priv-stat-body" style="padding:10px;display:none">
+                <div id="priv-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
               </div>
             </div>
 
@@ -1695,9 +1709,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="عام">عام</option>
         </select>
       </div>
-      <div class="fg"><label class="fl">موجه إلى</label>
+      <div class="fg"><label class="fl">موجه إلى <span style="font-size:11px;color:var(--t3)">(اختياري)</span></label>
         <select class="fi" id="circ-district">
-          <option value="الكل">جميع القواطع</option>
+          <option value="الكل">— جميع القواطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحتوى / الملاحظات</label>
@@ -3027,7 +3041,12 @@ async function initApp(){
     ['nav-logs','admin-sect'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
     });
-    // nav-delegates removed; nav-users always visible
+    // إخفاء المستخدمون والإحصائيات عن المخولين
+    const navUsers=document.getElementById('nav-users');
+    if(navUsers) navUsers.style.display=isAdmin?'':'none';
+    const camStats=document.getElementById('cam-stats-section');
+    if(camStats) camStats.style.display=isAdmin?'grid':'none';
+    // التقارير مرئية للجميع لكن مصفّاة بالقاطع
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
     ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
@@ -3891,24 +3910,33 @@ function renderCirculars(){
   const grid=document.getElementById('circulars-grid');
   if(!grid)return;
   const typeColor={'تعميم':'b-navy','تبليغ':'b-warn','أمر إداري':'b-bad','عام':'b-ok'};
-  grid.innerHTML=list.length?list.map(c=>`
-    <div style="background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+  const myReads=_circReads||{};
+  const isAdmin=CU?.role==='admin';
+  grid.innerHTML=list.length?list.map(c=>{
+    const iRead=myReads[c.id];
+    const readBadge=iRead
+      ?'<span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ تم الاطلاع</span>'
+      :'<button class="btn btn-p btn-sm" style="background:#16a34a;font-size:11px" onclick="markCircRead('+c.id+')">✅ تم الاطلاع</button>';
+    return `<div style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':' var(--border)'};border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
         <div style="font-size:15px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
         <span class="badge ${typeColor[c.type]||'b-blue'}">${c.type||'تعميم'}</span>
       </div>
       ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.7;background:var(--bg2);border-radius:8px;padding:10px 12px">${c.body||c.notes}</div>`:''}
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3)">
-        <div style="display:flex;gap:12px">
+      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3);flex-wrap:wrap;gap:6px">
+        <div style="display:flex;gap:12px;align-items:center">
           <span>📅 ${c.date||''}</span>
           <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
         </div>
-        <div style="display:flex;gap:6px">
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+          ${readBadge}
           <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
+          ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
           ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
         </div>
       </div>
-    </div>`).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
+    </div>`;
+  }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
 }
 function filterCirculars(){renderCirculars();}
 function toggleCircForm(){
@@ -4101,17 +4129,29 @@ async function loadLogs(){
 // ══════════════════════════════════════════
 
 function populateReportDistricts(){
+  const isAdmin=CU?.role==='admin';
+  const myDist=CU?.district||'';
   ['r-district'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
-    sel.innerHTML='<option value="">الكل</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(!isAdmin && myDist){
+      // المخول: قاطعه فقط
+      sel.innerHTML=`<option value="${myDist}">${myDist}</option>`;
+      sel.value=myDist;
+      sel.disabled=true;
+    } else {
+      sel.innerHTML='<option value="">الكل</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+      sel.disabled=false;
+    }
   });
   generateReport();
 }
 function generateReport(){
   const from=document.getElementById('r-from')?.value||'';
   const to=document.getElementById('r-to')?.value||'9999';
-  const dist=document.getElementById('r-district')?.value||'';
+  // قاطع المخول يتجاوز الفلتر
+  const myDist=CU?.role!=='admin'&&CU?.district?CU.district:'';
+  const dist=myDist||document.getElementById('r-district')?.value||'';
   let list=allTours.filter(t=>{
     if(from&&t.date<from)return false;
     if(to&&t.date>to)return false;
@@ -4497,6 +4537,89 @@ function toggleStatSection(bodyId, hdr){
   const open=body.style.display!=='none';
   body.style.display=open?'none':'block';
   if(arrow) arrow.style.transform=open?'rotate(180deg)':'rotate(0deg)';
+}
+
+// قراءات التعاميم — {circId: readObj}
+let _circReads = {};
+
+// تحميل التعاميم مع قراءات المستخدم الحالي
+async function loadCirculars(){
+  try{
+    const d = await api('GET','/api/circulars');
+    allCirculars = d.circulars||[];
+    // تحميل حالة القراءة للمستخدم الحالي
+    _circReads = {};
+    await Promise.all(allCirculars.map(c=>
+      api('GET','/api/circulars/'+c.id+'/reads')
+        .then(r=>{
+          const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id);
+          if(myRead) _circReads[c.id]=myRead;
+        }).catch(()=>{})
+    ));
+    renderCirculars();
+  }catch(e){ toast('خطأ في تحميل التعاميم: '+e.message,'err'); }
+}
+
+// تسجيل الاطلاع
+async function markCircRead(cid){
+  try{
+    await api('POST','/api/circulars/'+cid+'/read',{
+      username:CU?.username||'',
+      fullname:CU?.fullname||'',
+      district:CU?.district||'',
+      read_at:new Date().toLocaleString('ar-IQ')
+    });
+    _circReads[cid]={user_id:CU?.id, read_at:new Date().toLocaleString('ar-IQ')};
+    renderCirculars();
+    toast('✅ تم تسجيل اطلاعك على التعميم');
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
+}
+
+// عرض من اطّلع على التعميم (للمدير)
+async function showCircReads(cid, title){
+  let ov=document.getElementById('ov-circ-reads');
+  if(!ov){
+    ov=document.createElement('div'); ov.id='ov-circ-reads'; ov.className='overlay';
+    ov.onclick=function(e){if(e.target===ov)closeModal('ov-circ-reads');};
+    const inner=document.createElement('div');
+    inner.className='modal';
+    inner.style.width='500px';
+    const titleEl2=document.createElement('div'); titleEl2.className='m-title'; titleEl2.id='cr-title'; titleEl2.textContent='👁️ من اطلع على التعميم';
+    const bodyEl2=document.createElement('div'); bodyEl2.id='cr-list'; bodyEl2.style.cssText='min-height:80px;max-height:400px;overflow-y:auto;padding:8px 0';
+    const footEl2=document.createElement('div'); footEl2.className='m-footer';
+    const clsBtn2=document.createElement('button'); clsBtn2.className='btn btn-o'; clsBtn2.textContent='إغلاق';
+    clsBtn2.onclick=function(){closeModal('ov-circ-reads');};
+    footEl2.appendChild(clsBtn2);
+    inner.appendChild(titleEl2); inner.appendChild(bodyEl2); inner.appendChild(footEl2);
+    ov.appendChild(inner); document.body.appendChild(ov);
+  }
+  document.getElementById('cr-title').textContent='👁️ من اطلع: '+title;
+  const list=document.getElementById('cr-list');
+  list.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)">جاري التحميل...</div>';
+  ov.classList.add('open');
+  try{
+    const d=await api('GET','/api/circulars/'+cid+'/reads');
+    const reads=d.reads||[];
+    // مقارنة مع قائمة المستخدمين للعرض
+    if(!reads.length){
+      list.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">لم يطلع أحد بعد</div>';
+      return;
+    }
+    list.innerHTML='<div style="padding:6px 0">'
+      +reads.map(r=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border)">'
+        +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px">'+((r.fullname||'م')[0])+'</div>'
+        +'<div><div style="font-weight:700;font-size:13px">'+(r.fullname||r.username||'—')+'</div>'
+        +'<div style="font-size:11px;color:var(--t3)">'+(r.district||'')+'</div></div>'
+        +'</div>'
+        +'<div style="text-align:left;font-size:11px;color:var(--t3)">'+(r.read_at||'—')+'</div>'
+        +'</div>'
+      ).join('')
+      +'</div>'
+      +'<div style="padding:10px 16px;font-size:12px;color:var(--t3);background:var(--bg2)">إجمالي: '+reads.length+' شخص اطلع</div>';
+  }catch(e){
+    list.innerHTML='<div style="text-align:center;padding:20px;color:#dc2626">خطأ في التحميل</div>';
+  }
 }
 
 tryAutoLogin();</script>
