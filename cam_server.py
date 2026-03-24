@@ -1,4701 +1,692 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="كاميرات المراقبة">
-<meta name="theme-color" content="#1d4ed8">
-<title>نظام كاميرات المراقبة</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='75' x='50' text-anchor='middle' font-size='65'>📹</text></svg>">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
-<style>
-:root{
-  --bg:#ffffff;--bg2:#f8fafc;
-  --card:#fff;--card2:#f1f5f9;
-  --border:#e2e8f0;--border2:#cbd5e1;
-  --p1:#1d4ed8;--p1d:rgba(29,78,216,.08);
-  --p2:#3b82f6;
-  --a2:#dc2626;--a2d:rgba(220,38,38,.08);
-  --a3:#16a34a;--a3d:rgba(22,163,74,.08);
-  --a4:#0284c7;--a4d:rgba(2,132,199,.08);
-  --warn:#d97706;--warnd:rgba(217,119,6,.08);
-  --text:#0f172a;--t2:#334155;--t3:#94a3b8;
-  --sw:265px;--r:14px;
-  --sh:0 2px 12px rgba(0,0,0,.08);
-}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;}
-::-webkit-scrollbar{width:8px;height:8px;}
-::-webkit-scrollbar-track{background:var(--bg2);border-radius:4px;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:4px;}
-::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
-
-/* LOGIN */
-.lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
-  box-shadow:0 20px 60px rgba(0,0,0,.4);animation:up .5s cubic-bezier(.34,1.56,.64,1);}
-.licon{width:72px;height:72px;margin:0 auto 16px;
-  background:linear-gradient(135deg,#1d4ed8,#60a5fa);border-radius:20px;
-  display:flex;align-items:center;justify-content:center;font-size:32px;
-  box-shadow:0 8px 24px rgba(29,78,216,.4);}
-.li:focus{border-color:var(--p1);background:#fff;box-shadow:0 0 0 3px var(--p1d);}
-.lhint{text-align:center;font-size:11px;color:var(--t3);margin-top:12px;}
-@keyframes up{from{opacity:0;transform:translateY(20px) scale(.97)}to{opacity:1;transform:none}}
-
-/* LAYOUT */
-#app{display:none;}
-.sidebar{display:none!important;}
-.sb-logo{display:none!important;}
-.sb-nav{display:none!important;}
-.sb-user{display:none!important;}
-.nbadge{background:#dc2626;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-right:4px;}
-
-/* TOP NAVBAR */
-.topbar{
-  position:fixed;top:0;right:0;left:0;z-index:200;
-  background:#ffffff;
-  border-bottom:2px solid #e2e8f0;
-  box-shadow:0 2px 12px rgba(0,0,0,.06);
-  display:flex!important;flex-direction:column;
-  width:100%;box-sizing:border-box;
-  -webkit-overflow-scrolling:touch;
-}
-.topbar-logo{
-  display:flex!important;align-items:center;justify-content:space-between;
-  padding:10px 20px;border-bottom:1px solid rgba(255,255,255,.08);
-  flex-direction:row;width:100%;
-}
-.tb-brand{display:flex!important;align-items:center;gap:10px;flex-direction:row;}
-.tb-ico{width:38px;height:38px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;}
-.tb-name{font-size:17px;font-weight:800;color:#1d4ed8;}
-.tb-ver{font-size:12px;color:#94a3b8;}
-.tb-user{display:flex!important;align-items:center;gap:8px;flex-direction:row;}
-.su-av{width:32px;height:32px;border-radius:8px;display:flex!important;align-items:center;
-  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
-  background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe;}
-.su-name{font-size:14px;font-weight:700;color:#1e293b;}
-.su-role{font-size:12px;color:#64748b;}
-.su-district{font-size:12px;color:#1d4ed8;font-weight:600;}
-.tb-actions{display:flex!important;gap:6px;flex-direction:row;}
-.tb-btn{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;
-  background:#f8fafc;color:#475569;font-family:'Cairo',sans-serif;
-  font-size:13px;cursor:pointer;transition:all .2s;}
-.tb-btn:hover{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
-
-/* NAV TABS */
-.topbar-nav{
-  display:flex!important;align-items:center;gap:2px;padding:0 16px;overflow-x:auto;
-  scrollbar-width:none;flex-direction:row;width:100%;
-}
-.nav-item{
-  font-size:14px;
-  display:flex;align-items:center;flex-direction:row;gap:6px;padding:10px 16px;
-  cursor:pointer;transition:all .18s;color:#64748b;
-  font-size:15px;font-weight:600;white-space:nowrap;position:relative;
-  border-bottom:3px solid transparent;
-}
-.nav-item.hidden{display:none!important;}
-.nav-item:hover{color:#1d4ed8;background:#f0f7ff;}
-.nav-item.active{color:#1d4ed8;font-weight:700;border-bottom:3px solid #1d4ed8;background:#eff6ff;}
-.ni{font-size:14px;}
-.nav-sect{font-size:13px;color:#cbd5e1;padding:0 4px;white-space:nowrap;}
-.hidden{display:none!important;}
-
-/* MAIN */
-.main{margin-right:0;margin-top:110px;display:flex;flex-direction:column;min-height:100vh;}
-.header{display:none;}
-.h-title{font-size:16px;font-weight:800;color:#1d4ed8;}
-.h-right{display:flex;align-items:center;gap:10px;}
-.odot{width:8px;height:8px;border-radius:50%;background:var(--a3);animation:pulse 2s infinite;box-shadow:0 0 6px var(--a3);}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.content{padding:22px 24px;flex:1;}
-
-/* STATS */
-.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
-.sc{background:#fff;border:1px solid var(--border);border-radius:var(--r);
-  padding:18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
-.sc:hover{transform:translateY(-2px);box-shadow:var(--sh);}
-.sc-stripe{position:absolute;top:0;left:0;right:0;height:4px;border-radius:var(--r) var(--r) 0 0;}
-.sc-lbl{font-size:13px;color:var(--t3);font-weight:600;margin-bottom:6px;margin-top:4px;}
-.sc-val{font-size:36px;font-weight:900;margin-bottom:2px;}
-.sc-sub{font-size:13px;color:var(--t3);}
-.sc-icon{position:absolute;bottom:12px;left:14px;font-size:28px;opacity:.1;}
-
-/* SECTION */
-.section{background:#fff;border:1px solid var(--border);border-radius:var(--r);
-  overflow:hidden;margin-bottom:18px;box-shadow:0 2px 10px rgba(30,58,95,.06);}
-.sec-hdr{padding:14px 20px;border-bottom:2px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
-  background:#fafafa;}
-.sec-title{font-size:16px;font-weight:700;color:var(--p1);display:flex;align-items:center;gap:8px;}
-.sdot{width:8px;height:8px;border-radius:50%;background:#3b82f6;box-shadow:0 0 8px rgba(59,130,246,.4);}
-.sec-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap;}
-.search-box{position:relative;display:flex;align-items:center;}
-.search-box input{background:#f7fafc;border:1.5px solid var(--border);border-radius:9px;
-  padding:7px 30px 7px 12px;color:var(--text);font-family:'Cairo',sans-serif;font-size:12px;
-  outline:none;width:180px;transition:all .2s;}
-.search-box input:focus{border-color:var(--p1);width:200px;}
-.si{position:absolute;right:9px;color:var(--t3);font-size:13px;pointer-events:none;}
-
-/* TABLE */
-.table-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;font-size:14px;}
-thead tr{background:linear-gradient(135deg,#1e40af,#1d4ed8);}
-th{padding:12px 14px;text-align:right;color:#fff;font-weight:700;font-size:13px;white-space:nowrap;}
-td{padding:10px 13px;border-bottom:1px solid rgba(30,58,95,.06);white-space:nowrap;transition:background .15s;}
-tr:last-child td{border-bottom:none;}
-tr:hover td{background:rgba(30,58,95,.03);}
-.snum{width:26px;height:26px;border-radius:7px;background:var(--bg2);
-  display:inline-flex;align-items:center;justify-content:center;font-size:11px;color:var(--t3);font-weight:700;}
-
-/* BUTTONS */
-.btn{padding:8px 16px;border-radius:10px;border:none;cursor:pointer;
-  font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;transition:all .18s;
-  display:inline-flex;align-items:center;gap:6px;}
-.btn-p{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;}
-.btn-p:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(29,78,216,.35);}
-.btn-o{background:transparent;color:var(--t2);border:1.5px solid var(--border2);}
-.btn-o:hover{border-color:var(--p1);color:var(--p1);background:var(--p1d);}
-.btn-r{background:transparent;color:var(--a2);border:1.5px solid rgba(220,38,38,.3);}
-.btn-r:hover{background:var(--a2d);border-color:var(--a2);}
-.btn-g{background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;}
-.btn-sm{padding:5px 10px;font-size:12px;border-radius:8px;}
-.btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important;}
-
-/* BADGES */
-.badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;
-  border-radius:20px;font-size:11px;font-weight:600;white-space:nowrap;}
-.b-ok{background:var(--a3d);color:var(--a3);border:1px solid rgba(22,163,74,.2);}
-.b-bad{background:var(--a2d);color:var(--a2);border:1px solid rgba(220,38,38,.2);}
-.b-warn{background:var(--warnd);color:var(--warn);border:1px solid rgba(217,119,6,.2);}
-.b-blue{background:var(--a4d);color:var(--a4);border:1px solid rgba(3,105,161,.2);}
-.b-navy{background:rgba(29,78,216,.08);color:#1d4ed8;border:1px solid rgba(29,78,216,.2);}
-
-/* PAGINATION */
-.pagination{display:flex;align-items:center;gap:5px;padding:12px 16px;
-  border-top:1px solid var(--border);justify-content:flex-end;}
-.pg-btn{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;
-  justify-content:center;cursor:pointer;font-size:12px;font-weight:600;
-  border:1.5px solid var(--border2);color:var(--t2);background:transparent;transition:all .18s;}
-.pg-btn:hover{border-color:var(--p1);color:var(--p1);background:var(--p1d);}
-.pg-btn.active{background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border-color:transparent;}
-.pg-info{font-size:12px;color:var(--t3);margin-left:8px;}
-
-/* MODAL */
-.overlay{display:none;position:fixed;inset:0;background:rgba(15,31,51,.65);
-  backdrop-filter:blur(6px);z-index:300;align-items:center;justify-content:center;}
-.overlay.open{display:flex;}
-.modal{background:#fff;border:1.5px solid var(--border);border-radius:20px;padding:26px;
-  width:680px;max-width:96vw;max-height:92vh;overflow-y:auto;
-  animation:up .25s cubic-bezier(.34,1.56,.64,1);box-shadow:0 16px 48px rgba(15,31,51,.2);}
-.modal-sm{width:480px;}
-.modal-lg{width:820px;}
-.m-title{font-size:17px;font-weight:800;color:var(--p1);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
-.m-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;
-  padding-top:16px;border-top:1px solid var(--border);}
-
-/* FORM */
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
-.fg{display:flex;flex-direction:column;gap:5px;}
-.fg.full{grid-column:1/-1;}
-.fl{font-size:11px;color:var(--t2);font-weight:700;letter-spacing:.3px;}
-.fi{background:#f7fafc;border:1.5px solid var(--border);border-radius:10px;
-  padding:10px 13px;color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;
-  outline:none;transition:all .2s;width:100%;}
-.fi:focus{border-color:var(--p1);background:#fff;box-shadow:0 0 0 3px var(--p1d);}
-.fi option{background:#fff;}
-
-/* TOGGLE */
-.tog{width:40px;height:22px;border-radius:12px;background:var(--border2);position:relative;
-  cursor:pointer;transition:background .2s;flex-shrink:0;}
-.tog.on{background:var(--a3);}
-.tog::after{content:'';width:16px;height:16px;border-radius:50%;background:#fff;
-  position:absolute;top:3px;right:3px;transition:transform .2s;}
-.tog.on::after{transform:translateX(-18px);}
-.perm-item{background:var(--bg2);border:1px solid var(--border);border-radius:10px;
-  padding:10px 13px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
-
-/* UPLOAD */
-.up-box{background:var(--bg2);border:2px dashed var(--border2);border-radius:10px;
-  padding:14px 10px;text-align:center;cursor:pointer;transition:all .2s;
-  position:relative;min-height:80px;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;gap:4px;}
-.up-box:hover{border-color:var(--p1);background:var(--p1d);}
-.up-box.hf{border-color:var(--a3);border-style:solid;background:var(--a3d);}
-.up-box input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;z-index:2;}
-.up-ico{font-size:22px;pointer-events:none;}
-.up-lbl{font-size:11px;font-weight:700;color:var(--t3);pointer-events:none;}
-.up-stat{font-size:10px;color:var(--t3);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;pointer-events:none;}
-.up-box.hf .up-stat{color:var(--a3);font-weight:600;}
-.up-rm{position:absolute;top:4px;left:4px;background:var(--a2d);color:var(--a2);
-  border:none;border-radius:4px;cursor:pointer;font-size:10px;padding:2px 6px;z-index:3;
-  font-family:'Cairo',sans-serif;display:none;}
-.up-box.hf .up-rm{display:block;}
-
-/* TOAST */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
-  background:#fff;border:1.5px solid var(--border);border-radius:12px;
-  padding:13px 22px;font-size:15px;font-weight:600;z-index:1000;
-  opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap;box-shadow:var(--sh);}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
-.toast.ok{border-color:rgba(22,163,74,.4);color:var(--a3);}
-.toast.err{border-color:rgba(220,38,38,.4);color:var(--a2);}
-.spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);
-  border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;}
-@keyframes spin{to{transform:rotate(360deg)}}
-
-/* ALERT BAR */
-.alert-bar{background:var(--warnd);border:1px solid rgba(217,119,6,.25);
-  border-radius:var(--r);padding:12px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:12px;}
-.alert-chips{display:flex;flex-wrap:wrap;gap:7px;margin-top:6px;}
-.achip{background:rgba(217,119,6,.1);border:1px solid rgba(217,119,6,.25);
-  border-radius:20px;padding:2px 10px;font-size:11px;color:var(--warn);cursor:pointer;}
-.achip:hover{background:rgba(217,119,6,.2);}
-
-/* DISTRICT BADGE */
-.db{display:inline-flex;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:700;
-  background:rgba(59,130,246,.1);color:#1d4ed8;border:1px solid rgba(59,130,246,.25);}
-
-/* HAMBURGER */
-.hamburger{display:none!important;}
-.sb-overlay{display:none!important;}
-
-/* RESPONSIVE */
-@media(max-width:768px){
-  .main{margin-top:130px;}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:10px;}
-  .content{padding:12px;}
-  .fgrid{grid-template-columns:1fr;}
-  /* الجداول تمرير أفقي على الموبايل */
-  .table-wrap, .section { overflow-x:auto; }
-  table{min-width:600px;}
-  /* التبويبات تمرير للأسفل */
-  #tab-field, #tab-coding, #tab-inventory, #tab-stations{
-    overflow-y:auto;
-    padding-bottom:40px;
-  }
-  .topbar-logo{padding:8px 12px;}
-  .tb-name{font-size:12px;}
-  .nav-item{padding:8px 10px;font-size:11px;}
-  /* أزرار الشريط العلوي - تمرير أفقي */
-  .topbar-nav{ overflow-x:auto; flex-wrap:nowrap!important; -webkit-overflow-scrolling:touch; }
-}
-@media(max-width:420px){
-  .stats-grid{grid-template-columns:1fr 1fr;}
-  .tb-actions .tb-btn span.btn-txt{display:none;}
-}
-
-
-/* DASHBOARD RESPONSIVE */
-@media(max-width:900px){
-  #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
-  #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
-  #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
-}
-
-/* LOGIN */
-#login-screen{display:none!important;}
-.lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
-  box-shadow:0 20px 60px rgba(0,0,0,.3);animation:fadeup .5s cubic-bezier(.34,1.56,.64,1);}
-@keyframes fadeup{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:none}}
-.licon{width:72px;height:72px;margin:0 auto 16px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-  border-radius:20px;display:flex;align-items:center;justify-content:center;font-size:32px;
-  box-shadow:0 8px 24px rgba(29,78,216,.4);}
-.ltitle{text-align:center;font-size:20px;font-weight:800;color:var(--p1);margin-bottom:4px;}
-.lsub{text-align:center;font-size:12px;color:var(--t3);margin-bottom:28px;}
-.lerr{background:var(--a2d);border:1px solid rgba(220,38,38,.3);border-radius:10px;
-  padding:10px 14px;font-size:13px;color:var(--a2);margin-bottom:12px;display:none;}
-.lf{display:flex;flex-direction:column;gap:6px;margin-bottom:14px;}
-.ll{font-size:11px;color:var(--t2);font-weight:700;letter-spacing:.3px;}
-.li{background:#f7fafc;border:1.5px solid var(--border);border-radius:10px;
-  padding:11px 14px;color:var(--text);font-family:'Cairo',sans-serif;font-size:14px;
-  outline:none;transition:all .2s;width:100%;}
-.li:focus{border-color:var(--p1);box-shadow:0 0 0 3px var(--p1d);background:#fff;}
-.lbtn{width:100%;padding:13px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);
-  color:#fff;border:none;border-radius:10px;font-family:'Cairo',sans-serif;
-  font-size:15px;font-weight:700;cursor:pointer;transition:all .2s;margin-top:4px;}
-.lbtn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(29,78,216,.4);}
-.lbtn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
-.lhint{text-align:center;font-size:11px;color:var(--t3);margin-top:16px;}
-
-  .nav-item .ni{font-size:13px;}
-  .topbar-brand{gap:8px;}
-  .tb-name{font-size:15px;}
-
-
-
-
-.coding-sub{padding:10px 18px;border:none;background:transparent;font-family:Cairo,sans-serif;font-size:14px;color:var(--t3);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px}
-.coding-sub.active{color:#0891b2;font-weight:700;border-bottom:2px solid #0891b2;background:#fff}
-
-/* ── تنقلات الصفحات ── */
-.tab-page{
-  animation: none;
-}
-@keyframes tabFadeSlide{
-  from{ opacity:0; transform:translateY(18px); }
-  to{   opacity:1; transform:translateY(0);    }
-}
-@keyframes tabFadeSlideLeft{
-  from{ opacity:0; transform:translateX(30px); }
-  to{   opacity:1; transform:translateX(0);    }
-}
-.tab-enter{
-  animation: tabFadeSlide .35s cubic-bezier(.22,.68,0,1.2) both;
-}
-.nav-item{
-  transition: color .2s, background .2s, border-color .2s, transform .15s;
-}
-.nav-item:active{ transform: scale(.95); }
-
-/* تأثير ضغط الأزرار */
-.btn{ transition: transform .12s, box-shadow .12s, opacity .12s; }
-.btn:active{ transform: scale(.95); opacity:.85; }
-
-/* تأثير البطاقات */
-.section{
-  transition: box-shadow .2s, transform .2s;
-}
-.section:hover{
-  box-shadow: 0 4px 20px rgba(0,0,0,.08);
-}
-
-/* إحصائيات جانبية - موبايل */
-@media(max-width:600px){
-  #cam-stats-section{ grid-template-columns:1fr!important; }
-}
-</style>
-</head>
-<body>
-
-<div class="toast" id="toast"></div>
-<div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
-
-<!-- LOGIN -->
-<div id="login-screen" style="display:none!important">
-  <div class="lbox">
-    <div class="licon">📹</div>
-    <div class="ltitle">نظام كاميرات المراقبة</div>
-    <div class="lsub">شعبة تقنية المعلومات — الإصدار V1.0.0</div>
-    <div class="lerr" id="lerr"></div>
-    <div class="lf"><label class="ll">اسم المستخدم</label>
-      <input class="li" id="li-u" type="text" placeholder="أدخل اسم المستخدم" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <div class="lf"><label class="ll">كلمة المرور</label>
-      <input class="li" id="li-p" type="password" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()"></div>
-    <button class="lbtn" id="lbtn" onclick="doLogin()">دخول ←</button>
-    <div class="lhint">إعداد وبرمجة: Ghazwan Ali Alqaissi</div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:block">
-  <!-- TOP NAVBAR -->
-  <div class="topbar" id="sidebar">
-    <div class="topbar-logo">
-      <div class="tb-brand">
-        <div class="tb-ico">📹</div>
-        <div>
-          <div class="tb-name">نظام كاميرات المراقبة</div>
-          <div class="tb-ver">V1.0.0 — شعبة تقنية المعلومات</div>
-        </div>
-      </div>
-      <div class="tb-user">
-        <div class="su-av" id="su-av">م</div>
-        <div>
-          <div class="su-name" id="su-name">—</div>
-          <div class="su-role" id="su-role">—</div>
-          <div class="su-district" id="su-district"></div>
-        </div>
-        <div class="tb-actions">
-          <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
-          <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
-        </div>
-      </div>
-    </div>
-    <div class="topbar-nav">
-      <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
-      <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
-      <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
-      <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
-      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
-      <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
-      <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
-      <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
-      <div class="nav-sect" id="admin-sect" style="display:none">|</div>
-      <div class="nav-item" id="nav-logs" class="nav-item hidden" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span>السجل</div>
-    </div>
-  </div>
-
-  <div class="main">
-    <div class="header" style="display:none">
-      <span id="hdate"></span>
-    </div>
-    <div class="content"><div id="tabs-wrap">
-
-      <!-- DASHBOARD -->
-      <div id="tab-dashboard">
-
-        <!-- 4 Circular Stats -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
-
-          <!-- الجولات -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(29,78,216,.1);border:1.5px solid rgba(29,78,216,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0e7ff" stroke-width="8"/>
-                <circle id="circ-tours" cx="45" cy="45" r="38" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">🚗</div>
-              </div>
-            </div>
-            <div style="font-size:26px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
-            <div style="font-size:12px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-tours-sub">—</div>
-          </div>
-
-          <!-- الصيانة -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#fee2e2" stroke-width="8"/>
-                <circle id="circ-maint" cx="45" cy="45" r="38" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">🔧</div>
-              </div>
-            </div>
-            <div style="font-size:26px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
-            <div style="font-size:12px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-cams-bad-sub">—</div>
-          </div>
-
-          <!-- المحطات -->
-          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
-                <circle id="circ-stations" cx="45" cy="45" r="38" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">⛽</div>
-              </div>
-            </div>
-            <div style="font-size:26px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
-            <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-stations-sub">—</div>
-          </div>
-
-          <!-- التقارير -->
-          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#ede9fe" stroke-width="8"/>
-                <circle id="circ-reports" cx="45" cy="45" r="38" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">📊</div>
-              </div>
-            </div>
-            <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
-            <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
-          </div>
-
-        </div>
-
-        <!-- Widget -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px">
-          <div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">
-          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
-
-            <!-- Camera Status -->
-            <div class="section">
-              <div class="sec-hdr" style="padding:10px 14px">
-                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>📷 حالة الكاميرات</div>
-              </div>
-              <div style="padding:12px 14px">
-                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
-                  <span style="font-size:12px;color:var(--a3);font-weight:700">✅ تعمل: <span id="s-cams-ok" style="font-size:18px">—</span></span>
-                  <span style="font-size:12px;color:var(--a2);font-weight:700">❌ معطلة: <span id="s-cams-bad" style="font-size:18px">—</span></span>
-                </div>
-                <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
-                  <div id="cam-status-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:6px;transition:width .5s"></div>
-                </div>
-                <div id="cam-pct-lbl" style="font-size:10px;color:var(--t3);margin-top:4px;text-align:center">—</div>
-              </div>
-            </div>
-
-            <!-- Recent Tours Widget -->
-            <div class="section" style="flex:1">
-              <div class="sec-hdr" style="padding:10px 14px">
-                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>🚗 أحدث الجولات</div>
-                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)">+ جولة</button>
-              </div>
-              <div id="widget-tours" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
-            </div>
-
-            <!-- Today's Maintenance Alert -->
-            <div id="today-maint-alert" style="display:none;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:14px;padding:14px 16px;color:#fff;margin-bottom:8px">
-              <div style="font-size:12px;opacity:.75;margin-bottom:8px">🔔 إجراءات صيانة اليوم</div>
-              <div id="today-maint-list" style="display:flex;flex-direction:column;gap:8px"></div>
-            </div>
-
-            <!-- Maintenance per District Widget -->
-            <div class="section">
-              <div class="sec-hdr" style="padding:10px 14px">
-                <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#dc2626"></div>🔧 إجراءات الصيانة بالقواطع</div>
-              </div>
-              <div id="widget-maint" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
-            </div>
-
-          </div>
-          </div>
-        </div>
-
-        <!-- Bottom: Stats + Delegates -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
-
-          <!-- Camera Stats Side by Side — admin only -->
-          <div id="cam-stats-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-
-            <!-- Government Stats -->
-            <div class="section">
-              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('gov-stat-body',this)">
-                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#1d4ed8"></div>🏛️ الحكومية</div>
-                <div style="display:flex;align-items:center;gap:4px">
-                  <button onclick="event.stopPropagation();printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:var(--p1)">🖨️</button>
-                  <span id="gov-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
-                </div>
-              </div>
-              <div id="gov-stat-body" style="padding:10px;display:none">
-                <div id="gov-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
-              </div>
-            </div>
-
-            <!-- Private Stats -->
-            <div class="section">
-              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('priv-stat-body',this)">
-                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#d97706"></div>🏪 الأهلية</div>
-                <div style="display:flex;align-items:center;gap:4px">
-                  <button onclick="event.stopPropagation();printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:#d97706">🖨️</button>
-                  <span id="priv-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
-                </div>
-              </div>
-              <div id="priv-stat-body" style="padding:10px;display:none">
-                <div id="priv-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
-              </div>
-            </div>
-
-          </div>
-
-          <!-- Delegates Table -->
-
-        </div>
-
-        <!-- Users Quick Section - admin only -->
-        <!-- Hidden elements kept for compatibility -->
-        <div id="unvisited-bar" style="display:none"><div class="alert-chips" id="unvisited-chips"></div></div>
-        <div id="recent-tours-tb" style="display:none"></div>
-        <div id="recent-maint-tb" style="display:none"></div>
-
-        <!-- Footer -->
-        <div style="margin-top:8px;text-align:center;padding:20px;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);border-radius:var(--r)">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:6px">— إعداد وبرمجة —</div>
-          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 0 24px rgba(96,165,250,.6)">Ghazwan Ali Alqaissi</div>
-          <div style="width:40px;height:3px;background:linear-gradient(90deg,#bfdbfe,#60a5fa);border-radius:4px;margin:8px auto"></div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5)">شعبة تقنية المعلومات — V1.0.0</div>
-        </div>
-      </div>
-
-      <!-- FIELD TAB (Tours + Maintenance) -->
-      <div id="tab-field" style="display:none">
-        <!-- Sub tabs -->
-        <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;background:#fff;position:sticky;top:110px;z-index:10">
-          <button onclick="switchField('tours',this)" id="sub-tours"
-            style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;color:#1d4ed8;border-bottom:3px solid #1d4ed8;cursor:pointer;display:flex;align-items:center;gap:6px">
-            🚗 الجولات الميدانية
-          </button>
-          <button onclick="switchField('maintenance',this)" id="sub-maint"
-            style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;cursor:pointer;display:flex;align-items:center;gap:6px">
-            🔧 الصيانة والأجهزة
-          </button>
-        </div>
-
-      <!-- TOURS TAB -->
-      <div id="tab-tours" style="display:block">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-tours" placeholder="بحث..." oninput="filterTours()"></div>
-              <select class="fi btn-sm" id="f-tour-district" onchange="filterTours()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-tour-type" onchange="filterTours()" style="width:110px">
-                <option value="">كل الأنواع</option>
-                <option value="كشف">كشف</option>
-                <option value="صيانة">صيانة</option>
-                <option value="تركيب">تركيب</option>
-                <option value="متابعة">متابعة</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="printToursTable()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportToursCSV()">📤 تصدير</button>
-              <button class="btn btn-o btn-sm" onclick="loadTours()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot"></div>🚗 سجل الجولات الميدانية</div>
-          </div>
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-p btn-sm" id="btn-add-tour" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)" style="display:none">➕ إضافة جولة</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الزيارة</th><th>الفني</th><th>صورة</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
-              <tbody id="tours-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-tours"></div>
-        </div>
-      </div>
-
-      </div><!-- /tab-tours -->
-
-      <!-- MAINTENANCE TAB -->
-      <div id="tab-maintenance" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-maint" placeholder="بحث..." oninput="filterMaint()"></div>
-              <select class="fi btn-sm" id="f-maint-district" onchange="filterMaint()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="printMaintTable()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportMaintCSV()">📤 تصدير</button>
-              <button class="btn btn-o btn-sm" onclick="loadMaintenance()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
-          </div>
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)" style="display:none">➕ إضافة صيانة</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
-              <tbody id="maint-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-maint"></div>
-        </div>
-      </div>
-
-      </div><!-- /tab-field -->
-
-      <!-- CAMERAS TAB -->
-      <div id="tab-cameras" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-cams" placeholder="بحث..." oninput="filterCams()"></div>
-              <select class="fi btn-sm" id="f-cam-status" onchange="filterCams()" style="width:110px">
-                <option value="">كل الحالات</option>
-                <option value="working">شغالة</option>
-                <option value="broken">معطلة</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="loadCameras()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot" style="background:var(--a4)"></div>📷 سجل الكاميرات</div>
-          </div>
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <button class="btn btn-p btn-sm" id="btn-add-cam" onclick="openCamModal()" style="display:none">➕ إضافة كاميرا</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>رقم الكاميرا</th><th>المحطة</th><th>القاطع</th><th>الموقع التفصيلي</th><th>النوع</th><th>المورد</th><th>آخر صيانة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
-              <tbody id="cams-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-cams"></div>
-        </div>
-      </div>
-
-      <!-- STATIONS TAB -->
-      <div id="tab-stations" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-stations" placeholder="بحث..." oninput="filterStations()"></div>
-              <select class="fi btn-sm" id="f-st-district" onchange="filterStations()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <button class="btn btn-p btn-sm" id="btn-add-st" onclick="openStationModal()" style="display:none">➕ إضافة محطة</button>
-            </div>
-            <div class="sec-title"><div class="sdot"></div>⛽ المحطات</div>
-          </div>
-
-          <!-- Government Stations -->
-          <div style="padding:0 14px 0;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #1d4ed8;margin-bottom:0;cursor:pointer;user-select:none"
-                 onclick="toggleStSection('gov')">
-              <div style="width:10px;height:10px;border-radius:50%;background:#1d4ed8;flex-shrink:0"></div>
-              <span style="font-size:15px;font-weight:800;color:#1d4ed8">🏛️ المحطات الحكومية</span>
-              <span id="gov-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
-              <button onclick="event.stopPropagation();printGovStationsReport()"
-                style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8">
-                🖨️ طباعة
-              </button>
-              <span style="flex:1"></span>
-              <span id="gov-toggle-icon" style="font-size:18px;color:#1d4ed8;transition:transform .2s">▲</span>
-            </div>
-            <div id="gov-section-body" style="overflow:hidden;transition:max-height .3s ease">
-              <div class="table-wrap" style="padding-top:10px">
-                <table>
-                  <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
-                  <tbody id="stations-gov-tb"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-
-          <!-- Private Stations -->
-          <div style="padding:0 14px 14px">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #f59e0b;margin-bottom:0;cursor:pointer;user-select:none"
-                 onclick="toggleStSection('priv')">
-              <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
-              <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
-              <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
-              <button onclick="event.stopPropagation();printPrivStationsReport()"
-                style="background:none;border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">
-                🖨️ طباعة
-              </button>
-              <span style="flex:1"></span>
-              <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s">▲</span>
-            </div>
-            <div id="priv-section-body" style="overflow:hidden;transition:max-height .3s ease">
-              <div class="table-wrap" style="padding-top:10px">
-                <table>
-                  <thead><tr><th>#</th><th>اسم المحطة</th><th>القاطع</th><th style="text-align:center;background:rgba(22,163,74,.15)">✅ تعمل</th><th style="text-align:center;background:rgba(220,38,38,.15)">❌ لا تعمل</th><th>آخر زيارة</th><th style="text-align:center;width:90px">إجراءات</th></tr></thead>
-                  <tbody id="stations-priv-tb"></tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-          <!-- hidden for compat -->
-          <div style="display:none"><tbody id="stations-tb"></tbody></div>
-        </div>
-      </div>
-
-
-      <!-- INVENTORY TAB -->
-      <div id="tab-inventory" style="display:none"><div style="max-width:1200px;margin:0 auto;padding:0">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-inv" placeholder="بحث بالمحطة..." oninput="filterInv()"></div>
-              <select class="fi btn-sm" id="f-inv-district" onchange="filterInv()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-inv-status" onchange="filterInv()" style="width:110px">
-                <option value="">كل الحالات</option>
-                <option value="مكتمل">مكتمل</option>
-                <option value="ناقص">ناقص</option>
-                <option value="معطل">معطل</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
-              <button class="btn btn-o btn-sm" onclick="printInv()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="loadInventory()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot" style="background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.4)"></div>📦 جرد الكاميرات والأجهزة</div>
-          </div>
-
-          <!-- Summary cards per district -->
-          <div id="inv-district-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)"></div>
-
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-            <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvModal()" style="display:none">➕ إضافة جرد محطة</button>
-            <span style="font-size:12px;color:var(--t3)" id="inv-total-label"></span>
-          </div>
-          <div class="table-wrap">
-            <table id="inv-table">
-              <thead>
-                <tr>
-                  <th rowspan="2" style="width:35px">#</th>
-                  <th rowspan="2" style="min-width:140px">المحطة</th>
-                  <th rowspan="2" style="width:90px">القاطع</th>
-                  <th colspan="3" style="text-align:center;background:rgba(29,78,216,.08)">📹 أجهزة التسجيل DVR/NVR</th>
-                  <th colspan="2" style="text-align:center;background:rgba(124,58,237,.08)">💾 الهاردات</th>
-                  <th colspan="3" style="text-align:center;background:rgba(22,163,74,.08)">📷 الكاميرات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(217,119,6,.08)">🔌 سويجات POE</th>
-                  <th colspan="2" style="text-align:center;background:rgba(3,105,161,.08)">🖥️ الشاشات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(220,38,38,.08)">⚡ العاكسات UPS</th>
-                  <th colspan="2" style="text-align:center;background:rgba(107,114,128,.08)">🔋 البطاريات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(34,197,94,.08)">📦 البوكسات</th>
-                  <th rowspan="2" style="width:80px;text-align:center">الحالة</th>
-                  <th rowspan="2" style="width:90px;text-align:center">إجراءات</th>
-                </tr>
-                <tr style="font-size:10px;color:var(--t3)">
-                  <th style="background:rgba(29,78,216,.05)">عدد</th>
-                  <th style="background:rgba(29,78,216,.05)">المواصفات</th>
-                  <th style="background:rgba(29,78,216,.05)">الموديل</th>
-                  <th style="background:rgba(124,58,237,.05)">عدد</th>
-                  <th style="background:rgba(124,58,237,.05)">الحجم (TB)</th>
-                  <th style="background:rgba(22,163,74,.05)">عدد</th>
-                  <th style="background:rgba(22,163,74,.05)">المواصفات</th>
-                  <th style="background:rgba(22,163,74,.05)">الدقة</th>
-                  <th style="background:rgba(217,119,6,.05)">عدد</th>
-                  <th style="background:rgba(217,119,6,.05)">المواصفات</th>
-                  <th style="background:rgba(3,105,161,.05)">عدد</th>
-                  <th style="background:rgba(3,105,161,.05)">المواصفات</th>
-                  <th style="background:rgba(220,38,38,.05)">عدد</th>
-                  <th style="background:rgba(220,38,38,.05)">المواصفات</th>
-                  <th style="background:rgba(107,114,128,.05)">عدد</th>
-                  <th style="background:rgba(107,114,128,.05)">المواصفات</th>
-                  <th style="background:rgba(34,197,94,.05)">عدد</th>
-                  <th style="background:rgba(34,197,94,.05)">المواصفات</th>
-                </tr>
-              </thead>
-              <tbody id="inv-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-inv"></div>
-        </div>
-      </div><!-- /center -->
-      </div><!-- /tab-inventory -->
-
-      <!-- REPORTS TAB -->
-      <div id="tab-reports" style="display:none">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-          <div class="section">
-            <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📊 تقرير الجولات</div></div>
-            <div style="padding:16px">
-              <div class="fgrid" style="margin-bottom:12px">
-                <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="r-from" type="date"></div>
-                <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="r-to" type="date"></div>
-                <div class="fg"><label class="fl">القاطع</label>
-                  <select class="fi" id="r-district"><option value="">الكل</option></select></div>
-              </div>
-              <button class="btn btn-p btn-sm" style="width:100%" onclick="generateReport()">📊 توليد التقرير</button>
-              <div id="report-result" style="margin-top:14px"></div>
-            </div>
-          </div>
-          <div class="section">
-            <div class="sec-hdr"><div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 تقرير الصيانة</div></div>
-            <div style="padding:16px">
-              <div class="fgrid" style="margin-bottom:12px">
-                <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="rm-from" type="date"></div>
-                <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="rm-to" type="date"></div>
-              </div>
-              <button class="btn btn-p btn-sm" style="width:100%" onclick="generateMaintReport()">📊 توليد التقرير</button>
-              <div id="maint-report-result" style="margin-top:14px"></div>
-            </div>
-          </div>
-        </div>
-        <!-- District Summary -->
-        <div class="section">
-          <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📍 ملخص القواطع</div></div>
-          <div id="district-summary" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
-        </div>
-      </div>
-
-      <!-- DELEGATES TAB -->
-      <div id="tab-delegates" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-title"><div class="sdot"></div>👥 القواطع والمخولون</div>
-            <button class="btn btn-p btn-sm" onclick="openDelegateModal()">➕ إضافة مخول</button>
-            <button class="btn btn-o btn-sm" onclick="openDistrictModal()">➕ إضافة قاطع</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>القاطع</th><th>اسم المخول</th><th>رقم الهاتف</th><th>إجراءات</th></tr></thead>
-              <tbody id="delegates-tb"></tbody>
-            </table>
-          </div>
-        </div>
-
-      </div><!-- /tab-delegates -->
-
-      <!-- CIRCULARS TAB -->
-      <div id="tab-circulars" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <select class="fi btn-sm" id="f-circ-district" onchange="filterCirculars()" style="width:130px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-circ-type" onchange="filterCirculars()" style="width:120px">
-                <option value="">كل الأنواع</option>
-                <option value="تعميم">تعميم</option>
-                <option value="تبليغ">تبليغ</option>
-                <option value="أمر إداري">أمر إداري</option>
-                <option value="عام">عام</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="loadCirculars()">🔄</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Add Circular Form - admin only -->
-          <div id="circ-add-form" style="display:none;padding:16px;border-bottom:2px solid var(--border);background:linear-gradient(135deg,#fffbeb,#fef3c7)">
-            <div style="font-size:15px;font-weight:800;color:#92400e;margin-bottom:14px">➕ إضافة تعميم جديد</div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
-              <div><label class="fl">العنوان *</label><input class="fi" id="q-circ-title" type="text" placeholder="عنوان التعميم..."></div>
-              <div><label class="fl">النوع</label>
-                <select class="fi" id="q-circ-type">
-                  <option value="تعميم">تعميم</option>
-                  <option value="تبليغ">تبليغ</option>
-                  <option value="أمر إداري">أمر إداري</option>
-                  <option value="عام">عام</option>
-                </select>
-              </div>
-              <div><label class="fl">موجه إلى</label>
-                <select class="fi" id="q-circ-district" disabled style="opacity:.7">
-                  <option value="الكل">📢 جميع القواطع (افتراضي)</option>
-                </select>
-              </div>
-              <div><label class="fl">ملاحظات</label><input class="fi" id="q-circ-body" type="text" placeholder="نص التعميم..."></div>
-            </div>
-
-            <!-- File attachments -->
-            <div style="margin-bottom:14px">
-              <div style="font-size:13px;font-weight:700;color:#92400e;margin-bottom:8px">📎 المرفقات</div>
-              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 1</div>
-                  <div class="up-box" id="ub-qcirc-1" style="min-height:70px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_1')">
-                    <button class="up-rm" onclick="rmFile('qcirc_1',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-qcirc_1" style="font-size:10px">اضغط للاختيار</div>
-                  </div>
-                </div>
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 2</div>
-                  <div class="up-box" id="ub-qcirc-2" style="min-height:70px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_2')">
-                    <button class="up-rm" onclick="rmFile('qcirc_2',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-qcirc_2" style="font-size:10px">اضغط للاختيار</div>
-                  </div>
-                </div>
-                <div>
-                  <div style="font-size:11px;color:var(--t3);margin-bottom:4px">مرفق 3</div>
-                  <div class="up-box" id="ub-qcirc-3" style="min-height:70px">
-                    <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_3')">
-                    <button class="up-rm" onclick="rmFile('qcirc_3',event)">✕</button>
-                    <div class="up-ico" style="font-size:18px">📷</div>
-                    <div class="up-lbl" style="font-size:11px">كاميرا أو ملف</div>
-                    <div class="up-stat" id="us-qcirc_3" style="font-size:10px">اضغط للاختيار</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div style="display:flex;gap:10px;justify-content:flex-end">
-              <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
-              <button class="btn btn-p" onclick="saveQuickCircular()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📢 نشر التعميم</button>
-            </div>
-          </div>
-
-          <!-- Circulars Grid -->
-          <div style="padding:16px" id="circulars-grid">
-            <div style="text-align:center;padding:40px;color:var(--t3)">جاري التحميل...</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- CODING TAB -->
-      <div id="tab-coding" style="display:none">
-        <!-- Sub-tabs -->
-        <div style="display:flex;border-bottom:2px solid var(--border);background:var(--bg2);padding:0 14px">
-          <button onclick="swCodingTab('list',this)" class="coding-sub active" id="csub-list">📋 السجل</button>
-        </div>
-
-        <!-- السجل -->
-        <div id="cpane-list">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div style="display:flex;gap:6px;align-items:center">
-                <div class="search-box" style="position:relative">
-                  <span class="si">🔍</span>
-                  <input type="text" id="sq-coding" placeholder="امسح الباركود أو ابحث..." 
-                    oninput="filterCoding()"
-                    onkeydown="onScanKey(event)"
-                    onpaste="setTimeout(()=>{const v=extractCodeFromScan(this.value);if(v!==this.value){this.value=v;showScanResult(v);}},50)"
-                    lang="en" dir="ltr" inputmode="url"
-                    autofocus style="min-width:220px;direction:ltr;font-family:monospace">
-                </div>
-                <button class="btn btn-o btn-sm" onclick="clearScan()" id="scan-clear" style="display:none;color:#dc2626">✕ مسح</button>
-              </div>
-              <!-- بطاقة نتيجة المسح -->
-              <div id="scan-result-card" style="display:none;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:12px;padding:14px 18px;color:#fff;min-width:240px">
-                <div style="font-size:11px;opacity:.8;margin-bottom:4px">📡 نتيجة المسح</div>
-                <div id="src-code" style="font-size:17px;font-weight:900;letter-spacing:1px"></div>
-                <div id="src-location" style="font-size:12px;opacity:.85;margin-top:2px"></div>
-                <div id="src-station" style="font-size:12px;opacity:.85"></div>
-                <div id="src-status" style="margin-top:6px"></div>
-              </div>
-              <select class="fi btn-sm" id="f-coding-district" onchange="filterCoding()" style="width:130px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-coding-device" onchange="filterCoding()" style="width:130px">
-                <option value="">كل الأجهزة</option>
-                <option value="DVR/NVR">DVR/NVR</option>
-                <option value="كاميرا">كاميرا</option>
-                <option value="سويج POE">سويج POE</option>
-                <option value="UPS عاكس">UPS عاكس</option>
-                <option value="هارد ديسك HDD">هارد ديسك</option>
-                <option value="أخرى">أخرى</option>
-              </select>
-
-              <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportGoLabel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
-              <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div class="sec-title"><div class="sdot" style="background:#0891b2"></div>🏷️ ترميز الأجهزة</div>
-              <button class="btn btn-p btn-sm" onclick="openCodingModal()" id="btn-add-coding" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">➕ إضافة جهاز</button>
-            </div>
-          </div>
-          <div style="padding:14px" id="coding-grid">
-            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
-          </div>
-        </div>
-        </div><!-- /cpane-list -->
-
-
-
-      </div>
-
-      <div id="tab-users" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
-            <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
-          </div>
-          <!-- Users Cards -->
-          <div style="padding:16px" id="users-cards">
-            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
-          </div>
-          <!-- Users Table (hidden, for compat) -->
-          <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
-        </div>
-      </div>
-
-      <!-- LOGS TAB -->
-      <div id="tab-logs" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <select class="fi btn-sm" id="log-limit" onchange="loadLogs()" style="width:110px">
-                <option value="50">آخر 50</option>
-                <option value="100" selected>آخر 100</option>
-                <option value="200">آخر 200</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="loadLogs()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot"></div>📋 سجل النشاط</div>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>المستخدم</th><th>العملية</th><th>التفاصيل</th><th>IP</th><th>الوقت</th></tr></thead>
-              <tbody id="logs-tb"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-<!-- TOUR MODAL -->
-<div class="overlay" id="ov-tour" onclick="closeOv(event,'ov-tour')">
-  <div class="modal">
-    <div class="m-title">🚗 <span id="tour-ttl">إضافة جولة</span></div>
-    <input type="hidden" id="tour-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="tour-district" onchange="filterTourStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="tour-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">نوع الزيارة</label>
-        <select class="fi" id="tour-type">
-          <option value="كشف">كشف</option>
-          <option value="صيانة">صيانة</option>
-          <option value="تركيب">تركيب</option>
-          <option value="متابعة">متابعة</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات والمستندات</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
-            <div class="up-box" id="ub-tour">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_img')">
-              <button class="up-rm" onclick="rmFile('tour_img',event)">✕</button>
-              <div class="up-ico">📸</div>
-              <div class="up-lbl">صورة الموقع</div>
-              <div class="up-stat" id="us-tour_img">صورة أو PDF</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
-            <div class="up-box" id="ub-tour-rep">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
-              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
-              <div class="up-ico">📄</div>
-              <div class="up-lbl">تقرير الزيارة</div>
-              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📋 مستند إضافي</div>
-            <div class="up-box" id="ub-tour-doc">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_doc')">
-              <button class="up-rm" onclick="rmFile('tour_doc',event)">✕</button>
-              <div class="up-ico">📋</div>
-              <div class="up-lbl">مستند إضافي</div>
-              <div class="up-stat" id="us-tour_doc">PDF أو صورة</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-tour')">إلغاء</button>
-      <button class="btn btn-p" id="save-tour-btn" onclick="saveTour()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAINTENANCE MODAL -->
-<div class="overlay" id="ov-maint" onclick="closeOv(event,'ov-maint')">
-  <div class="modal">
-    <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
-    <input type="hidden" id="maint-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="maint-district" onchange="filterMaintStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="maint-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <!-- قائمة الأجهزة المتعددة -->
-      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
-          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
-        </div>
-        <div id="devices-list"></div>
-      </div>
-
-      <!-- نوع العطل العام -->
-      <div class="fg">
-        <label class="fl">نوع العطل العام</label>
-        <select class="fi" id="maint-device">
-          <option value="عطل كلي">عطل كلي</option>
-          <option value="عطل جزئي">عطل جزئي</option>
-          <option value="كسر فيزيائي">كسر فيزيائي</option>
-          <option value="مشكلة برمجية">مشكلة برمجية</option>
-          <option value="انقطاع كابل">انقطاع كابل</option>
-          <option value="خلل في الطاقة">خلل في الطاقة</option>
-          <option value="صيانة دورية">صيانة دورية</option>
-          <option value="استبدال وقائي">استبدال وقائي</option>
-        </select>
-      </div>
-
-      <!-- سبب + فني -->
-      <div class="fg"><label class="fl">سبب الصيانة</label>
-        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
-      <div class="fg"><label class="fl">اسم الفني</label>
-        <input class="fi" id="maint-tech" type="text"></div>
-
-      <!-- الحالة بعد الصيانة -->
-      <div class="fg">
-        <label class="fl">الحالة بعد الصيانة</label>
-        <select class="fi" id="m-status-after">
-          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
-          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
-          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
-          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
-        </select>
-      </div>
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
-
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <label class="fl" style="margin-bottom:12px;display:block">📎 المرفقات والمستندات</label>
-
-        <!-- صور العطل — 3 صور -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل (حتى 3 صور)</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 1</div>
-              <div class="up-box" id="ub-maint-img">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img')">
-                <button class="up-rm" onclick="rmFile('maint_img',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة العطل</div>
-                <div class="up-stat" id="us-maint_img">صورة أو PDF</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 2</div>
-              <div class="up-box" id="ub-maint-img2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img2')">
-                <button class="up-rm" onclick="rmFile('maint_img2',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة إضافية</div>
-                <div class="up-stat" id="us-maint_img2">صورة أو PDF</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">صورة 3</div>
-              <div class="up-box" id="ub-maint-img3">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_img3')">
-                <button class="up-rm" onclick="rmFile('maint_img3',event)">✕</button>
-                <div class="up-ico">📸</div>
-                <div class="up-lbl">صورة إضافية</div>
-                <div class="up-stat" id="us-maint_img3">صورة أو PDF</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- سجلات الاشتغال — 3 سجلات -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
-              <div class="up-box" id="ub-maint-rep">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep')">
-                <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال المحطة</div>
-                <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
-              <div class="up-box" id="ub-maint-rep2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep2')">
-                <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال الصيانة</div>
-                <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
-              <div class="up-box" id="ub-maint-rep3">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep3')">
-                <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل إنجاز عمل</div>
-                <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- التكليف -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
-              <div class="up-box" id="ub-maint-tawkeef">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">وثيقة التكليف</div>
-                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
-              <div class="up-box" id="ub-maint-tawkeef2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef2')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">تكليف إضافي</div>
-                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-maint')">إلغاء</button>
-      <button class="btn btn-o" id="btn-print-maint" onclick="printMaintDocs()" style="display:none">🖨️ طباعة المستندات</button>
-      <button class="btn btn-p" id="save-maint-btn" onclick="saveMaint()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- CAMERA MODAL -->
-<div class="overlay" id="ov-cam" onclick="closeOv(event,'ov-cam')">
-  <div class="modal">
-    <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
-    <input type="hidden" id="cam-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="cam-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
-      <div class="fg"><label class="fl">نوع الكاميرا</label>
-        <select class="fi" id="cam-type">
-          <option value="داخلية">داخلية</option>
-          <option value="خارجية">خارجية</option>
-          <option value="PTZ">PTZ</option>
-          <option value="بُللت">بُللت</option>
-          <option value="돔">돔 Dome</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
-      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="cam-status">
-          <option value="working">شغالة</option>
-          <option value="broken">معطلة</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
-      <button class="btn btn-p" id="save-cam-btn" onclick="saveCam()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- INVENTORY MODAL -->
-<div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
-  <div class="modal" style="width:780px">
-    <div class="m-title">📦 <span id="inv-ttl">إضافة جرد محطة</span></div>
-    <input type="hidden" id="inv-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">المحطة *</label>
-        <select class="fi" id="inv-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">الحالة العامة</label>
-        <select class="fi" id="inv-status">
-          <option value="مكتمل">مكتمل</option>
-          <option value="ناقص">ناقص</option>
-          <option value="معطل">معطل</option>
-        </select>
-      </div>
-
-      <!-- DVR/NVR -->
-      <div class="fg full" style="border:1px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
-        <div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:10px">📹 أجهزة التسجيل DVR/NVR</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-dvr-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-dvr-spec" type="text" placeholder="عدد القنوات، الدقة..."></div>
-          <div class="fg full"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
-        </div>
-      </div>
-
-      <!-- HDD -->
-      <div class="fg full" style="border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px;background:rgba(124,58,237,.03)">
-        <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:10px">💾 الهاردات (HDD)</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-hdd-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">الحجم (TB)</label><input class="fi" id="inv-hdd-size" type="text" placeholder="مثال: 2TB"></div>
-        </div>
-      </div>
-
-      <!-- Cameras -->
-      <div class="fg full" style="border:1px solid rgba(22,163,74,.25);border-radius:12px;padding:14px;background:rgba(22,163,74,.03)">
-        <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:10px">📷 الكاميرات</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-cam-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-cam-spec" type="text" placeholder="نوع الكاميرا..."></div>
-          <div class="fg"><label class="fl">الدقة</label>
-            <select class="fi" id="inv-cam-res">
-              <option value="">—</option>
-              <option value="2MP - 1080p">2MP - 1080p</option>
-              <option value="4MP - 2K">4MP - 2K</option>
-              <option value="5MP">5MP</option>
-              <option value="8MP - 4K">8MP - 4K</option>
-              <option value="أخرى">أخرى</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- POE Switch -->
-      <div class="fg full" style="border:1px solid rgba(217,119,6,.25);border-radius:12px;padding:14px;background:rgba(217,119,6,.03)">
-        <div style="font-size:13px;font-weight:700;color:#d97706;margin-bottom:10px">🔌 سويجات POE</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-poe-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-poe-spec" type="text" placeholder="عدد المنافذ، الواط..."></div>
-        </div>
-      </div>
-
-      <!-- Monitors -->
-      <div class="fg full" style="border:1px solid rgba(3,105,161,.25);border-radius:12px;padding:14px;background:rgba(3,105,161,.03)">
-        <div style="font-size:13px;font-weight:700;color:#0284c7;margin-bottom:10px">🖥️ الشاشات</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-mon-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-mon-spec" type="text" placeholder="الحجم، الدقة..."></div>
-        </div>
-      </div>
-
-      <!-- UPS -->
-      <div class="fg full" style="border:1px solid rgba(220,38,38,.25);border-radius:12px;padding:14px;background:rgba(220,38,38,.03)">
-        <div style="font-size:13px;font-weight:700;color:#dc2626;margin-bottom:10px">⚡ العاكسات UPS</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-ups-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-ups-spec" type="text" placeholder="الكيلو فولت أمبير..."></div>
-        </div>
-      </div>
-
-      <!-- Batteries -->
-      <div class="fg full" style="border:1px solid rgba(107,114,128,.25);border-radius:12px;padding:14px;background:rgba(107,114,128,.03)">
-        <div style="font-size:13px;font-weight:700;color:#6b7280;margin-bottom:10px">🔋 البطاريات</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-bat-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-bat-spec" type="text" placeholder="الفولت، الأمبير..."></div>
-        </div>
-      </div>
-
-      <!-- البوكسات -->
-      <div class="fg full" style="border:1px solid rgba(34,197,94,.25);border-radius:12px;padding:14px;background:rgba(34,197,94,.03)">
-        <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:10px">📦 البوكسات (صناديق التعليب)</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-box-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-box-spec" type="text" placeholder="المقاس، النوع..."></div>
-        </div>
-      </div>
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="inv-notes" rows="2" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
-      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- DISTRICT MODAL -->
-<div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
-  <div class="modal modal-sm">
-    <div class="m-title">📍 إضافة قاطع جديد</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم القاطع *</label>
-        <input class="fi" id="dist-name" type="text" placeholder="اسم القاطع"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-district')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveDistrict()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- DELEGATE MODAL -->
-<div class="overlay" id="ov-delegate" onclick="closeOv(event,'ov-delegate')">
-  <div class="modal modal-sm">
-    <div class="m-title">👥 مخول القاطع</div>
-    <input type="hidden" id="d-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">القاطع</label>
-        <select class="fi" id="d-district"><option value="">— اختر —</option></select>
-      </div>
-
-      <!-- مخول 1 -->
-      <div class="fg full" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
-        <div style="font-size:12px;font-weight:700;color:var(--p1);margin-bottom:8px">👤 المخول الأول</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">الاسم *</label><input class="fi" id="d-name" type="text" placeholder="اسم المخول"></div>
-          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone" type="text" placeholder="07xx..."></div>
-        </div>
-      </div>
-
-      <!-- مخول إضافي -->
-      <div class="fg full" id="d-extra-section" style="display:none;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
-        <div style="font-size:12px;font-weight:700;color:var(--p2);margin-bottom:8px">👤 المخول الإضافي</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">الاسم</label><input class="fi" id="d-name2" type="text" placeholder="اسم المخول الإضافي"></div>
-          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone2" type="text" placeholder="07xx..."></div>
-        </div>
-      </div>
-
-      <div class="fg full" id="d-add-extra-btn">
-        <button type="button" class="btn btn-o btn-sm" style="width:100%" onclick="toggleExtraDelegate()">➕ إضافة مخول إضافي</button>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-delegate')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveDelegate()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- STATION MODAL -->
-<div class="overlay" id="ov-station" onclick="closeOv(event,'ov-station')">
-  <div class="modal modal-sm">
-    <div class="m-title">⛽ <span id="st-ttl">إضافة محطة</span></div>
-    <input type="hidden" id="st-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text" placeholder="اسم المحطة"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="st-district">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" id="st-type" onchange="toggleSandaField()">
-          <option value="حكومية">حكومية</option>
-          <option value="أهلية">أهلية</option>
-        </select>
-      </div>
-
-      <!-- منظومة كاميرات رئيسية -->
-      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
-        <div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:12px">📷 منظومة كاميرات رئيسية</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label class="fl">📷 عدد الكاميرات</label>
-            <input class="fi" id="st-main-cam-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">🔍 نوع الكاميرات</label>
-            <input class="fi" id="st-main-cam-type" type="text" placeholder="مثال: خارجية 4MP...">
-          </div>
-          <div>
-            <label class="fl">💾 عدد الهاردات</label>
-            <input class="fi" id="st-main-hdd-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">💽 حجم الهارد</label>
-            <input class="fi" id="st-main-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">⏱️ مدة التسجيلات</label>
-            <select class="fi" id="st-main-record-days">
-              <option value="">— اختر المدة —</option>
-              <option value="7 أيام">7 أيام</option>
-              <option value="14 يوم">14 يوم</option>
-              <option value="30 يوم">30 يوم</option>
-              <option value="60 يوم">60 يوم</option>
-              <option value="90 يوم">90 يوم</option>
-              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- منظومة كاميرات ساندة - تظهر عند اختيار أهلية -->
-      <div class="fg full" id="sanda-row" style="display:none;border:1.5px solid rgba(245,158,11,.35);border-radius:12px;padding:14px;background:rgba(245,158,11,.04)">
-        <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px">⚙️ منظومة كاميرات ساندة</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label class="fl">📷 عدد الكاميرات</label>
-            <input class="fi" id="st-sanda-cam-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">🔍 نوع الكاميرات</label>
-            <input class="fi" id="st-sanda-cam-type" type="text" placeholder="مثال: داخلية 2MP...">
-          </div>
-          <div>
-            <label class="fl">💾 عدد الهاردات</label>
-            <input class="fi" id="st-sanda-hdd-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">💽 حجم الهارد</label>
-            <input class="fi" id="st-sanda-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
-            <select class="fi" id="st-sanda-record-days">
-              <option value="">— اختر المدة —</option>
-              <option value="7 أيام">7 أيام</option>
-              <option value="14 يوم">14 يوم</option>
-              <option value="30 يوم">30 يوم</option>
-              <option value="60 يوم">60 يوم</option>
-              <option value="90 يوم">90 يوم</option>
-              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
-            </select>
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">📝 ملاحظات</label>
-            <input class="fi" id="st-sanda-notes" type="text" placeholder="ملاحظات عن المنظومة الساندة...">
-          </div>
-        </div>
-      </div>
-      <div class="fg" style="border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px;background:rgba(22,163,74,.03)">
-        <label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label>
-        <input class="fi" id="st-cam-working" type="number" min="0" value="0" placeholder="0">
-      </div>
-      <div class="fg" style="border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:10px;background:rgba(220,38,38,.03)">
-        <label class="fl" style="color:var(--a2)">📷 كاميرات لا تعمل</label>
-        <input class="fi" id="st-cam-broken" type="number" min="0" value="0" placeholder="0">
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- USER MODAL -->
-<div class="overlay" id="ov-user" onclick="closeOv(event,'ov-user')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔐 مستخدم</div>
-    <input type="hidden" id="u-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">الاسم الكامل *</label><input class="fi" id="u-fn" type="text"></div>
-      <div class="fg"><label class="fl">اسم المستخدم *</label><input class="fi" id="u-un" type="text"></div>
-      <div class="fg"><label class="fl">كلمة المرور</label><input class="fi" id="u-pw" type="password"></div>
-      <div class="fg"><label class="fl">الدور</label>
-        <select class="fi" id="u-role" onchange="toggleUserPerms()">
-          <option value="viewer">مخول قاطع</option>
-          <option value="admin">مدير النظام</option>
-        </select>
-      </div>
-      <div class="fg full" id="u-district-row">
-        <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span></label>
-        <div id="u-districts-wrap" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:10px;max-height:140px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px">
-          <!-- تُملأ ديناميكياً -->
-        </div>
-        <input type="hidden" id="u-district" value="">
-      </div>
-    </div>
-    <div id="u-perms" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تعديل</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">حذف</div><div style="font-size:11px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">ملفات</div><div style="font-size:11px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تقارير</div><div style="font-size:11px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item" style="border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.04)"><div><div style="font-size:13px;font-weight:600;color:#7c3aed">📦 جرد الكاميرات</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل الجرد</div></div><div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-user')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveUser()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- CIRCULAR MODAL -->
-<div class="overlay" id="ov-circ" onclick="closeOv(event,'ov-circ')">
-  <div class="modal" style="width:540px">
-    <div class="m-title">📢 إضافة تعميم / تبليغ</div>
-    <input type="hidden" id="circ-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">العنوان *</label>
-        <input class="fi" id="circ-title" type="text" placeholder="عنوان التعميم أو التبليغ"></div>
-      <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" id="circ-type">
-          <option value="تعميم">تعميم</option>
-          <option value="تبليغ">تبليغ</option>
-          <option value="أمر إداري">أمر إداري</option>
-          <option value="عام">عام</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">موجه إلى <span style="font-size:11px;color:var(--t3)">(اختياري)</span></label>
-        <select class="fi" id="circ-district">
-          <option value="الكل">— جميع القواطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحتوى / الملاحظات</label>
-        <textarea class="fi" id="circ-body" rows="3" style="resize:vertical" placeholder="نص التعميم..."></textarea>
-      </div>
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات (حتى 3 ملفات)</label>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 1</div>
-            <div class="up-box" id="ub-circ-1">
-              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'circ_1')">
-              <button class="up-rm" onclick="rmFile('circ_1',event)">✕</button>
-              <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
-              <div class="up-stat" id="us-circ_1">صورة أو PDF</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 2</div>
-            <div class="up-box" id="ub-circ-2">
-              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'circ_2')">
-              <button class="up-rm" onclick="rmFile('circ_2',event)">✕</button>
-              <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
-              <div class="up-stat" id="us-circ_2">صورة أو PDF</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 3</div>
-            <div class="up-box" id="ub-circ-3">
-              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'circ_3')">
-              <button class="up-rm" onclick="rmFile('circ_3',event)">✕</button>
-              <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
-              <div class="up-stat" id="us-circ_3">صورة أو PDF</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-circ')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveCircular()">💾 نشر التعميم</button>
-    </div>
-  </div>
-</div>
-
-
-
-<!-- CODING MODAL -->
-<div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
-  <div class="modal" style="width:600px;max-height:90vh;overflow-y:auto">
-    <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
-    <input type="hidden" id="coding-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الموقع *</label>
-        <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-TK-001">
-      </div>
-      <div class="fg"><label class="fl">اسم الموقع *</label>
-        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة">
-      </div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="coding-district" onchange="filterCodingStations()">
-          <option value="">— اختر —</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="coding-station"><option value="">— اختر —</option></select>
-      </div>
-      <div class="fg"><label class="fl">تاريخ التركيب</label>
-        <input class="fi" id="coding-install-date" type="date">
-      </div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="coding-status">
-          <option value="يعمل">✅ يعمل</option>
-          <option value="معطل">❌ معطل</option>
-          <option value="صيانة">🔧 صيانة</option>
-        </select>
-      </div>
-
-      <!-- NVR -->
-      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
-          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الجهاز | Serial Number</div>
-        <div id="nvr-rows"></div>
-      </div>
-
-      <!-- HDD -->
-      <div class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
-          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الهارد | Serial Number</div>
-        <div id="hdd-rows"></div>
-      </div>
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- CHANGE PW MODAL -->
-<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔑 تغيير كلمة المرور</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
-      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
-      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
-      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-      </div><!-- /tabs-wrap -->
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
-<!-- LIGHTBOX -->
-<div class="overlay" id="lb" onclick="document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
-  <button style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif" onclick="document.getElementById('lb').classList.remove('open')">✕ إغلاق</button>
-  <div id="lb-content" style="max-width:90vw;max-height:85vh"></div>
-</div>
-
-<script>const API='';
-let TOKEN=localStorage.getItem('cam_token')||'';
-let CU=null;
-let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
-let sP_t=1,sP_m=1,sP_c=1,PP=12;
-let UF={},DISTRICTS_LIST=[];
-let SERVER_ONLINE=false;
-
-const AUTO_USER='admin';
-const AUTO_PASS='1000';
-
-// ── LOCAL STORAGE DB (يعمل بدون سيرفر) ──
-const LS = {
-  get(key){ try{ return JSON.parse(localStorage.getItem('cam_'+key)||'null'); }catch(e){ return null; } },
-  set(key,val){ localStorage.setItem('cam_'+key, JSON.stringify(val)); },
-  del(key){ localStorage.removeItem('cam_'+key); },
-};
-
-function lsGetList(key){ return LS.get(key)||[]; }
-function lsNextId(key){ const id=(LS.get('nid_'+key)||0)+1; LS.set('nid_'+key,id); return id; }
-
-// ── API — يحاول السيرفر أولاً، يرجع للـ localStorage إذا فشل ──
-let _refreshing=false;
-async function api(method,path,body=null){
-  if(SERVER_ONLINE){
-    try{
-      const r=await fetch(API+path,{
-        method,
-        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-        body:body?JSON.stringify(body):null
-      });
-      if(r.status===401 && path!=='/api/login' && !_refreshing){
-        _refreshing=true;
-        const ok=await silentLogin();
-        _refreshing=false;
-        if(ok) return api(method,path,body);
-        // السيرفر رفض — اشتغل offline
-        SERVER_ONLINE=false;
-        showOfflineBanner();
-        return lsApi(method,path,body);
-      }
-      const d=await r.json();
-      if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
-      return d;
-    }catch(e){
-      if(e.name==='TypeError'||e.message==='Failed to fetch'){
-        SERVER_ONLINE=false; showOfflineBanner();
-        return lsApi(method,path,body);
-      }
-      throw e;
+#!/usr/bin/env python3
+"""
+نظام إدارة كاميرات المراقبة
+"""
+import json, os, hashlib, uuid, base64, io
+from http.server import HTTPServer, BaseHTTPRequestHandler
+from urllib.parse import urlparse, parse_qs
+from datetime import datetime, timedelta
+
+PORT = int(os.environ.get("PORT", 8082))
+DATABASE_URL = os.environ.get("DATABASE_URL", "")
+USE_DB = bool(DATABASE_URL)
+DB_FILE = "cam_db.json"
+
+def hash_pw(pw):
+    return hashlib.sha256(pw.encode()).hexdigest()
+
+# ── PostgreSQL ──
+def get_conn():
+    import pg8000, urllib.parse
+    r = urllib.parse.urlparse(DATABASE_URL)
+    return pg8000.connect(host=r.hostname,port=r.port or 5432,
+        database=r.path.lstrip("/"),user=r.username,password=r.password,ssl_context=True)
+
+def init_pg():
+    conn=get_conn(); cur=conn.cursor()
+    for sql in [
+        "CREATE TABLE IF NOT EXISTS cam_store (key TEXT PRIMARY KEY, value TEXT)",
+        "CREATE TABLE IF NOT EXISTS cam_files (key TEXT PRIMARY KEY, name TEXT, data TEXT, mime TEXT)",
+        "CREATE TABLE IF NOT EXISTS cam_logs (id SERIAL PRIMARY KEY, user_name TEXT, user_fullname TEXT, action TEXT, details TEXT, ip TEXT, created_at TIMESTAMP DEFAULT NOW())",
+    ]: cur.execute(sql)
+    conn.commit()
+    cur.execute("SELECT value FROM cam_store WHERE key='data'")
+    if not cur.fetchone():
+        cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[json.dumps(default_db(),ensure_ascii=False)])
+        conn.commit()
+    cur.close(); conn.close()
+
+def pg_load():
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("SELECT value FROM cam_store WHERE key='data'")
+    row=cur.fetchone(); cur.close(); conn.close()
+    return json.loads(row[0])
+
+def pg_save(db):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
+    conn.commit(); cur.close(); conn.close()
+
+def pg_save_file(key,name,data,mime):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("INSERT INTO cam_files(key,name,data,mime) VALUES(%s,%s,%s,%s) ON CONFLICT(key) DO UPDATE SET name=%s,data=%s,mime=%s",[key,name,data,mime,name,data,mime])
+    conn.commit(); cur.close(); conn.close()
+
+def pg_load_file(key):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
+    row=cur.fetchone(); cur.close(); conn.close()
+    return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+
+def pg_del_file(key):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
+    conn.commit(); cur.close(); conn.close()
+
+def pg_add_log(user,action,details,ip=""):
+    try:
+        conn=get_conn(); cur=conn.cursor()
+        cur.execute("INSERT INTO cam_logs(user_name,user_fullname,action,details,ip) VALUES(%s,%s,%s,%s,%s)",
+            [user.get("username",""),user.get("fullname",""),action,details,ip])
+        conn.commit(); cur.close(); conn.close()
+    except: pass
+
+def pg_get_logs(limit=100):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
+    rows=cur.fetchall(); cur.close(); conn.close()
+    return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+
+def load_db():
+    if USE_DB: return pg_load()
+    if os.path.exists(DB_FILE):
+        with open(DB_FILE,"r",encoding="utf-8") as f: return json.load(f)
+    db=default_db(); save_db(db); return db
+
+def save_db(db):
+    if USE_DB: pg_save(db); return
+    with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
+
+def save_file(key,name,data,mime):
+    if USE_DB: pg_save_file(key,name,data,mime); return
+    db=load_db(); db["files"][key]={"name":name,"data":data,"mime":mime}; save_db(db)
+
+def load_file(key):
+    if USE_DB: return pg_load_file(key)
+    return load_db()["files"].get(key)
+
+def del_file(key):
+    if USE_DB: pg_del_file(key); return
+    db=load_db(); db["files"].pop(key,None); save_db(db)
+
+def add_log(user,action,details,ip=""):
+    if USE_DB: pg_add_log(user,action,details,ip)
+
+def get_logs(limit=100):
+    if USE_DB: return pg_get_logs(limit)
+    return []
+
+DISTRICTS = ["الشرقاط","بيجي","تكريت","سامراء","العلم","الدور","بلد","الدجيل"]
+
+STATIONS = [
+    {"id":1,"name":"محطة اشور","district":"الشرقاط","type":"حكومية"},
+    {"id":2,"name":"محطة مكحول","district":"بيجي","type":"حكومية"},
+    {"id":3,"name":"محطة الشهيد بدر","district":"بيجي","type":"حكومية"},
+    {"id":4,"name":"محطة الحجاج","district":"بيجي","type":"حكومية"},
+    {"id":5,"name":"محطة فتح الفتوح","district":"تكريت","type":"حكومية"},
+    {"id":6,"name":"محطة تكريت القديمة","district":"تكريت","type":"حكومية"},
+    {"id":7,"name":"محطة تكريت الجديدة","district":"تكريت","type":"حكومية"},
+    {"id":8,"name":"محطة سامراء القديمة","district":"سامراء","type":"حكومية"},
+    {"id":9,"name":"محطة سامراء الجديدة","district":"سامراء","type":"حكومية"},
+    {"id":10,"name":"مركز توزيع سامراء","district":"سامراء","type":"حكومية"},
+    {"id":11,"name":"محطة الشهيدة أمية","district":"العلم","type":"حكومية"},
+    {"id":12,"name":"محطة الدور","district":"الدور","type":"حكومية"},
+    {"id":13,"name":"محطة الانوار","district":"الدور","type":"حكومية"},
+    {"id":14,"name":"محطة بلد","district":"بلد","type":"حكومية"},
+    {"id":15,"name":"محطة اريحا","district":"بلد","type":"حكومية"},
+    {"id":16,"name":"محطة الدجيل","district":"الدجيل","type":"حكومية"},
+]
+
+# Dynamic districts list stored in db
+def default_db():
+    return {
+        "users":[{
+            "id":1,"fullname":"مدير النظام","username":"admin",
+            "password":hash_pw("1000"),"role":"admin","active":True,"district":"",
+            "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True}
+        }],
+        "delegates":[],
+        "stations": STATIONS,
+        "tours":[],
+        "maintenance":[],
+        "cameras":[],
+        "files":{},
+        "next_user_id":2,
+        "next_tour_id":1,
+        "next_maintenance_id":1,
+        "next_camera_id":1,
+        "next_station_id":17,
+        "next_delegate_id":1,
+        "inventory":[],
+        "next_inventory_id":1,
+        "circulars":[],
+        "circular_reads":[],
+        "next_circular_id":1,
+        
+        "custom_districts":[],
     }
-  }
-  return lsApi(method,path,body);
-}
 
-// ── LOCAL API — محاكاة السيرفر بـ localStorage ──
-function lsApi(method,path,body){
-  const seg=path.split('?')[0].replace(/\/$/,'').split('/');
-  const res=seg[2];        // stations, tours, ...
-  const rid=parseInt(seg[3])||0;
-
-  if(method==='GET'){
-    if(res==='me')        return {user:CU||{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
-    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
-    if(res==='logs')      return {logs:[]};
-    if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
-    const list=lsGetList(res);
-    return {[res]:list, tours:res==='tours'?list:undefined, maintenance:res==='maintenance'?list:undefined,
-      stations:res==='stations'?list:undefined, cameras:res==='cameras'?list:undefined,
-      inventory:res==='inventory'?list:undefined, coding:res==='coding'?list:undefined,
-      circulars:res==='circulars'?list:undefined, reads:[], delegates:res==='delegates'?list:undefined,
-      users:res==='users'?list:undefined};
-  }
-  if(method==='POST'){
-    if(res==='login') return {token:'local-token',user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
-    if(res==='logout') return {ok:true};
-    if(res==='files'){ LS.set('file_'+seg.slice(3).join('_'),body); return {ok:true}; }
-    const list=lsGetList(res);
-    const id=lsNextId(res);
-    const item={...body,id};
-    list.push(item);
-    LS.set(res,list);
-    return {ok:true,id,...item};
-  }
-  if(method==='PUT' && rid){
-    const list=lsGetList(res);
-    const idx=list.findIndex(x=>x.id===rid);
-    if(idx>-1){ list[idx]={...list[idx],...body}; LS.set(res,list); }
-    return {ok:true};
-  }
-  if(method==='DELETE' && rid){
-    const list=lsGetList(res).filter(x=>x.id!==rid);
-    LS.set(res,list);
-    return {ok:true};
-  }
-  return {ok:true};
-}
-
-// silentLogin — يستخدم silentLoginWith (تم استبداله)
-async function silentLogin(){ return silentLoginWith(AUTO_USER,AUTO_PASS); }
-
-function showOfflineBanner(){
-  if(document.getElementById('offline-banner')) return;
-  const b=document.createElement('div');
-  b.id='offline-banner';
-  b.style.cssText='position:fixed;bottom:0;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:13px;font-weight:700;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px';
-  b.innerHTML='⚠️ وضع عمل بدون سيرفر — البيانات محفوظة محلياً في المتصفح <button onclick="location.reload()" style="border:none;background:#000;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🔄 إعادة الاتصال</button>';
-  document.body.appendChild(b);
-}
-
-function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;setTimeout(()=>el.classList.remove('show'),3500);}
-function closeModal(id){document.getElementById(id).classList.remove('open');}
-function closeOv(e,id){if(e.target.id===id)closeModal(id);}
-function openLB(src){document.getElementById('lb-content').innerHTML=`<img src="${src}" style="max-width:90vw;max-height:80vh;border-radius:12px">`;document.getElementById('lb').classList.add('open');}
-function toggleSidebar(){}
-
-// ── AUTH ──
-async function doLogin(){
-  const u=document.getElementById('li-u').value.trim(),p=document.getElementById('li-p').value;
-  const btn=document.getElementById('lbtn'),err=document.getElementById('lerr');
-  err.style.display='none';btn.disabled=true;btn.innerHTML='<span class="spinner"></span>';
-  try{
-    const d=await api('POST','/api/login',{username:u,password:p});
-    TOKEN=d.token;CU=d.user;localStorage.setItem('cam_token',TOKEN);
-    document.getElementById('login-screen').style.display='none';
-    document.getElementById('app').style.display='block';
-    await initApp();
-  }catch(e){err.textContent=e.message;err.style.display='block';}
-  finally{btn.disabled=false;btn.textContent='دخول ←';}
-}
-async function doLogout(){
-  try{await api('POST','/api/logout');}catch(e){}
-  TOKEN='';CU=null;
-  localStorage.removeItem('cam_token');
-  LS.del('login_creds');
-  showMiniLogin();
-}
-async function tryAutoLogin(){
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='block';
-
-  // 1. جرب التوكن المحفوظ
-  if(TOKEN){
-    try{
-      const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
-      if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true; await initApp(); return; }
-    }catch(e){}
-    TOKEN=''; localStorage.removeItem('cam_token');
-  }
-
-  // 2. جرب بيانات الدخول المحفوظة
-  const saved=LS.get('login_creds');
-  if(saved){
-    const ok=await silentLoginWith(saved.u, saved.p);
-    if(ok){ SERVER_ONLINE=true; await initApp(); return; }
-  }
-
-  // 3. جرب الدخول التلقائي بالبيانات الافتراضية
-  const autoOk=await silentLoginWith(AUTO_USER, AUTO_PASS);
-  if(autoOk){ SERVER_ONLINE=true; await initApp(); return; }
-
-  // 4. كل المحاولات فشلت — افتح البرنامج مع طلب دخول في الشريط العلوي
-  SERVER_ONLINE=false;
-  CU={id:0,fullname:'زائر',username:'guest',role:'viewer',district:'',active:true,
-      perms:{view:true,edit:false,del:false,files:false,reports:true}};
-  await initApp();
-  showTopbarLogin();
-}
-
-function showTopbarLogin(){
-  // أضف زر دخول في الشريط العلوي بدل حجب الواجهة
-  const tb=document.getElementById('sidebar');
-  if(!tb||document.getElementById('topbar-login-form'))return;
-  const bar=document.createElement('div');
-  bar.id='topbar-login-form';
-  bar.style.cssText='background:#1d4ed8;padding:6px 16px;display:flex;align-items:center;gap:8px;font-family:Cairo,sans-serif;flex-wrap:wrap;justify-content:center';
-  bar.innerHTML=
-    '<span style="color:#bfdbfe;font-size:12px;font-weight:600">🔐 سجل دخول للوصول الكامل</span>'+
-    '<input id="tl-u" type="text" value="admin" placeholder="المستخدم" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:100px">'+
-    '<input id="tl-p" type="password" placeholder="كلمة المرور" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:110px" onkeydown="doTopbarLoginOnEnter(event)">'+
-    '<button onclick="doTopbarLogin()" style="background:#fff;color:#1d4ed8;border:none;border-radius:6px;padding:5px 14px;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer">دخول</button>'+
-    '<span id="tl-err" style="color:#fca5a5;font-size:11px;display:none"></span>';
-  tb.appendChild(bar);
-}
-
-function doTopbarLoginOnEnter(e){if(e.key==='Enter')doTopbarLogin();}
-async function doTopbarLogin(){
-  const u=(document.getElementById('tl-u')?.value||'').trim();
-  const p=document.getElementById('tl-p')?.value||'';
-  const errEl=document.getElementById('tl-err');
-  const btn=document.querySelector('#topbar-login-form button');
-  if(btn){btn.disabled=true;btn.textContent='...';}
-  const ok=await silentLoginWith(u,p);
-  if(ok){
-    LS.set('login_creds',{u,p});
-    SERVER_ONLINE=true;
-    const bar=document.getElementById('topbar-login-form');
-    if(bar)bar.remove();
-    await initApp();
-  } else {
-    if(errEl){errEl.textContent='بيانات خاطئة';errEl.style.display='block';}
-    if(btn){btn.disabled=false;btn.textContent='دخول';}
-  }
-}
-
-function showMiniLogin(errMsg){
-  let ov=document.getElementById('mini-login-ov');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='mini-login-ov';
-    ov.style.cssText='position:fixed;inset:0;z-index:99999;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif';
-    ov.innerHTML=`
-      <div style="background:#fff;border-radius:20px;padding:36px 32px;width:360px;max-width:95vw;box-shadow:0 20px 60px rgba(0,0,0,.4)">
-        <div style="text-align:center;margin-bottom:20px">
-          <div style="font-size:40px">📹</div>
-          <div style="font-size:18px;font-weight:800;color:#1d4ed8;margin-top:8px">نظام كاميرات المراقبة</div>
-          <div style="font-size:12px;color:#94a3b8;margin-top:4px">سجل دخول للمتابعة</div>
-        </div>
-        <div id="ml-err" style="display:none;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:13px;color:#dc2626;margin-bottom:12px"></div>
-        <div style="display:flex;flex-direction:column;gap:10px">
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">اسم المستخدم</label>
-            <input id="ml-u" class="fi" type="text" value="admin" placeholder="admin"
-              onkeydown="if(event.key==='Enter')doMiniLogin()"
-              style="background:#f7fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-family:Cairo,sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#475569;display:block;margin-bottom:4px">كلمة المرور</label>
-            <input id="ml-p" class="fi" type="password" placeholder="••••••"
-              onkeydown="if(event.key==='Enter')doMiniLogin()"
-              style="background:#f7fafc;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 13px;font-family:Cairo,sans-serif;font-size:14px;outline:none;width:100%;box-sizing:border-box">
-          </div>
-          <button id="ml-btn" onclick="doMiniLogin()"
-            style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;padding:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px">
-            دخول ←
-          </button>
-        </div>
-      </div>`;
-    document.body.appendChild(ov);
-  }
-  ov.style.display='flex';
-  if(errMsg){
-    const e=document.getElementById('ml-err');
-    if(e){e.textContent=errMsg;e.style.display='block';}
-  }
-  setTimeout(()=>document.getElementById('ml-p')?.focus(),100);
-}
-
-async function doMiniLogin(){
-  const u=(document.getElementById('ml-u')?.value||'').trim();
-  const p=document.getElementById('ml-p')?.value||'';
-  const btn=document.getElementById('ml-btn');
-  if(!u||!p){showMiniLogin('أدخل اسم المستخدم وكلمة المرور');return;}
-  if(btn){btn.disabled=true;btn.textContent='جاري الدخول...';}
-  const ok=await silentLoginWith(u,p);
-  if(ok){
-    LS.set('login_creds',{u,p}); // حفظ للمرة القادمة
-    SERVER_ONLINE=true;
-    document.getElementById('mini-login-ov').style.display='none';
-    await initApp();
-  } else {
-    if(btn){btn.disabled=false;btn.textContent='دخول ←';}
-    showMiniLogin('كلمة المرور أو اسم المستخدم غير صحيح');
-  }
-}
-
-async function silentLoginWith(u,p){
-  try{
-    const r=await fetch(API+'/api/login',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username:u,password:p})
-    });
-    if(!r.ok) return false;
-    const d=await r.json();
-    TOKEN=d.token; CU=d.user;
-    localStorage.setItem('cam_token',TOKEN);
-    return true;
-  }catch(e){ return false; }
-}
-function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.perms?.[p];}
-
-// ── CODING ──
-let allCoding=[];
-let nvrCount=0, hddCount=0;
-
-async function loadCoding(){
-  try{
-    const d=await api('GET','/api/coding');
-    allCoding=d.coding||d.devices||[];
-    renderCoding();
-  }catch(e){ toast('خطأ في تحميل الترميز: '+e.message,'err'); }
-}
-
-function renderCoding(){
-  const search=(document.getElementById('sq-coding')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-coding-district')?.value||'';
-  const devF=document.getElementById('f-coding-device')?.value||'';
-  let list=allCoding.filter(d=>{
-    if(distF && d.district!==distF) return false;
-    if(devF && !(d.code||'').startsWith(devF.split('/')[0])) return false;
-    if(search && !JSON.stringify(d).toLowerCase().includes(search)) return false;
-    return true;
-  });
-  const grid=document.getElementById('coding-grid');
-  if(!grid) return;
-  if(!list.length){
-    grid.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا توجد بيانات ترميز</div>';
-    return;
-  }
-  grid.innerHTML=`<div style="overflow-x:auto"><table width="100%" style="border-collapse:collapse;font-size:13px">
-    <thead><tr style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff">
-      <th style="padding:10px 12px;text-align:right">#</th>
-      <th style="padding:10px 12px;text-align:right">الكود</th>
-      <th style="padding:10px 12px;text-align:right">الموقع</th>
-      <th style="padding:10px 12px;text-align:right">المحطة</th>
-      <th style="padding:10px 12px;text-align:right">القاطع</th>
-      <th style="padding:10px 12px;text-align:right">تاريخ التركيب</th>
-      <th style="padding:10px 12px;text-align:right">NVR/HDDs</th>
-      <th style="padding:10px 12px;text-align:center">الحالة</th>
-      <th style="padding:10px 12px;text-align:center">إجراءات</th>
-    </tr></thead>
-    <tbody>${list.map((d,i)=>`<tr style="border-bottom:1px solid var(--border);${i%2?'background:var(--bg2)':''}">
-      <td style="padding:9px 12px"><span class="snum">${i+1}</span></td>
-      <td style="padding:9px 12px;font-family:monospace;font-weight:800;color:#0891b2;font-size:14px">${d.code||'—'}</td>
-      <td style="padding:9px 12px;font-weight:600">${d.location||'—'}</td>
-      <td style="padding:9px 12px">${d.station_name||'—'}</td>
-      <td style="padding:9px 12px"><span class="db">${d.district||'—'}</span></td>
-      <td style="padding:9px 12px;color:var(--t3);font-size:12px">${d.install_date||'—'}</td>
-      <td style="padding:9px 12px;font-size:12px">
-        ${(d.nvrs||[]).length?`NVR: ${d.nvrs.length}`:''}
-        ${(d.hdds||[]).length?` | HDD: ${d.hdds.length}`:''}
-        ${!(d.nvrs||[]).length&&!(d.hdds||[]).length?'—':''}
-      </td>
-      <td style="padding:9px 12px;text-align:center">
-        <span class="badge ${d.status==='يعمل'?'b-ok':d.status==='معطل'?'b-bad':'b-warn'}">${d.status||'—'}</span>
-      </td>
-      <td style="padding:9px 12px;text-align:center;white-space:nowrap">
-        <button class="btn btn-o btn-sm" onclick="editCoding(${d.id})" title="تعديل">✏️</button>
-        <button class="btn btn-o btn-sm" onclick="printVoidLabel(${d.id})" title="طباعة ليبل" style="font-size:11px">🏷️</button>
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCoding(${d.id})" title="حذف">🗑️</button>`:''}
-      </td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
-}
-
-function filterCoding(){ renderCoding(); }
-
-function openCodingModal(){
-  document.getElementById('coding-ttl').textContent='ترميز موقع جديد';
-  document.getElementById('coding-eid').value='';
-  ['coding-code','coding-location','coding-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
-  document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
-  document.getElementById('coding-status').value='يعمل';
-  const ds=document.getElementById('coding-district');
-  ds.innerHTML='<option value="">— اختر القاطع —</option>';
-  const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
-  dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
-  filterCodingStations();
-  resetRows([],[]);
-  document.getElementById('ov-coding').classList.add('open');
-}
-
-async function saveCoding(){
-  const code=(document.getElementById('coding-code')?.value||'').trim();
-  const location=(document.getElementById('coding-location')?.value||'').trim();
-  if(!code){toast('رقم الموقع مطلوب','err');return;}
-  if(!location){toast('اسم الموقع مطلوب','err');return;}
-
-  const sid=document.getElementById('coding-station')?.value||'';
-  const station=allStations.find(s=>String(s.id)===String(sid))||{};
-  const district=document.getElementById('coding-district')?.value||station.district||'';
-
-  const body={
-    code, location,
-    district,
-    station_id: sid ? parseInt(sid) : null,
-    station_name: station.name||'',
-    install_date: document.getElementById('coding-install-date')?.value||new Date().toISOString().split('T')[0],
-    status: document.getElementById('coding-status')?.value||'يعمل',
-    notes: (document.getElementById('coding-notes')?.value||'').trim(),
-    nvrs: getNvrs(),
-    hdds: getHdds(),
-    switches: [],
-    cam_total: 0, cam_working: 0, cam_broken: 0
-  };
-
-  const eid=parseInt(document.getElementById('coding-eid')?.value)||0;
-  const btn=document.querySelector('#ov-coding .btn-p[onclick*="saveCoding"]');
-  if(btn){btn.disabled=true;btn.textContent='جاري الحفظ...';}
-  try{
-    if(eid) await api('PUT',`/api/coding/${eid}`,body);
-    else    await api('POST','/api/coding',body);
-    toast('تم الحفظ ✅');
-    closeModal('ov-coding');
-    await loadCoding();
-  }catch(e){
-    console.error('saveCoding error:',e);
-    const msg=e?.message||JSON.stringify(e)||'خطأ غير معروف';
-    toast('خطأ في الحفظ: '+msg,'err');
-  }finally{
-    if(btn){btn.disabled=false;btn.textContent='💾 حفظ';}
-  }
-}
-
-function editCoding(id){
-  const d=allCoding.find(x=>x.id===id);if(!d)return;
-  document.getElementById('coding-ttl').textContent='تعديل الترميز';
-  document.getElementById('coding-eid').value=id;
-  document.getElementById('coding-code').value=d.code||'';
-  document.getElementById('coding-location').value=d.location||'';
-  document.getElementById('coding-notes').value=d.notes||'';
-  document.getElementById('coding-install-date').value=d.install_date||'';
-  document.getElementById('coding-status').value=d.status||'يعمل';
-  const ds=document.getElementById('coding-district');
-  ds.innerHTML='<option value="">— اختر —</option>';
-  DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
-  ds.value=d.district||'';ds.disabled=false;
-  filterCodingStations();
-  setTimeout(()=>{const ss=document.getElementById('coding-station');if(ss)ss.value=d.station_id||'';},150);
-  resetRows(d.nvrs||[],d.hdds||[]);
-  document.getElementById('ov-coding').classList.add('open');
-}
-
-async function delCoding(id){
-  if(!confirm('حذف؟'))return;
-  try{await api('DELETE',`/api/coding/${id}`);toast('تم الحذف');await loadCoding();}
-  catch(e){toast('خطأ','err');}
-}
-
-function printVoidLabel(id){
-  const d=allCoding.find(x=>x.id===id);if(!d)return;
-  const code=d.code;
-  const station=d.station_name||'—';
-  const location=d.location||'—';
-  const district=d.district||'—';
-  const nvrs=d.nvrs||[];const hdds=d.hdds||[];
-  const deviceInfo=nvrs.map((n,i)=>`NVR${i+1}: ${n.num||'—'}`).concat(hdds.map((h,i)=>`HDD${i+1}: ${h.num||'—'}`)).join(' | ');
-  const qrData=window.location.origin+'/scan/'+code;
-  const S='script';
-  const w=window.open('','_blank','width=600,height=600');
-  w.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
-    +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
-    +'body{background:#ddd;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
-    +'.ctrl{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:440px}'
-    +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:2px}'
-    +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
-    +'.apply{grid-column:1/-1;background:#0891b2;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-size:13px;font-weight:bold}'
-    +'.lbl{background:#fff;border:2px solid #111;display:flex;flex-direction:column;overflow:hidden}'
-    +'.hdr{background:#0891b2;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:3px 8px}'
-    +'.hdr-l{font-size:8px;font-weight:bold}'
-    +'.hdr-r{font-size:8px}'
-    +'.body{flex:1;display:flex;flex-direction:row;align-items:center;padding:3px;gap:4px}'
-    +'.left{flex-shrink:0;display:flex;align-items:center;justify-content:center}'
-    +'.right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}'
-    +'.dev-info{font-size:7px;font-weight:bold;color:#0891b2;align-self:flex-start;margin-bottom:2px}'
-    +'.bc-num{font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;margin-top:2px}'
-    +'.ftr{border-top:1px solid #ccc;display:flex;justify-content:space-between;padding:2px 6px;background:#f5f5f5;font-size:6px}'
-    +'.btns{display:flex;gap:8px}'
-    +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
-    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
-    +'<\/style><\/head><body>'
-    +'<div class="ctrl">'
-    +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
-    +'<div class="cg"><label>ارتفاع (مم)</label><input id="H" type="number" value="50"></div>'
-    +'<div class="cg"><label>حجم QR</label><input id="QS" type="number" value="95"></div>'
-    +'<div class="cg"><label>ارتفاع BC</label><input id="BH" type="number" value="38"></div>'
-    +'<button class="apply" onclick="build()">✅ تطبيق</button>'
-    +'</div>'
-    +'<div class="lbl" id="lbl">'
-    +'<div class="body">'
-    +'<div class="left" id="qr"></div>'
-    +'<div class="right">'
-    +'<div class="dev-info">'+location+(deviceInfo?' | '+deviceInfo:'')+'</div>'
-    +'<canvas id="bc" style="width:100%"></canvas>'
-    +'<div class="bc-num" id="bc-num">'+code+'</div>'
-    +'</div>'
-    +'</div>'
-    +'</div>'
-    +'<div class="btns">'
-    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
-    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 حفظ صورة</button>'
-    +'</div>'
-    +'<'+S+'>'
-    +'function build(){'
-    +'var W=+document.getElementById("W").value||80;'
-    +'var H=+document.getElementById("H").value||50;'
-    +'var QS=+document.getElementById("QS").value||95;'
-    +'var BH=+document.getElementById("BH").value||38;'
-    +'var lbl=document.getElementById("lbl");'
-    +'lbl.style.width=W+"mm";lbl.style.height=H+"mm";'
-    +'var st=document.createElement("style");'
-    +'st.textContent="@media print{@page{size:"+W+"mm "+H+"mm;margin:0}}";'
-    +'document.head.appendChild(st);'
-    +'var qc=document.getElementById("qr");qc.innerHTML="";'
-    +'try{new QRCode(qc,{text:"'+qrData+'",width:QS,height:QS,colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){console.error("QR:",e);}'
-    +'try{JsBarcode(document.getElementById("bc"),"'+code+'",{format:"CODE128",width:2,height:BH,displayValue:false,margin:0,background:"#ffffff",lineColor:"#000000"});}catch(e){console.error("BC:",e);}'
-    +'}'
-    +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},400);}'
-    +'window.onload=function(){build();};'
-    +'</'+S+'>'
-    +'<\/body><\/html>'
-  );
-  w.document.close();
-}
-
-function exportVoidExcel(){
-  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
-  const loadXLSX=()=>new Promise((res,rej)=>{
-    if(window.XLSX){res();return;}
-    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    const h1=['BARCODE','QR_DATA','STATION','LOCATION','DISTRICT','DATE','STATUS'];
-    const rows1=allCoding.map(d=>[d.code,window.location.origin+'/scan/'+d.code,d.station_name||'',d.location||'',d.district||'',d.install_date||'',d.status||'']);
-    const h2=['BARCODE','TYPE','INDEX','NUMBER','SERIAL_NUMBER'];
-    const rows2=[];
-    allCoding.forEach(d=>{
-      (d.nvrs||[]).forEach((n,i)=>rows2.push([d.code,'NVR',i+1,n.num||'',n.serial||'']));
-      (d.hdds||[]).forEach((h,i)=>rows2.push([d.code,'HDD',i+1,h.num||'',h.serial||'']));
-    });
-    const wb=XLSX.utils.book_new();
-    const ws1=XLSX.utils.aoa_to_sheet([h1,...rows1]);
-    ws1['!cols']=[{wch:14},{wch:50},{wch:20},{wch:22},{wch:14},{wch:14},{wch:10}];
-    XLSX.utils.book_append_sheet(wb,ws1,'بيانات الطباعة');
-    if(rows2.length>0){
-      const ws2=XLSX.utils.aoa_to_sheet([h2,...rows2]);
-      ws2['!cols']=[{wch:14},{wch:8},{wch:6},{wch:14},{wch:30}];
-      XLSX.utils.book_append_sheet(wb,ws2,'السيريال');
-    }
-    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='VOID_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
-    toast('تم التصدير ✅');
-  }).catch(e=>toast('خطأ: '+e,'err'));
-}
-
-function addNvrRow(num='',serial=''){
-  nvrCount++;
-  const id=nvrCount;
-  const row=document.createElement('div');
-  row.id=`nvr-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
-  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:7px">NVR ${id}</div>
-    <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
-    <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
-    <button type="button" onclick="document.getElementById('nvr-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
-  document.getElementById('nvr-rows').appendChild(row);
-}
-
-function addHddRow(num='',serial=''){
-  hddCount++;
-  const id=hddCount;
-  const row=document.createElement('div');
-  row.id=`hdd-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
-  row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:7px">HDD ${id}</div>
-    <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
-    <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
-    <button type="button" onclick="document.getElementById('hdd-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
-  document.getElementById('hdd-rows').appendChild(row);
-}
-
-function getNvrs(){
-  return Array.from(document.querySelectorAll('[id^="nvr-"]:not([id*="num"]):not([id*="sn"])'))
-    .map(r=>{const i=r.id.split('-')[1];
-      return{num:(document.getElementById(`nvr-num-${i}`)?.value||'').trim(),
-             serial:(document.getElementById(`nvr-sn-${i}`)?.value||'').trim()};
-    }).filter(x=>x.num||x.serial);
-}
-
-function getHdds(){
-  return Array.from(document.querySelectorAll('[id^="hdd-"]:not([id*="num"]):not([id*="sn"])'))
-    .map(r=>{const i=r.id.split('-')[1];
-      return{num:(document.getElementById(`hdd-num-${i}`)?.value||'').trim(),
-             serial:(document.getElementById(`hdd-sn-${i}`)?.value||'').trim()};
-    }).filter(x=>x.num||x.serial);
-}
-
-function resetRows(nvrs,hdds){
-  nvrCount=0;hddCount=0;
-  document.getElementById('nvr-rows').innerHTML='';
-  document.getElementById('hdd-rows').innerHTML='';
-  if(nvrs&&nvrs.length>0) nvrs.forEach(n=>addNvrRow(n.num,n.serial)); else addNvrRow();
-  if(hdds&&hdds.length>0) hdds.forEach(h=>addHddRow(h.num,h.serial)); else addHddRow();
-}
-
-function filterCodingStations(){
-  const dist=document.getElementById('coding-district').value;
-  const sel=document.getElementById('coding-station');
-  sel.innerHTML='<option value="">— اختر المحطة —</option>';
-  allStations.filter(s=>!dist||s.district===dist).forEach(s=>{
-    const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
-  });
-}
-
-function onScanKey(e){
-  if(e.key==='Enter'){
-    const raw=document.getElementById('sq-coding').value.trim();
-    if(!raw) return;
-    const {code} = smartFindCode(raw);
-    document.getElementById('sq-coding').value=code;
-    showScanResult(raw); // نمرر الخام — showScanResult يستدعي smartFindCode
-    e.preventDefault();
-  }
-}
-
-// استخراج الكود النظيف من أي صيغة مسح
-// خريطة تحويل أحرف الكيبورد العربي → لاتيني
-const _KB_AR = {
-  'ض':'Q','ص':'W','ث':'E','ق':'R','ف':'T','غ':'Y','ع':'U','ه':'I','خ':'O','ح':'P',
-  'ش':'A','س':'S','ي':'D','ب':'F','ل':'G','ا':'H','ت':'J','ن':'K','م':'L',
-  'ئ':'Z','ء':'X','ؤ':'C','ر':'V','لا':'B','ى':'N','ة':'M',
-  // رموز شائعة تتحول بالكيبورد العربي
-  ':':'-','؛':';','؟':'?','،':','
-};
-
-function fixKeyboardLayout(s){
-  // حوّل كل حرف عبر الخريطة إذا موجود
-  return s.split('').map(c => _KB_AR[c]||c).join('');
-}
-
-function extractCodeFromScan(raw){
-  try{
-    // تأكد أن المدخل string
-    if(typeof raw !== 'string') raw = String(raw||'');
-    let s = raw.trim();
-    // حالة: رابط كامل http://host/scan/CODE
-    if(s.indexOf('/scan/') !== -1){
-      const part = s.split('/scan/')[1]||'';
-      s = decodeURIComponent(part).split('|')[0].split('?')[0].trim();
-    }
-    // حالة: CODE|station|device
-    else if(s.indexOf('|') !== -1){
-      s = s.split('|')[0].trim();
-    }
-    // تنظيف الأحرف غير ASCII
-    s = s.replace(/[^ -~]/g,'').trim();
-    return s||raw;
-  }catch(e){ return typeof raw==='string'?raw:String(raw||''); }
-}
-
-// بحث ذكي: يجرب الكود المباشر، ثم يجرب تصحيح الكيبورد، ثم يبحث بالأرقام
-function smartFindCode(raw){
-  if(typeof raw !== 'string') raw = String(raw||'');
-  const s = extractCodeFromScan(raw);
-  // 1. بحث مباشر
-  let d = allCoding.find(x => x.code.toLowerCase()===s.toLowerCase());
-  if(d) return {d, code:s};
-  // 2. تصحيح الكيبورد العربي ثم بحث
-  const fixed = fixKeyboardLayout(s).toUpperCase();
-  d = allCoding.find(x => x.code.toUpperCase()===fixed);
-  if(d) return {d, code:d.code};
-  // 3. البحث بالأرقام فقط (الجزء الأخير من الكود مثل 001)
-  const numPart = s.replace(/[^0-9]/g,'');
-  if(numPart.length>=3){
-    d = allCoding.find(x => x.code.replace(/[^0-9]/g,'')===numPart);
-    if(d) return {d, code:d.code};
-  }
-  // 4. البحث بتطابق جزئي للأرقام والفواصل
-  const pattern = s.replace(/[a-zA-Z؀-ۿ:{}]/g,'.');
-  const rx = new RegExp('^'+pattern+'$','i');
-  d = allCoding.find(x => rx.test(x.code));
-  if(d) return {d, code:d.code};
-  return {d:null, code:s};
-}
-
-function showScanResult(code){
-  if(typeof code !== 'string') code = String(code||'');
-  const {d, code:bareCode} = smartFindCode(code);
-  api('POST','/api/scan',{code:bareCode,scanned_by:CU?.username||''}).catch(()=>{});
-
-  if(!d){
-    // لم يُوجد — بطاقة خطأ بسيطة
-    const card=document.getElementById('scan-result-card');
-    card.style.cssText='display:block;background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:12px;padding:14px 18px;color:#fff;min-width:240px';
-    document.getElementById('src-code').textContent='❌ '+bareCode;
-    document.getElementById('src-location').textContent='غير موجود في قاعدة البيانات';
-    document.getElementById('src-station').textContent='';
-    document.getElementById('src-status').innerHTML='';
-    return;
-  }
-
-  // وُجد — أظهر نافذة كاملة بكل البيانات
-  document.getElementById('sq-coding').value=bareCode;
-  filterCoding();
-
-  // بناء بطاقة التفاصيل
-  const nvrs=(d.nvrs||[]).map(n=>`<span style="background:rgba(255,255,255,.15);border-radius:4px;padding:2px 6px;margin:2px;display:inline-block">NVR ${n.num||''}${n.serial?' — '+n.serial:''}</span>`).join('');
-  const hdds=(d.hdds||[]).map(h=>`<span style="background:rgba(255,255,255,.15);border-radius:4px;padding:2px 6px;margin:2px;display:inline-block">HDD ${h.num||''}${h.serial?' — '+h.serial:''}</span>`).join('');
-  const stColor = d.status==='يعمل'?'#22c55e':d.status==='معطل'?'#ef4444':'#f59e0b';
-
-  const card=document.getElementById('scan-result-card');
-  card.style.cssText='display:block;background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:14px;padding:16px 18px;color:#fff;min-width:280px;max-width:420px;box-shadow:0 4px 20px rgba(0,0,0,.3)';
-
-  document.getElementById('src-code').innerHTML=
-    '<span style="font-size:15px;font-weight:900;letter-spacing:1.5px;font-family:monospace;color:#60a5fa">'+d.code+'</span>';
-
-  document.getElementById('src-location').innerHTML=
-    '<div style="margin:8px 0 4px;display:flex;flex-direction:column;gap:5px">'
-    +'<div>📌 <b>'+( d.location||'—')+'</b></div>'
-    +'<div>⛽ المحطة: <b>'+(d.station_name||'—')+'</b></div>'
-    +'<div>📍 القاطع: <b>'+(d.district||'—')+'</b></div>'
-    +'<div>📅 تاريخ التركيب: '+(d.install_date||'—')+'</div>'
-    +(nvrs?'<div style="margin-top:4px">📹 '+nvrs+'</div>':'')
-    +(hdds?'<div style="margin-top:2px">💾 '+hdds+'</div>':'')
-    +(d.notes?'<div style="margin-top:4px;font-size:11px;opacity:.8">📝 '+(d.notes)+'</div>':'')
-    +'</div>';
-
-  document.getElementById('src-station').innerHTML='';
-  document.getElementById('src-status').innerHTML=
-    '<span style="background:'+stColor+';color:#fff;border-radius:20px;padding:3px 12px;font-size:12px;font-weight:700">'+(d.status||'—')+'</span>'
-    +'<button onclick="clearScan()" style="margin-right:8px;background:rgba(255,255,255,.15);border:none;border-radius:6px;padding:3px 10px;color:#fff;cursor:pointer;font-size:11px;font-family:Cairo,sans-serif">✕ إغلاق</button>';
-}
-
-function clearScan(){
-  document.getElementById('sq-coding').value='';
-  document.getElementById('scan-result-card').style.display='none';
-  filterCoding();
-}
-
-async function exportGoLabel(){
-  if(!allCoding.length){
-    toast('جاري تحميل البيانات...');
-    try{ await loadCoding(); }catch(e){}
-  }
-  if(!allCoding.length){ toast('لا توجد بيانات في السجل','err'); return; }
-
-  toast('جاري تحميل مكتبة Excel...');
-
-  // تحميل XLSX — 3 مصادر احتياطية
-  const load=(src)=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');
-    s.src=src; s.onload=()=>res(); s.onerror=()=>rej();
-    document.head.appendChild(s);
-  });
-
-  try{
-    await load('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
-      .catch(()=>load('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'))
-      .catch(()=>load('https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'));
-  }catch(e){
-    toast('تعذّر تحميل مكتبة Excel — تحقق من الاتصال بالإنترنت','err');
-    return;
-  }
-
-  if(typeof XLSX==='undefined'){
-    toast('مكتبة Excel غير متوفرة','err');
-    return;
-  }
-
-  try{
-    toast('جاري بناء الملف...');
-    const origin=window.location.origin;
-
-    // أسماء أعمدة GoLabel — بدون مسافات أو أحرف خاصة
-    const header=[
-      'Barcode','QR_Data',
-      'Station','Location','District',
-      'InstallDate','Status',
-      'NVR1Num','NVR1Serial',
-      'NVR2Num','NVR2Serial',
-      'HDD1Num','HDD1Serial',
-      'HDD2Num','HDD2Serial',
-      'Notes'
-    ];
-
-    const rows=allCoding.map(d=>{
-      const n=d.nvrs||[], h=d.hdds||[];
-      return [
-        d.code||'',
-        origin+'/scan/'+encodeURIComponent(d.code||''),
-        d.station_name||'', d.location||'', d.district||'',
-        d.install_date||'', d.status||'يعمل',
-        (n[0]||{}).num||'',(n[0]||{}).serial||'',
-        (n[1]||{}).num||'',(n[1]||{}).serial||'',
-        (h[0]||{}).num||'',(h[0]||{}).serial||'',
-        (h[1]||{}).num||'',(h[1]||{}).serial||'',
-        d.notes||''
-      ];
-    });
-
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-    ws['!cols']=[
-      {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
-      {wch:10},{wch:30},{wch:10},{wch:30},
-      {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
-    ];
-    XLSX.utils.book_append_sheet(wb,ws,'GoLabel_Data');
-
-    // تحميل الملف في المتصفح
-    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
-    const blob  = new Blob([wbout], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const url   = URL.createObjectURL(blob);
-    const a     = document.createElement('a');
-    a.href      = url;
-    a.download  = 'GoLabel_Data.xlsx'; // نفس الاسم دائماً — GoLabel يقرأه تلقائياً
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
-    toast('✅ تم التصدير — '+allCoding.length+' جهاز');
-  }catch(err){
-    console.error('Excel export error:',err);
-    toast('خطأ في إنشاء الملف: '+(err.message||err),'err');
-  }
-}
-
-
-function exportCodingExcel(){
-  if(allCoding.length===0){toast('لا توجد بيانات','err');return;}
-  const loadXLSX=()=>new Promise((res,rej)=>{
-    if(window.XLSX){res();return;}
-    const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    const h=['رقم الموقع','اسم الموقع','القاطع','المحطة','NVR - الرقم','NVR - Serial','HDD - الرقم','HDD - Serial','تاريخ التركيب','الحالة','ملاحظات'];
-    const rows=[];
-    allCoding.forEach(d=>{
-      const maxLen=Math.max((d.nvrs||[]).length,(d.hdds||[]).length,1);
-      for(let i=0;i<maxLen;i++){
-        const nvr=(d.nvrs||[])[i]||{}; const hdd=(d.hdds||[])[i]||{};
-        rows.push([i===0?d.code:'',i===0?d.location||'':'',i===0?d.district||'':'',i===0?d.station_name||'':'',
-          nvr.num||'',nvr.serial||'',hdd.num||'',hdd.serial||'',
-          i===0?d.install_date||'':'',i===0?d.status||'':'',i===0?d.notes||'':'']);
-      }
-    });
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:14},{wch:20},{wch:13},{wch:20},{wch:12},{wch:25},{wch:12},{wch:25},{wch:13},{wch:10},{wch:20}];
-    XLSX.utils.book_append_sheet(wb,ws,'ترميز الأجهزة');
-    const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    const blob=new Blob([wbout],{type:'application/octet-stream'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='ترميز_'+new Date().toISOString().split('T')[0]+'.xlsx';
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
-    toast('تم التصدير ✅');
-  }).catch(e=>toast('خطأ: '+e,'err'));
-}
-
-
-
-// Stored globally so rebuildLabel can access them
-let _genQrData='', _genCode='';
-
-const _loadLib=(src,checkGlobal)=>new Promise((res,rej)=>{
-  if(checkGlobal && typeof window[checkGlobal]!=='undefined'){res();return;}
-  const old=document.querySelector('script[src="'+src+'"]');
-  if(old) old.remove();
-  const s=document.createElement('script');
-  s.src=src; s.onload=res; s.onerror=()=>rej(new Error('فشل تحميل: '+src));
-  document.head.appendChild(s);
-});
-
-function getLabelSizes(){
-  // القيم بالسنتيمتر — نحوّل لبكسل للمعاينة (96dpi: 1cm = 37.8px)
-  const cm = id => Math.max(0.1, parseFloat(document.getElementById(id)?.value)||0);
-  const cmToPx = c => Math.round(c * 37.8);
-  const cmToMm = c => Math.round(c * 10);
-  return {
-    lblW_cm : cm('ctrl-lbl-w'),
-    lblH_cm : cm('ctrl-lbl-h'),
-    qr_cm   : cm('ctrl-qr-size'),
-    bc_cm   : cm('ctrl-bc-h'),
-    // mm للطباعة
-    lblW_mm : cmToMm(cm('ctrl-lbl-w')),
-    lblH_mm : cmToMm(cm('ctrl-lbl-h')),
-    // px للمعاينة
-    lblW    : cmToPx(cm('ctrl-lbl-w')),
-    lblH    : cmToPx(cm('ctrl-lbl-h')),
-    qrSize  : cmToPx(cm('ctrl-qr-size')),
-    bcH     : cmToPx(cm('ctrl-bc-h')),
-  };
-}
-
-// ضمان منطقية القياسات: QR والباركود لا يتجاوزان ارتفاع الملصق
-
-function stepVal(id, delta){
-  const el=document.getElementById(id);
-  if(!el)return;
-  const min=parseFloat(el.min)||0;
-  const max=parseFloat(el.max)||999;
-  const step=parseFloat(el.step)||0.5;
-  let val=parseFloat(el.value)||0;
-  val=Math.round((val+delta)/step)*step;
-  val=Math.max(min,Math.min(max,val));
-  el.value=parseFloat(val.toFixed(2));
-  clampSizes();
-}
-function clampSizes(){
-  const h = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
-  const w = parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5;
-  let qr  = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
-  let bc  = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2;
-  let changed = false;
-  const maxQR = Math.max(0.3, h - 0.2);   // QR لا يتجاوز ارتفاع الملصق
-  const maxBC = Math.max(0.2, h - 0.4);   // باركود يترك هامش للنص
-  if(qr > maxQR){ qr = +maxQR.toFixed(1); document.getElementById('ctrl-qr-size').value=qr; changed=true; }
-  if(bc > maxBC){ bc = +maxBC.toFixed(1); document.getElementById('ctrl-bc-h').value=bc; changed=true; }
-  const hint = document.getElementById('size-hint');
-  if(hint) hint.style.display = changed ? 'block' : 'none';
-}
-
-// حساب الأبعاد من الإعدادات
-function getSizes(){
-  const R=37.8, PAD=6, GAP=5, TEXT=12;
-  const lblW_cm = Math.max(1, parseFloat(document.getElementById('ctrl-lbl-w')?.value)||5);
-  const lblH_cm = Math.max(0.5, parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5);
-  const qr_cm   = Math.max(0.3, parseFloat(document.getElementById('ctrl-qr-size')?.value)||2);
-  const bc_cm   = Math.max(0.2, parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.2);
-  const lblW=Math.round(lblW_cm*R), lblH=Math.round(lblH_cm*R);
-  const innerH=lblH-PAD*2;
-  const qrPx=Math.max(20, Math.min(Math.round(qr_cm*R), innerH));
-  const bcHpx=Math.max(10, Math.min(Math.round(bc_cm*R), innerH-TEXT));
-  const bcWpx=Math.max(30, lblW-qrPx-GAP-PAD*2);
-  return {lblW_cm,lblH_cm,lblW,lblH,qrPx,bcHpx,bcWpx,PAD};
-}
-
-function rebuildLabel(){
-  if(!_genQrData || !_genCode) return;
-  const s=getSizes();
-
-  // ── 1. الملصق ──
-  const lbl=document.getElementById('gen-lbl');
-  if(lbl){
-    lbl.style.cssText='background:#fff;border:2px solid #111;border-radius:3px;'
-      +'box-shadow:0 1px 6px rgba(0,0,0,.2);padding:'+s.PAD+'px;'
-      +'display:inline-flex;flex-direction:column;gap:3px;'
-      +'width:'+s.lblW+'px;min-width:'+s.lblW+'px;max-width:'+s.lblW+'px;'
-      +'height:'+s.lblH+'px;min-height:'+s.lblH+'px;max-height:'+s.lblH+'px;'
-      +'overflow:hidden;box-sizing:border-box;';
-  }
-
-  // ── 2. الباركود ──
-  const bc=document.getElementById('gen-bc');
-  if(bc && typeof JsBarcode!=='undefined'){
-    bc.removeAttribute('width'); bc.removeAttribute('height');
-    try{
-      JsBarcode(bc, _genCode, {
-        format:'CODE128', width:1.2, height:s.bcHpx,
-        displayValue:false, margin:0,
-        background:'#ffffff', lineColor:'#000000'
-      });
-      bc.setAttribute('width',  s.bcWpx);
-      bc.setAttribute('height', s.bcHpx);
-      bc.style.cssText='display:block;width:'+s.bcWpx+'px;height:'+s.bcHpx+'px;overflow:hidden;flex-shrink:0;';
-    }catch(e){ console.error('BC:',e); }
-  }
-
-  // ── 3. QR Code ──
-  const qWrap=document.getElementById('gen-qr');
-  if(qWrap && typeof QRCode!=='undefined'){
-    qWrap.innerHTML='';
-    qWrap.style.cssText='flex-shrink:0;line-height:0;overflow:hidden;'
-      +'width:'+s.qrPx+'px;height:'+s.qrPx+'px;'
-      +'min-width:'+s.qrPx+'px;min-height:'+s.qrPx+'px;';
-    try{
-      new QRCode(qWrap,{
-        text:_genQrData, width:s.qrPx, height:s.qrPx,
-        colorDark:'#000000', colorLight:'#ffffff',
-        correctLevel:QRCode.CorrectLevel.M
-      });
-      setTimeout(()=>{
-        const inner=qWrap.querySelector('img,canvas');
-        if(inner) inner.style.cssText='width:'+s.qrPx+'px;height:'+s.qrPx+'px;display:block;max-width:none;';
-      },200);
-    }catch(e){ console.error('QR:',e); }
-  }
-}
-
-function generateLabel(){
-  const station=document.getElementById('gen-station')?.value||'';
-  if(!station){toast('اختر المحطة أولاً','err');return;}
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const deviceNames={'NVR':'NVR — تسجيل شبكي','DVR':'DVR — تسجيل رقمي','CAM':'كاميرا','POE':'سويج POE','UPS':'UPS عاكس','HDD':'هارد ديسك'};
-  const serial=(document.getElementById('gen-serial')?.value||'').trim();
-  const code=updateGenCode();
-  if(!code||code==='—'){
-    toast('اختر المحطة ورقم الجهاز','err');return;
-  }
-  // QR يحمل فقط الكود ASCII — بدون أسماء عربية لضمان المسح الصحيح
-  _genQrData=window.location.origin+'/scan/'+encodeURIComponent(code);
-  _genCode=code;
-
-  document.getElementById('gl-station').textContent=station;
-  document.getElementById('gl-device').textContent=deviceNames[device]||device;
-  document.getElementById('gen-num-label').textContent=code;
-
-  const preview=document.getElementById('gen-preview');
-  preview.style.display='flex';
-
-  Promise.all([
-    _loadLib('https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js','QRCode'),
-    _loadLib('https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js','JsBarcode')
-  ]).then(()=>{
-    setTimeout(()=>{
-      rebuildLabel();
-      toast('تم التوليد ✅');
-    }, 300);
-  }).catch(err=>{ console.error(err); toast('خطأ في تحميل المكتبات — تحقق من الإنترنت','err'); });
-}
-
-function printGenLabel(){
-  const code=document.getElementById('gen-code-display').textContent;
-  const station=document.getElementById('gl-station').textContent;
-  const device=document.getElementById('gl-device').textContent;
-  const s=getSizes();
-  const lblW=Math.round(s.lblW_cm*10), lblH=Math.round(s.lblH_cm*10); // mm
-  const qrSize=s.qrPx, bcH=s.bcHpx, bcW=s.bcWpx;
-  const qrData=_genQrData||window.location.origin+'/scan/'+encodeURIComponent(code);
-  const S='script';
-  const w=window.open('','_blank','width=620,height=560');
-  w.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
-    +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
-    +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
-    +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
-    +'body{background:#e2e8f0;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px}'
-    +'.lbl{background:#fff;border:2px solid #111;padding:8px;display:flex;flex-direction:column;gap:6px}'
-    +'.lbl-info{display:flex;justify-content:space-between;font-size:10px;font-weight:bold}'
-    +'.lbl-body{display:flex;gap:6px;align-items:center}'
-    +'.bc-wrap{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}'
-    +'.bc-num{font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold}'
-    +'.btns{display:flex;gap:8px}'
-    +'.btn{padding:8px 20px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
-    +'@media print{@page{size:'+lblW+'mm '+lblH+'mm;margin:0}.btns{display:none!important}body{background:#fff;padding:0}}'
-    +'<\/style><\/head><body>'
-    +'<div class="lbl" id="lbl" style="width:'+lblW+'mm;height:'+lblH+'mm;">'
-    +'<div class="lbl-info"><span style="color:#0891b2">'+station+'</span><span style="color:#7c3aed">'+device+'</span></div>'
-    +'<div class="lbl-body"><div id="qr" style="flex-shrink:0"></div>'
-    +'<div class="bc-wrap"><canvas id="bc" style="width:100%"></canvas>'
-    +'<div class="bc-num">'+code+'</div></div></div></div>'
-    +'<div class="btns">'
-    +'<button class="btn" style="background:#0891b2" onclick="window.print()">🖨️ طباعة</button>'
-    +'<button class="btn" style="background:#16a34a" onclick="saveImg()">💾 صورة</button>'
-    +'</div>'
-    +'<'+S+'>'
-    +'window.onload=function(){'
-    +'try{new QRCode(document.getElementById("qr"),{text:"'+qrData+'",width:'+qrSize+',height:'+qrSize+',colorDark:"#000",colorLight:"#fff",correctLevel:QRCode.CorrectLevel.M});}catch(e){}'
-    +'try{var bc=document.getElementById("bc");JsBarcode(bc,"'+code+'",{format:"CODE128",width:1.5,height:'+bcH+',displayValue:false,margin:2,background:"#fff",lineColor:"#000"});bc.setAttribute("width",'+bcW+');bc.style.width="'+bcW+'px";}catch(e){}'
-    +'};'
-    +'function saveImg(){setTimeout(function(){html2canvas(document.getElementById("lbl"),{scale:5,backgroundColor:"#fff"}).then(function(cv){var a=document.createElement("a");a.download="label_'+code+'.png";a.href=cv.toDataURL("image/png");a.click();});},400);}'
-    +'<\/script>'
-    +'<\/body><\/html>'
-  );
-  w.document.close();
-}
-
-function saveGenImg(){
-  const load=()=>{
-    if(typeof html2canvas==='undefined'){
-      const s=document.createElement('script');
-      s.src='https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-      s.onload=doSaveGenImg; document.head.appendChild(s);
-    } else { doSaveGenImg(); }
-  };
-  // Rebuild first to ensure latest sizes are applied, then save
-  rebuildLabel();
-  setTimeout(load, 300);
-}
-function doSaveGenImg(){
-  const code=document.getElementById('gen-code-display').textContent;
-  toast('جاري الحفظ...');
-  html2canvas(document.getElementById('gen-lbl'),{scale:6,backgroundColor:'#fff',useCORS:true}).then(cv=>{
-    const a=document.createElement('a');
-    a.download='label_'+code+'.png';
-    a.href=cv.toDataURL('image/png');
-    a.click();
-    toast('تم حفظ الصورة ✅');
-  }).catch(()=>toast('خطأ في حفظ الصورة','err'));
-}
-
-async function saveGenToList(){
-  const station=document.getElementById('gen-station')?.value||'';
-  if(!station){toast('اختر المحطة أولاً','err');return;}
-  const code=document.getElementById('gen-code-display').textContent;
-  if(code==='—'){toast('ولّد الباركود أولاً','err');return;}
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const serial=document.getElementById('gen-serial')?.value||'';
-  const stObj=allStations.find(s=>s.name===station)||{};
-  const body={
-    code, location:station, district:stObj.district||'',
-    station_id:stObj.id||null, station_name:station,
-    install_date:new Date().toISOString().split('T')[0],
-    status:'يعمل', notes:'',
-    nvrs:['NVR','DVR'].includes(device)?[{num:'1',serial}]:[],
-    hdds:device==='HDD'?[{num:'1',serial}]:[],
-    switches:[], cam_total:0, cam_working:0, cam_broken:0
-  };
-  try{
-    await api('POST','/api/coding',body);
-    toast('تم الحفظ في السجل ✅');
-    swCodingTab('list',document.getElementById('csub-list'));
-    await loadCoding();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-
-// ══════════════════════════════════════════
-//  NAVIGATION
-// ══════════════════════════════════════════
-
-const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
-
-function goTab(name, el){
-  ALL_TABS.forEach(t => {
-    const tab = document.getElementById('tab-'+t);
-    if(!tab) return;
-    if(t === name){
-      tab.style.display = 'block';
-      // إضافة animation class وإزالتها بعد الانتهاء
-      tab.classList.remove('tab-enter');
-      void tab.offsetWidth; // reflow لتفعيل الـ animation مجدداً
-      tab.classList.add('tab-enter');
-      tab.addEventListener('animationend', ()=>tab.classList.remove('tab-enter'), {once:true});
-    } else {
-      tab.style.display = 'none';
-    }
-  });
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if(el) el.classList.add('active');
-  if(name==='field')      { loadTours(); loadMaintenance(); }
-  if(name==='stations')   { loadStations(); }
-  if(name==='cameras')    { loadCameras(); }
-  if(name==='inventory')  { loadInventory(); }
-  if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
-  if(name==='reports')    { populateReportDistricts(); generateReport(); }
-  if(name==='delegates')  { loadDelegates(); }
-  if(name==='circulars')  { loadCirculars(); }
-  if(name==='users')      { loadUsers(); }
-  if(name==='logs')       { loadLogs(); }
-}
-
-function switchField(sub, el){
-  const tours = document.getElementById('tab-tours');
-  const maint = document.getElementById('tab-maintenance');
-  [tours, maint].forEach(t=>{ if(t) t.style.display='none'; });
-  const active = sub==='tours' ? tours : maint;
-  if(active){
-    active.style.display='block';
-    active.classList.remove('tab-enter');
-    void active.offsetWidth;
-    active.classList.add('tab-enter');
-    active.addEventListener('animationend',()=>active.classList.remove('tab-enter'),{once:true});
-  }
-  document.querySelectorAll('#tab-field > div:first-child > button').forEach(b => {
-    b.style.borderBottomColor = 'transparent';
-    b.style.color = '#64748b'; b.style.fontWeight = '600';
-  });
-  if(el){
-    el.style.borderBottomColor = (sub==='maintenance') ? '#dc2626' : '#1d4ed8';
-    el.style.color = (sub==='maintenance') ? '#dc2626' : '#1d4ed8';
-    el.style.fontWeight = '700';
-  }
-}
-
-function swCodingTab(sub, el){
-  document.getElementById('cpane-list').style.display = (sub==='list') ? 'block' : 'none';
-  document.getElementById('cpane-gen').style.display  = (sub==='gen')  ? 'block' : 'none';
-  document.querySelectorAll('.coding-sub').forEach(b => b.classList.remove('active'));
-  if(el) el.classList.add('active');
-  if(sub==='gen') populateGenStations();
-}
-
-// ══════════════════════════════════════════
-//  INIT APP
-// ══════════════════════════════════════════
-
-async function initApp(){
-  if(CU){
-    const av = document.getElementById('su-av');
-    const nm = document.getElementById('su-name');
-    const rl = document.getElementById('su-role');
-    const dt = document.getElementById('su-district');
-    if(av) av.textContent = (CU.fullname||'م')[0];
-    if(nm) nm.textContent = CU.fullname||'';
-    if(rl) rl.textContent = CU.role==='admin' ? '🔑 مدير النظام' : 'مستخدم';
-    if(dt) dt.textContent = CU.district||'';
-
-    const isAdmin = CU.role==='admin';
-    ['nav-logs','admin-sect'].forEach(id=>{
-      const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
-    });
-    // إخفاء المستخدمون والإحصائيات عن المخولين
-    const navUsers=document.getElementById('nav-users');
-    if(navUsers) navUsers.style.display=isAdmin?'':'none';
-    const camStats=document.getElementById('cam-stats-section');
-    if(camStats) camStats.style.display=isAdmin?'grid':'none';
-    // التقارير مرئية للجميع لكن مصفّاة بالقاطع
-    document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
-    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
-      const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
-    });
-    const circBtn=document.getElementById('btn-add-circ');
-    if(circBtn) circBtn.style.display='';  // مرئي للجميع
-  }
-
-  try{
-    const d=await api('GET','/api/districts');
-    DISTRICTS_LIST=d.districts||[];
-  }catch(e){
-    DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
-  }
-
-  try{
-    await Promise.all([
-      loadStations(),
-      loadTours(),
-      loadMaintenance(),
-      loadDelegates(),
-      loadCirculars(),
-    ]);
-  }catch(e){
-    toast('خطأ في تحميل البيانات: '+e.message,'err');
-    console.error('initApp load error:',e);
-  }
-  updateDashboard();
-  populateDistrictFilters();
-
-  // إذا جاء من مسح QR مباشر
-  if(window._scanCode){
-    goTab('coding', document.querySelector('[onclick*="coding"]'));
-    setTimeout(()=>{
-      showScanResult(window._scanCode);
-      window._scanCode=null;
-    },500);
-  }
-}
-
-// ══════════════════════════════════════════
-//  DASHBOARD
-// ══════════════════════════════════════════
-
-function setCircle(id, pct){
-  const el=document.getElementById(id); if(!el) return;
-  el.style.strokeDashoffset = 239 - 239*Math.min(pct,1);
-}
-
-function updateDashboard(){
-  const tTotal=allTours.length;
-  document.getElementById('s-tours-count').textContent=tTotal;
-  const thisMonth=allTours.filter(t=>t.date?.startsWith(new Date().toISOString().slice(0,7))).length;
-  document.getElementById('s-tours-sub').textContent='هذا الشهر: '+thisMonth;
-  setCircle('circ-tours', Math.min(tTotal/50,1));
-
-  const mTotal=allMaint.length;
-  document.getElementById('s-maint-count').textContent=mTotal;
-  document.getElementById('s-cams-bad-sub').textContent='إجمالي: '+mTotal;
-  setCircle('circ-maint', Math.min(mTotal/30,1));
-
-  const stTotal=allStations.length;
-  document.getElementById('s-stations').textContent=stTotal;
-  document.getElementById('s-stations-sub').textContent='حكومية: '+allStations.filter(s=>s.type==='حكومية').length;
-  setCircle('circ-stations', Math.min(stTotal/20,1));
-
-  const now=Date.now();
-  const unvisited=allStations.filter(s=>{
-    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
-    return !last || (now-new Date(last.date).getTime())>30*864e5;
-  }).length;
-  document.getElementById('s-unvisited').textContent=unvisited;
-  setCircle('circ-reports', stTotal ? unvisited/stTotal : 0);
-
-  const badge=document.getElementById('unvisited-badge');
-  if(badge){ badge.style.display=unvisited?'':'none'; badge.textContent=unvisited; }
-
-  // احصائيات الكاميرات من الجرد أو من المحطات
-  let camOk=0,camBad=0;
-  if(allInventory&&allInventory.length){
-    allInventory.forEach(x=>{camOk+=(+x.cam_count||0);});
-    allStations.forEach(s=>{camBad+=(+s.cam_broken||0);});
-    camOk=Math.max(0,camOk-camBad);
-  } else {
-    allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
-  }
-  document.getElementById('s-cams-ok').textContent=camOk;
-  document.getElementById('s-cams-bad').textContent=camBad;
-  const total=camOk+camBad, pct=total?Math.round(camOk/total*100):0;
-  const bar=document.getElementById('cam-status-bar');
-  if(bar) bar.style.width=pct+'%';
-  const lbl=document.getElementById('cam-pct-lbl');
-  if(lbl) lbl.textContent=total?`${pct}% تعمل (${camOk} من ${total})`:'لا بيانات';
-
-  const wt=document.getElementById('widget-tours');
-  if(wt){
-    const recent=[...allTours].sort((a,b)=>b.date>a.date?1:-1).slice(0,5);
-    wt.innerHTML=recent.length?recent.map(t=>`
-      <div style="padding:6px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px">
-        <span style="font-weight:700">${t.station_name||'—'}</span>
-        <span style="color:var(--t3)">${t.date||''}</span>
-        <span class="badge b-blue">${t.visit_type||'—'}</span>
-      </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px">لا توجد جولات</div>';
-  }
-
-  // ── تحديث إجراءات صيانة اليوم ──
-  const today = new Date().toISOString().split('T')[0];
-  const todayMaint = allMaint.filter(m=>m.date===today);
-  const alertDiv  = document.getElementById('today-maint-alert');
-  const alertList = document.getElementById('today-maint-list');
-  if(alertDiv && alertList){
-    if(todayMaint.length){
-      alertDiv.style.display='block';
-      // تجميع المخولين الذين قاموا بصيانة اليوم
-      const byTech={};
-      todayMaint.forEach(m=>{
-        const tech=m.technician||'غير محدد';
-        const dist=m.district||'';
-        if(!byTech[tech]) byTech[tech]={name:tech,dist,ops:[]};
-        byTech[tech].ops.push((m.station_name||'')+(m.device_type?' — '+m.device_type:''));
-      });
-      alertList.innerHTML=Object.values(byTech).map(t=>
-        '<div style="background:rgba(255,255,255,.12);border-radius:10px;padding:10px 12px">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">'
-        +'<div style="font-weight:800;font-size:13px">👷 '+t.name+'</div>'
-        +(t.dist?'<span style="background:rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-size:11px">'+t.dist+'</span>':'')
-        +'</div>'
-        +'<div style="font-size:11px;opacity:.85;line-height:1.7">'+t.ops.map(o=>'• '+o).join('<br>')+'</div>'
-        +'<div style="font-size:10px;opacity:.6;margin-top:4px">'+t.ops.length+' عملية صيانة</div>'
-        +'</div>'
-      ).join('');
-    } else {
-      alertDiv.style.display='none';
-    }
-  }
-
-  const wm=document.getElementById('widget-maint');
-  if(wm){
-    const byD={};
-    allMaint.forEach(m=>{byD[m.district||'غير محدد']=(byD[m.district||'غير محدد']||0)+1;});
-    const entries=Object.entries(byD).sort((a,b)=>b[1]-a[1]);
-    wm.innerHTML=entries.length?entries.map(([d,c])=>
-      '<div style="padding:7px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px">'
-      +'<span style="font-weight:700">'+d+'</span><span class="badge b-bad">'+c+' عملية</span>'
-      +'</div>').join('')
-      :'<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px">لا صيانة</div>';
-  }
-
-  const dtb=document.getElementById('dash-delegates-tb');
-  if(dtb) dtb.innerHTML=allDelegates.length?allDelegates.map(d=>`
-    <tr><td>${d.district||'—'}</td><td style="font-weight:700">${d.name||'—'}</td>
-    <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
-    <td><span class="badge b-ok">✅ مخول</span></td></tr>`).join('')
-    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">لا يوجد مخولون</td></tr>';
-
-  // ── إحصائيات الحكومية والأهلية ──
-  const govSt  = allStations.filter(s=>s.type==='حكومية');
-  const privSt = allStations.filter(s=>s.type!=='حكومية');
-
-  function donutChart(pct, value, label, color){
-    const r=36, c=2*Math.PI*r, dash=pct/100*c, gap=c-dash;
-    return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:90px">'
-      +'<svg width="90" height="90" viewBox="0 0 90 90">'
-      +'<circle cx="45" cy="45" r="'+r+'" fill="none" stroke="#f1f5f9" stroke-width="10"/>'
-      +'<circle cx="45" cy="45" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="10"'
-      +' stroke-dasharray="'+dash.toFixed(1)+' '+gap.toFixed(1)+'"'
-      +' stroke-linecap="round" transform="rotate(-90 45 45)"/>'
-      +'<text x="45" y="45" text-anchor="middle" dominant-baseline="middle"'
-      +' style="font-size:16px;font-weight:900;fill:'+color+';font-family:Cairo,sans-serif">'+value+'</text>'
-      +'</svg>'
-      +'<span style="font-size:11px;font-weight:700;color:#475569;text-align:center">'+label+'</span>'
-      +'</div>';
-  }
-
-  function renderDonutGroup(divId, list){
-    const div=document.getElementById(divId); if(!div)return;
-    const tot=list.reduce((a,s)=>a+(+s.cam_working||0)+(+s.cam_broken||0),0);
-    const ok=list.reduce((a,s)=>a+(+s.cam_working||0),0);
-    const bad=list.reduce((a,s)=>a+(+s.cam_broken||0),0);
-    const okPct=tot?Math.round(ok/tot*100):0;
-    const badPct=tot?Math.round(bad/tot*100):0;
-    div.innerHTML=
-      donutChart(list.length?100:0, list.length, 'المحطات', '#1d4ed8')
-      +donutChart(tot?100:0, tot, 'إجمالي الكاميرات', '#0891b2')
-      +donutChart(okPct, ok, 'تعمل', '#16a34a')
-      +donutChart(badPct, bad, 'معطلة', '#dc2626');
-  }
-
-  renderDonutGroup('gov-cams-stats', govSt);
-  renderDonutGroup('priv-cams-stats', privSt);
-}
-
-// ══════════════════════════════════════════
-//  STATIONS
-// ══════════════════════════════════════════
-
-async function loadStations(){
-  try{
-    const d=await api('GET','/api/stations');
-    allStations=d.stations||[];
-    renderStations(); populateDistrictFilters();
-  }catch(e){toast('loadStations: '+e.message,'err');console.error('loadStations',e);}
-}
-
-function renderStations(){
-  const search=(document.getElementById('sq-stations')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-st-district')?.value||'';
-  let list=allStations.filter(s=>{
-    if(CU?.role!=='admin'&&CU?.district&&s.district!==CU.district) return false;
-    if(distF&&s.district!==distF) return false;
-    if(search&&!(s.name||'').toLowerCase().includes(search)&&!s.district?.includes(search)) return false;
-    return true;
-  });
-  const govList=list.filter(s=>s.type==='حكومية');
-  const privList=list.filter(s=>s.type!=='حكومية');
-  document.getElementById('gov-count').textContent=govList.length;
-  document.getElementById('priv-count').textContent=privList.length;
-  const row=(s,i)=>{
-    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
-    const isAdmin=CU?.role==='admin';
-    return `<tr>
-      <td><span class="snum">${i+1}</span></td>
-      <td style="font-weight:700">${s.name||'—'}</td>
-      <td><span class="db">${s.district||'—'}</span></td>
-      <td style="text-align:center;color:var(--a3);font-weight:700">${s.cam_working||0}</td>
-      <td style="text-align:center;color:var(--a2);font-weight:700">${s.cam_broken||0}</td>
-      <td style="color:var(--t3);font-size:12px">${last?last.date:'—'}</td>
-      <td style="text-align:center">${isAdmin?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button> <button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}</td>
-    </tr>`;
-  };
-  const govTb=document.getElementById('stations-gov-tb');
-  const privTb=document.getElementById('stations-priv-tb');
-  if(govTb)  govTb.innerHTML=govList.length?govList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
-  if(privTb) privTb.innerHTML=privList.length?privList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
-  setTimeout(_fixToggleHeights, 50);
-}
-function filterStations(){ renderStations(); }
-
-// حالة الإخفاء/الإظهار
-const _stToggle = {gov:true, priv:true};
-
-function toggleStSection(which){
-  _stToggle[which] = !_stToggle[which];
-  const body = document.getElementById(which+'-section-body');
-  const icon = document.getElementById(which+'-toggle-icon');
-  if(!body) return;
-  if(_stToggle[which]){
-    body.style.maxHeight = body.scrollHeight + 2000 + 'px';
-    if(icon) icon.textContent = '▲';
-  } else {
-    body.style.maxHeight = '0';
-    if(icon) icon.textContent = '▼';
-  }
-}
-
-// بعد كل render اضبط الـ maxHeight الصحيح للأقسام الظاهرة
-function _fixToggleHeights(){
-  ['gov','priv'].forEach(w=>{
-    const body = document.getElementById(w+'-section-body');
-    if(body && _stToggle[w]) body.style.maxHeight = body.scrollHeight + 2000 + 'px';
-  });
-}
-
-function openStationModal(id){
-  if(!document.getElementById('ov-station')){
-    const div=document.createElement('div');
-    div.className='overlay'; div.id='ov-station'; div.onclick=e=>closeOv(e,'ov-station');
-    div.innerHTML=`<div class="modal modal-sm"><div class="m-title">⛽ محطة</div>
-      <input type="hidden" id="st-eid">
-      <div class="fgrid">
-        <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
-        <div class="fg"><label class="fl">القاطع *</label><select class="fi" id="st-district"></select></div>
-        <div class="fg"><label class="fl">النوع</label><select class="fi" id="st-type"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
-      </div>
-      <div class="m-footer">
-        <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
-        <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
-      </div></div>`;
-    document.body.appendChild(div);
-  }
-  const s=id?allStations.find(x=>x.id===id)||{}:{};
-  document.getElementById('st-eid').value=id||'';
-  document.getElementById('st-name').value=s.name||'';
-  document.getElementById('st-district').innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
-  document.getElementById('st-type').value=s.type||'حكومية';
-  document.getElementById('ov-station').classList.add('open');
-}
-
-async function saveStation(){
-  const id=parseInt(document.getElementById('st-eid').value)||0;
-  const body={name:document.getElementById('st-name').value.trim(), district:document.getElementById('st-district').value, type:document.getElementById('st-type').value};
-  if(!body.name||!body.district){toast('أدخل الاسم والقاطع','err');return;}
-  try{
-    if(id) await api('PUT','/api/stations/'+id,body);
-    else   await api('POST','/api/stations',body);
-    closeModal('ov-station'); toast('تم الحفظ ✅'); await loadStations();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-async function delStation(id){
-  if(!confirm('حذف المحطة؟'))return;
-  try{await api('DELETE','/api/stations/'+id);toast('تم الحذف');await loadStations();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-// ══════════════════════════════════════════
-//  TOURS
-// ══════════════════════════════════════════
-
-async function loadTours(){
-  try{
-    const d=await api('GET','/api/tours');
-    allTours=d.tours||[];
-    renderTours();
-  }catch(e){toast('loadTours: '+e.message,'err');console.error('loadTours',e);}
-}
-
-function renderTours(){
-  const search=(document.getElementById('sq-tours')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-tour-district')?.value||'';
-  const typeF=document.getElementById('f-tour-type')?.value||'';
-  let list=allTours.filter(t=>{
-    if(CU?.role!=='admin'&&CU?.district&&t.district!==CU.district)return false;
-    if(distF&&t.district!==distF)return false;
-    if(typeF&&t.visit_type!==typeF)return false;
-    if(search&&!JSON.stringify(t).toLowerCase().includes(search))return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-
-  const pages=Math.max(1,Math.ceil(list.length/PP));
-  sP_t=Math.min(sP_t,pages);
-  const slice=list.slice((sP_t-1)*PP, sP_t*PP);
-  const tb=document.getElementById('tours-tb');
-  if(!tb)return;
-  tb.innerHTML=slice.length?slice.map((t,i)=>`<tr>
-    <td><span class="snum">${(sP_t-1)*PP+i+1}</span></td>
-    <td>${t.date||'—'}</td>
-    <td style="font-weight:700">${t.station_name||'—'}</td>
-    <td><span class="db">${t.district||'—'}</span></td>
-    <td><span class="badge b-blue">${t.visit_type||'—'}</span></td>
-    <td>${t.technician||'—'}</td>
-    <td>${t.file_key?`<button class="btn btn-o btn-sm" onclick="viewFile('${t.file_key}')">📷</button>`:'—'}</td>
-    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--t3)">لا توجد جولات</td></tr>';
-  renderPagination('pg-tours', sP_t, pages, p=>{sP_t=p;renderTours();});
-}
-function filterTours(){sP_t=1;renderTours();}
-
-function openTourModal(id){
-  const t=id?allTours.find(x=>x.id===id)||{}:{};
-  document.getElementById('ov-tour').classList.add('open');
-  document.getElementById('tour-eid').value=id||'';
-  document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
-  const ds=document.getElementById('tour-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
-  filterTourStations();
-  if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
-  document.getElementById('tour-type').value=t.visit_type||'كشف';
-  document.getElementById('tour-tech').value=t.technician||'';
-  document.getElementById('tour-notes').value=t.notes||'';
-}
-async function saveTour(){
-  const id=parseInt(document.getElementById('tour-eid').value)||0;
-  const stId=parseInt(document.getElementById('tour-station').value)||0;
-  const st=allStations.find(s=>s.id===stId)||{};
-  const body={date:document.getElementById('tour-date').value, district:document.getElementById('tour-district').value,
-    station_id:stId, station_name:st.name||'', visit_type:document.getElementById('tour-type').value,
-    technician:document.getElementById('tour-tech').value, notes:document.getElementById('tour-notes').value};
-  if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
-  try{
-    const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
-    const tid=id||r.id;
-    if(UF.tour_img){await api('POST','/api/files/tour_'+tid,{name:UF.tour_img.name,data:UF.tour_img.data,mime:UF.tour_img.mime});delete UF.tour_img;}
-    closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-function editTour(id){openTourModal(id);}
-async function delTour(id){
-  if(!confirm('حذف الجولة؟'))return;
-  try{await api('DELETE','/api/tours/'+id);toast('تم الحذف');await loadTours();updateDashboard();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function filterTourStations(){
-  const d=document.getElementById('tour-district')?.value||'';
-  const sel=document.getElementById('tour-station');
-  if(!sel)return;
-  const list=allStations.filter(s=>!d||s.district===d);
-  sel.innerHTML='<option value="">— اختر المحطة —</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-function exportToursCSV(){
-  const loadXLSX=()=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    const h=['التاريخ','المحطة','القاطع','نوع الزيارة','الفني','الملاحظات'];
-    const rows=allTours.map(t=>[t.date,t.station_name,t.district,t.visit_type,t.technician,t.notes]);
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:12},{wch:16},{wch:30}];
-    XLSX.utils.book_append_sheet(wb,ws,'الجولات');
-    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جولات_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
-    toast('تم التصدير ✅');
-  }).catch(()=>toast('خطأ','err'));
-}
-
-// ══════════════════════════════════════════
-//  MAINTENANCE
-// ══════════════════════════════════════════
-
-async function loadMaintenance(){
-  try{
-    const d=await api('GET','/api/maintenance');
-    allMaint=d.maintenance||[];
-    renderMaint();
-  }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
-}
-function renderMaint(){
-  const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-maint-district')?.value||'';
-  let list=allMaint.filter(m=>{
-    if(CU?.role!=='admin'&&CU?.district&&m.district!==CU.district)return false;
-    if(distF&&m.district!==distF)return false;
-    if(search&&!JSON.stringify(m).toLowerCase().includes(search))return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-  const pages=Math.max(1,Math.ceil(list.length/PP));
-  sP_m=Math.min(sP_m,pages);
-  const slice=list.slice((sP_m-1)*PP,sP_m*PP);
-  const tb=document.getElementById('maint-tb');
-  if(!tb)return;
-  tb.innerHTML=slice.length?slice.map((m,i)=>`<tr>
-    <td><span class="snum">${(sP_m-1)*PP+i+1}</span></td>
-    <td>${m.date||'—'}</td>
-    <td style="font-weight:700">${m.station_name||'—'}</td>
-    <td><span class="db">${m.district||'—'}</span></td>
-    <td>${m.device_type||'—'}</td>
-    <td style="text-align:center">${m.qty||0}</td>
-    <td>${m.reason||'—'}</td>
-    <td>${m.technician||'—'}</td>
-    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
-    <td><button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})" title="عرض الملفات المرفوعة">📎 ملفات</button></td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
-  renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
-}
-function filterMaint(){sP_m=1;renderMaint();}
-function openMaintModal(id){
-  const m=id?allMaint.find(x=>x.id===id)||{}:{};
-  document.getElementById('ov-maint').classList.add('open');
-  document.getElementById('maint-eid').value=id||'';
-  document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
-  const ds=document.getElementById('maint-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
-  filterMaintStations();
-  if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
-  const devEl=document.getElementById('maint-device'); if(devEl) devEl.value=m.device_type||'';
-  const qtyEl=document.getElementById('maint-qty'); if(qtyEl) qtyEl.value=m.qty||1;
-  document.getElementById('maint-reason').value=m.reason||'';
-  document.getElementById('maint-tech').value=m.technician||'';
-  document.getElementById('maint-notes').value=m.notes||'';
-  const saEl=document.getElementById('maint-status-after'); if(saEl) saEl.value=m.status_after||'يعمل بشكل طبيعي';
-}
-async function saveMaint(){
-  const id=parseInt(document.getElementById('maint-eid').value)||0;
-  const stId=parseInt(document.getElementById('maint-station').value)||0;
-  const st=allStations.find(s=>s.id===stId)||{};
-  const body={date:document.getElementById('maint-date').value, district:document.getElementById('maint-district').value,
-    station_id:stId, station_name:st.name||'', device_type:document.getElementById('maint-device').value||'',
-    qty:parseInt(document.getElementById('maint-qty')?.value)||1, reason:document.getElementById('maint-reason').value,
-    technician:document.getElementById('maint-tech').value, notes:document.getElementById('maint-notes').value,
-    status_after:document.getElementById('maint-status-after')?.value||''};
-  if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
-  try{
-    const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||r.id;
-    // رفع الملفات المرفقة
-    const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
-    for(const k of fileKeys){
-      if(UF[k]){ await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime}); delete UF[k]; }
-    }
-    closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-function editMaint(id){openMaintModal(id);}
-async function delMaint(id){
-  if(!confirm('حذف؟'))return;
-  try{await api('DELETE','/api/maintenance/'+id);toast('تم الحذف');await loadMaintenance();updateDashboard();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function filterMaintStations(){
-  const d=document.getElementById('maint-district')?.value||'';
-  const sel=document.getElementById('maint-station');
-  if(!sel)return;
-  sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-function exportMaintCSV(){
-  const loadXLSX=()=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    const h=['التاريخ','المحطة','القاطع','الجهاز','الكمية','السبب','الفني','الملاحظات'];
-    const rows=allMaint.map(m=>[m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician,m.notes]);
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:14},{wch:8},{wch:20},{wch:16},{wch:30}];
-    XLSX.utils.book_append_sheet(wb,ws,'الصيانة');
-    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='صيانة_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
-    toast('تم التصدير ✅');
-  }).catch(()=>toast('خطأ','err'));
-}
-
-// ══════════════════════════════════════════
-//  CAMERAS
-// ══════════════════════════════════════════
-
-async function loadCameras(){
-  try{
-    const d=await api('GET','/api/cameras');
-    allCams=d.cameras||[];
-    renderCams();
-  }catch(e){toast('loadCameras: '+e.message,'err');console.error('loadCameras',e);}
-}
-function renderCams(){
-  const search=(document.getElementById('sq-cams')?.value||'').toLowerCase();
-  const stF=document.getElementById('f-cam-status')?.value||'';
-  let list=allCams.filter(c=>{
-    if(CU?.role!=='admin'&&CU?.district&&c.district!==CU.district)return false;
-    if(stF==='working'&&c.status!=='يعمل')return false;
-    if(stF==='broken'&&c.status==='يعمل')return false;
-    if(search&&!JSON.stringify(c).toLowerCase().includes(search))return false;
-    return true;
-  });
-  const pages=Math.max(1,Math.ceil(list.length/PP));
-  sP_c=Math.min(sP_c,pages);
-  const slice=list.slice((sP_c-1)*PP,sP_c*PP);
-  const tb=document.getElementById('cams-tb');
-  if(!tb)return;
-  tb.innerHTML=slice.length?slice.map((c,i)=>`<tr>
-    <td><span class="snum">${(sP_c-1)*PP+i+1}</span></td>
-    <td style="font-weight:700;font-family:monospace">${c.cam_no||'—'}</td>
-    <td>${c.station_name||'—'}</td>
-    <td><span class="db">${c.district||'—'}</span></td>
-    <td>${c.location_detail||'—'}</td>
-    <td>${c.cam_type||'—'}</td>
-    <td>${c.manufacturer||'—'}</td>
-    <td style="color:var(--t3);font-size:12px">${c.last_maintenance||'—'}</td>
-    <td><span class="badge ${c.status==='يعمل'?'b-ok':'b-bad'}">${c.status||'—'}</span></td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editCam(${c.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCam(${c.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد كاميرات</td></tr>';
-  renderPagination('pg-cams',sP_c,pages,p=>{sP_c=p;renderCams();});
-}
-function filterCams(){sP_c=1;renderCams();}
-function openCamModal(id){
-  const c=id?allCams.find(x=>x.id===id)||{}:{};
-  document.getElementById('ov-cam').classList.add('open');
-  document.getElementById('cam-eid').value=id||'';
-  const ds=document.getElementById('cam-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${c.district===d?'selected':''}>${d}</option>`).join('');
-  filterCamStations();
-  if(c.station_id)setTimeout(()=>document.getElementById('cam-station').value=c.station_id,50);
-  [{id:'cam-no',key:'cam_no'},{id:'cam-loc',key:'location_detail'},{id:'cam-mfr',key:'manufacturer'},
-   {id:'cam-last',key:'last_maintenance'},{id:'cam-notes',key:'notes'}].forEach(({id,key})=>{
-    const el=document.getElementById(id); if(el) el.value=c[key]||'';
-  });
-  const ctEl=document.getElementById('cam-type'); if(ctEl) ctEl.value=c.cam_type||'';
-  const csEl=document.getElementById('cam-status'); if(csEl) csEl.value=c.status||'يعمل';
-}
-async function saveCam(){
-  const id=parseInt(document.getElementById('cam-eid').value)||0;
-  const stId=parseInt(document.getElementById('cam-station')?.value)||0;
-  const st=allStations.find(s=>s.id===stId)||{};
-  const body={cam_no:document.getElementById('cam-no').value, station_id:stId, station_name:st.name||'',
-    district:st.district||'', location_detail:document.getElementById('cam-loc').value,
-    cam_type:document.getElementById('cam-type').value, manufacturer:document.getElementById('cam-mfr').value,
-    status:document.getElementById('cam-status').value, last_maintenance:document.getElementById('cam-last').value,
-    notes:document.getElementById('cam-notes').value};
-  try{
-    id?await api('PUT','/api/cameras/'+id,body):await api('POST','/api/cameras',body);
-    closeModal('ov-cam'); toast('تم الحفظ ✅'); await loadCameras();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-function editCam(id){openCamModal(id);}
-async function delCam(id){
-  if(!confirm('حذف الكاميرا؟'))return;
-  try{await api('DELETE','/api/cameras/'+id);toast('تم الحذف');await loadCameras();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function filterCamStations(){
-  const d=document.getElementById('cam-district')?.value||'';
-  const sel=document.getElementById('cam-station');
-  if(!sel)return;
-  sel.innerHTML='<option value="">— اختر —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-
-// ══════════════════════════════════════════
-//  INVENTORY
-// ══════════════════════════════════════════
-
-let allInventory=[];
-async function loadInventory(){
-  try{
-    const d=await api('GET','/api/inventory');
-    allInventory=d.inventory||[];
-    renderInv();
-  }catch(e){toast('loadInventory: '+e.message,'err');console.error('loadInventory',e);}
-}
-function renderInv(){
-  const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-inv-district')?.value||'';
-  const stF=document.getElementById('f-inv-status')?.value||'';
-  let list=allInventory.filter(x=>{
-    if(CU?.role!=='admin'&&CU?.district&&x.district!==CU.district)return false;
-    if(distF&&x.district!==distF)return false;
-    if(stF&&x.status!==stF)return false;
-    if(search&&!(x.station_name||'').toLowerCase().includes(search))return false;
-    return true;
-  });
-  const lbl=document.getElementById('inv-total-label');
-  if(lbl) lbl.textContent='إجمالي: '+list.length+' محطة';
-  const tb=document.getElementById('inv-tb');
-  if(!tb)return;
-  tb.innerHTML=list.length?list.map((x,i)=>`<tr>
-    <td><span class="snum">${i+1}</span></td>
-    <td style="font-weight:700">${x.station_name||'—'}</td>
-    <td><span class="db">${x.district||'—'}</span></td>
-    <td style="text-align:center">${x.dvr_count||0}</td><td>${x.dvr_spec||'—'}</td><td>${x.dvr_model||'—'}</td>
-    <td style="text-align:center">${x.hdd_count||0}</td><td>${x.hdd_size||'—'}</td>
-    <td style="text-align:center">${x.cam_count||0}</td><td>${x.cam_spec||'—'}</td><td>${x.cam_res||'—'}</td>
-    <td style="text-align:center">${x.poe_count||0}</td><td>${x.poe_spec||'—'}</td>
-    <td style="text-align:center">${x.mon_count||0}</td><td>${x.mon_spec||'—'}</td>
-    <td style="text-align:center">${x.ups_count||0}</td><td>${x.ups_spec||'—'}</td>
-    <td style="text-align:center">${x.bat_count||0}</td><td>${x.bat_spec||'—'}</td>
-    <td style="text-align:center">${x.box_count||0}</td><td>${x.box_spec||'—'}</td>
-    <td><span class="badge ${x.status==='مكتمل'?'b-ok':x.status==='معطل'?'b-bad':'b-warn'}">${x.status||'—'}</span></td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInv(${x.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="23" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد جرد</td></tr>';
-}
-function filterInv(){renderInv();}
-function openInvModal(id){
-  const m=id?allInventory.find(x=>x.id===id)||{}:{};
-  document.getElementById('inv-eid').value=id||'';
-  // Populate station select
-  const ss=document.getElementById('inv-station');
-  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
-  document.getElementById('inv-status').value=m.status||'مكتمل';
-  const fields={
-    'inv-dvr-count':'dvr_count','inv-dvr-spec':'dvr_spec','inv-dvr-model':'dvr_model',
-    'inv-hdd-count':'hdd_count','inv-hdd-size':'hdd_size',
-    'inv-cam-count':'cam_count','inv-cam-spec':'cam_spec',
-    'inv-poe-count':'poe_count','inv-poe-spec':'poe_spec',
-    'inv-mon-count':'mon_count','inv-mon-spec':'mon_spec',
-    'inv-ups-count':'ups_count','inv-ups-spec':'ups_spec',
-    'inv-bat-count':'bat_count','inv-bat-spec':'bat_spec',
-    'inv-box-count':'box_count','inv-box-spec':'box_spec',
-    'inv-notes':'notes'
-  };
-  Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
-  const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
-  document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
-  document.getElementById('ov-inv').classList.add('open');
-}
-function editInv(id){openInvModal(id);}
-
-async function saveInv(){
-  const id=parseInt(document.getElementById('inv-eid').value)||0;
-  const stId=parseInt(document.getElementById('inv-station').value)||0;
-  if(!stId){toast('اختر المحطة أولاً','err');return;}
-  const st=allStations.find(s=>s.id===stId)||{};
-  const g=id=>parseInt(document.getElementById(id)?.value)||0;
-  const v=id=>document.getElementById(id)?.value||'';
-  const body={station_id:stId,station_name:st.name||'',district:st.district||'',
-    status:v('inv-status'),
-    dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
-    hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
-    cam_count:g('inv-cam-count'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
-    poe_count:g('inv-poe-count'),poe_spec:v('inv-poe-spec'),
-    mon_count:g('inv-mon-count'),mon_spec:v('inv-mon-spec'),
-    ups_count:g('inv-ups-count'),ups_spec:v('inv-ups-spec'),
-    bat_count:g('inv-bat-count'),bat_spec:v('inv-bat-spec'),
-    box_count:g('inv-box-count'),box_spec:v('inv-box-spec'),
-    notes:v('inv-notes')};
-  try{
-    id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
-    closeModal('ov-inv');toast('تم الحفظ ✅');await loadInventory();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-async function delInv(id){
-  if(!confirm('حذف؟'))return;
-  try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-async function exportInvExcel(){
-  if(!allInventory.length){
-    toast('جاري تحميل البيانات...');
-    try{ await loadInventory(); }catch(e){}
-  }
-  if(!allInventory.length){ toast('لا توجد بيانات جرد','err'); return; }
-  const loadLib=(src)=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');
-    s.src=src; s.onload=res; s.onerror=rej;
-    document.head.appendChild(s);
-  });
-  try{
-    await loadLib('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
-      .catch(()=>loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'));
-  }catch(e){ toast('تعذّر تحميل مكتبة Excel','err'); return; }
-  try{
-    const h=['المحطة','القاطع','الحالة',
-      'DVR/NVR عدد','DVR مواصفات','DVR موديل',
-      'HDD عدد','HDD حجم',
-      'كاميرات عدد','كاميرات مواصفات','كاميرات دقة',
-      'POE عدد','POE مواصفات',
-      'شاشات عدد','شاشات مواصفات',
-      'UPS عدد','UPS مواصفات',
-      'بطاريات عدد','بطاريات مواصفات',
-      'بوكسات عدد','بوكسات مواصفات','ملاحظات'];
-    const rows=allInventory.map(x=>[
-      x.station_name||'',x.district||'',x.status||'',
-      x.dvr_count||'',x.dvr_spec||'',x.dvr_model||'',
-      x.hdd_count||'',x.hdd_size||'',
-      x.cam_count||'',x.cam_spec||'',x.cam_res||'',
-      x.poe_count||'',x.poe_spec||'',
-      x.mon_count||'',x.mon_spec||'',
-      x.ups_count||'',x.ups_spec||'',
-      x.bat_count||'',x.bat_spec||'',
-      x.box_count||'',x.box_spec||'',x.notes||''
-    ]);
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:22},{wch:12},{wch:10},...Array(19).fill({wch:14})];
-    XLSX.utils.book_append_sheet(wb,ws,'جرد الكاميرات');
-    const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    const blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.xlsx';
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
-    toast('✅ تم تصدير الجرد — '+allInventory.length+' محطة');
-  }catch(err){ toast('خطأ: '+(err.message||err),'err'); }
-}
-function exportInvCSV(){ exportInvExcel(); }
-
-
-// ══════════════════════════════════════════
-//  CODING HELPERS
-// ══════════════════════════════════════════
-
-function populateGenStations(){
-  const sel=document.getElementById('gen-station');
-  if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— اختر —</option>'+allStations.map(s=>`<option value="${s.name}">${s.name}</option>`).join('');
-  if(cur) sel.value=cur;
-}
-
-function updateGenCode(){
-  const station=document.getElementById('gen-station')?.value||'';
-  const device=document.getElementById('gen-device')?.value||'NVR';
-  const num=(document.getElementById('gen-num')?.value||'001').padStart(3,'0');
-  const display=document.getElementById('gen-code-display');
-  if(!station){display.textContent='—';return '—';}
-
-  const stObj=allStations.find(s=>s.name===station)||{};
-  const dist=stObj.district||'';
-  const stId=stObj.id||0;
-
-  // خريطة القواطع → كود ASCII
-  const DIST_MAP={
-    'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
-    'العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ',
-  };
-
-  // الكود دائماً ASCII — استخدم رقم المحطة fallback لأي قاطع
-  let distCode = DIST_MAP[dist];
-  if(!distCode){
-    distCode = stId ? 'S'+String(stId).padStart(2,'0') : 'ST';
-  }
-
-  // أخفِ/أظهر حقل الكود اليدوي
-  const wrapEl=document.getElementById('gen-distcode-wrap');
-  if(wrapEl) wrapEl.style.display='none';
-
-  const code=`${device}-${distCode}-${num}`;
-  display.style.color='#0891b2';
-  display.textContent=code;
-  return code;
-}
-
-function onGenScanKey(e){
-  if(e.key==='Enter'){ generateLabel(); e.preventDefault(); }
-}
-
-// ══════════════════════════════════════════
-//  DELEGATES
-// ══════════════════════════════════════════
-
-async function loadDelegates(){
-  try{
-    const d=await api('GET','/api/delegates');
-    allDelegates=d.delegates||[];
-    renderDelegates();
-  }catch(e){}
-}
-function renderDelegates(){
-  const tb=document.getElementById('delegates-tb');
-  if(!tb)return;
-  tb.innerHTML=allDelegates.length?allDelegates.map((d,i)=>`<tr>
-    <td><span class="snum">${i+1}</span></td>
-    <td><span class="db">${d.district||'—'}</span></td>
-    <td style="font-weight:700">${d.name||'—'}</td>
-    <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
-    <td>${CU?.role==='admin'?`<button class="btn btn-o btn-sm" onclick="editDelegate(${d.id})">✏️</button>
-        <button class="btn btn-r btn-sm" onclick="delDelegate(${d.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="5" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد مخولون</td></tr>';
-}
-function openDelegateModal(id){document.getElementById('ov-delegate')?.classList.add('open');}
-function editDelegate(id){openDelegateModal(id);}
-async function delDelegate(id){
-  if(!confirm('حذف المخول؟'))return;
-  try{await api('DELETE','/api/delegates/'+id);toast('تم الحذف');await loadDelegates();updateDashboard();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function openDistrictModal(){toast('إضافة القواطع من خلال إعدادات النظام');}
-
-// ══════════════════════════════════════════
-//  CIRCULARS
-// ══════════════════════════════════════════
-
-let allCirculars=[];
-async function loadCirculars(){
-  try{
-    const d=await api('GET','/api/circulars');
-    allCirculars=d.circulars||[];
-    renderCirculars();
-    const unread=allCirculars.filter(c=>!(d.reads||[]).includes(c.id)).length;
-    const badge=document.getElementById('circulars-badge');
-    if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
-  }catch(e){}
-}
-function renderCirculars(){
-  const distF=document.getElementById('f-circ-district')?.value||'';
-  const typeF=document.getElementById('f-circ-type')?.value||'';
-  const myDist = CU?.role!=='admin'?CU?.district||'':'';
-  let list=[...allCirculars].filter(c=>{
-    // المخول: يرى تعاميم قاطعه أو الموجهة للكل فقط
-    if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
-    if(distF&&c.district!==distF&&c.district!=='الكل')return false;
-    if(typeF&&c.type!==typeF)return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-  const grid=document.getElementById('circulars-grid');
-  if(!grid)return;
-  const typeColor={'تعميم':'b-navy','تبليغ':'b-warn','أمر إداري':'b-bad','عام':'b-ok'};
-  const myReads=_circReads||{};
-  const isAdmin=CU?.role==='admin';
-  grid.innerHTML=list.length?list.map(c=>{
-    const iRead=myReads[c.id];
-    const readBadge=iRead
-      ?'<span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ تم الاطلاع</span>'
-      :'<button class="btn btn-p btn-sm" style="background:#16a34a;font-size:11px" onclick="markCircRead('+c.id+')">✅ تم الاطلاع</button>';
-    return `<div style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':' var(--border)'};border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
-        <div style="font-size:15px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
-        <span class="badge ${typeColor[c.type]||'b-blue'}">${c.type||'تعميم'}</span>
-      </div>
-      ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.7;background:var(--bg2);border-radius:8px;padding:10px 12px">${c.body||c.notes}</div>`:''}
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3);flex-wrap:wrap;gap:6px">
-        <div style="display:flex;gap:12px;align-items:center">
-          <span>📅 ${c.date||''}</span>
-          <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          ${readBadge}
-          <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
-          ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
-          ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
-        </div>
-      </div>
-    </div>`;
-  }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
-}
-function filterCirculars(){renderCirculars();}
-function toggleCircForm(){
-  const f=document.getElementById('circ-add-form');
-  if(f) f.style.display=f.style.display==='none'?'block':'none';
-}
-function cancelQuickCirc(){document.getElementById('circ-add-form').style.display='none';}
-async function saveQuickCircular(){
-  const title=document.getElementById('q-circ-title')?.value.trim();
-  if(!title){toast('أدخل عنوان التعميم','err');return;}
-  const body={title, type:document.getElementById('q-circ-type')?.value||'تعميم',
-    district:'الكل', body:document.getElementById('q-circ-body')?.value||'',
-    date:new Date().toISOString().split('T')[0]};
-  try{await api('POST','/api/circulars',body);toast('تم النشر ✅');cancelQuickCirc();await loadCirculars();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-async function saveCircular(){
-  const title=document.getElementById('circ-title')?.value.trim();
-  if(!title){toast('أدخل عنوان التعميم','err');return;}
-  const body={
-    title,
-    type:document.getElementById('circ-type')?.value||'تعميم',
-    district:document.getElementById('circ-district')?.value||'الكل',
-    body:document.getElementById('circ-body')?.value||'',
-    date:new Date().toISOString().split('T')[0]
-  };
-  try{
-    const res=await api('POST','/api/circulars',body);
-    const cid=res.circular?.id||res.id;
-
-    // رفع الملفات المرفقة
-    if(cid){
-      const fileKeys=['circ_1','circ_2','circ_3'];
-      const uploads=fileKeys.filter(k=>UF[k]);
-      await Promise.all(uploads.map(k=>
-        api('POST','/api/files/circ_'+cid+'_'+k, {
-          name:UF[k].name, data:UF[k].data, mime:UF[k].mime
-        }).catch(e=>console.error('file upload error:',k,e))
-      ));
-      // تنظيف حقول الملفات
-      fileKeys.forEach(k=>{
-        delete UF[k];
-        const st=document.getElementById('us-'+k);
-        if(st) st.textContent='صورة أو PDF';
-        const box=document.getElementById('ub-'+k.replace('_','-'));
-        if(box) box.classList.remove('hf');
-      });
-    }
-    closeModal('ov-circ');
-    toast('تم النشر ✅'+(uploads?.length?' مع '+uploads.length+' مرفق':''));
-    await loadCirculars();
-  }catch(e){ toast('خطأ: '+e.message,'err'); }
-}
-async function delCircular(id){
-  if(!confirm('حذف التعميم؟'))return;
-  try{await api('DELETE','/api/circulars/'+id);toast('تم الحذف');await loadCirculars();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-// ══════════════════════════════════════════
-//  USERS
-// ══════════════════════════════════════════
-
-let allUsers=[];
-async function loadUsers(){
-  try{
-    const d=await api('GET','/api/users');
-    allUsers=d.users||[];
-    renderUsers();
-  }catch(e){toast('خطأ في تحميل المستخدمين','err');}
-}
-function renderUsers(){
-  const cards=document.getElementById('users-cards');
-  if(!cards)return;
-  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
-  cards.innerHTML=`
-    <table width="100%" style="border-collapse:collapse;font-size:14px">
-      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
-      </tr></thead>
-      <tbody>${allUsers.map(u=>{
-        const perms=u.perms||{};
-        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
-          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير',inventory:'جرد'})
-            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
-              ${u.fullname||'—'}
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
-          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
-          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
-          <td style="padding:10px 14px">${permBadges}</td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
-            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
-          </td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>`;
-}
-function openUserModal(id){
-  const u=id?allUsers.find(x=>x.id===id)||{}:{};
-  document.getElementById('u-eid').value=id||'';
-  document.getElementById('u-fn').value=u.fullname||'';
-  document.getElementById('u-un').value=u.username||'';
-  document.getElementById('u-pw').value='';
-  document.getElementById('u-role').value=u.role||'viewer';
-
-  // دعم عدة قواطع
-  const userDistricts = Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
-  const wrap=document.getElementById('u-districts-wrap');
-  if(wrap){
-    wrap.innerHTML=DISTRICTS_LIST.map(d=>`
-      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;white-space:nowrap">
-        <input type="checkbox" value="${d}" ${userDistricts.includes(d)?'checked':''} style="width:15px;height:15px;cursor:pointer">
-        ${d}
-      </label>`).join('');
-  }
-  const perms=u.perms||{};
-  ['edit','del','files','reports','inventory'].forEach(p=>{
-    const el=document.getElementById('p-'+p);
-    if(el) el.classList.toggle('on', perms[p]===true);
-  });
-  toggleUserPerms();
-  document.getElementById('ov-user').classList.add('open');
-}
-function toggleUserPerms(){
-  const role=document.getElementById('u-role')?.value;
-  const permsDiv=document.getElementById('u-perms');
-  const distRow=document.getElementById('u-district-row');
-  if(permsDiv) permsDiv.style.display=role==='admin'?'none':'grid';
-  if(distRow)  distRow.style.display=role==='admin'?'none':'block';
-}
-async function saveUser(){
-  const id=parseInt(document.getElementById('u-eid').value)||0;
-  const fn=document.getElementById('u-fn').value.trim();
-  const un=document.getElementById('u-un').value.trim();
-  const pw=document.getElementById('u-pw').value;
-  const role=document.getElementById('u-role').value;
-  // جمع القواطع المختارة
-  const checkedDistricts=Array.from(document.querySelectorAll('#u-districts-wrap input[type=checkbox]:checked')).map(x=>x.value);
-  const district=checkedDistricts.length===1?checkedDistricts[0]:(checkedDistricts.length===0?'':'');
-  const districts=checkedDistricts;
-  if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
-  if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
-  const perms={
-    edit:  document.getElementById('p-edit')?.classList.contains('on'),
-    del:   document.getElementById('p-del')?.classList.contains('on'),
-    files: document.getElementById('p-files')?.classList.contains('on'),
-    reports:document.getElementById('p-reports')?.classList.contains('on'),
-    inventory:document.getElementById('p-inventory')?.classList.contains('on'),
-  };
-  const body={fullname:fn,username:un,role,district,districts,perms};
-  if(pw) body.password=pw;
-  try{
-    id?await api('PUT','/api/users/'+id,body):await api('POST','/api/users',body);
-    closeModal('ov-user');toast('تم الحفظ ✅');await loadUsers();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-function editUser(id){openUserModal(id);}
-async function delUser(id){
-  if(!confirm('حذف المستخدم؟'))return;
-  try{await api('DELETE','/api/users/'+id);toast('تم الحذف');await loadUsers();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-// ══════════════════════════════════════════
-//  LOGS
-// ══════════════════════════════════════════
-
-async function loadLogs(){
-  const limit=document.getElementById('log-limit')?.value||100;
-  try{
-    const d=await api('GET','/api/logs?limit='+limit);
-    const tb=document.getElementById('logs-tb');
-    if(!tb)return;
-    const logs=d.logs||[];
-    tb.innerHTML=logs.length?logs.map((l,i)=>`<tr>
-      <td><span class="snum">${i+1}</span></td>
-      <td style="font-weight:700">${l.fullname||l.username||'—'}</td>
-      <td>${l.action||'—'}</td>
-      <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis">${l.details||'—'}</td>
-      <td style="font-family:monospace;font-size:11px">${l.ip||'—'}</td>
-      <td style="color:var(--t3);font-size:12px">${l.time||'—'}</td>
-    </tr>`).join(''):'<tr><td colspan="6" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد سجل</td></tr>';
-  }catch(e){toast('خطأ في تحميل السجل','err');}
-}
-
-// ══════════════════════════════════════════
-//  REPORTS
-// ══════════════════════════════════════════
-
-function populateReportDistricts(){
-  const isAdmin=CU?.role==='admin';
-  const myDist=CU?.district||'';
-  ['r-district'].forEach(id=>{
-    const sel=document.getElementById(id);
-    if(!sel)return;
-    if(!isAdmin && myDist){
-      // المخول: قاطعه فقط
-      sel.innerHTML=`<option value="${myDist}">${myDist}</option>`;
-      sel.value=myDist;
-      sel.disabled=true;
-    } else {
-      sel.innerHTML='<option value="">الكل</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
-      sel.disabled=false;
-    }
-  });
-  generateReport();
-}
-function generateReport(){
-  const from=document.getElementById('r-from')?.value||'';
-  const to=document.getElementById('r-to')?.value||'9999';
-  const myDist=CU?.role!=='admin'&&CU?.district?CU.district:'';
-  const dist=myDist||document.getElementById('r-district')?.value||'';
-  let tours=allTours.filter(t=>{
-    if(from&&t.date<from)return false;
-    if(to&&t.date>to)return false;
-    if(dist&&t.district!==dist)return false;
-    return true;
-  });
-  let maints=allMaint.filter(m=>{
-    if(from&&m.date<from)return false;
-    if(to&&m.date>to)return false;
-    if(dist&&m.district!==dist)return false;
-    return true;
-  });
-  const res=document.getElementById('report-result');
-  if(!res)return;
-  const byType={};
-  tours.forEach(t=>{byType[t.visit_type||'غير محدد']=(byType[t.visit_type||'غير محدد']||0)+1;});
-  const colors=['#1d4ed8','#0891b2','#16a34a','#7c3aed','#d97706','#dc2626'];
-  const typeCards=Object.entries(byType).map(([k,v],i)=>
-    `<div style="background:${colors[i%colors.length]}15;border:1.5px solid ${colors[i%colors.length]}30;border-radius:10px;padding:10px;text-align:center">
-      <div style="font-size:20px;font-weight:900;color:${colors[i%colors.length]}">${v}</div>
-      <div style="font-size:11px;color:#475569;margin-top:2px">${k}</div>
-    </div>`).join('');
-  res.innerHTML=`
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px">
-      <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:10px;padding:12px;text-align:center;color:#fff">
-        <div style="font-size:24px;font-weight:900">${tours.length}</div>
-        <div style="font-size:11px;opacity:.85">جولة ميدانية</div>
-      </div>
-      <div style="background:linear-gradient(135deg,#dc2626,#ef4444);border-radius:10px;padding:12px;text-align:center;color:#fff">
-        <div style="font-size:24px;font-weight:900">${maints.length}</div>
-        <div style="font-size:11px;opacity:.85">عملية صيانة</div>
-      </div>
-      <div style="background:linear-gradient(135deg,#16a34a,#22c55e);border-radius:10px;padding:12px;text-align:center;color:#fff">
-        <div style="font-size:24px;font-weight:900">${new Set(tours.map(t=>t.station_id)).size}</div>
-        <div style="font-size:11px;opacity:.85">محطة تمت زيارتها</div>
-      </div>
-    </div>
-    ${typeCards?`<div style="font-size:11px;font-weight:700;color:#475569;margin-bottom:6px">أنواع الزيارات</div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">${typeCards}</div>`:''}`;
-}
-function generateMaintReport(){
-  const from=document.getElementById('rm-from')?.value||'';
-  const to=document.getElementById('rm-to')?.value||'9999';
-  let list=allMaint.filter(m=>(!from||m.date>=from)&&(!to||m.date<=to));
-  const res=document.getElementById('maint-report-result');
-  if(!res)return;
-  const qty=list.reduce((s,m)=>s+(+m.qty||0),0);
-  res.innerHTML=`<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:#dc2626">${list.length}</div><div style="font-size:12px;color:var(--t3)">عمليات صيانة</div></div>
-    <div style="background:var(--bg2);padding:12px;border-radius:10px;text-align:center"><div style="font-size:28px;font-weight:900;color:#d97706">${qty}</div><div style="font-size:12px;color:var(--t3)">قطعة مُصرَّفة</div></div>
-  </div>`;
-}
-
-// ══════════════════════════════════════════
-//  HELPERS
-// ══════════════════════════════════════════
-
-function populateDistrictFilters(){
-  ['f-tour-district','f-maint-district','f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
-    const sel=document.getElementById(id);
-    if(!sel)return;
-    const cur=sel.value;
-    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
-    sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
-    if(cur) sel.value=cur;
-  });
-}
-
-function renderPagination(containerId, current, total, onChange){
-  const el=document.getElementById(containerId);
-  if(!el||total<=1){if(el)el.innerHTML='';return;}
-  let html='';
-  if(current>1) html+=`<button class="pg-btn" onclick="(${onChange.toString()})(${current-1})">›</button>`;
-  for(let i=1;i<=total;i++){
-    if(i===1||i===total||Math.abs(i-current)<=1)
-      html+=`<button class="pg-btn ${i===current?'active':''}" onclick="(${onChange.toString()})(${i})">${i}</button>`;
-    else if(Math.abs(i-current)===2) html+='<span style="padding:0 4px;color:var(--t3)">…</span>';
-  }
-  if(current<total) html+=`<button class="pg-btn" onclick="(${onChange.toString()})(${current+1})">‹</button>`;
-  el.innerHTML=html;
-}
-
-function downloadCSV(rows, filename){
-  const csv=rows.map(r=>r.map(c=>`"${(c||'').toString().replace(/"/g,'""')}"`).join(',')).join('\n');
-  const a=document.createElement('a');
-  a.href='data:text/csv;charset=utf-8,\uFEFF'+encodeURIComponent(csv);
-  a.download=filename; a.click();
-}
-
-function openChangePw(){document.getElementById('ov-chpw')?.classList.add('open');}
-async function doChangePw(){
-  const oldPw=document.getElementById('pw-old').value;
-  const newPw=document.getElementById('pw-new').value;
-  const conPw=document.getElementById('pw-con').value;
-  if(newPw!==conPw){toast('كلمتا المرور غير متطابقتين','err');return;}
-  if(newPw.length<4){toast('كلمة المرور قصيرة جداً','err');return;}
-  try{
-    await api('PUT','/api/users/'+CU.id,{old_password:oldPw,password:newPw});
-    closeModal('ov-chpw'); toast('تم التغيير ✅');
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-async function viewFile(key){
-  try{
-    const d=await api('GET','/api/files/'+key);
-    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
-    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
-  }catch(e){toast('خطأ في تحميل الملف','err');}
-}
-
-async function doUpload(event, key){
-  try{
-    const file=event.target.files[0]; if(!file)return;
-    // حد أقصى 5MB
-    if(file.size>5*1024*1024){toast('حجم الملف كبير — الحد الأقصى 5MB','err');event.target.value='';return;}
-    const toB64=f=>new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result.split(',')[1]);
-      r.onerror=()=>rej(new Error('فشل قراءة الملف'));
-      r.readAsDataURL(f);
-    });
-    const data=await toB64(file);
-    UF[key]={name:file.name,data,mime:file.type||'application/octet-stream'};
-    const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent=file.name;
-    const box=event.target.closest('.up-box');
-    if(box) box.classList.add('hf');
-  }catch(e){
-    toast('خطأ في رفع الملف: '+e.message,'err');
-    console.error('doUpload error:',e);
-  }
-}
-function rmFile(key, e){
-  e?.stopPropagation();
-  delete UF[key];
-  const stat=document.getElementById('us-'+key);
-  if(stat) stat.textContent='صورة أو PDF';
-  const box=e?.target?.closest('.up-box');
-  if(box) box.classList.remove('hf');
-}
-
-
-
-
-
-function showMaintFiles(mid){
-  const keys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
-  const labels={maint_img:'صورة 1',maint_img2:'صورة 2',maint_img3:'صورة 3',
-    maint_rep:'سجل 1',maint_rep2:'سجل 2',maint_rep3:'سجل 3',
-    maint_tawkeef:'تكليف 1',maint_tawkeef2:'تكليف 2'};
-  let ov=document.getElementById('ov-maint-files');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='ov-maint-files';
-    ov.className='overlay';
-    ov.onclick=function(e){if(e.target===ov)closeModal('ov-maint-files');};
-    const inner=document.createElement('div');
-    inner.className='modal modal-sm';
-    const titleEl=document.createElement('div'); titleEl.className='m-title'; titleEl.textContent='📎 ملفات الصيانة';
-    const bodyEl=document.createElement('div'); bodyEl.id='maint-files-list'; bodyEl.style.cssText='display:flex;flex-direction:column;gap:8px;padding:4px 0';
-    const footerEl=document.createElement('div'); footerEl.className='m-footer';
-    const closeBtn=document.createElement('button'); closeBtn.className='btn btn-o'; closeBtn.textContent='إغلاق';
-    closeBtn.onclick=function(){closeModal('ov-maint-files');};
-    footerEl.appendChild(closeBtn);
-    inner.appendChild(titleEl); inner.appendChild(bodyEl); inner.appendChild(footerEl);
-    ov.appendChild(inner);
-    document.body.appendChild(ov);
-  }
-  const list=document.getElementById('maint-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:10px">جاري التحميل...</div>';
-  ov.classList.add('open');
-  Promise.all(keys.map(function(k){
-    return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
-      .catch(function(){return null;});
-  })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
-    if(!found.length){
-      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
-      return;
-    }
-    list.innerHTML='';
-    found.forEach(function(item){
-      const k=item.k; const d=item.d;
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px';
-      const lbl=document.createElement('span');
-      lbl.style.fontWeight='600';
-      lbl.textContent=labels[k]||k;
-      row.appendChild(lbl);
-      const btns=document.createElement('div');
-      btns.style.display='flex';
-      btns.style.gap='6px';
-      if(d.mime&&d.mime.startsWith('image/')){
-        const vBtn=document.createElement('button');
-        vBtn.className='btn btn-o btn-sm';
-        vBtn.textContent='👁️ عرض';
-        vBtn.onclick=function(){openLB('data:'+d.mime+';base64,'+d.data);};
-        btns.appendChild(vBtn);
-      }
-      const dBtn=document.createElement('button');
-      dBtn.className='btn btn-p btn-sm';
-      dBtn.textContent='⬇️ تحميل';
-      dBtn.onclick=function(){
-        const a=document.createElement('a');
-        a.href='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
-        a.download=d.name||k;
-        a.click();
-      };
-      btns.appendChild(dBtn);
-      row.appendChild(btns);
-      list.appendChild(row);
-    });
-  });
-}
-
-function saveLabelSizes(){
-  const s={w:document.getElementById('ctrl-lbl-w')?.value,
-           h:document.getElementById('ctrl-lbl-h')?.value,
-           qr:document.getElementById('ctrl-qr-size')?.value,
-           bc:document.getElementById('ctrl-bc-h')?.value};
-  localStorage.setItem('lbl_sizes',JSON.stringify(s));
-}
-function loadLabelSizes(){
-  try{
-    const s=JSON.parse(localStorage.getItem('lbl_sizes')||'{}');
-    if(s.w){const e=document.getElementById('ctrl-lbl-w');if(e)e.value=s.w;}
-    if(s.h){const e=document.getElementById('ctrl-lbl-h');if(e)e.value=s.h;}
-    if(s.qr){const e=document.getElementById('ctrl-qr-size');if(e)e.value=s.qr;}
-    if(s.bc){const e=document.getElementById('ctrl-bc-h');if(e)e.value=s.bc;}
-  }catch(e){}
-}
-// ── INIT ──
-// إذا تم فتح الصفحة من مسح QR: /scan/CODE|...
-(function detectScanUrl(){
-  const path = window.location.pathname;
-  if(path.startsWith('/scan/')){
-    const raw = decodeURIComponent(path.replace('/scan/','')).split('|')[0].trim();
-    if(raw){
-      // احفظ الكود للعرض بعد تحميل البيانات
-      window._scanCode = raw;
-    }
-  }
-})();
-
-function printCamReport(type){
-  const list=type==='gov'?allStations.filter(s=>s.type==='حكومية'):allStations.filter(s=>s.type!=='حكومية');
-  const title=type==='gov'?'الكاميرات الحكومية':'الكاميرات الأهلية';
-  const w=window.open('','_blank','width=700,height=600');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
-    +'<style>body{font-family:Cairo,sans-serif;padding:20px}table{width:100%;border-collapse:collapse}'
-    +'th{background:#1d4ed8;color:#fff;padding:8px}td{border:1px solid #ddd;padding:7px}'
-    +'@media print{button{display:none}}</style></head><body>'
-    +'<h2 style="color:#1d4ed8">تقرير '+title+'</h2>'
-    +'<p>العدد: '+list.length+' محطة — '+new Date().toLocaleDateString('ar-IQ')+'</p>'
-    +'<button onclick="window.print()" style="margin-bottom:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">🖨️ طباعة</button>'
-    +'<table><thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>يعمل</th><th>معطل</th></tr></thead>'
-    +'<tbody>'+list.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+(s.name||'—')+'</td><td>'+(s.district||'—')+'</td>'
-      +'<td style="color:green;text-align:center">'+(s.cam_working||0)+'</td>'
-      +'<td style="color:red;text-align:center">'+(s.cam_broken||0)+'</td></tr>').join('')
-    +'</tbody></table></body></html>');
-  w.document.close();
-}
-
-function viewCircFiles(cid){
-  const keys=['circ_1','circ_2','circ_3'];
-  const labels={circ_1:'مرفق 1',circ_2:'مرفق 2',circ_3:'مرفق 3'};
-  let ov=document.getElementById('ov-circ-files');
-  if(!ov){
-    ov=document.createElement('div'); ov.id='ov-circ-files'; ov.className='overlay';
-    ov.onclick=function(e){if(e.target===ov)closeModal('ov-circ-files');};
-    const inner=document.createElement('div'); inner.className='modal modal-sm';
-    const ttl=document.createElement('div'); ttl.className='m-title'; ttl.textContent='📎 مرفقات التعميم';
-    const bdy=document.createElement('div'); bdy.id='circ-files-list';
-    bdy.style.cssText='display:flex;flex-direction:column;gap:8px;padding:4px 0;min-height:60px';
-    const ftr=document.createElement('div'); ftr.className='m-footer';
-    const cls=document.createElement('button'); cls.className='btn btn-o'; cls.textContent='إغلاق';
-    cls.onclick=function(){closeModal('ov-circ-files');};
-    ftr.appendChild(cls); inner.appendChild(ttl); inner.appendChild(bdy); inner.appendChild(ftr);
-    ov.appendChild(inner); document.body.appendChild(ov);
-  }
-  const list=document.getElementById('circ-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:16px">جاري التحميل...</div>';
-  ov.classList.add('open');
-  Promise.all(keys.map(function(k){
-    return api('GET','/api/files/circ_'+cid+'_'+k)
-      .then(function(res){
-        // السيرفر قد يرجع {file:{...}} أو مباشرة {data,name,mime}
-        const d = res.file||res;
-        return (d&&d.data)?{k:k,d:d}:null;
-      }).catch(function(){return null;});
-  })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
-    if(!found.length){list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد مرفقات</div>';return;}
-    list.innerHTML='';
-    found.forEach(function(item){
-      const k=item.k,d=item.d;
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px';
-      const lbl=document.createElement('span'); lbl.style.fontWeight='600'; lbl.textContent=labels[k]||k;
-      const bts=document.createElement('div'); bts.style.cssText='display:flex;gap:6px';
-      if(d.mime&&d.mime.startsWith('image/')){
-        const vb=document.createElement('button'); vb.className='btn btn-o btn-sm'; vb.textContent='👁️ عرض';
-        vb.onclick=function(){openLB('data:'+d.mime+';base64,'+d.data);}; bts.appendChild(vb);
-      }
-      const db=document.createElement('button'); db.className='btn btn-p btn-sm'; db.textContent='⬇️ تحميل';
-      db.onclick=function(){const a=document.createElement('a');a.href='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;a.download=d.name||k;a.click();};
-      bts.appendChild(db); row.appendChild(lbl); row.appendChild(bts); list.appendChild(row);
-    });
-  });
-}
-
-// ── مساعد الطباعة — يفتح نافذة بالبيانات فقط ──
-function _openPrintWindow(title, tableHTML, extraStyle){
-  const S = 'script';
-  const w = window.open('','_blank','width=900,height=650');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
-    +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box}'
-    +'body{font-family:Cairo,Arial,sans-serif;padding:20px;color:#111}'
-    +'h2{color:#1d4ed8;margin-bottom:6px;font-size:18px}'
-    +'.sub{font-size:12px;color:#64748b;margin-bottom:14px}'
-    +'table{width:100%;border-collapse:collapse;font-size:12px}'
-    +'thead tr{background:#1d4ed8;color:#fff}'
-    +'th,td{padding:7px 10px;border:1px solid #ddd;text-align:right}'
-    +'tbody tr:nth-child(even){background:#f8fafc}'
-    +'.badge-ok{background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:20px;font-size:11px}'
-    +'.badge-bad{background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:20px;font-size:11px}'
-    +'.btn-p{background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700}'
-    +'@media print{.no-print{display:none!important}@page{margin:10mm}}'
-    +(extraStyle||'')
-    +'</style></head><body>'
-    +'<div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;align-items:center">'
-    +'<button class="btn-p" onclick="window.print()">🖨️ طباعة</button>'
-    +'<button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">✕ إغلاق</button>'
-    +'</div>'
-    +'<h2>'+title+'</h2>'
-    +'<div class="sub">نظام إدارة كاميرات المراقبة — شعبة تقنية المعلومات — '+new Date().toLocaleDateString('ar-IQ')+'</div>'
-    +tableHTML
-    +'</body></html>');
-  w.document.close();
-}
-
-// ── طباعة الجولات الميدانية ──
-function printToursTable(){
-  const distF=document.getElementById('f-tour-district')?.value||'';
-  const typeF=document.getElementById('f-tour-type')?.value||'';
-  let list=[...allTours].filter(t=>{
-    if(distF&&t.district!==distF)return false;
-    if(typeF&&t.visit_type!==typeF)return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الزيارة</th><th>الفني</th><th>ملاحظات</th></tr></thead>'
-    +'<tbody>'+list.map((t,i)=>`<tr><td>${i+1}</td><td>${t.date||'—'}</td><td style="font-weight:700">${t.station_name||'—'}</td><td>${t.district||'—'}</td><td><span class="badge-ok">${t.visit_type||'—'}</span></td><td>${t.technician||'—'}</td><td style="color:#475569">${t.notes||''}</td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' زيارة</div>';
-  _openPrintWindow('سجل الجولات الميدانية', tbl);
-}
-
-// ── طباعة الصيانة ──
-function printMaintTable(){
-  const distF=document.getElementById('f-maint-district')?.value||'';
-  let list=[...allMaint].filter(m=>!distF||m.district===distF).sort((a,b)=>b.date>a.date?1:-1);
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th></tr></thead>'
-    +'<tbody>'+list.map((m,i)=>`<tr><td>${i+1}</td><td>${m.date||'—'}</td><td style="font-weight:700">${m.station_name||'—'}</td><td>${m.district||'—'}</td><td>${m.device_type||'—'}</td><td style="text-align:center">${m.qty||'—'}</td><td style="color:#dc2626">${m.reason||'—'}</td><td>${m.technician||'—'}</td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' عملية</div>';
-  _openPrintWindow('سجل الصيانة', tbl);
-}
-
-// ── طباعة الجرد ──
-function printInv(){
-  const list=[...allInventory];
-  if(!list.length){toast('لا توجد بيانات','err');return;}
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>الحالة</th><th>DVR/NVR</th><th>HDD</th><th>كاميرات</th><th>ملاحظات</th></tr></thead>'
-    +'<tbody>'+list.map((x,i)=>`<tr><td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td><td><span class="${x.status==='مكتمل'?'badge-ok':'badge-bad'}">${x.status||'—'}</span></td><td>${x.dvr_count||0} (${x.dvr_model||'—'})</td><td>${x.hdd_count||0} × ${x.hdd_size||'—'}</td><td>${x.cam_count||0}</td><td style="color:#475569">${x.notes||''}</td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' محطة</div>';
-  _openPrintWindow('جرد الكاميرات والأجهزة', tbl);
-}
-
-// ── طباعة ترميز الأجهزة ──
-function printCodingList(){
-  const list=[...allCoding];
-  if(!list.length){toast('لا توجد بيانات','err');return;}
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>الكود</th><th>الموقع</th><th>المحطة</th><th>القاطع</th><th>تاريخ التركيب</th><th>الحالة</th></tr></thead>'
-    +'<tbody>'+list.map((d,i)=>`<tr><td>${i+1}</td><td style="font-family:monospace;font-weight:700;color:#0891b2">${d.code||'—'}</td><td>${d.location||'—'}</td><td>${d.station_name||'—'}</td><td>${d.district||'—'}</td><td>${d.install_date||'—'}</td><td><span class="${d.status==='يعمل'?'badge-ok':'badge-bad'}">${d.status||'—'}</span></td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' جهاز</div>';
-  _openPrintWindow('ترميز الأجهزة', tbl);
-}
-
-// ── طباعة المحطات الحكومية ──
-function _printStations(type){
-  const distF=document.getElementById('f-st-district')?.value||'';
-  let list=allStations.filter(s=>{
-    if(type==='gov'&&s.type!=='حكومية')return false;
-    if(type==='priv'&&s.type==='حكومية')return false;
-    if(distF&&s.district!==distF)return false;
-    return true;
-  });
-  const label=type==='gov'?'المحطات الحكومية':'المحطات الأهلية';
-  const color=type==='gov'?'#1d4ed8':'#d97706';
-  const title=label+(distF?' — '+distF:'');
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>✅ تعمل</th><th>❌ معطلة</th><th>الإجمالي</th></tr></thead>'
-    +'<tbody>'+list.map((s,i)=>{
-      const tot=(+s.cam_working||0)+(+s.cam_broken||0);
-      return '<tr><td>'+( i+1)+'</td><td style="font-weight:700">'+s.name+'</td><td>'+s.district+'</td>'
-        +'<td style="color:green;text-align:center">'+(s.cam_working||0)+'</td>'
-        +'<td style="color:red;text-align:center">'+(s.cam_broken||0)+'</td>'
-        +'<td style="text-align:center">'+tot+'</td></tr>';
-    }).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' محطة</div>';
-  _openPrintWindow(title, tbl, 'thead tr{background:'+color+'!important}');
-}
-function printGovStationsReport(){ _printStations('gov'); }
-function printPrivStationsReport(){ _printStations('priv'); }
-
-// ── طباعة مستندات الصيانة ──
-function printMaintDocs(){ printMaintTable(); }
-
-function toggleStatSection(bodyId, hdr){
-  const body=document.getElementById(bodyId);
-  if(!body)return;
-  const arrow=hdr.querySelector('[id$="-arrow"]');
-  const open=body.style.display!=='none';
-  body.style.display=open?'none':'block';
-  if(arrow) arrow.style.transform=open?'rotate(180deg)':'rotate(0deg)';
-}
-
-// قراءات التعاميم — {circId: readObj}
-let _circReads = {};
-
-// تحميل التعاميم مع قراءات المستخدم الحالي
-async function loadCirculars(){
-  try{
-    const d = await api('GET','/api/circulars');
-    allCirculars = d.circulars||[];
-    // تحميل حالة القراءة للمستخدم الحالي
-    _circReads = {};
-    await Promise.all(allCirculars.map(c=>
-      api('GET','/api/circulars/'+c.id+'/reads')
-        .then(r=>{
-          const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id);
-          if(myRead) _circReads[c.id]=myRead;
-        }).catch(()=>{})
-    ));
-    renderCirculars();
-  }catch(e){ toast('خطأ في تحميل التعاميم: '+e.message,'err'); }
-}
-
-// تسجيل الاطلاع
-async function markCircRead(cid){
-  try{
-    await api('POST','/api/circulars/'+cid+'/read',{
-      username:CU?.username||'',
-      fullname:CU?.fullname||'',
-      district:CU?.district||'',
-      read_at:new Date().toLocaleString('ar-IQ')
-    });
-    _circReads[cid]={user_id:CU?.id, read_at:new Date().toLocaleString('ar-IQ')};
-    renderCirculars();
-    toast('✅ تم تسجيل اطلاعك على التعميم');
-  }catch(e){ toast('خطأ: '+e.message,'err'); }
-}
-
-// عرض من اطّلع على التعميم (للمدير)
-async function showCircReads(cid, title){
-  let ov=document.getElementById('ov-circ-reads');
-  if(!ov){
-    ov=document.createElement('div'); ov.id='ov-circ-reads'; ov.className='overlay';
-    ov.onclick=function(e){if(e.target===ov)closeModal('ov-circ-reads');};
-    const inner=document.createElement('div');
-    inner.className='modal';
-    inner.style.width='500px';
-    const titleEl2=document.createElement('div'); titleEl2.className='m-title'; titleEl2.id='cr-title'; titleEl2.textContent='👁️ من اطلع على التعميم';
-    const bodyEl2=document.createElement('div'); bodyEl2.id='cr-list'; bodyEl2.style.cssText='min-height:80px;max-height:400px;overflow-y:auto;padding:8px 0';
-    const footEl2=document.createElement('div'); footEl2.className='m-footer';
-    const clsBtn2=document.createElement('button'); clsBtn2.className='btn btn-o'; clsBtn2.textContent='إغلاق';
-    clsBtn2.onclick=function(){closeModal('ov-circ-reads');};
-    footEl2.appendChild(clsBtn2);
-    inner.appendChild(titleEl2); inner.appendChild(bodyEl2); inner.appendChild(footEl2);
-    ov.appendChild(inner); document.body.appendChild(ov);
-  }
-  document.getElementById('cr-title').textContent='👁️ من اطلع: '+title;
-  const list=document.getElementById('cr-list');
-  list.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3)">جاري التحميل...</div>';
-  ov.classList.add('open');
-  try{
-    const d=await api('GET','/api/circulars/'+cid+'/reads');
-    const reads=d.reads||[];
-    // مقارنة مع قائمة المستخدمين للعرض
-    if(!reads.length){
-      list.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">لم يطلع أحد بعد</div>';
-      return;
-    }
-    list.innerHTML='<div style="padding:6px 0">'
-      +reads.map(r=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-bottom:1px solid var(--border)">'
-        +'<div style="display:flex;align-items:center;gap:10px">'
-        +'<div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px">'+((r.fullname||'م')[0])+'</div>'
-        +'<div><div style="font-weight:700;font-size:13px">'+(r.fullname||r.username||'—')+'</div>'
-        +'<div style="font-size:11px;color:var(--t3)">'+(r.district||'')+'</div></div>'
-        +'</div>'
-        +'<div style="text-align:left;font-size:11px;color:var(--t3)">'+(r.read_at||'—')+'</div>'
-        +'</div>'
-      ).join('')
-      +'</div>'
-      +'<div style="padding:10px 16px;font-size:12px;color:var(--t3);background:var(--bg2)">إجمالي: '+reads.length+' شخص اطلع</div>';
-  }catch(e){
-    list.innerHTML='<div style="text-align:center;padding:20px;color:#dc2626">خطأ في التحميل</div>';
-  }
-}
-
-tryAutoLogin();</script>
-</body>
-</html>
+sessions = {}
+
+def add_log_safe(user,action,details,ip=""):
+    try: add_log(user,action,details,ip)
+    except: pass
+
+
+
+class Handler(BaseHTTPRequestHandler):
+    def log_message(self,f,*a): pass
+    def send_json(self,data,status=200):
+        body=json.dumps(data,ensure_ascii=False).encode("utf-8")
+        self.send_response(status)
+        self.send_header("Content-Type","application/json; charset=utf-8")
+        self.send_header("Content-Length",len(body))
+        self.send_header("Access-Control-Allow-Origin","*")
+        self.send_header("Cache-Control","no-cache")
+        self.end_headers(); self.wfile.write(body)
+    def send_html(self,content):
+        body=content.encode("utf-8")
+        self.send_response(200)
+        self.send_header("Content-Type","text/html; charset=utf-8")
+        self.send_header("Content-Length",len(body))
+        self.send_header("Cache-Control","no-cache,no-store,must-revalidate")
+        self.end_headers(); self.wfile.write(body)
+    def read_body(self):
+        l=int(self.headers.get("Content-Length",0))
+        return json.loads(self.rfile.read(l)) if l else {}
+    def get_token(self): return self.headers.get("Authorization","").replace("Bearer ","").strip()
+    def get_user(self):
+        uid=sessions.get(self.get_token())
+        if not uid: return None
+        return next((u for u in load_db()["users"] if u["id"]==uid),None)
+    def require_auth(self):
+        u=self.get_user()
+        if not u: self.send_json({"error":"غير مصرح"},401)
+        return u
+    def can(self,user,perm):
+        if user["role"]=="admin": return True
+        return bool(user.get("perms",{}).get(perm))
+    def ip(self): return self.headers.get("X-Forwarded-For",self.client_address[0])
+
+    def do_OPTIONS(self):
+        self.send_response(200)
+        for h,v in [("Access-Control-Allow-Origin","*"),("Access-Control-Allow-Methods","GET,POST,PUT,DELETE,OPTIONS"),("Access-Control-Allow-Headers","Content-Type,Authorization")]: self.send_header(h,v)
+        self.end_headers()
+
+    def do_GET(self):
+        p=urlparse(self.path).path.rstrip("/")
+        if p in ("","/"): 
+            f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
+            with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
+        u=self.require_auth()
+        if not u: return
+        db=load_db()
+        if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
+        elif p=="/api/stations":
+            sts=db["stations"]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: sts=[s for s in sts if s.get("district") in u_dists]
+            self.send_json({"ok":True,"stations":sts})
+        elif p=="/api/districts":
+            db=load_db()
+            all_d=DISTRICTS+[d for d in db.get("custom_districts",[]) if d not in DISTRICTS]
+            self.send_json({"ok":True,"districts":all_d})
+        elif p=="/api/districts_admin_placeholder":  # removed duplicate
+            name=body.get("name","").strip()
+            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
+            db=load_db()
+            if "custom_districts" not in db: db["custom_districts"]=[]
+            if name in DISTRICTS or name in db["custom_districts"]:
+                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
+            db["custom_districts"].append(name); save_db(db)
+            self.send_json({"ok":True})
+
+        elif "/api/circulars/" in p and p.endswith("/reads"):
+            cid=int(p.split("/")[3])
+            reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
+            self.send_json({"ok":True,"reads":reads})
+
+
+
+        elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
+        elif p=="/api/tours":
+            tours=db.get("tours",[])
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: tours=[t for t in tours if t.get("district") in u_dists]
+            self.send_json({"ok":True,"tours":tours})
+        elif p=="/api/maintenance":
+            maint=db.get("maintenance",[])
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: maint=[m for m in maint if m.get("district") in u_dists]
+            self.send_json({"ok":True,"maintenance":maint})
+        elif p=="/api/cameras":
+            cams=db.get("cameras",[])
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: cams=[c for c in cams if c.get("district") in u_dists]
+            self.send_json({"ok":True,"cameras":cams})
+        elif p=="/api/users":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            self.send_json({"ok":True,"users":[{k:v for k,v in x.items() if k!="password"} for x in db["users"]]})
+        elif p=="/api/logs":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            qs=parse_qs(urlparse(self.path).query)
+            self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
+        elif "/api/circulars/" in p and p.endswith("/reads"):
+            cid=int(p.split("/")[3])
+            reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
+            self.send_json({"ok":True,"reads":reads})
+
+        elif p=="/api/circulars":
+            circs=db.get("circulars",[])
+            # Filter by district for non-admin
+            if u["role"]!="admin" and u.get("district"):
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or not u_dists or c2.get("district") in u_dists]
+            self.send_json({"ok":True,"circulars":list(reversed(circs))})
+
+        elif p=="/api/coding":
+            devices=db.get("coding",[])
+            if u["role"]!="admin" and u.get("district"):
+                devices=[d for d in devices if not d.get("district") or d.get("district")==u["district"]]
+            self.send_json({"ok":True,"devices":devices})
+
+        elif p=="/api/scan_logs":
+            code_q=urlparse(self.path).query.replace("code=","")
+            logs=db.get("scan_logs",[])
+            if code_q: logs=[l for l in logs if l.get("code")==code_q]
+            self.send_json({"ok":True,"logs":list(reversed(logs[-100:]))})
+
+        elif p=="/api/inventory":
+            inv=db.get("inventory",[])
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: inv=[x for x in inv if x.get("district") in u_dists]
+            self.send_json({"ok":True,"inventory":inv})
+
+        elif p=="/api/stats":
+            tours=db.get("tours",[])
+            maintenance=db.get("maintenance",[])
+            cameras=db.get("cameras",[])
+            stations=db.get("stations",[])
+            if u["role"]!="admin" and u.get("district"):
+                tours=[t for t in tours if t.get("district")==u["district"]]
+                maintenance=[m for m in maintenance if m.get("district")==u["district"]]
+                cameras=[c for c in cameras if c.get("district")==u["district"]]
+                stations=[s for s in stations if s.get("district")==u["district"]]
+            # Unvisited stations (no tour in last 30 days)
+            now=datetime.now()
+            visited_30=set(t["station_id"] for t in tours if t.get("date") and (now-datetime.strptime(t["date"],"%Y-%m-%d")).days<=30)
+            unvisited=[s for s in stations if s["id"] not in visited_30]
+            # Camera counts from stations (more accurate)
+            st_cams_working=sum(int(s.get("cam_working",0)) for s in stations)
+            st_cams_broken=sum(int(s.get("cam_broken",0)) for s in stations)
+            # Fallback to cameras table if stations have no data
+            cams_working=st_cams_working if st_cams_working>0 else len([c for c in cameras if c.get("status")=="working"])
+            cams_broken=st_cams_broken if st_cams_broken>0 else len([c for c in cameras if c.get("status")=="broken"])
+            # Per district breakdown
+            district_cams={}
+            for s in stations:
+                d=s.get("district","")
+                if d not in district_cams: district_cams[d]={"working":0,"broken":0}
+                district_cams[d]["working"]+=int(s.get("cam_working",0))
+                district_cams[d]["broken"]+=int(s.get("cam_broken",0))
+            self.send_json({
+                "ok":True,
+                "total_stations":len(stations),
+                "total_tours":len(tours),
+                "total_maintenance":len(maintenance),
+                "cameras_working":cams_working,
+                "cameras_broken":cams_broken,
+                "cameras_total":cams_working+cams_broken,
+                "district_cams":district_cams,
+                "unvisited_count":len(unvisited),
+                "unvisited":unvisited[:5],
+            })
+        elif p.startswith("/api/files/"):
+            key="/".join(p.split("/")[3:])
+            self.send_json({"ok":True,"file":load_file(key)})
+        else: self.send_json({"error":"غير موجود"},404)
+
+    def do_POST(self):
+        p=urlparse(self.path).path.rstrip("/")
+        if p=="/api/login":
+            body=self.read_body(); db=load_db()
+            user=next((u for u in db["users"] if u["username"]==body.get("username") and u["password"]==hash_pw(body.get("password","")) and u.get("active",True)),None)
+            if not user: self.send_json({"error":"اسم المستخدم أو كلمة المرور غير صحيحة"},401); return
+            token=str(uuid.uuid4()); sessions[token]=user["id"]
+            add_log_safe(user,"تسجيل دخول",f"دخل: {user['fullname']}",self.ip())
+            self.send_json({"ok":True,"token":token,"user":{k:v for k,v in user.items() if k!="password"}}); return
+        if p=="/api/logout":
+            u2=self.get_user()
+            if u2: add_log_safe(u2,"تسجيل خروج",f"خرج: {u2['fullname']}",self.ip())
+            sessions.pop(self.get_token(),None); self.send_json({"ok":True}); return
+        u=self.require_auth()
+        if not u: return
+        body=self.read_body(); db=load_db(); now=datetime.now().strftime("%Y-%m-%d %H:%M")
+
+        if p=="/api/tours":
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            tid=db["next_tour_id"]; db["next_tour_id"]+=1
+            station=next((s for s in db["stations"] if s["id"]==body.get("station_id")),{})
+            tour={
+                "id":tid,"date":body.get("date",""),"district":body.get("district",u.get("district","")),"station_id":body.get("station_id"),
+                "station_name":station.get("name",""),"visit_type":body.get("visit_type",""),"notes":body.get("notes",""),
+                "technician":body.get("technician",u["fullname"]),"created_by":u["fullname"],"created_at":now,
+            }
+            db["tours"].append(tour); save_db(db)
+            add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
+            self.send_json({"ok":True,"tour":tour})
+
+        elif p=="/api/maintenance":
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            mid=db["next_maintenance_id"]; db["next_maintenance_id"]+=1
+            station=next((s for s in db["stations"] if s["id"]==body.get("station_id")),{})
+            maint={
+                "id":mid,"date":body.get("date",""),"district":body.get("district",u.get("district","")),"station_id":body.get("station_id"),
+                "station_name":station.get("name",""),"device_type":body.get("device_type",""),"qty":body.get("qty",1),
+                "reason":body.get("reason",""),"technician":body.get("technician",""),"notes":body.get("notes",""),
+                "created_by":u["fullname"],"created_at":now,
+            }
+            db["maintenance"].append(maint); save_db(db)
+            add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
+            self.send_json({"ok":True,"maintenance":maint})
+
+        elif p=="/api/cameras":
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            cid=db["next_camera_id"]; db["next_camera_id"]+=1
+            station=next((s for s in db["stations"] if s["id"]==body.get("station_id")),{})
+            cam={
+                "id":cid,"cam_no":body.get("cam_no",""),"station_id":body.get("station_id"),
+                "station_name":station.get("name",""),"district":body.get("district",station.get("district","")),
+                "location_detail":body.get("location_detail",""),"cam_type":body.get("cam_type",""),
+                "manufacturer":body.get("manufacturer",""),"status":body.get("status","working"),
+                "last_maintenance":body.get("last_maintenance",""),"notes":body.get("notes",""),
+                "created_by":u["fullname"],"updated_at":now,
+            }
+            db["cameras"].append(cam); save_db(db)
+            add_log_safe(u,"إضافة كاميرا",f"كاميرا: {cam['cam_no']} - {station.get('name','')}",self.ip())
+            self.send_json({"ok":True,"camera":cam})
+
+        elif p=="/api/stations":
+            sid=db["next_station_id"]; db["next_station_id"]+=1
+            st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"districts":body.get("districts",[]),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
+            db["stations"].append(st); save_db(db)
+            self.send_json({"ok":True,"station":st})
+
+        elif p=="/api/districts_admin_placeholder":  # removed duplicate
+            name=body.get("name","").strip()
+            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
+            db=load_db()
+            if "custom_districts" not in db: db["custom_districts"]=[]
+            if name in DISTRICTS or name in db["custom_districts"]:
+                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
+            db["custom_districts"].append(name); save_db(db)
+            self.send_json({"ok":True})
+
+        elif "/api/circulars/" in p and p.endswith("/read"):
+            cid=int(p.split("/")[3])
+            if "circular_reads" not in db: db["circular_reads"]=[]
+            # Remove old read by same user for same circ
+            db["circular_reads"]=[r for r in db["circular_reads"] if not(r.get("circ_id")==cid and r.get("user_id")==u["id"])]
+            db["circular_reads"].append({
+                "circ_id":cid,"user_id":u["id"],
+                "username":body.get("username",u["username"]),
+                "fullname":body.get("fullname",u["fullname"]),
+                "district":body.get("district",u.get("district","")),
+                "read_at":body.get("read_at",datetime.now().strftime("%Y/%m/%d %H:%M"))
+            })
+            save_db(db); self.send_json({"ok":True})
+
+
+
+
+
+        elif p=="/api/coding":
+            if "coding" not in db: db["coding"]=[]
+            if "next_coding_id" not in db: db["next_coding_id"]=1
+            cid=db["next_coding_id"]; db["next_coding_id"]+=1
+            dev={
+                "id":cid,"code":body.get("code",""),"device_type":body.get("device_type","موقع"),
+                "model":body.get("model",""),"district":body.get("district",""),
+                "station_id":body.get("station_id"),"station_name":body.get("station_name",""),
+                "location":body.get("location",""),"install_date":body.get("install_date",""),
+                "nvrs":body.get("nvrs",[]),"hdds":body.get("hdds",[]),"switches":body.get("switches",[]),
+                "cam_total":body.get("cam_total",0),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),
+                "status":body.get("status","يعمل"),"notes":body.get("notes",""),
+                "added_by":u["fullname"],"created_at":datetime.now().strftime("%Y-%m-%d")
+            }
+            db["coding"].append(dev); save_db(db)
+            self.send_json({"ok":True,"device":dev})
+
+        elif p=="/api/scan":
+            if "scan_logs" not in db: db["scan_logs"]=[]
+            code=body.get("code","")
+            device=next((d for d in db.get("coding",[]) if d.get("code")==code),None)
+            db["scan_logs"].append({
+                "code":code,"scanned_at":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "scanned_by":body.get("scanned_by",""),"fullname":body.get("fullname",""),
+                "ip":self.client_address[0],
+                "station":device.get("station_name","") if device else "",
+                "location":device.get("location","") if device else "",
+                "found":device is not None
+            })
+            save_db(db); self.send_json({"ok":True,"found":device is not None})
+
+        elif p=="/api/circulars":
+            if u["role"]!="admin": self.send_json({"error":"المدير فقط يستطيع نشر التعاميم"},403); return
+            if "circulars" not in db: db["circulars"]=[]
+            if "next_circular_id" not in db: db["next_circular_id"]=1
+            cid=db["next_circular_id"]; db["next_circular_id"]+=1
+            circ={
+                "id":cid,"title":body.get("title",""),"type":body.get("type","تعميم"),
+                "district":body.get("district","الكل"),"body":body.get("body",""),
+                "date":body.get("date",datetime.now().strftime("%Y-%m-%d")),
+                "added_by":u["fullname"],"created_at":datetime.now().strftime("%Y-%m-%d %H:%M"),
+                "has_file1":body.get("has_file1",False),"has_file2":body.get("has_file2",False),
+                "has_file3":body.get("has_file3",False),
+            }
+            db["circulars"].append(circ); save_db(db)
+            self.send_json({"ok":True,"circular":circ})
+
+        elif p=="/api/inventory":
+            if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
+            db=load_db()
+            if "inventory" not in db: db["inventory"]=[]
+            if "next_inventory_id" not in db: db["next_inventory_id"]=1
+            iid=db["next_inventory_id"]; db["next_inventory_id"]+=1
+            now=datetime.now().strftime("%Y-%m-%d %H:%M")
+            inv_item={
+                "id":iid,"station_id":body.get("station_id"),"station_name":body.get("station_name",""),
+                "district":body.get("district",""),"status":body.get("status","مكتمل"),
+                "dvr_count":body.get("dvr_count",0),"dvr_spec":body.get("dvr_spec",""),"dvr_model":body.get("dvr_model",""),
+                "hdd_count":body.get("hdd_count",0),"hdd_size":body.get("hdd_size",""),
+                "cam_count":body.get("cam_count",0),"cam_spec":body.get("cam_spec",""),"cam_res":body.get("cam_res",""),
+                "poe_count":body.get("poe_count",0),"poe_spec":body.get("poe_spec",""),
+                "mon_count":body.get("mon_count",0),"mon_spec":body.get("mon_spec",""),
+                "ups_count":body.get("ups_count",0),"ups_spec":body.get("ups_spec",""),
+                "bat_count":body.get("bat_count",0),"bat_spec":body.get("bat_spec",""),
+                "box_count":body.get("box_count",0),"box_spec":body.get("box_spec",""),
+                "notes":body.get("notes",""),"created_by":u["fullname"],"updated_at":now,
+            }
+            db["inventory"].append(inv_item); save_db(db)
+            add_log_safe(u,"إضافة جرد",f"جرد: {inv_item['station_name']}",self.ip())
+            self.send_json({"ok":True,"inventory":inv_item})
+
+        elif p=="/api/delegates":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            did=db["next_delegate_id"]; db["next_delegate_id"]+=1
+            d={"id":did,"district":body.get("district",""),"name":body.get("name",""),"phone":body.get("phone","")}
+            db["delegates"].append(d); save_db(db)
+            self.send_json({"ok":True,"delegate":d})
+
+        elif p=="/api/users":
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            if any(x["username"]==body.get("username") for x in db["users"]):
+                self.send_json({"error":"اسم المستخدم مستخدم"},400); return
+            uid=db["next_user_id"]; db["next_user_id"]+=1
+            role=body.get("role","viewer")
+            nu={"id":uid,"fullname":body.get("fullname",""),"username":body.get("username",""),
+                "password":hash_pw(body.get("password","")),"role":role,"active":True,
+                "district":body.get("district",""),
+                "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True} if role=="admin"
+                    else body.get("perms",{"view":True,"edit":False,"del":False,"files":False,"reports":False})}
+            db["users"].append(nu); save_db(db)
+            self.send_json({"ok":True,"user":{k:v for k,v in nu.items() if k!="password"}})
+
+        elif p.startswith("/api/files/"):
+            if not self.can(u,"files"): self.send_json({"error":"لا صلاحية"},403); return
+            key="/".join(p.split("/")[3:])
+            try:
+                save_file(key,body.get("name",""),body.get("data",""),body.get("mime",""))
+                self.send_json({"ok":True})
+            except Exception as e: self.send_json({"error":str(e)},500)
+        else: self.send_json({"error":"غير موجود"},404)
+
+    def do_PUT(self):
+        p=urlparse(self.path).path.rstrip("/")
+        u=self.require_auth()
+        if not u: return
+        body=self.read_body(); db=load_db()
+
+        if p.startswith("/api/tours/"):
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            tid=int(p.split("/")[-1]); idx=next((i for i,t in enumerate(db["tours"]) if t["id"]==tid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["date","district","station_id","visit_type","notes","technician"]:
+                if f in body: db["tours"][idx][f]=body[f]
+            if "station_id" in body:
+                st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
+                db["tours"][idx]["station_name"]=st.get("name","")
+            save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
+
+        elif p.startswith("/api/maintenance/"):
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            mid=int(p.split("/")[-1]); idx=next((i for i,m in enumerate(db["maintenance"]) if m["id"]==mid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["date","district","station_id","device_type","qty","reason","technician","notes"]:
+                if f in body: db["maintenance"][idx][f]=body[f]
+            if "station_id" in body:
+                st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
+                db["maintenance"][idx]["station_name"]=st.get("name","")
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/cameras/"):
+            if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
+            cid=int(p.split("/")[-1]); idx=next((i for i,c in enumerate(db["cameras"]) if c["id"]==cid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["cam_no","station_id","location_detail","cam_type","manufacturer","status","last_maintenance","notes"]:
+                if f in body: db["cameras"][idx][f]=body[f]
+            db["cameras"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
+            if "station_id" in body:
+                st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
+                db["cameras"][idx]["station_name"]=st.get("name","")
+                db["cameras"][idx]["district"]=st.get("district","")
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/inventory/"):
+            if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
+            iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes"]
+            for f in fields:
+                if f in body: db["inventory"][idx][f]=body[f]
+            db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/stations/"):
+            sid=int(p.split("/")[-1]); idx=next((i for i,s in enumerate(db["stations"]) if s["id"]==sid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["name","district","type","cam_working","cam_broken","main_cam_count","main_cam_type","main_hdd_count","main_hdd_size","main_record_days","sanda_cam_count","sanda_cam_type","sanda_hdd_count","sanda_hdd_size","sanda_record_days","sanda_notes"]:
+                if f in body: db["stations"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/users/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            uid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db["users"]) if x["id"]==uid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            if "password" in body and body["password"]:
+                if "old_password" in body:
+                    if db["users"][idx]["password"]!=hash_pw(body["old_password"]):
+                        self.send_json({"error":"كلمة المرور الحالية غير صحيحة"},400); return
+                db["users"][idx]["password"]=hash_pw(body["password"])
+            for f in ["fullname","username","role","active","perms","district"]:
+                if f in body: db["users"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+
+
+        elif p.startswith("/api/coding/"):
+            cid=int(p.split("/")[-1]); idx=next((i for i,d in enumerate(db.get("coding",[])) if d["id"]==cid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["code","device_type","model","district","station_id","station_name","location","install_date","nvrs","hdds","switches","cam_total","cam_working","cam_broken","status","notes"]:
+                if f in body: db["coding"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/delegates/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            did=int(p.split("/")[-1]); idx=next((i for i,d in enumerate(db["delegates"]) if d["id"]==did),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            for f in ["district","name","phone"]:
+                if f in body: db["delegates"][idx][f]=body[f]
+            save_db(db); self.send_json({"ok":True})
+        else: self.send_json({"error":"غير موجود"},404)
+
+    def do_DELETE(self):
+        p=urlparse(self.path).path.rstrip("/")
+        u=self.require_auth()
+        if not u: return
+        db=load_db()
+
+        if p.startswith("/api/tours/"):
+            if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
+            tid=int(p.split("/")[-1]); db["tours"]=[t for t in db["tours"] if t["id"]!=tid]; save_db(db)
+            del_file(f"tour_{tid}"); self.send_json({"ok":True})
+
+        elif p.startswith("/api/maintenance/"):
+            if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
+            mid=int(p.split("/")[-1]); db["maintenance"]=[m for m in db["maintenance"] if m["id"]!=mid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/cameras/"):
+            if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
+            cid=int(p.split("/")[-1]); db["cameras"]=[c for c in db["cameras"] if c["id"]!=cid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/users/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            uid=int(p.split("/")[-1])
+            if uid==u["id"]: self.send_json({"error":"لا يمكن حذف حسابك"},400); return
+            db["users"]=[x for x in db["users"] if x["id"]!=uid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/coding/"):
+            cid=int(p.split("/")[-1])
+            db["coding"]=[d for d in db.get("coding",[]) if d["id"]!=cid]
+            save_db(db); self.send_json({"ok":True})
+
+        elif p.startswith("/api/circulars/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            cid=int(p.split("/")[-1])
+            db["circulars"]=[c2 for c2 in db.get("circulars",[]) if c2["id"]!=cid]
+            save_db(db); self.send_json({"ok":True})
+
+
+        elif p.startswith("/api/inventory/"):
+            if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
+            iid=int(p.split("/")[-1])
+            db["inventory"]=[x for x in db.get("inventory",[]) if x["id"]!=iid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/stations/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            sid=int(p.split("/")[-1])
+            db["stations"]=[s for s in db["stations"] if s["id"]!=sid]; save_db(db)
+            self.send_json({"ok":True})
+
+        elif p.startswith("/api/files/"):
+            key="/".join(p.split("/")[3:]); del_file(key); self.send_json({"ok":True})
+        else: self.send_json({"error":"غير موجود"},404)
+
+if __name__=="__main__":
+    if USE_DB:
+        print("⏳ تهيئة قاعدة البيانات...")
+        init_pg()
+    server=HTTPServer(("0.0.0.0",PORT),Handler)
+    print(f"\n  📹  نظام إدارة كاميرات المراقبة")
+    print(f"  ✅  السيرفر يعمل على المنفذ {PORT}")
+    print(f"  🌐  http://localhost:{PORT}\n")
+    try: server.serve_forever()
+    except KeyboardInterrupt: server.shutdown()
