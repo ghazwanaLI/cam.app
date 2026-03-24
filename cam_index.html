@@ -1842,6 +1842,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div id="hdd-rows"></div>
       </div>
 
+      <!-- أجهزة أخرى -->
+      <div class="fg full" style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:12px;background:rgba(124,58,237,.02)">
+        <div style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:10px">🔌 أجهزة أخرى</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="other-rows"></div>
+        <button type="button" onclick="addOtherRow()" class="btn btn-o btn-sm" style="margin-top:6px">➕ إضافة جهاز</button>
+      </div>
+
       <div class="fg full"><label class="fl">ملاحظات</label>
         <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
       </div>
@@ -2239,7 +2246,7 @@ function openCodingModal(){
   dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   filterCodingStations();
-  resetRows([],[]);
+  resetRows([],[],[]);
   document.getElementById('ov-coding').classList.add('open');
 }
 
@@ -2263,6 +2270,7 @@ async function saveCoding(){
     notes: (document.getElementById('coding-notes')?.value||'').trim(),
     nvrs: getNvrs(),
     hdds: getHdds(),
+    others: getOthers(),
     switches: [],
     cam_total: 0, cam_working: 0, cam_broken: 0
   };
@@ -2300,7 +2308,7 @@ function editCoding(id){
   ds.value=d.district||'';ds.disabled=false;
   filterCodingStations();
   setTimeout(()=>{const ss=document.getElementById('coding-station');if(ss)ss.value=d.station_id||'';},150);
-  resetRows(d.nvrs||[],d.hdds||[]);
+  resetRows(d.nvrs||d.devices||[],d.hdds||[],d.others||[]);
   document.getElementById('ov-coding').classList.add('open');
 }
 
@@ -2426,10 +2434,14 @@ function addNvrRow(num='',serial=''){
   const id=nvrCount;
   const row=document.createElement('div');
   row.id=`nvr-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:8px';
   row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:7px">NVR ${id}</div>
     <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
-    <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <div style="display:flex;gap:4px">
+      <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr;flex:1">
+      <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('nvr-sn-${id}'))"
+        style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📷</button>
+    </div>
     <button type="button" onclick="document.getElementById('nvr-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
   document.getElementById('nvr-rows').appendChild(row);
 }
@@ -2439,10 +2451,14 @@ function addHddRow(num='',serial=''){
   const id=hddCount;
   const row=document.createElement('div');
   row.id=`hdd-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:90px 1fr 1fr auto;gap:8px;align-items:center;margin-bottom:8px';
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:8px';
   row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:7px">HDD ${id}</div>
     <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
-    <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <div style="display:flex;gap:4px">
+      <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr;flex:1">
+      <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('hdd-sn-${id}'))"
+        style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📷</button>
+    </div>
     <button type="button" onclick="document.getElementById('hdd-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
   document.getElementById('hdd-rows').appendChild(row);
 }
@@ -2463,12 +2479,15 @@ function getHdds(){
     }).filter(x=>x.num||x.serial);
 }
 
-function resetRows(nvrs,hdds){
-  nvrCount=0;hddCount=0;
+function resetRows(nvrs,hdds,others){
+  nvrCount=0; hddCount=0; otherCount=0;
   document.getElementById('nvr-rows').innerHTML='';
   document.getElementById('hdd-rows').innerHTML='';
+  const orEl=document.getElementById('other-rows');
+  if(orEl) orEl.innerHTML='';
   if(nvrs&&nvrs.length>0) nvrs.forEach(n=>addNvrRow(n.num,n.serial)); else addNvrRow();
   if(hdds&&hdds.length>0) hdds.forEach(h=>addHddRow(h.num,h.serial)); else addHddRow();
+  if(others&&others.length>0) others.forEach(o=>addOtherRow(o.type,o.num,o.serial));
 }
 
 function filterCodingStations(){
@@ -4810,6 +4829,43 @@ async function showCircReads(cid, title){
   }catch(e){
     list.innerHTML='<div style="text-align:center;padding:20px;color:#dc2626">خطأ في التحميل</div>';
   }
+}
+
+let otherCount=0;
+const OTHER_TYPES=['📹 كاميرا','🔌 POE Switch','⚡ UPS','🔋 بطارية','📦 بوكس','🖥️ شاشة','📡 أنتينا','🔧 أخرى'];
+
+function addOtherRow(type='',num='',serial=''){
+  otherCount++;
+  const id=otherCount;
+  const row=document.createElement('div');
+  row.id='other-'+id;
+  row.style.cssText='display:grid;grid-template-columns:130px 80px 1fr auto;gap:6px;align-items:center';
+  row.innerHTML=`
+    <select class="fi" id="other-type-${id}" style="font-size:12px">
+      ${OTHER_TYPES.map(t=>`<option value="${t}" ${t===type?'selected':''}>${t}</option>`).join('')}
+    </select>
+    <input class="fi" id="other-num-${id}" type="text" value="${num}" placeholder="رقم" style="font-size:12px">
+    <div style="display:flex;gap:4px">
+      <input class="fi" id="other-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:12px;direction:ltr;flex:1">
+      <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('other-sn-${id}'))"
+        style="background:#f5f3ff;border:1.5px solid #ddd6fe;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:15px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📷</button>
+    </div>
+    <button type="button" onclick="document.getElementById('other-${id}').remove()"
+      style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
+  document.getElementById('other-rows').appendChild(row);
+}
+
+function getOthers(){
+  return Array.from(document.querySelectorAll('[id^="other-"]:not([id*="-type"]):not([id*="-num"]):not([id*="-sn"])'))
+    .filter(r=>r.tagName==='DIV')
+    .map(r=>{
+      const i=r.id.split('-')[1];
+      return {
+        type:(document.getElementById('other-type-'+i)?.value||'').trim(),
+        num:(document.getElementById('other-num-'+i)?.value||'').trim(),
+        serial:(document.getElementById('other-sn-'+i)?.value||'').trim()
+      };
+    }).filter(x=>x.type||x.num||x.serial);
 }
 
 tryAutoLogin();</script>
