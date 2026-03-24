@@ -208,17 +208,15 @@ class Handler(BaseHTTPRequestHandler):
         if p in ("","/"): 
             f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
             with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
-        if p.startswith("/scan/"):
-            # فتح الصفحة الرئيسية مع الكود في الـ URL — JS سيعالجه
-            f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
-            with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
         u=self.require_auth()
         if not u: return
         db=load_db()
         if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
         elif p=="/api/stations":
             sts=db["stations"]
-            if u["role"]!="admin" and u.get("district"): sts=[s for s in sts if s.get("district")==u["district"]]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: sts=[s for s in sts if s.get("district") in u_dists]
             self.send_json({"ok":True,"stations":sts})
         elif p=="/api/districts":
             db=load_db()
@@ -244,15 +242,21 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
         elif p=="/api/tours":
             tours=db.get("tours",[])
-            if u["role"]!="admin" and u.get("district"): tours=[t for t in tours if t.get("district")==u["district"]]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: tours=[t for t in tours if t.get("district") in u_dists]
             self.send_json({"ok":True,"tours":tours})
         elif p=="/api/maintenance":
             maint=db.get("maintenance",[])
-            if u["role"]!="admin" and u.get("district"): maint=[m for m in maint if m.get("district")==u["district"]]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: maint=[m for m in maint if m.get("district") in u_dists]
             self.send_json({"ok":True,"maintenance":maint})
         elif p=="/api/cameras":
             cams=db.get("cameras",[])
-            if u["role"]!="admin" and u.get("district"): cams=[c for c in cams if c.get("district")==u["district"]]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: cams=[c for c in cams if c.get("district") in u_dists]
             self.send_json({"ok":True,"cameras":cams})
         elif p=="/api/users":
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
@@ -270,7 +274,8 @@ class Handler(BaseHTTPRequestHandler):
             circs=db.get("circulars",[])
             # Filter by district for non-admin
             if u["role"]!="admin" and u.get("district"):
-                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district")==u["district"]]
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or not u_dists or c2.get("district") in u_dists]
             self.send_json({"ok":True,"circulars":list(reversed(circs))})
 
         elif p=="/api/coding":
@@ -287,7 +292,9 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
-            if u["role"]!="admin" and u.get("district"): inv=[x for x in inv if x.get("district")==u["district"]]
+            if u["role"]!="admin":
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: inv=[x for x in inv if x.get("district") in u_dists]
             self.send_json({"ok":True,"inventory":inv})
 
         elif p=="/api/stats":
@@ -396,7 +403,7 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/stations":
             sid=db["next_station_id"]; db["next_station_id"]+=1
-            st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
+            st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"districts":body.get("districts",[]),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
             db["stations"].append(st); save_db(db)
             self.send_json({"ok":True,"station":st})
 
