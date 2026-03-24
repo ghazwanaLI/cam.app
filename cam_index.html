@@ -2677,72 +2677,80 @@ async function exportGoLabel(){
     return;
   }
 
-  toast('جاري التصدير...');
+  // بناء البيانات
+  const origin = window.location.origin;
+  const header = [
+    'Barcode','QR_Data','Station','Location','District',
+    'Install_Date','Status',
+    'NVR1_Num','NVR1_Serial','NVR2_Num','NVR2_Serial',
+    'HDD1_Num','HDD1_Serial','HDD2_Num','HDD2_Serial',
+    'Notes'
+  ];
+  const rows = allCoding.map(d=>{
+    const n=d.nvrs||[], h=d.hdds||[];
+    return [
+      d.code||'',
+      origin+'/scan/'+encodeURIComponent(d.code||''),
+      d.station_name||'', d.location||'', d.district||'',
+      d.install_date||'', d.status||'يعمل',
+      (n[0]||{}).num||'',(n[0]||{}).serial||'',
+      (n[1]||{}).num||'',(n[1]||{}).serial||'',
+      (h[0]||{}).num||'',(h[0]||{}).serial||'',
+      (h[1]||{}).num||'',(h[1]||{}).serial||'',
+      d.notes||''
+    ];
+  });
 
-  // تحميل مكتبة XLSX
-  await new Promise((res,rej)=>{
+  const date = new Date().toISOString().split('T')[0];
+
+  // محاولة 1: تحميل XLSX من CDN
+  const tryXLSX = (src) => new Promise((res,rej)=>{
     if(typeof XLSX!=='undefined'){res();return;}
     const s=document.createElement('script');
-    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=()=>res();
-    s.onerror=()=>rej('فشل تحميل مكتبة Excel');
+    s.src=src; s.onload=()=>res(); s.onerror=()=>rej();
     document.head.appendChild(s);
-  }).catch(e=>{ toast(''+e,'err'); throw e; });
+  });
 
-  try{
-    const origin=window.location.origin;
+  const cdns = [
+    'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js',
+    'https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'
+  ];
 
-    // صف لكل جهاز — كل NVR/HDD في عمود منفصل (أفضل لـ GoLabel)
-    const header=[
-      'Barcode',
-      'QR_Data',
-      'Station',
-      'Location',
-      'District',
-      'Install_Date',
-      'Status',
-      'NVR1_Num','NVR1_Serial',
-      'NVR2_Num','NVR2_Serial',
-      'HDD1_Num','HDD1_Serial',
-      'HDD2_Num','HDD2_Serial',
-      'Notes'
-    ];
-
-    const rows=allCoding.map(d=>{
-      const nvrs=d.nvrs||[];
-      const hdds=d.hdds||[];
-      return [
-        d.code||'',
-        origin+'/scan/'+encodeURIComponent(d.code||''),
-        d.station_name||'',
-        d.location||'',
-        d.district||'',
-        d.install_date||'',
-        d.status||'يعمل',
-        (nvrs[0]||{}).num||'',    (nvrs[0]||{}).serial||'',
-        (nvrs[1]||{}).num||'',    (nvrs[1]||{}).serial||'',
-        (hdds[0]||{}).num||'',    (hdds[0]||{}).serial||'',
-        (hdds[1]||{}).num||'',    (hdds[1]||{}).serial||'',
-        d.notes||''
-      ];
-    });
-
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-    ws['!cols']=[
-      {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
-      {wch:10},{wch:30},{wch:10},{wch:30},
-      {wch:10},{wch:30},{wch:10},{wch:30},
-      {wch:22}
-    ];
-    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
-    const date=new Date().toISOString().split('T')[0];
-    XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
-    toast('✅ تم التصدير — '+allCoding.length+' جهاز جاهز لـ GoLabel');
-  }catch(err){
-    console.error('GoLabel export error:',err);
-    toast('خطأ في التصدير: '+(err.message||err),'err');
+  let loaded = typeof XLSX !== 'undefined';
+  if(!loaded){
+    toast('جاري تحميل مكتبة Excel...');
+    for(const cdn of cdns){
+      try{ await tryXLSX(cdn); loaded=true; break; }catch(e){}
+    }
   }
+
+  if(loaded && typeof XLSX !== 'undefined'){
+    // تصدير XLSX
+    try{
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet([header,...rows]);
+      ws['!cols']=[
+        {wch:18},{wch:52},{wch:24},{wch:22},{wch:12},{wch:14},{wch:10},
+        {wch:10},{wch:30},{wch:10},{wch:30},
+        {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
+      ];
+      XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+      XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
+      toast('✅ تم التصدير — '+allCoding.length+' جهاز');
+      return;
+    }catch(e){ console.error('XLSX write error:',e); }
+  }
+
+  // fallback: تصدير CSV (يفتح في Excel)
+  const esc = v => '"'+String(v).replace(/"/g,'""')+'"';
+  const bom='\uFEFF'; const csv=bom+[header,...rows].map(r=>r.map(esc).join(',')).join('\r\n');
+  const blob = new Blob([csv],{type:'text/csv;charset=utf-8'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'GoLabel_'+date+'.csv';
+  a.click();
+  toast('✅ تم التصدير CSV — '+allCoding.length+' جهاز (يفتح في Excel)');
 }
 
 function exportCodingExcel(){
