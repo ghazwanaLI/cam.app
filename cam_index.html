@@ -970,7 +970,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <div style="display:flex;gap:6px;align-items:center">
                 <div class="search-box" style="position:relative">
                   <span class="si">🔍</span>
-                  <input type="text" id="sq-coding" placeholder="امسح الباركود أو ابحث..." oninput="filterCoding()" onkeydown="onScanKey(event)" autofocus style="min-width:220px">
+                  <input type="text" id="sq-coding" placeholder="امسح الباركود أو ابحث..." 
+                    oninput="filterCoding()"
+                    onkeydown="onScanKey(event)"
+                    onpaste="setTimeout(()=>{const v=extractCodeFromScan(this.value);if(v!==this.value){this.value=v;showScanResult(v);}},50)"
+                    lang="en" dir="ltr" inputmode="url"
+                    autofocus style="min-width:220px;direction:ltr;font-family:monospace">
                 </div>
                 <button class="btn btn-o btn-sm" onclick="clearScan()" id="scan-clear" style="display:none;color:#dc2626">✕ مسح</button>
               </div>
@@ -2537,15 +2542,37 @@ function filterCodingStations(){
 
 function onScanKey(e){
   if(e.key==='Enter'){
-    const val=document.getElementById('sq-coding').value.trim();
-    if(val) showScanResult(val); e.preventDefault();
+    const raw=document.getElementById('sq-coding').value.trim();
+    if(!raw) return;
+    const code=extractCodeFromScan(raw);
+    document.getElementById('sq-coding').value=code;
+    showScanResult(code);
+    e.preventDefault();
   }
 }
 
+// استخراج الكود النظيف من أي صيغة مسح
+function extractCodeFromScan(raw){
+  try{
+    let s = raw.trim();
+    // حالة: رابط كامل http://host/scan/CODE
+    if(s.includes('/scan/')){
+      const part = s.split('/scan/')[1]||'';
+      s = decodeURIComponent(part).split('|')[0].split('?')[0].trim();
+    }
+    // حالة: CODE|station|device
+    else if(s.includes('|')){
+      s = s.split('|')[0].trim();
+    }
+    // تنظيف: أبقِ فقط أحرف ASCII المسموحة لكود الباركود
+    s = s.replace(/[^ -~]/g,'').trim();
+    return s||raw;
+  }catch(e){ return raw; }
+}
+
 function showScanResult(code){
-  api('POST','/api/scan',{code,scanned_by:CU?.username||''}).catch(()=>{});
-  // استخرج الكود الأساسي فقط (قبل | )
-  const bareCode = code.split('|')[0].trim();
+  const bareCode = extractCodeFromScan(code);
+  api('POST','/api/scan',{code:bareCode,scanned_by:CU?.username||''}).catch(()=>{});
   const d = allCoding.find(x => x.code.toLowerCase()===bareCode.toLowerCase());
 
   if(!d){
@@ -2765,7 +2792,8 @@ function generateLabel(){
   if(!code||code==='—'){
     toast('اختر المحطة ورقم الجهاز','err');return;
   }
-  _genQrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
+  // QR يحمل فقط الكود ASCII — بدون أسماء عربية لضمان المسح الصحيح
+  _genQrData=window.location.origin+'/scan/'+encodeURIComponent(code);
   _genCode=code;
 
   document.getElementById('gl-station').textContent=station;
@@ -2793,7 +2821,7 @@ function printGenLabel(){
   const s=getSizes();
   const lblW=Math.round(s.lblW_cm*10), lblH=Math.round(s.lblH_cm*10); // mm
   const qrSize=s.qrPx, bcH=s.bcHpx, bcW=s.bcWpx;
-  const qrData=_genQrData||window.location.origin+'/scan/'+code;
+  const qrData=_genQrData||window.location.origin+'/scan/'+encodeURIComponent(code);
   const S='script';
   const w=window.open('','_blank','width=620,height=560');
   w.document.write(
