@@ -2569,24 +2569,27 @@ function fixKeyboardLayout(s){
 
 function extractCodeFromScan(raw){
   try{
+    // تأكد أن المدخل string
+    if(typeof raw !== 'string') raw = String(raw||'');
     let s = raw.trim();
     // حالة: رابط كامل http://host/scan/CODE
-    if(s.includes('/scan/')){
+    if(s.indexOf('/scan/') !== -1){
       const part = s.split('/scan/')[1]||'';
       s = decodeURIComponent(part).split('|')[0].split('?')[0].trim();
     }
     // حالة: CODE|station|device
-    else if(s.includes('|')){
+    else if(s.indexOf('|') !== -1){
       s = s.split('|')[0].trim();
     }
     // تنظيف الأحرف غير ASCII
     s = s.replace(/[^ -~]/g,'').trim();
     return s||raw;
-  }catch(e){ return raw; }
+  }catch(e){ return typeof raw==='string'?raw:String(raw||''); }
 }
 
 // بحث ذكي: يجرب الكود المباشر، ثم يجرب تصحيح الكيبورد، ثم يبحث بالأرقام
 function smartFindCode(raw){
+  if(typeof raw !== 'string') raw = String(raw||'');
   const s = extractCodeFromScan(raw);
   // 1. بحث مباشر
   let d = allCoding.find(x => x.code.toLowerCase()===s.toLowerCase());
@@ -2610,6 +2613,7 @@ function smartFindCode(raw){
 }
 
 function showScanResult(code){
+  if(typeof code !== 'string') code = String(code||'');
   const {d, code:bareCode} = smartFindCode(code);
   api('POST','/api/scan',{code:bareCode,scanned_by:CU?.username||''}).catch(()=>{});
 
@@ -2665,73 +2669,61 @@ function clearScan(){
 function exportGoLabel(){
   if(!allCoding.length){toast('لا توجد بيانات في السجل','err');return;}
   const loadXLSX=()=>new Promise((res,rej)=>{
-    if(window.XLSX){res();return;}
+    if(typeof XLSX!=='undefined'){res();return;}
     const s=document.createElement('script');
     s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+    s.onload=()=>{ if(typeof XLSX!=='undefined') res(); else rej(new Error('XLSX load failed')); };
+    s.onerror=()=>rej(new Error('فشل تحميل مكتبة Excel'));
+    document.head.appendChild(s);
   });
   loadXLSX().then(()=>{
-    // GoLabel يحتاج: Barcode (الكود)، QR_Data، وبيانات الملصق
-    const origin = window.location.origin;
-    const header = [
-      'Barcode',         // كود الباركود — CODE128
-      'QR_Data',         // بيانات QR Code
-      'Station',         // اسم المحطة
-      'Location',        // الموقع / الاسم
-      'District',        // القاطع
-      'Device_Type',     // نوع الجهاز (NVR/DVR/...)
-      'Install_Date',    // تاريخ التركيب
-      'Status',          // الحالة
-      'NVR_Num',         // رقم NVR
-      'NVR_Serial',      // Serial NVR
-      'HDD_Num',         // رقم HDD
-      'HDD_Serial',      // Serial HDD
-      'Notes',           // ملاحظات
-    ];
-    const rows=[];
-    allCoding.forEach(d=>{
-      const nvrs=d.nvrs||[]; const hdds=d.hdds||[];
-      const maxLen=Math.max(nvrs.length,hdds.length,1);
-      for(let i=0;i<maxLen;i++){
-        const nvr=nvrs[i]||{}; const hdd=hdds[i]||{};
-        const isFirst=i===0;
-        rows.push([
-          isFirst?(d.code||''):'',
-          isFirst?(origin+'/scan/'+encodeURIComponent(d.code||'')):'',
-          isFirst?(d.station_name||''):'',
-          isFirst?(d.location||''):'',
-          isFirst?(d.district||''):'',
-          isFirst?(d.device_type||''):'',
-          isFirst?(d.install_date||''):'',
-          isFirst?(d.status||''):'',
-          nvr.num||'',
-          nvr.serial||'',
-          hdd.num||'',
-          hdd.serial||'',
-          isFirst?(d.notes||''):'',
-        ]);
-      }
-    });
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
-    // ضبط عرض الأعمدة
-    ws['!cols']=[
-      {wch:16},{wch:45},{wch:22},{wch:22},{wch:12},{wch:12},
-      {wch:14},{wch:10},{wch:10},{wch:28},{wch:10},{wch:28},{wch:20}
-    ];
-    // تنسيق رأس الجدول
-    const hRange=XLSX.utils.decode_range(ws['!ref']);
-    for(let c=hRange.s.c;c<=hRange.e.c;c++){
-      const cell=XLSX.utils.encode_cell({r:0,c});
-      if(!ws[cell]) continue;
-      ws[cell].s={font:{bold:true},fill:{fgColor:{rgb:'1D4ED8'}},
-        font:{bold:true,color:{rgb:'FFFFFF'}}};
+    try{
+      const origin=window.location.origin;
+      const header=[
+        'Barcode','QR_Data','Station','Location',
+        'District','Device_Type','Install_Date','Status',
+        'NVR_Num','NVR_Serial','HDD_Num','HDD_Serial','Notes'
+      ];
+      const rows=[];
+      allCoding.forEach(d=>{
+        const nvrs=d.nvrs||[]; const hdds=d.hdds||[];
+        const maxLen=Math.max(nvrs.length,hdds.length,1);
+        for(let i=0;i<maxLen;i++){
+          const nvr=nvrs[i]||{}; const hdd=hdds[i]||{};
+          const f=i===0;
+          rows.push([
+            f?(d.code||''):'',
+            f?(origin+'/scan/'+encodeURIComponent(d.code||'')):'',
+            f?(d.station_name||''):'',
+            f?(d.location||''):'',
+            f?(d.district||''):'',
+            f?(d.device_type||''):'',
+            f?(d.install_date||''):'',
+            f?(d.status||''):'',
+            nvr.num||'', nvr.serial||'',
+            hdd.num||'', hdd.serial||'',
+            f?(d.notes||''):'',
+          ]);
+        }
+      });
+      const wb=XLSX.utils.book_new();
+      const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+      ws['!cols']=[
+        {wch:16},{wch:50},{wch:22},{wch:22},{wch:12},{wch:12},
+        {wch:14},{wch:10},{wch:10},{wch:28},{wch:10},{wch:28},{wch:20}
+      ];
+      XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+      const date=new Date().toISOString().split('T')[0];
+      XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
+      toast('تم التصدير ✅ — '+allCoding.length+' جهاز');
+    }catch(err){
+      console.error('GoLabel export error:',err);
+      toast('خطأ في التصدير: '+err.message,'err');
     }
-    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
-    const date=new Date().toISOString().split('T')[0];
-    XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
-    toast('تم التصدير لـ GoLabel ✅ ('+allCoding.length+' جهاز)');
-  }).catch(e=>toast('خطأ: '+e,'err'));
+  }).catch(e=>{
+    console.error('XLSX load error:',e);
+    toast('خطأ في تحميل مكتبة Excel: '+e.message,'err');
+  });
 }
 
 function exportCodingExcel(){
