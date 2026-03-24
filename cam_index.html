@@ -740,15 +740,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div style="padding:0 14px 0;margin-bottom:12px">
             <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #1d4ed8;margin-bottom:0;cursor:pointer;user-select:none"
                  onclick="toggleStSection('gov')">
-              <div style="width:10px;height:10px;border-radius:50%;background:#1d4ed8;flex-shrink:0"></div>
+              <span id="gov-toggle-icon" style="font-size:18px;color:#1d4ed8;transition:transform .2s;flex-shrink:0">▲</span>
               <span style="font-size:15px;font-weight:800;color:#1d4ed8">🏛️ المحطات الحكومية</span>
               <span id="gov-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
+              <span style="flex:1"></span>
               <button onclick="event.stopPropagation();printGovStationsReport()"
                 style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8">
                 🖨️ طباعة
               </button>
-              <span style="flex:1"></span>
-              <span id="gov-toggle-icon" style="font-size:18px;color:#1d4ed8;transition:transform .2s">▲</span>
             </div>
             <div id="gov-section-body" style="overflow:hidden;transition:max-height .3s ease">
               <div class="table-wrap" style="padding-top:10px">
@@ -764,15 +763,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div style="padding:0 14px 14px">
             <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #f59e0b;margin-bottom:0;cursor:pointer;user-select:none"
                  onclick="toggleStSection('priv')">
-              <div style="width:10px;height:10px;border-radius:50%;background:#f59e0b;flex-shrink:0"></div>
+              <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s;flex-shrink:0">▲</span>
               <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
               <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
+              <span style="flex:1"></span>
               <button onclick="event.stopPropagation();printPrivStationsReport()"
                 style="background:none;border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">
                 🖨️ طباعة
               </button>
-              <span style="flex:1"></span>
-              <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s">▲</span>
             </div>
             <div id="priv-section-body" style="overflow:hidden;transition:max-height .3s ease">
               <div class="table-wrap" style="padding-top:10px">
@@ -3998,11 +3996,49 @@ function cancelQuickCirc(){
 async function saveQuickCircular(){
   const title=document.getElementById('q-circ-title')?.value.trim();
   if(!title){toast('أدخل عنوان التعميم','err');return;}
-  const body={title, type:document.getElementById('q-circ-type')?.value||'تعميم',
+  const body={
+    title,
+    type:document.getElementById('q-circ-type')?.value||'تعميم',
+    district:document.getElementById('q-circ-district')?.value||'الكل',
     body:document.getElementById('q-circ-body')?.value||'',
-    date:new Date().toISOString().split('T')[0]};
-  try{await api('POST','/api/circulars',body);toast('تم النشر ✅');cancelQuickCirc();await loadCirculars();}
-  catch(e){toast('خطأ: '+e.message,'err');}
+    date:new Date().toISOString().split('T')[0]
+  };
+  try{
+    const res=await api('POST','/api/circulars',body);
+    const cid=(res.circular&&res.circular.id)||res.id;
+    if(cid){
+      // الملفات في النموذج السريع مفاتيحها qcirc_1/2/3
+      const qkeys=['qcirc_1','qcirc_2','qcirc_3'];
+      const uploads=qkeys.filter(k=>UF[k]);
+      if(uploads.length){
+        toast('جاري رفع المرفقات...');
+        await Promise.all(uploads.map(qk=>{
+          // استخدم رقم المرفق الأصلي: qcirc_1→circ_1, qcirc_2→circ_2
+          const fileKey=qk.replace('qcirc_','circ_');
+          return api('POST','/api/files/circ_'+cid+'_'+fileKey,{
+            name:UF[qk].name, data:UF[qk].data, mime:UF[qk].mime
+          }).catch(e=>console.error('upload err:',qk,e));
+        }));
+        // تنظيف
+        qkeys.forEach(k=>{
+          delete UF[k];
+          const st=document.getElementById('us-'+k.replace('_','-').replace('qcirc','qcirc'));
+          const st2=document.getElementById('us-'+k);
+          if(st) st.textContent='اختر ملف';
+          if(st2) st2.textContent='اختر ملف';
+          const box=document.getElementById('ub-'+k.replace('_','-'));
+          if(box) box.classList.remove('hf');
+        });
+        toast('تم النشر ✅ مع '+uploads.length+' مرفق');
+      } else {
+        toast('تم النشر ✅');
+      }
+    } else {
+      toast('تم النشر ✅');
+    }
+    cancelQuickCirc();
+    await loadCirculars();
+  }catch(e){toast('خطأ: '+e.message,'err');}
 }
 async function saveCircular(){
   const title=document.getElementById('circ-title')?.value.trim();
@@ -4016,7 +4052,7 @@ async function saveCircular(){
   };
   try{
     const res=await api('POST','/api/circulars',body);
-    const cid=res.circular?.id||res.id;
+    const cid=(res.circular&&res.circular.id)||res.id;
 
     // رفع الملفات المرفقة
     if(cid){
@@ -4482,15 +4518,16 @@ function printCamReport(type){
 
 function viewCircFiles(cid){
   const keys=['circ_1','circ_2','circ_3'];
-  const labels={circ_1:'مرفق 1',circ_2:'مرفق 2',circ_3:'مرفق 3'};
   let ov=document.getElementById('ov-circ-files');
   if(!ov){
     ov=document.createElement('div'); ov.id='ov-circ-files'; ov.className='overlay';
     ov.onclick=function(e){if(e.target===ov)closeModal('ov-circ-files');};
-    const inner=document.createElement('div'); inner.className='modal modal-sm';
+    const inner=document.createElement('div');
+    inner.className='modal';
+    inner.style.cssText='width:min(520px,95vw);max-height:90vh;overflow-y:auto';
     const ttl=document.createElement('div'); ttl.className='m-title'; ttl.textContent='📎 مرفقات التعميم';
     const bdy=document.createElement('div'); bdy.id='circ-files-list';
-    bdy.style.cssText='display:flex;flex-direction:column;gap:8px;padding:4px 0;min-height:60px';
+    bdy.style.cssText='padding:8px 0;min-height:60px';
     const ftr=document.createElement('div'); ftr.className='m-footer';
     const cls=document.createElement('button'); cls.className='btn btn-o'; cls.textContent='إغلاق';
     cls.onclick=function(){closeModal('ov-circ-files');};
@@ -4498,32 +4535,64 @@ function viewCircFiles(cid){
     ov.appendChild(inner); document.body.appendChild(ov);
   }
   const list=document.getElementById('circ-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:16px">جاري التحميل...</div>';
+  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">جاري التحميل...</div>';
   ov.classList.add('open');
+
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/circ_'+cid+'_'+k)
-      .then(function(res){
-        // السيرفر قد يرجع {file:{...}} أو مباشرة {data,name,mime}
-        const d = res.file||res;
-        return (d&&d.data)?{k:k,d:d}:null;
-      }).catch(function(){return null;});
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
-    if(!found.length){list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد مرفقات</div>';return;}
+    if(!found.length){
+      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:30px;font-size:14px">لا توجد مرفقات</div>';
+      return;
+    }
     list.innerHTML='';
-    found.forEach(function(item){
-      const k=item.k,d=item.d;
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px';
-      const lbl=document.createElement('span'); lbl.style.fontWeight='600'; lbl.textContent=labels[k]||k;
-      const bts=document.createElement('div'); bts.style.cssText='display:flex;gap:6px';
-      if(d.mime&&d.mime.startsWith('image/')){
-        const vb=document.createElement('button'); vb.className='btn btn-o btn-sm'; vb.textContent='👁️ عرض';
-        vb.onclick=function(){openLB('data:'+d.mime+';base64,'+d.data);}; bts.appendChild(vb);
+    found.forEach(function(item,idx){
+      const k=item.k, d=item.d;
+      const isImg=d.mime&&d.mime.startsWith('image/');
+      const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
+      const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
+
+      const card=document.createElement('div');
+      card.style.cssText='border:1.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:12px';
+
+      // عرض الصورة مباشرة بحجم كبير
+      if(isImg){
+        const img=document.createElement('img');
+        img.src=src;
+        img.style.cssText='width:100%;max-height:300px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
+        img.title='اضغط للتكبير';
+        img.onclick=function(){openLB(src);};
+        card.appendChild(img);
       }
-      const db=document.createElement('button'); db.className='btn btn-p btn-sm'; db.textContent='⬇️ تحميل';
-      db.onclick=function(){const a=document.createElement('a');a.href='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;a.download=d.name||k;a.click();};
-      bts.appendChild(db); row.appendChild(lbl); row.appendChild(bts); list.appendChild(row);
+
+      // شريط أزرار
+      const bar=document.createElement('div');
+      bar.style.cssText='display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--bg2)';
+      const lbl=document.createElement('span');
+      lbl.style.cssText='font-size:12px;font-weight:700;color:var(--t2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60%';
+      lbl.textContent=fname;
+      bar.appendChild(lbl);
+
+      const btns=document.createElement('div');
+      btns.style.cssText='display:flex;gap:6px;flex-shrink:0';
+
+      if(isImg){
+        const vb=document.createElement('button');
+        vb.className='btn btn-o btn-sm'; vb.textContent='🔍 تكبير';
+        vb.onclick=function(){openLB(src);}; btns.appendChild(vb);
+      }
+
+      const sb=document.createElement('button');
+      sb.className='btn btn-p btn-sm'; sb.textContent='⬇️ حفظ';
+      sb.onclick=function(){
+        const a=document.createElement('a'); a.href=src; a.download=fname;
+        document.body.appendChild(a); a.click(); setTimeout(function(){a.remove();},500);
+      };
+      btns.appendChild(sb); bar.appendChild(btns); card.appendChild(bar);
+      list.appendChild(card);
     });
   });
 }
