@@ -1001,6 +1001,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </select>
 
               <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="exportGoLabel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 GoLabel Excel</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
             <div style="display:flex;align-items:center;gap:8px">
@@ -2659,6 +2660,78 @@ function clearScan(){
   document.getElementById('sq-coding').value='';
   document.getElementById('scan-result-card').style.display='none';
   filterCoding();
+}
+
+function exportGoLabel(){
+  if(!allCoding.length){toast('لا توجد بيانات في السجل','err');return;}
+  const loadXLSX=()=>new Promise((res,rej)=>{
+    if(window.XLSX){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+    s.onload=res;s.onerror=rej;document.head.appendChild(s);
+  });
+  loadXLSX().then(()=>{
+    // GoLabel يحتاج: Barcode (الكود)، QR_Data، وبيانات الملصق
+    const origin = window.location.origin;
+    const header = [
+      'Barcode',         // كود الباركود — CODE128
+      'QR_Data',         // بيانات QR Code
+      'Station',         // اسم المحطة
+      'Location',        // الموقع / الاسم
+      'District',        // القاطع
+      'Device_Type',     // نوع الجهاز (NVR/DVR/...)
+      'Install_Date',    // تاريخ التركيب
+      'Status',          // الحالة
+      'NVR_Num',         // رقم NVR
+      'NVR_Serial',      // Serial NVR
+      'HDD_Num',         // رقم HDD
+      'HDD_Serial',      // Serial HDD
+      'Notes',           // ملاحظات
+    ];
+    const rows=[];
+    allCoding.forEach(d=>{
+      const nvrs=d.nvrs||[]; const hdds=d.hdds||[];
+      const maxLen=Math.max(nvrs.length,hdds.length,1);
+      for(let i=0;i<maxLen;i++){
+        const nvr=nvrs[i]||{}; const hdd=hdds[i]||{};
+        const isFirst=i===0;
+        rows.push([
+          isFirst?(d.code||''):'',
+          isFirst?(origin+'/scan/'+encodeURIComponent(d.code||'')):'',
+          isFirst?(d.station_name||''):'',
+          isFirst?(d.location||''):'',
+          isFirst?(d.district||''):'',
+          isFirst?(d.device_type||''):'',
+          isFirst?(d.install_date||''):'',
+          isFirst?(d.status||''):'',
+          nvr.num||'',
+          nvr.serial||'',
+          hdd.num||'',
+          hdd.serial||'',
+          isFirst?(d.notes||''):'',
+        ]);
+      }
+    });
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+    // ضبط عرض الأعمدة
+    ws['!cols']=[
+      {wch:16},{wch:45},{wch:22},{wch:22},{wch:12},{wch:12},
+      {wch:14},{wch:10},{wch:10},{wch:28},{wch:10},{wch:28},{wch:20}
+    ];
+    // تنسيق رأس الجدول
+    const hRange=XLSX.utils.decode_range(ws['!ref']);
+    for(let c=hRange.s.c;c<=hRange.e.c;c++){
+      const cell=XLSX.utils.encode_cell({r:0,c});
+      if(!ws[cell]) continue;
+      ws[cell].s={font:{bold:true},fill:{fgColor:{rgb:'1D4ED8'}},
+        font:{bold:true,color:{rgb:'FFFFFF'}}};
+    }
+    XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
+    const date=new Date().toISOString().split('T')[0];
+    XLSX.writeFile(wb,'GoLabel_'+date+'.xlsx');
+    toast('تم التصدير لـ GoLabel ✅ ('+allCoding.length+' جهاز)');
+  }).catch(e=>toast('خطأ: '+e,'err'));
 }
 
 function exportCodingExcel(){
