@@ -1010,7 +1010,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <div onclick="exportDbFormat('mysql')" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#f59e0b" onmouseover="this.style.background='#fffbeb'" onmouseout="this.style.background=''">🐬 MySQL (.sql)</div>
                   <div onclick="exportDbFormat('mssql')" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#0891b2" onmouseover="this.style.background='#ecfeff'" onmouseout="this.style.background=''">🪟 MS SQL Server (.sql)</div>
                   <div onclick="exportDbFormat('oracle')" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#dc2626" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background=''">🔴 Oracle (.sql)</div>
-                  <div onclick="exportDbFormat('access')" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#7c3aed" onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">🗃️ MS Access (.sql)</div>
+                  <div onclick="exportForAccess()" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#7c3aed" onmouseover="this.style.background='#f5f3ff'" onmouseout="this.style.background=''">🗃️ MS Access (.xlsx)</div>
                   <div style="height:1px;background:#e2e8f0;margin:4px 0"></div>
                   <div onclick="exportDbFormat('text')" style="padding:9px 16px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;color:#475569" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">📄 Text (.txt)</div>
                 </div>
@@ -2490,7 +2490,7 @@ function exportVoidExcel(){
       ws2['!cols']=[{wch:14},{wch:8},{wch:6},{wch:14},{wch:30}];
       XLSX.utils.book_append_sheet(wb,'السيريال',ws2);
     }
-    XLSX.writeFile(wb,'VOID_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='VOID_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(e=>toast('خطأ: '+e,'err'));
 }
@@ -2863,6 +2863,110 @@ function _downloadText(content, filename, mime){
   setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1000);
 }
 
+async function exportForAccess(){
+  document.getElementById('export-menu').style.display='none';
+
+  if(!allCoding.length){
+    toast('جاري تحميل البيانات...');
+    try{ await loadCoding(); }catch(e){}
+  }
+  if(!allCoding.length){ toast('لا توجد بيانات','err'); return; }
+
+  toast('جاري تحميل مكتبة Excel...');
+  const loadLib=(src)=>new Promise((res,rej)=>{
+    if(typeof XLSX!=='undefined'){res();return;}
+    const s=document.createElement('script');
+    s.src=src; s.onload=res; s.onerror=rej;
+    document.head.appendChild(s);
+  });
+  try{
+    await loadLib('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
+      .catch(()=>loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'))
+      .catch(()=>loadLib('https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js'));
+  }catch(e){ toast('تعذّر تحميل مكتبة Excel','err'); return; }
+
+  if(typeof XLSX==='undefined'){ toast('مكتبة Excel غير متوفرة','err'); return; }
+
+  try{
+    const origin=window.location.origin;
+    const date=new Date().toISOString().split('T')[0];
+
+    // أعمدة مُهيّأة لـ Access — أسماء بالإنجليزي لتوافق أفضل
+    const header=[
+      'ID','Barcode','QR_Data',
+      'Station_AR','Location_AR','District_AR',
+      'Install_Date','Status_AR',
+      'NVR1_Num','NVR1_Serial',
+      'NVR2_Num','NVR2_Serial',
+      'HDD1_Num','HDD1_Serial',
+      'HDD2_Num','HDD2_Serial',
+      'Notes_AR'
+    ];
+
+    const rows=allCoding.map((d,i)=>{
+      const n=d.nvrs||[], h=d.hdds||[];
+      return [
+        i+1,
+        d.code||'',
+        origin+'/scan/'+encodeURIComponent(d.code||''),
+        d.station_name||'',
+        d.location||'',
+        d.district||'',
+        d.install_date||'',
+        d.status||'يعمل',
+        (n[0]||{}).num||'',(n[0]||{}).serial||'',
+        (n[1]||{}).num||'',(n[1]||{}).serial||'',
+        (h[0]||{}).num||'',(h[0]||{}).serial||'',
+        (h[1]||{}).num||'',(h[1]||{}).serial||'',
+        d.notes||''
+      ];
+    });
+
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([header,...rows]);
+
+    // تحديد نوع الأعمدة لـ Access
+    ws['!cols']=[
+      {wch:6},{wch:18},{wch:52},{wch:24},{wch:22},{wch:12},
+      {wch:14},{wch:10},
+      {wch:10},{wch:30},{wch:10},{wch:30},
+      {wch:10},{wch:30},{wch:10},{wch:30},
+      {wch:24}
+    ];
+
+    // ورقة ثانية: تعليمات الاستيراد
+    const guide=[
+      ['كيفية استيراد هذا الملف في MS Access'],
+      [''],
+      ['1. افتح MS Access وأنشئ قاعدة بيانات جديدة أو افتح موجودة'],
+      ['2. اذهب إلى: External Data → Excel'],
+      ['3. اختر هذا الملف'],
+      ['4. اختر الورقة: Access_Import'],
+      ['5. ضع علامة على "First Row Contains Column Headings"'],
+      ['6. اضغط Next ثم Finish'],
+      [''],
+      ['ملاحظة: عمود Barcode يمكن استخدامه مع باركود ريدر'],
+      ['عمود QR_Data يحتوي رابط المسح الكامل'],
+    ];
+    const wsGuide=XLSX.utils.aoa_to_sheet(guide);
+    wsGuide['!cols']=[{wch:60}];
+
+    XLSX.utils.book_append_sheet(wb,'Access_Import',ws);
+    XLSX.utils.book_append_sheet(wb,'تعليمات الاستيراد',wsGuide);
+    const wbout2=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const blob2=new Blob([wbout2],{type:'application/octet-stream'});
+    const url2=URL.createObjectURL(blob2);
+    const a2=document.createElement('a');
+    a2.href=url2; a2.download='Access_Import_'+date+'.xlsx';
+    document.body.appendChild(a2); a2.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url2); a2.remove(); },1000);
+    toast('✅ جاهز للاستيراد في Access — '+allCoding.length+' جهاز');
+  }catch(err){
+    console.error('Access export error:',err);
+    toast('خطأ: '+(err.message||err),'err');
+  }
+}
+
 async function exportGoLabel(){
   if(!allCoding.length){
     toast('جاري تحميل البيانات...');
@@ -2932,7 +3036,17 @@ async function exportGoLabel(){
       {wch:10},{wch:30},{wch:10},{wch:30},{wch:22}
     ];
     XLSX.utils.book_append_sheet(wb,'GoLabel_Data',ws);
-    XLSX.writeFile(wb,'GoLabel_'+new Date().toISOString().split('T')[0]+'.xlsx');
+
+    // تحميل الملف في المتصفح
+    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    const blob  = new Blob([wbout], {type:'application/octet-stream'});
+    const url   = URL.createObjectURL(blob);
+    const a     = document.createElement('a');
+    a.href      = url;
+    a.download  = 'GoLabel_'+new Date().toISOString().split('T')[0]+'.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
     toast('✅ تم التصدير — '+allCoding.length+' جهاز');
   }catch(err){
     console.error('Excel export error:',err);
@@ -2964,7 +3078,13 @@ function exportCodingExcel(){
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:14},{wch:20},{wch:13},{wch:20},{wch:12},{wch:25},{wch:12},{wch:25},{wch:13},{wch:10},{wch:20}];
     XLSX.utils.book_append_sheet(wb,'ترميز الأجهزة',ws);
-    XLSX.writeFile(wb,'ترميز_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const blob=new Blob([wbout],{type:'application/octet-stream'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='ترميز_'+new Date().toISOString().split('T')[0]+'.xlsx';
+    document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
     toast('تم التصدير ✅');
   }).catch(e=>toast('خطأ: '+e,'err'));
 }
@@ -3634,7 +3754,7 @@ function exportToursCSV(){
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:12},{wch:16},{wch:30}];
     XLSX.utils.book_append_sheet(wb,'الجولات',ws);
-    XLSX.writeFile(wb,'جولات_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جولات_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ','err'));
 }
@@ -3744,7 +3864,7 @@ function exportMaintCSV(){
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:14},{wch:8},{wch:20},{wch:16},{wch:30}];
     XLSX.utils.book_append_sheet(wb,'الصيانة',ws);
-    XLSX.writeFile(wb,'صيانة_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='صيانة_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ','err'));
 }
@@ -3954,7 +4074,7 @@ function exportInvCSV(){
     const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
     ws['!cols']=[{wch:20},{wch:12},{wch:10},...Array(19).fill({wch:12})];
     XLSX.utils.book_append_sheet(wb,'جرد الكاميرات',ws);
-    XLSX.writeFile(wb,'جرد_'+new Date().toISOString().split('T')[0]+'.xlsx');
+    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جرد_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
     toast('تم التصدير ✅');
   }).catch(()=>toast('خطأ في تحميل مكتبة Excel','err'));
 }
