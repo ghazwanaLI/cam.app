@@ -1055,50 +1055,70 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
               <!-- ── ضبط الأحجام ── -->
               <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;width:100%">
-                <div style="font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:4px">⚙️ أحجام الملصق <span style="font-size:11px;font-weight:500;color:#94a3b8">— الوحدة: سنتيمتر (سم)</span></div>
-
-                <!-- الملصق -->
-                <div style="font-size:11px;font-weight:700;color:#475569;margin:10px 0 6px">📄 الملصق</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📐 الطول (سم)</label>
-                    <input type="number" id="ctrl-lbl-w" value="5" min="1" max="30" step="0.5"
-                      onchange="clampSizes()"
-                      style="border:2px solid #bfdbfe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
-                  </div>
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📏 الارتفاع (سم)</label>
-                    <input type="number" id="ctrl-lbl-h" value="2.5" min="0.5" max="30" step="0.5"
-                      onchange="clampSizes()"
-                      style="border:2px solid #bfdbfe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
-                  </div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                  <span style="font-size:13px;font-weight:800;color:#1d4ed8">⚙️ أحجام الملصق</span>
+                  <span style="font-size:11px;color:#94a3b8;background:#e2e8f0;padding:2px 8px;border-radius:20px">الوحدة: سنتيمتر</span>
                 </div>
 
-                <!-- QR والباركود -->
-                <div style="font-size:11px;font-weight:700;color:#475569;margin:0 0 6px">🏷️ المحتوى</div>
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <label style="font-size:11px;font-weight:700;color:#7c3aed">◼ حجم QR (سم)</label>
-                    <input type="number" id="ctrl-qr-size" value="2" min="0.5" max="10" step="0.5"
-                      onchange="clampSizes()"
-                      style="border:2px solid #ddd6fe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#7c3aed;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px">
+
+                  <!-- طول الملصق -->
+                  <div style="background:#eff6ff;border-radius:10px;padding:10px">
+                    <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:6px;letter-spacing:.5px">📐 طول الملصق</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <button onclick="stepVal('ctrl-lbl-w',-0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">−</button>
+                      <input type="number" id="ctrl-lbl-w" value="5" min="1" max="30" step="0.5"
+                        style="flex:1;border:1.5px solid #bfdbfe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
+                      <button onclick="stepVal('ctrl-lbl-w',0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">+</button>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
                   </div>
-                  <div style="display:flex;flex-direction:column;gap:4px">
-                    <label style="font-size:11px;font-weight:700;color:#0891b2">▌ ارتفاع الباركود (سم)</label>
-                    <input type="number" id="ctrl-bc-h" value="1.5" min="0.3" max="10" step="0.5"
-                      onchange="clampSizes()"
-                      style="border:2px solid #a5f3fc;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#0891b2;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+
+                  <!-- ارتفاع الملصق -->
+                  <div style="background:#eff6ff;border-radius:10px;padding:10px">
+                    <div style="font-size:10px;font-weight:700;color:#3b82f6;margin-bottom:6px;letter-spacing:.5px">📏 ارتفاع الملصق</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <button onclick="stepVal('ctrl-lbl-h',-0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">−</button>
+                      <input type="number" id="ctrl-lbl-h" value="2.5" min="0.5" max="30" step="0.5"
+                        style="flex:1;border:1.5px solid #bfdbfe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
+                      <button onclick="stepVal('ctrl-lbl-h',0.5)" style="width:30px;height:30px;border:1.5px solid #bfdbfe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#1d4ed8;flex-shrink:0">+</button>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
                   </div>
+
+                  <!-- حجم QR -->
+                  <div style="background:#f5f3ff;border-radius:10px;padding:10px">
+                    <div style="font-size:10px;font-weight:700;color:#7c3aed;margin-bottom:6px;letter-spacing:.5px">◼ حجم QR Code</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <button onclick="stepVal('ctrl-qr-size',-0.5)" style="width:30px;height:30px;border:1.5px solid #ddd6fe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#7c3aed;flex-shrink:0">−</button>
+                      <input type="number" id="ctrl-qr-size" value="2" min="0.5" max="10" step="0.5"
+                        style="flex:1;border:1.5px solid #ddd6fe;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#7c3aed;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
+                      <button onclick="stepVal('ctrl-qr-size',0.5)" style="width:30px;height:30px;border:1.5px solid #ddd6fe;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#7c3aed;flex-shrink:0">+</button>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
+                  </div>
+
+                  <!-- ارتفاع الباركود -->
+                  <div style="background:#ecfeff;border-radius:10px;padding:10px">
+                    <div style="font-size:10px;font-weight:700;color:#0891b2;margin-bottom:6px;letter-spacing:.5px">▌ ارتفاع الباركود</div>
+                    <div style="display:flex;align-items:center;gap:6px">
+                      <button onclick="stepVal('ctrl-bc-h',-0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">−</button>
+                      <input type="number" id="ctrl-bc-h" value="1.5" min="0.3" max="10" step="0.5"
+                        style="flex:1;border:1.5px solid #a5f3fc;border-radius:6px;padding:5px 2px;font-size:15px;font-weight:800;color:#0891b2;text-align:center;font-family:Cairo,sans-serif;outline:none;background:#fff;min-width:0">
+                      <button onclick="stepVal('ctrl-bc-h',0.5)" style="width:30px;height:30px;border:1.5px solid #a5f3fc;border-radius:6px;background:#fff;font-size:16px;cursor:pointer;font-weight:800;color:#0891b2;flex-shrink:0">+</button>
+                    </div>
+                    <div style="font-size:10px;color:#94a3b8;text-align:center;margin-top:4px">سم</div>
+                  </div>
+
                 </div>
 
-                <!-- ملاحظة القيود -->
-                <div id="size-hint" style="font-size:11px;color:#f59e0b;margin-bottom:8px;display:none">
-                  ⚠️ تم تعديل بعض القيم لتناسب حجم الملصق
+                <div id="size-hint" style="font-size:11px;color:#f59e0b;margin-bottom:8px;display:none;background:#fffbeb;border-radius:6px;padding:6px 10px">
+                  ⚠️ تم تعديل القيم لتناسب حجم الملصق
                 </div>
 
                 <button onclick="rebuildLabel()" class="btn btn-p"
-                  style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);font-size:14px;padding:10px">
-                  ✅ تطبيق الأحجام
+                  style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);font-size:14px;padding:11px;border-radius:10px">
+                  ✅ تطبيق وتحديث المعاينة
                 </button>
               </div>
 
@@ -2606,6 +2626,19 @@ function getLabelSizes(){
 }
 
 // ضمان منطقية القياسات: QR والباركود لا يتجاوزان ارتفاع الملصق
+
+function stepVal(id, delta){
+  const el=document.getElementById(id);
+  if(!el)return;
+  const min=parseFloat(el.min)||0;
+  const max=parseFloat(el.max)||999;
+  const step=parseFloat(el.step)||0.5;
+  let val=parseFloat(el.value)||0;
+  val=Math.round((val+delta)/step)*step;
+  val=Math.max(min,Math.min(max,val));
+  el.value=parseFloat(val.toFixed(2));
+  clampSizes();
+}
 function clampSizes(){
   const h = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
   let qr  = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
