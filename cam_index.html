@@ -922,6 +922,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div id="tab-circulars" style="display:none">
         <div class="section">
           <div class="sec-hdr">
+            <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
             <div class="sec-actions">
               <select class="fi btn-sm" id="f-circ-district" onchange="filterCirculars()" style="width:130px">
                 <option value="">كل القواطع</option>
@@ -934,12 +935,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="عام">عام</option>
               </select>
               <button class="btn btn-o btn-sm" onclick="loadCirculars()">🔄</button>
-            </div>
-            <div style="display:flex;align-items:center;gap:8px">
-              <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
-              <div style="display:flex;gap:8px">
-                <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
-              </div>
+              <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
             </div>
           </div>
 
@@ -1001,9 +997,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </div>
             </div>
 
-            <div style="display:flex;gap:10px;justify-content:flex-end">
-              <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
+            <div style="display:flex;gap:10px;justify-content:flex-start;direction:rtl">
               <button class="btn btn-p" onclick="saveQuickCircular()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">📢 نشر التعميم</button>
+              <button class="btn btn-o btn-sm" onclick="cancelQuickCirc()">إلغاء</button>
             </div>
           </div>
 
@@ -1764,7 +1760,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-circ')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveCircular()">💾 نشر التعميم</button>
+      <button class="btn btn-p" onclick="saveCircular()" style="margin-right:auto">💾 نشر التعميم</button>
     </div>
   </div>
 </div>
@@ -3678,8 +3674,9 @@ function renderInv(){
   const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
   const distF=document.getElementById('f-inv-district')?.value||'';
   const stF=document.getElementById('f-inv-status')?.value||'';
+  const userDists=CU?.role!=='admin'?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[]))  :[];
   let list=allInventory.filter(x=>{
-    if(CU?.role!=='admin'&&CU?.district&&x.district!==CU.district)return false;
+    if(userDists.length&&!userDists.includes(x.district))return false;
     if(distF&&x.district!==distF)return false;
     if(stF&&x.status!==stF)return false;
     if(search&&!(x.station_name||'').toLowerCase().includes(search))return false;
@@ -4235,6 +4232,9 @@ function generateMaintReport(){
 // ══════════════════════════════════════════
 
 function populateDistrictFilters(){
+  const isAdm=CU?.role==='admin';
+  const uDists=!isAdm?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[])):[];
+  const distOptions=uDists.length?uDists:DISTRICTS_LIST;
   ['f-tour-district','f-maint-district','f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
@@ -4551,8 +4551,16 @@ function printMaintTable(){
 
 // ── طباعة الجرد ──
 function printInv(){
-  const list=[...allInventory];
+  // فلتر بالقاطع المختار + قاطع المخول
+  const distF=document.getElementById('f-inv-district')?.value||'';
+  const myDist=CU?.role!=='admin'?CU?.district||'':'';
+  const filterDist=myDist||distF;
+  let list=[...allInventory].filter(x=>{
+    if(filterDist&&x.district!==filterDist)return false;
+    return true;
+  });
   if(!list.length){toast('لا توجد بيانات','err');return;}
+  const title='جرد الكاميرات والأجهزة'+(filterDist?' — '+filterDist:'');
   const tbl='<table>'
     +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>الحالة</th><th>DVR/NVR</th><th>HDD</th><th>كاميرات</th><th>ملاحظات</th></tr></thead>'
     +'<tbody>'+list.map((x,i)=>`<tr><td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td><td><span class="${x.status==='مكتمل'?'badge-ok':'badge-bad'}">${x.status||'—'}</span></td><td>${x.dvr_count||0} (${x.dvr_model||'—'})</td><td>${x.hdd_count||0} × ${x.hdd_size||'—'}</td><td>${x.cam_count||0}</td><td style="color:#475569">${x.notes||''}</td></tr>`).join('')
