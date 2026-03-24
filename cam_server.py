@@ -152,9 +152,7 @@ def default_db():
         "circulars":[],
         "circular_reads":[],
         "next_circular_id":1,
-        "coding":[],
-        "next_coding_id":1,
-        "scan_logs":[],
+        
         "custom_districts":[],
     }
 
@@ -163,6 +161,8 @@ sessions = {}
 def add_log_safe(user,action,details,ip=""):
     try: add_log(user,action,details,ip)
     except: pass
+
+
 
 class Handler(BaseHTTPRequestHandler):
     def log_message(self,f,*a): pass
@@ -235,18 +235,7 @@ class Handler(BaseHTTPRequestHandler):
             reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
             self.send_json({"ok":True,"reads":reads})
 
-        elif p=="/api/scan_logs":
-            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
-            code=urlparse(self.path).query.replace("code=","")
-            logs=db.get("scan_logs",[])
-            if code: logs=[l for l in logs if l.get("code")==code]
-            self.send_json({"ok":True,"logs":list(reversed(logs[-100:]))})
 
-        elif p=="/api/coding":
-            devices=db.get("coding",[])
-            if u["role"]!="admin" and u.get("district"):
-                devices=[d for d in devices if not d.get("district") or d.get("district")==u["district"]]
-            self.send_json({"ok":True,"devices":devices})
 
         elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
         elif p=="/api/tours":
@@ -279,6 +268,18 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin" and u.get("district"):
                 circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district")==u["district"]]
             self.send_json({"ok":True,"circulars":list(reversed(circs))})
+
+        elif p=="/api/coding":
+            devices=db.get("coding",[])
+            if u["role"]!="admin" and u.get("district"):
+                devices=[d for d in devices if not d.get("district") or d.get("district")==u["district"]]
+            self.send_json({"ok":True,"devices":devices})
+
+        elif p=="/api/scan_logs":
+            code_q=urlparse(self.path).query.replace("code=","")
+            logs=db.get("scan_logs",[])
+            if code_q: logs=[l for l in logs if l.get("code")==code_q]
+            self.send_json({"ok":True,"logs":list(reversed(logs[-100:]))})
 
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
@@ -419,29 +420,16 @@ class Handler(BaseHTTPRequestHandler):
             })
             save_db(db); self.send_json({"ok":True})
 
-        elif p=="/api/scan":
-            if "scan_logs" not in db: db["scan_logs"]=[]
-            code=body.get("code","")
-            device=next((d for d in db.get("coding",[]) if d.get("code")==code),None)
-            db["scan_logs"].append({
-                "code":code,
-                "scanned_at":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                "scanned_by":body.get("scanned_by",""),
-                "fullname":body.get("fullname",""),
-                "ip":self.client_address[0],
-                "station":device.get("station_name","") if device else "",
-                "location":device.get("location","") if device else "",
-                "found":device is not None
-            })
-            save_db(db)
-            self.send_json({"ok":True,"found":device is not None})
+
+
+
 
         elif p=="/api/coding":
             if "coding" not in db: db["coding"]=[]
             if "next_coding_id" not in db: db["next_coding_id"]=1
             cid=db["next_coding_id"]; db["next_coding_id"]+=1
             dev={
-                "id":cid,"code":body.get("code",""),"device_type":body.get("device_type",""),
+                "id":cid,"code":body.get("code",""),"device_type":body.get("device_type","موقع"),
                 "model":body.get("model",""),"district":body.get("district",""),
                 "station_id":body.get("station_id"),"station_name":body.get("station_name",""),
                 "location":body.get("location",""),"install_date":body.get("install_date",""),
@@ -452,6 +440,20 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["coding"].append(dev); save_db(db)
             self.send_json({"ok":True,"device":dev})
+
+        elif p=="/api/scan":
+            if "scan_logs" not in db: db["scan_logs"]=[]
+            code=body.get("code","")
+            device=next((d for d in db.get("coding",[]) if d.get("code")==code),None)
+            db["scan_logs"].append({
+                "code":code,"scanned_at":datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "scanned_by":body.get("scanned_by",""),"fullname":body.get("fullname",""),
+                "ip":self.client_address[0],
+                "station":device.get("station_name","") if device else "",
+                "location":device.get("location","") if device else "",
+                "found":device is not None
+            })
+            save_db(db); self.send_json({"ok":True,"found":device is not None})
 
         elif p=="/api/circulars":
             if u["role"]!="admin": self.send_json({"error":"المدير فقط يستطيع نشر التعاميم"},403); return
@@ -594,6 +596,7 @@ class Handler(BaseHTTPRequestHandler):
                 if f in body: db["users"][idx][f]=body[f]
             save_db(db); self.send_json({"ok":True})
 
+
         elif p.startswith("/api/coding/"):
             cid=int(p.split("/")[-1]); idx=next((i for i,d in enumerate(db.get("coding",[])) if d["id"]==cid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
@@ -638,16 +641,17 @@ class Handler(BaseHTTPRequestHandler):
             db["users"]=[x for x in db["users"] if x["id"]!=uid]; save_db(db)
             self.send_json({"ok":True})
 
+        elif p.startswith("/api/coding/"):
+            cid=int(p.split("/")[-1])
+            db["coding"]=[d for d in db.get("coding",[]) if d["id"]!=cid]
+            save_db(db); self.send_json({"ok":True})
+
         elif p.startswith("/api/circulars/"):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             cid=int(p.split("/")[-1])
             db["circulars"]=[c2 for c2 in db.get("circulars",[]) if c2["id"]!=cid]
             save_db(db); self.send_json({"ok":True})
 
-        elif p.startswith("/api/coding/"):
-            cid=int(p.split("/")[-1])
-            db["coding"]=[d for d in db.get("coding",[]) if d["id"]!=cid]
-            save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/inventory/"):
             if not self.can(u,"del"): self.send_json({"error":"لا صلاحية"},403); return
