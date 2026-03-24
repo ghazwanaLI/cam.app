@@ -2746,8 +2746,8 @@ function generateLabel(){
   const deviceNames={'NVR':'NVR — تسجيل شبكي','DVR':'DVR — تسجيل رقمي','CAM':'كاميرا','POE':'سويج POE','UPS':'UPS عاكس','HDD':'هارد ديسك'};
   const serial=(document.getElementById('gen-serial')?.value||'').trim();
   const code=updateGenCode();
-  if(!code||code==='—'||!/^[\x20-\x7E]+$/.test(code)){
-    toast('لا يمكن توليد باركود — تحقق من اسم القاطع','err');return;
+  if(!code||code==='—'){
+    toast('اختر المحطة ورقم الجهاز','err');return;
   }
   _genQrData=window.location.origin+'/scan/'+code+'|'+station+'|'+device+(serial?'|SN:'+serial:'');
   _genCode=code;
@@ -3607,49 +3607,30 @@ function updateGenCode(){
   const station=document.getElementById('gen-station')?.value||'';
   const device=document.getElementById('gen-device')?.value||'NVR';
   const num=(document.getElementById('gen-num')?.value||'001').padStart(3,'0');
-  if(!station){document.getElementById('gen-code-display').textContent='—';return '—';}
+  const display=document.getElementById('gen-code-display');
+  if(!station){display.textContent='—';return '—';}
 
   const stObj=allStations.find(s=>s.name===station)||{};
   const dist=stObj.district||'';
   const stId=stObj.id||0;
 
-  // خريطة القواطع المعروفة → كود ASCII
+  // خريطة القواطع → كود ASCII
   const DIST_MAP={
     'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
     'العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ',
   };
 
-  const wrapEl=document.getElementById('gen-distcode-wrap');
-  let distCode=DIST_MAP[dist];
+  // الكود دائماً ASCII — استخدم رقم المحطة fallback لأي قاطع
+  let distCode = DIST_MAP[dist];
   if(!distCode){
-    // إظهار حقل الإدخال اليدوي للقواطع غير المعروفة
-    if(wrapEl) wrapEl.style.display='block';
-    const manual=(document.getElementById('gen-distcode')?.value||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
-    if(manual){
-      distCode=manual;
-    } else if(stId){
-      distCode='ST'+String(stId).padStart(2,'0');
-    } else {
-      distCode='D'+String(allStations.findIndex(s=>s.name===station)+1).padStart(2,'0');
-    }
-  } else {
-    // إخفاء حقل الإدخال اليدوي إذا كان القاطع معروفاً
-    if(wrapEl) wrapEl.style.display='none';
-    const manualEl=document.getElementById('gen-distcode');
-    if(manualEl) manualEl.value='';
+    distCode = stId ? 'S'+String(stId).padStart(2,'0') : 'ST';
   }
+
+  // أخفِ/أظهر حقل الكود اليدوي
+  const wrapEl=document.getElementById('gen-distcode-wrap');
+  if(wrapEl) wrapEl.style.display='none';
 
   const code=`${device}-${distCode}-${num}`;
-
-  // تحقق: الكود يجب أن يحتوي ASCII فقط (لأن JsBarcode CODE128 لا يدعم Unicode)
-  const isASCII=/^[ -~]+$/.test(code);
-  const display=document.getElementById('gen-code-display');
-  if(!isASCII){
-    display.textContent='—';
-    display.style.color='#dc2626';
-    toast('خطأ: اسم القاطع يحتوي أحرف غير مدعومة للباركود','err');
-    return '—';
-  }
   display.style.color='#0891b2';
   display.textContent=code;
   return code;
