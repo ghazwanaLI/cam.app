@@ -1055,35 +1055,49 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
               <!-- ── ضبط الأحجام ── -->
               <div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px;width:100%">
-                <div style="font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:12px">⚙️ ضبط أحجام الملصق</div>
-                <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:12px">
+                <div style="font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:4px">⚙️ أحجام الملصق <span style="font-size:11px;font-weight:500;color:#94a3b8">— الوحدة: سنتيمتر (سم)</span></div>
 
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📐 عرض (مم)</label>
-                    <input type="number" id="ctrl-lbl-w" value="50" min="20" max="300" step="1"
-                      style="border:2px solid #bfdbfe;border-radius:8px;padding:8px 6px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                <!-- الملصق -->
+                <div style="font-size:11px;font-weight:700;color:#475569;margin:10px 0 6px">📄 الملصق</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📐 الطول (سم)</label>
+                    <input type="number" id="ctrl-lbl-w" value="5" min="1" max="30" step="0.5"
+                      onchange="clampSizes()"
+                      style="border:2px solid #bfdbfe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
-
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📏 ارتفاع (مم)</label>
-                    <input type="number" id="ctrl-lbl-h" value="25" min="10" max="300" step="1"
-                      style="border:2px solid #bfdbfe;border-radius:8px;padding:8px 6px;font-size:15px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;color:#1d4ed8">📏 الارتفاع (سم)</label>
+                    <input type="number" id="ctrl-lbl-h" value="2.5" min="0.5" max="30" step="0.5"
+                      onchange="clampSizes()"
+                      style="border:2px solid #bfdbfe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#1d4ed8;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
                   </div>
-
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#7c3aed">◼ QR (مم)</label>
-                    <input type="number" id="ctrl-qr-size" value="18" min="10" max="100" step="1"
-                      style="border:2px solid #ddd6fe;border-radius:8px;padding:8px 6px;font-size:15px;font-weight:800;color:#7c3aed;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
-                  </div>
-
-                  <div style="display:flex;flex-direction:column;gap:5px">
-                    <label style="font-size:11px;font-weight:700;color:#0891b2">▌ باركود (مم)</label>
-                    <input type="number" id="ctrl-bc-h" value="12" min="5" max="100" step="1"
-                      style="border:2px solid #a5f3fc;border-radius:8px;padding:8px 6px;font-size:15px;font-weight:800;color:#0891b2;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
-                  </div>
-
                 </div>
-                <button onclick="rebuildLabel()" class="btn btn-p" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);font-size:13px">
+
+                <!-- QR والباركود -->
+                <div style="font-size:11px;font-weight:700;color:#475569;margin:0 0 6px">🏷️ المحتوى</div>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;color:#7c3aed">◼ حجم QR (سم)</label>
+                    <input type="number" id="ctrl-qr-size" value="2" min="0.5" max="10" step="0.5"
+                      onchange="clampSizes()"
+                      style="border:2px solid #ddd6fe;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#7c3aed;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  </div>
+                  <div style="display:flex;flex-direction:column;gap:4px">
+                    <label style="font-size:11px;font-weight:700;color:#0891b2">▌ ارتفاع الباركود (سم)</label>
+                    <input type="number" id="ctrl-bc-h" value="1.5" min="0.3" max="10" step="0.5"
+                      onchange="clampSizes()"
+                      style="border:2px solid #a5f3fc;border-radius:8px;padding:9px 8px;font-size:16px;font-weight:800;color:#0891b2;text-align:center;width:100%;font-family:Cairo,sans-serif;outline:none;background:#fff">
+                  </div>
+                </div>
+
+                <!-- ملاحظة القيود -->
+                <div id="size-hint" style="font-size:11px;color:#f59e0b;margin-bottom:8px;display:none">
+                  ⚠️ تم تعديل بعض القيم لتناسب حجم الملصق
+                </div>
+
+                <button onclick="rebuildLabel()" class="btn btn-p"
+                  style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);font-size:14px;padding:10px">
                   ✅ تطبيق الأحجام
                 </button>
               </div>
@@ -2571,20 +2585,37 @@ const _loadLib=(src,checkGlobal)=>new Promise((res,rej)=>{
 });
 
 function getLabelSizes(){
-  // كل القيم بالملم — نحوّل لبكسل للمعاينة (96dpi: 1mm ≈ 3.78px)
-  const mm = v => Math.max(1, parseInt(document.getElementById(v)?.value)||0);
-  const mmToPx = mm => Math.round(mm * 3.78);
+  // القيم بالسنتيمتر — نحوّل لبكسل للمعاينة (96dpi: 1cm = 37.8px)
+  const cm = id => Math.max(0.1, parseFloat(document.getElementById(id)?.value)||0);
+  const cmToPx = c => Math.round(c * 37.8);
+  const cmToMm = c => Math.round(c * 10);
   return {
-    lblW_mm : mm('ctrl-lbl-w'),
-    lblH_mm : mm('ctrl-lbl-h'),
-    qrMm    : mm('ctrl-qr-size'),
-    bcMm    : mm('ctrl-bc-h'),
+    lblW_cm : cm('ctrl-lbl-w'),
+    lblH_cm : cm('ctrl-lbl-h'),
+    qr_cm   : cm('ctrl-qr-size'),
+    bc_cm   : cm('ctrl-bc-h'),
+    // mm للطباعة
+    lblW_mm : cmToMm(cm('ctrl-lbl-w')),
+    lblH_mm : cmToMm(cm('ctrl-lbl-h')),
     // px للمعاينة
-    lblW    : mmToPx(mm('ctrl-lbl-w')),
-    lblH    : mmToPx(mm('ctrl-lbl-h')),
-    qrSize  : mmToPx(mm('ctrl-qr-size')),
-    bcH     : mmToPx(mm('ctrl-bc-h')),
+    lblW    : cmToPx(cm('ctrl-lbl-w')),
+    lblH    : cmToPx(cm('ctrl-lbl-h')),
+    qrSize  : cmToPx(cm('ctrl-qr-size')),
+    bcH     : cmToPx(cm('ctrl-bc-h')),
   };
+}
+
+// ضمان منطقية القياسات: QR والباركود لا يتجاوزان ارتفاع الملصق
+function clampSizes(){
+  const h = parseFloat(document.getElementById('ctrl-lbl-h')?.value)||2.5;
+  let qr  = parseFloat(document.getElementById('ctrl-qr-size')?.value)||2;
+  let bc  = parseFloat(document.getElementById('ctrl-bc-h')?.value)||1.5;
+  let changed = false;
+  const maxContent = Math.max(0.3, h - 0.3); // هامش 3mm
+  if(qr > maxContent){ qr = +maxContent.toFixed(1); document.getElementById('ctrl-qr-size').value=qr; changed=true; }
+  if(bc > maxContent){ bc = +maxContent.toFixed(1); document.getElementById('ctrl-bc-h').value=bc; changed=true; }
+  const hint = document.getElementById('size-hint');
+  if(hint) hint.style.display = changed ? 'block' : 'none';
 }
 
 function rebuildLabel(){
@@ -2667,7 +2698,7 @@ function printGenLabel(){
   const station=document.getElementById('gl-station').textContent;
   const device=document.getElementById('gl-device').textContent;
   const sz=getLabelSizes();
-  const {lblW_mm:lblW,lblH_mm:lblH,qrMm,bcMm}=sz;
+  const lblW=sz.lblW_mm, lblH=sz.lblH_mm;
   const qrSize=sz.qrSize, bcH=sz.bcH;
   const bcW=Math.max(60, sz.lblW - sz.qrSize - 30);
   const qrData=_genQrData||window.location.origin+'/scan/'+code;
