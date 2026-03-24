@@ -1804,7 +1804,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
           <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
         </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الجهاز | Serial Number</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
         <div id="nvr-rows"></div>
       </div>
 
@@ -1814,7 +1814,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
           <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
         </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">رقم الهارد | Serial Number</div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
         <div id="hdd-rows"></div>
       </div>
 
@@ -2410,14 +2410,11 @@ function addNvrRow(num='',serial=''){
   const id=nvrCount;
   const row=document.createElement('div');
   row.id=`nvr-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:8px';
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr auto auto;gap:6px;align-items:center;margin-bottom:8px';
   row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#1d4ed8;text-align:center;background:#eff6ff;border-radius:8px;padding:7px">NVR ${id}</div>
-    <input class="fi" id="nvr-num-${id}" type="text" value="${num}" placeholder="رقم الجهاز" style="font-size:13px">
-    <div style="display:flex;gap:4px">
-      <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr;flex:1">
-      <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('nvr-sn-${id}'))"
-        style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📷</button>
-    </div>
+    <input class="fi" id="nvr-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('nvr-sn-${id}'))"
+      style="background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">📷</button>
     <button type="button" onclick="document.getElementById('nvr-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
   document.getElementById('nvr-rows').appendChild(row);
 }
@@ -2427,14 +2424,11 @@ function addHddRow(num='',serial=''){
   const id=hddCount;
   const row=document.createElement('div');
   row.id=`hdd-${id}`;
-  row.style.cssText='display:grid;grid-template-columns:80px 1fr 1fr auto;gap:6px;align-items:center;margin-bottom:8px';
+  row.style.cssText='display:grid;grid-template-columns:80px 1fr auto auto;gap:6px;align-items:center;margin-bottom:8px';
   row.innerHTML=`<div style="font-size:13px;font-weight:700;color:#059669;text-align:center;background:#f0fdf4;border-radius:8px;padding:7px">HDD ${id}</div>
-    <input class="fi" id="hdd-num-${id}" type="text" value="${num}" placeholder="رقم الهارد" style="font-size:13px">
-    <div style="display:flex;gap:4px">
-      <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr;flex:1">
-      <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('hdd-sn-${id}'))"
-        style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:16px;flex-shrink:0;display:flex;align-items:center;justify-content:center">📷</button>
-    </div>
+    <input class="fi" id="hdd-sn-${id}" type="text" value="${serial}" placeholder="Serial Number" style="font-size:13px;direction:ltr">
+    <button type="button" title="مسح بالكاميرا" onclick="startCameraScan(document.getElementById('hdd-sn-${id}'))"
+      style="background:#f0fdf4;border:1.5px solid #a7f3d0;border-radius:8px;width:36px;height:36px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center">📷</button>
     <button type="button" onclick="document.getElementById('hdd-${id}').remove()" style="background:#fee2e2;border:none;border-radius:8px;width:34px;height:34px;cursor:pointer;color:#dc2626;font-size:16px">✕</button>`;
   document.getElementById('hdd-rows').appendChild(row);
 }
