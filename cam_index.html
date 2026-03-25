@@ -4606,32 +4606,42 @@ function showMaintFiles(mid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;justify-content:space-between;background:var(--bg2);border-radius:8px;padding:10px 12px;margin-bottom:6px';
-      const lbl=document.createElement('span');
-      lbl.style.fontWeight='600';
-      lbl.textContent=labels[k]||k;
-      row.appendChild(lbl);
-      const btns=document.createElement('div');
-      btns.style.display='flex';
-      btns.style.gap='6px';
       const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      if(d.mime&&d.mime.startsWith('image/')){
-        const vBtn=document.createElement('button');
-        vBtn.className='btn btn-o btn-sm';
-        vBtn.textContent='👁️ عرض';
-        vBtn.onclick=function(){openLB(src);};
-        btns.appendChild(vBtn);
+      const isImg=d.mime&&d.mime.startsWith('image/');
+
+      const card=document.createElement('div');
+      card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
+
+      // عنوان البطاقة
+      const hdr=document.createElement('div');
+      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3,#f1f5f9)';
+      const lbl=document.createElement('span');
+      lbl.style.cssText='font-weight:700;font-size:13px';
+      lbl.textContent=(labels[k]||k);
+      hdr.appendChild(lbl);
+
+      // أزرار الهيدر
+      const btns=document.createElement('div');
+      btns.style.cssText='display:flex;gap:6px';
+
+      // تكبير
+      if(isImg){
+        const zb=document.createElement('button');
+        zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px';
+        zb.textContent='🔍 تكبير';
+        zb.onclick=function(){openLB(src);};
+        btns.appendChild(zb);
       }
-      const dBtn=document.createElement('button');
-      dBtn.className='btn btn-p btn-sm';
-      dBtn.textContent='⬇️ تحميل';
-      dBtn.onclick=function(){
-        const a=document.createElement('a');
-        a.href=src; a.download=d.name||k+'.jpg'; a.click();
-      };
-      btns.appendChild(dBtn);
-      // زر استبدال
+
+      // تحميل
+      const dl=document.createElement('a');
+      dl.className='btn btn-p btn-sm';
+      dl.href=src; dl.download=(d.name||k)+'.jpg';
+      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
+      dl.textContent='⬇️ حفظ';
+      btns.appendChild(dl);
+
+      // استبدال
       if(can('edit')){
         const repInp=document.createElement('input');
         repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
@@ -4647,14 +4657,26 @@ function showMaintFiles(mid){
         };
         const repBtn=document.createElement('button');
         repBtn.className='btn btn-o btn-sm';
-        repBtn.style.cssText='color:#d97706;border-color:rgba(217,119,6,.3)';
+        repBtn.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
         repBtn.textContent='🔄 استبدال';
         repBtn.onclick=function(){repInp.click();};
         btns.appendChild(repBtn);
         btns.appendChild(repInp);
       }
-      row.appendChild(btns);
-      list.appendChild(row);
+
+      hdr.appendChild(btns);
+      card.appendChild(hdr);
+
+      // عرض الصورة مباشرة
+      if(isImg){
+        const img=document.createElement('img');
+        img.src=src;
+        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
+        img.onclick=function(){openLB(src);};
+        card.appendChild(img);
+      }
+
+      list.appendChild(card);
     });
   });
 }
