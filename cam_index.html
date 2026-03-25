@@ -1580,7 +1580,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </select>
       </div>
       <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" dir="rtl" id="st-type" onchange="toggleSandaField()">
+        <select class="fi" dir="rtl" id="st-type" onchange="toggleSandaField();toggleStStatus()">
           <option value="حكومية">حكومية</option>
           <option value="أهلية">أهلية</option>
         </select>
@@ -3401,7 +3401,7 @@ function openStationModal(id){
       <div class="fgrid">
         <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
         <div class="fg"><label class="fl">القاطع *</label><select class="fi" dir="rtl" id="st-district"></select></div>
-        <div class="fg"><label class="fl">النوع</label><select class="fi" dir="rtl" id="st-type" onchange="toggleStStatus()"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
+
         <div class="fg" id="st-status-row" style="display:none"><label class="fl">حالة المحطة</label>
           <select class="fi" dir="rtl" id="st-status-ov">
             <option value="تعمل">🟢 تعمل</option>
@@ -5154,6 +5154,12 @@ function toggleStStatus(){
   const t=document.getElementById('st-type')?.value;
   const row=document.getElementById('st-status-row');
   if(row) row.style.display=t==='أهلية'?'':'none';
+}
+// إظهار/إخفاء منظومة ساندة + حالة المحطة
+function toggleSandaField(){
+  const t=document.getElementById('st-type')?.value;
+  const sanda=document.getElementById('sanda-row');
+  if(sanda) sanda.style.display=t==='أهلية'?'':'none';
 }
 
 // ══ مسح الباركود عبر كاميرا الجهاز ══
