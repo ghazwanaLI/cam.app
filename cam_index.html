@@ -3480,7 +3480,7 @@ function renderTours(){
     <td><span class="db">${t.district||'—'}</span></td>
     <td><span class="badge b-blue">${t.visit_type||'—'}</span></td>
     <td>${t.technician||'—'}</td>
-    <td>${t.file_key?`<button class="btn btn-o btn-sm" onclick="viewFile('${t.file_key}')">📷</button>`:'—'}</td>
+    <td><button class="btn btn-o btn-sm" onclick="showTourFiles(${t.id})" title="عرض الملفات">📎 ملفات</button></td>
     <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
     <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id})">🗑️</button>`:''}</td>
@@ -3514,7 +3514,12 @@ async function saveTour(){
   try{
     const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
     const tid=id||r.id;
-    if(UF.tour_img){await api('POST','/api/files/tour_'+tid,{name:UF.tour_img.name,data:UF.tour_img.data,mime:UF.tour_img.mime});delete UF.tour_img;}
+    for(const fk of ['tour_img','tour_rep','tour_doc']){
+      if(UF[fk]){
+        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
+        delete UF[fk];
+      }
+    }
     closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
@@ -5523,6 +5528,105 @@ function showStationDetail(sid){
   </div>`;
 
   ov.classList.add('open');
+}
+
+function showTourFiles(tid){
+  const labels={tour_img:'صورة الجولة',tour_rep:'التقرير',tour_doc:'المستند'};
+  const keys=['tour_img','tour_rep','tour_doc'];
+  let ov=document.getElementById('ov-tour-files');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='ov-tour-files';
+    ov.className='overlay';
+    ov.onclick=function(e){if(e.target===ov)closeModal('ov-tour-files');};
+    const inner=document.createElement('div');
+    inner.className='modal modal-sm';
+    inner.innerHTML='<div class="m-title">📎 ملفات الجولة الميدانية</div>'
+      +'<div id="tour-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>'
+      +'<div class="m-footer"><button class="btn btn-o" onclick="closeModal(\"ov-tour-files\")">إغلاق</button></div>';
+    ov.appendChild(inner);
+    document.body.appendChild(ov);
+  }
+  const list=document.getElementById('tour-files-list');
+  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:12px">⏳ جاري التحميل...</div>';
+  ov.classList.add('open');
+
+  Promise.all(keys.map(function(k){
+    return api('GET','/api/files/tour_'+tid+'_'+k)
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .catch(function(){return null;});
+  })).then(function(results){
+    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+    if(!found.length){
+      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
+      return;
+    }
+    list.innerHTML='';
+    found.forEach(function(item){
+      const k=item.k; const d=item.d;
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg=d.mime&&d.mime.startsWith('image/');
+      const card=document.createElement('div');
+      card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
+      // هيدر البطاقة
+      const hdr=document.createElement('div');
+      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3,#f1f5f9)';
+      const lbl=document.createElement('span');
+      lbl.style.cssText='font-weight:700;font-size:13px';
+      lbl.textContent=labels[k]||k;
+      hdr.appendChild(lbl);
+      const btns=document.createElement('div');
+      btns.style.cssText='display:flex;gap:6px';
+      // تكبير
+      if(isImg){
+        const zb=document.createElement('button');
+        zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px';
+        zb.textContent='🔍 تكبير';
+        zb.onclick=function(){openLB(src);};
+        btns.appendChild(zb);
+      }
+      // حفظ
+      const dl=document.createElement('a');
+      dl.className='btn btn-p btn-sm';
+      dl.href=src; dl.download=(d.name||k)+'.jpg';
+      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
+      dl.textContent='⬇️ حفظ';
+      btns.appendChild(dl);
+      // استبدال — للمخولين والمدير
+      if(can('edit')){
+        const repInp=document.createElement('input');
+        repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
+        repInp.onchange=function(ev){
+          const file=ev.target.files[0]; if(!file) return;
+          compressImage(file,1280,1280,0.85).then(function(res){
+            return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+          }).then(function(){
+            toast('تم الاستبدال ✅');
+            closeModal('ov-tour-files');
+            showTourFiles(tid);
+          }).catch(function(e){toast('خطأ: '+e.message,'err');});
+        };
+        const repBtn=document.createElement('button');
+        repBtn.className='btn btn-o btn-sm';
+        repBtn.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
+        repBtn.textContent='🔄 استبدال';
+        repBtn.onclick=function(){repInp.click();};
+        btns.appendChild(repBtn);
+        btns.appendChild(repInp);
+      }
+      hdr.appendChild(btns);
+      card.appendChild(hdr);
+      // عرض الصورة مباشرة
+      if(isImg){
+        const img=document.createElement('img');
+        img.src=src;
+        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
+        img.onclick=function(){openLB(src);};
+        card.appendChild(img);
+      }
+      list.appendChild(card);
+    });
+  });
 }
 
 tryAutoLogin();</script>
