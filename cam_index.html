@@ -4015,7 +4015,7 @@ function renderCirculars(){
         <button class="btn btn-o btn-sm" id="circ-view-btn-${c.id}" onclick="toggleCircImg(${c.id},this)" style="color:#0891b2;border-color:rgba(8,145,178,.3)">🖼️ الصورة</button>
         <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
         ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})" style="margin-right:auto">🗑️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
       </div>
 
     </div>`;
@@ -4437,25 +4437,36 @@ function _pdfToJpg(file, quality){
         const arr=new Uint8Array(e.target.result);
         window.pdfjsLib.getDocument({data:arr}).promise.then(function(pdf){
           pdf.getPage(1).then(function(page){
-            const scale=2; // دقة عالية
+            const scale=2;
             const vp=page.getViewport({scale:scale});
             const canvas=document.createElement('canvas');
             canvas.width=vp.width; canvas.height=vp.height;
             const ctx=canvas.getContext('2d');
+            // خلفية بيضاء ضرورية لـ JPG
+            ctx.fillStyle='#ffffff';
+            ctx.fillRect(0,0,canvas.width,canvas.height);
             page.render({canvasContext:ctx, viewport:vp}).promise.then(function(){
-              const jpg=canvas.toDataURL('image/jpeg', quality||0.92);
-              resolve({data:jpg.split(',')[1], mime:'image/jpeg'});
+              const jpg=canvas.toDataURL('image/jpeg', quality||0.90);
+              // تحقق أن البيانات صحيحة
+              const jpgData=jpg.split(',')[1];
+              if(!jpgData || jpgData.length < 100){
+                reject(new Error('invalid jpg'));
+                return;
+              }
+              resolve({data:jpgData, mime:'image/jpeg'});
             }).catch(reject);
           }).catch(reject);
         }).catch(reject);
       };
+      reader.onerror=reject;
       reader.readAsArrayBuffer(file);
     });
-  }).catch(function(){
-    // fallback: أرجع PDF كما هو
+  }).catch(function(e){
+    console.warn('PDF.js error, falling back:', e);
+    // fallback: احتفظ بالـ PDF الأصلي
     return new Promise(function(res){
       const r=new FileReader();
-      r.onload=function(){res({data:r.result.split(',')[1],mime:file.type});};
+      r.onload=function(){res({data:r.result.split(',')[1],mime:'application/pdf'});};
       r.readAsDataURL(file);
     });
   });
