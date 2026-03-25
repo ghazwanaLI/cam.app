@@ -3393,42 +3393,27 @@ function _fixToggleHeights(){
 }
 
 function openStationModal(id){
-  if(!document.getElementById('ov-station')){
-    const div=document.createElement('div');
-    div.className='overlay'; div.id='ov-station'; div.onclick=e=>closeOv(e,'ov-station');
-    div.innerHTML=`<div class="modal modal-sm"><div class="m-title">⛽ محطة</div>
-      <input type="hidden" id="st-eid">
-      <div class="fgrid">
-        <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
-        <div class="fg"><label class="fl">القاطع *</label><select class="fi" dir="rtl" id="st-district"></select></div>
-
-        <div class="fg" id="st-status-row" style="display:none"><label class="fl">حالة المحطة</label>
-          <select class="fi" dir="rtl" id="st-status-ov">
-            <option value="تعمل">🟢 تعمل</option>
-            <option value="متوقفة">🔴 متوقفة</option>
-            <option value="صيانة">🟡 تحت الصيانة</option>
-          </select>
-        </div>
-        <div class="fg"><label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label><input class="fi" id="st-cam-working-m" type="number" min="0" value="0" placeholder="0"></div>
-        <div class="fg"><label class="fl" style="color:var(--a2)">📷 كاميرات معطلة</label><input class="fi" id="st-cam-broken-m" type="number" min="0" value="0" placeholder="0"></div>
-      </div>
-      <div class="m-footer">
-        <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
-        <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
-      </div></div>`;
-    document.body.appendChild(div);
-  }
   const s=id?allStations.find(x=>x.id===id)||{}:{};
+  // عنوان النافذة
+  const ttl=document.getElementById('st-ttl');
+  if(ttl) ttl.textContent=id?'تعديل محطة':'إضافة محطة';
+  // الحقول الأساسية
   document.getElementById('st-eid').value=id||'';
   document.getElementById('st-name').value=s.name||'';
-  document.getElementById('st-district').innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
+  // القاطع
+  const ds=document.getElementById('st-district');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
+  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  // النوع
   document.getElementById('st-type').value=s.type||'حكومية';
-  const statusRow=document.getElementById('st-status-row');
-  if(statusRow) statusRow.style.display=(s.type==='أهلية')?'':'none';
-  const stSt=document.getElementById('st-status');
-  if(stSt) stSt.value=s.station_status||'تعمل';
-  document.getElementById('st-cam-working-m').value=s.cam_working||0;
-  document.getElementById('st-cam-broken-m').value=s.cam_broken||0;
+  toggleSandaField();
+  // حالة المحطة
+  const stStat=document.getElementById('st-status-ov');
+  if(stStat) stStat.value=s.station_status||'تعمل';
+  // الكاميرات
+  document.getElementById('st-cam-working').value=s.cam_working||0;
+  document.getElementById('st-cam-broken').value=s.cam_broken||0;
+  // افتح النافذة
   document.getElementById('ov-station').classList.add('open');
 }
 
