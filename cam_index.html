@@ -5171,63 +5171,55 @@ function toggleCircImg(cid, btn){
     imgDiv.style.display='block';
     return;
   }
-  // حمّل للمرة الأولى
-  if(btn){ btn.textContent='⏳ جاري التحميل...'; btn.disabled=true; }
+
+  if(btn){ btn.textContent='⏳...'; btn.disabled=true; }
+
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
-      const d=res.file||res;
-      if(!d||!d.data){ if(btn){btn.textContent='لا توجد صورة';} return; }
-      const mime=d.mime||'image/jpeg';
-      const src='data:'+mime+';base64,'+d.data;
-      const isImg=mime.startsWith('image/');
-
-      imgDiv.innerHTML='';
-
-      if(isImg){
-        // الصورة
-        const img=document.createElement('img');
-        img.src=src;
-        img.style.cssText='width:100%;max-height:320px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block';
-        img.title='اضغط للتكبير';
-        img.onclick=function(){openLB(src);};
-        imgDiv.appendChild(img);
+      const d = (res&&res.file) ? res.file : res;
+      if(!d || !d.data){
+        if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=false; }
+        return;
       }
+      const mime = d.mime || 'image/jpeg';
+      const src  = 'data:'+mime+';base64,'+d.data;
+      imgDiv.innerHTML = '';
 
-      // زر الحفظ كـ JPG
-      const bar=document.createElement('div');
-      bar.style.cssText='display:flex;gap:8px;margin-top:8px';
+      // الصورة
+      const img = document.createElement('img');
+      img.src = src;
+      img.style.cssText = 'width:100%;max-height:340px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block;margin-bottom:8px';
+      img.title = 'اضغط للتكبير';
+      img.onclick = function(){ openLB(src); };
+      imgDiv.appendChild(img);
 
-      if(isImg){
-        // تحويل لـ JPG عبر canvas
-        const cvs=document.createElement('canvas');
-        const i2=new Image();
-        i2.onload=function(){
-          cvs.width=i2.naturalWidth; cvs.height=i2.naturalHeight;
-          cvs.getContext('2d').drawImage(i2,0,0);
-          const jpgSrc=cvs.toDataURL('image/jpeg',0.92);
-          const dl=document.createElement('a');
-          dl.href=jpgSrc;
-          dl.download='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.jpg';
-          dl.className='btn btn-p btn-sm';
-          dl.style.cssText='font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px';
-          dl.innerHTML='⬇️ حفظ JPG';
-          bar.appendChild(dl);
-          // زر تكبير
-          const zbtn=document.createElement('button');
-          zbtn.className='btn btn-o btn-sm'; zbtn.style.fontSize='12px';
-          zbtn.textContent='🔍 تكبير';
-          zbtn.onclick=function(){openLB(src);};
-          bar.appendChild(zbtn);
-        };
-        i2.src=src;
-      }
+      // زر حفظ JPG مباشر
+      const dl = document.createElement('a');
+      dl.href = src;
+      dl.download = 'تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.jpg';
+      dl.className = 'btn btn-p btn-sm';
+      dl.style.cssText = 'font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-left:6px';
+      dl.textContent = '⬇️ حفظ JPG';
 
+      // زر تكبير
+      const zb = document.createElement('button');
+      zb.className = 'btn btn-o btn-sm';
+      zb.style.fontSize = '12px';
+      zb.textContent = '🔍 تكبير';
+      zb.onclick = function(){ openLB(src); };
+
+      const bar = document.createElement('div');
+      bar.style.cssText = 'display:flex;gap:6px;margin-bottom:6px';
+      bar.appendChild(dl);
+      bar.appendChild(zb);
       imgDiv.appendChild(bar);
-      imgDiv.style.display='block';
-      imgDiv.dataset.loaded='1';
-      if(btn){ btn.disabled=false; }
+
+      imgDiv.style.display = 'block';
+      imgDiv.dataset.loaded = '1';
+      if(btn){ btn.textContent='🖼️ الصورة'; btn.disabled=false; }
     })
-    .catch(function(){
+    .catch(function(e){
+      console.error('circ img error:',e);
       if(btn){ btn.textContent='🖼️ عرض الصورة'; btn.disabled=false; }
     });
 }
