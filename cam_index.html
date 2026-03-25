@@ -3982,6 +3982,7 @@ function renderCirculars(){
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           ${readBadge}
+          <button class="btn btn-o btn-sm" onclick="viewCircImageInline(${c.id},this)" id="circ-img-btn-${c.id}">🖼️ الصورة</button>
           <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
           ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
           ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
@@ -5107,6 +5108,66 @@ function stopCameraStream(){
   if(_camStream){ _camStream.getTracks().forEach(function(t){t.stop();}); _camStream=null; }
   const video=document.getElementById('cam-scan-video');
   if(video){ video.srcObject=null; }
+}
+
+function viewCircImageInline(cid, btn){
+  const imgDiv=document.getElementById('circ-img-'+cid);
+  if(!imgDiv) return;
+  // إذا الصورة مرئية — أخفها
+  if(imgDiv.style.display!=='none' && imgDiv.innerHTML){
+    imgDiv.style.display='none';
+    if(btn) btn.textContent='🖼️ الصورة';
+    return;
+  }
+  // إذا محملة مسبقاً — اعرضها
+  if(imgDiv.innerHTML){
+    imgDiv.style.display='block';
+    if(btn) btn.textContent='🙈 إخفاء';
+    return;
+  }
+  // حمّل الصورة
+  if(btn){ btn.textContent='⏳'; btn.disabled=true; }
+  api('GET','/api/files/circ_'+cid+'_circ_1')
+    .then(function(res){
+      const d=res.file||res;
+      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
+        const src='data:'+d.mime+';base64,'+d.data;
+        // حفظ الصورة في متغير لاستخدامها بالأحداث
+        window['_cimg_'+cid]=src;
+        const img=document.createElement('img');
+        img.src=src;
+        img.style.cssText='width:100%;max-height:320px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block';
+        img.title='اضغط للتكبير';
+        img.onclick=function(){openLB(src);};
+        const btnBar=document.createElement('div');
+        btnBar.style.cssText='display:flex;gap:8px;margin-top:6px';
+        const dlBtn=document.createElement('a');
+        dlBtn.className='btn btn-p btn-sm';
+        dlBtn.href=src;
+        dlBtn.download='تعميم_'+cid+'.jpg';
+        dlBtn.style.cssText='font-size:11px;text-decoration:none';
+        dlBtn.textContent='⬇️ حفظ الصورة';
+        const zbBtn=document.createElement('button');
+        zbBtn.className='btn btn-o btn-sm';
+        zbBtn.style.fontSize='11px';
+        zbBtn.textContent='🔍 تكبير';
+        zbBtn.onclick=function(){openLB(src);};
+        btnBar.appendChild(dlBtn);
+        btnBar.appendChild(zbBtn);
+        const wrap=document.createElement('div');
+        wrap.style.cssText='margin:10px 0';
+        wrap.appendChild(img);
+        wrap.appendChild(btnBar);
+        imgDiv.innerHTML='';
+        imgDiv.appendChild(wrap);
+        imgDiv.style.display='block';
+        if(btn){ btn.textContent='🙈 إخفاء'; btn.disabled=false; }
+      } else {
+        if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=true; }
+      }
+    }).catch(function(){
+      if(btn){ btn.textContent='🖼️ الصورة'; btn.disabled=false; }
+    });
 }
 
 tryAutoLogin();</script>
