@@ -3990,34 +3990,67 @@ function renderCirculars(){
     </div>`;
   }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
 
-  // تحميل وعرض الصور دائماً في كل تعميم
-  list.forEach(c=>{
+  // تحميل وعرض كل مرفقات التعميم (circ_1, circ_2, circ_3)
+  list.forEach(function(c){
     const imgDiv=document.getElementById('circ-img-'+c.id);
     if(!imgDiv) return;
-    api('GET','/api/files/circ_'+c.id+'_circ_1')
-      .then(function(res){
-        const d=res.file||res;
-        if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
-          const src='data:'+d.mime+';base64,'+d.data;
+    const fileKeys=['circ_1','circ_2','circ_3'];
+    Promise.all(fileKeys.map(function(k){
+      return api('GET','/api/files/circ_'+c.id+'_'+k)
+        .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+        .catch(function(){return null;});
+    })).then(function(results){
+      const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+      if(!found.length) return;
+      found.forEach(function(item){
+        const d=item.d;
+        const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
+        const isImg=d.mime&&d.mime.startsWith('image/');
+        const isPdf=d.mime&&d.mime.includes('pdf');
+        const wrap=document.createElement('div');
+        wrap.style.cssText='margin:8px 0 4px;border:1px solid var(--border);border-radius:10px;overflow:hidden';
+
+        if(isImg){
+          // عرض الصورة مباشرة
           const img=document.createElement('img');
           img.src=src;
-          img.style.cssText='width:100%;max-height:300px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block;margin-bottom:6px';
-          img.title='اضغط للتكبير أو الحفظ';
+          img.style.cssText='width:100%;max-height:300px;object-fit:contain;border-radius:10px 10px 0 0;cursor:zoom-in;background:#f8fafc;display:block';
+          img.title='اضغط للتكبير';
           img.onclick=function(){openLB(src);};
-          // زر حفظ
-          const dl=document.createElement('a');
-          dl.href=src;
-          dl.download='تعميم_'+c.id+'_'+new Date().toISOString().split('T')[0]+'.jpg';
-          dl.className='btn btn-o btn-sm';
-          dl.style.cssText='font-size:11px;text-decoration:none;display:inline-block';
-          dl.textContent='⬇️ حفظ الصورة';
-          const wrap=document.createElement('div');
-          wrap.style.cssText='margin:8px 0 4px';
           wrap.appendChild(img);
-          wrap.appendChild(dl);
-          imgDiv.appendChild(wrap);
+        } else if(isPdf){
+          // أيقونة PDF
+          const pdfIcon=document.createElement('div');
+          pdfIcon.style.cssText='background:#fee2e2;padding:12px 16px;display:flex;align-items:center;gap:10px';
+          pdfIcon.innerHTML='<span style="font-size:28px">📄</span><span style="font-size:13px;font-weight:700;color:#dc2626">'+(d.name||'ملف PDF')+'</span>';
+          wrap.appendChild(pdfIcon);
         }
-      }).catch(function(){});
+
+        // شريط الأزرار
+        const bar=document.createElement('div');
+        bar.style.cssText='display:flex;gap:8px;padding:8px;background:var(--bg2)';
+
+        if(isImg){
+          const zbtn=document.createElement('button');
+          zbtn.className='btn btn-o btn-sm'; zbtn.style.fontSize='11px';
+          zbtn.textContent='🔍 تكبير';
+          zbtn.onclick=function(){openLB(src);};
+          bar.appendChild(zbtn);
+        }
+
+        const dlBtn=document.createElement('a');
+        dlBtn.className='btn btn-p btn-sm';
+        dlBtn.href=src;
+        const ext=isImg?'.jpg':isPdf?'.pdf':'.file';
+        dlBtn.download=(d.name||('تعميم_'+c.id))+ext;
+        dlBtn.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
+        dlBtn.textContent='⬇️ حفظ';
+        bar.appendChild(dlBtn);
+
+        wrap.appendChild(bar);
+        imgDiv.appendChild(wrap);
+      });
+    });
   });
 }
 function filterCirculars(){renderCirculars();}
