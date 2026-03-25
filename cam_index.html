@@ -194,17 +194,17 @@ tr:hover td{background:rgba(30,58,95,.03);}
 .modal-sm{width:480px;}
 .modal-lg{width:820px;}
 .m-title{font-size:17px;font-weight:800;color:var(--p1);margin-bottom:20px;display:flex;align-items:center;gap:8px;}
-.m-footer{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;
+.m-footer{display:flex;gap:10px;justify-content:flex-start;flex-direction:row-reverse;margin-top:20px;direction:rtl;
   padding-top:16px;border-top:1px solid var(--border);}
 
 /* FORM */
-.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
-.fg{display:flex;flex-direction:column;gap:5px;}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:13px;direction:rtl;}
+.fg{display:flex;flex-direction:column;gap:5px;direction:rtl;}
 .fg.full{grid-column:1/-1;}
-.fl{font-size:11px;color:var(--t2);font-weight:700;letter-spacing:.3px;}
+.fl{font-size:11px;color:var(--t2);font-weight:700;letter-spacing:.3px;text-align:right;}
 .fi{background:#f7fafc;border:1.5px solid var(--border);border-radius:10px;
   padding:10px 13px;color:var(--text);font-family:'Cairo',sans-serif;font-size:13px;
-  outline:none;transition:all .2s;width:100%;}
+  outline:none;transition:all .2s;width:100%;text-align:right;direction:rtl;}
 .fi:focus{border-color:var(--p1);background:#fff;box-shadow:0 0 0 3px var(--p1d);}
 .fi option{background:#fff;}
 
@@ -869,11 +869,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="section">
             <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📊 تقرير الجولات</div></div>
             <div style="padding:16px">
-              <div class="fgrid" style="margin-bottom:12px">
+              <div class="fgrid" style="margin-bottom:12px;direction:rtl">
                 <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="r-from" type="date"></div>
                 <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="r-to" type="date"></div>
                 <div class="fg"><label class="fl">القاطع</label>
-                  <select class="fi" id="r-district"><option value="">الكل</option></select></div>
+                  <select class="fi" dir="rtl" id="r-district"><option value="">الكل</option></select></div>
               </div>
               <button class="btn btn-p btn-sm" style="width:100%" onclick="generateReport()">📊 توليد التقرير</button>
               <div id="report-result" style="margin-top:14px"></div>
@@ -882,7 +882,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="section">
             <div class="sec-hdr"><div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 تقرير الصيانة</div></div>
             <div style="padding:16px">
-              <div class="fgrid" style="margin-bottom:12px">
+              <div class="fgrid" style="margin-bottom:12px;direction:rtl">
                 <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="rm-from" type="date"></div>
                 <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="rm-to" type="date"></div>
               </div>
@@ -964,7 +964,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </div>
 
               <div><label class="fl">النوع</label>
-                <select class="fi" id="q-circ-type">
+                <select class="fi" dir="rtl" id="q-circ-type">
                   <option value="تعميم">تعميم</option>
                   <option value="تبليغ">تبليغ</option>
                   <option value="أمر إداري">أمر إداري</option>
@@ -973,13 +973,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </div>
 
               <div><label class="fl">موجه إلى <span style="font-size:10px;color:var(--t3)">(اختياري)</span></label>
-                <select class="fi" id="q-circ-district">
+                <select class="fi" dir="rtl" id="q-circ-district">
                   <option value="الكل">— جميع القواطع —</option>
                 </select>
               </div>
 
               <div><label class="fl">نص التعميم</label>
-                <textarea class="fi" id="q-circ-body" rows="3" style="resize:vertical" placeholder="اكتب نص التعميم..."></textarea>
+                <textarea class="fi" dir="rtl" style="text-align:right" id="q-circ-body" rows="3" style="resize:vertical" placeholder="اكتب نص التعميم..."></textarea>
               </div>
 
               <!-- المرفقات -->
@@ -1144,15 +1144,15 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="fgrid">
       <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="tour-district" onchange="filterTourStations()">
+        <select class="fi" dir="rtl" id="tour-district" onchange="filterTourStations()">
           <option value="">— اختر القاطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="tour-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" dir="rtl" id="tour-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <div class="fg"><label class="fl">نوع الزيارة</label>
-        <select class="fi" id="tour-type">
+        <select class="fi" dir="rtl" id="tour-type">
           <option value="كشف">كشف</option>
           <option value="صيانة">صيانة</option>
           <option value="تركيب">تركيب</option>
@@ -1161,7 +1161,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
       <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
@@ -1219,12 +1219,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="fgrid">
       <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="maint-district" onchange="filterMaintStations()">
+        <select class="fi" dir="rtl" id="maint-district" onchange="filterMaintStations()">
           <option value="">— اختر القاطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" id="maint-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" dir="rtl" id="maint-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <!-- قائمة الأجهزة المتعددة -->
       <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
@@ -1238,7 +1238,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- نوع العطل العام -->
       <div class="fg">
         <label class="fl">نوع العطل العام</label>
-        <select class="fi" id="maint-device">
+        <select class="fi" dir="rtl" id="maint-device">
           <option value="عطل كلي">عطل كلي</option>
           <option value="عطل جزئي">عطل جزئي</option>
           <option value="كسر فيزيائي">كسر فيزيائي</option>
@@ -1259,7 +1259,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- الحالة بعد الصيانة -->
       <div class="fg">
         <label class="fl">الحالة بعد الصيانة</label>
-        <select class="fi" id="m-status-after">
+        <select class="fi" dir="rtl" id="m-status-after">
           <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
           <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
           <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
@@ -1268,7 +1268,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
 
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
@@ -1373,11 +1373,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="fgrid">
       <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
       <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="cam-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" dir="rtl" id="cam-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
       <div class="fg"><label class="fl">نوع الكاميرا</label>
-        <select class="fi" id="cam-type">
+        <select class="fi" dir="rtl" id="cam-type">
           <option value="داخلية">داخلية</option>
           <option value="خارجية">خارجية</option>
           <option value="PTZ">PTZ</option>
@@ -1388,13 +1388,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
       <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
       <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="cam-status">
+        <select class="fi" dir="rtl" id="cam-status">
           <option value="working">شغالة</option>
           <option value="broken">معطلة</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
@@ -1410,10 +1410,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <input type="hidden" id="inv-eid">
     <div class="fgrid">
       <div class="fg"><label class="fl">المحطة *</label>
-        <select class="fi" id="inv-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" dir="rtl" id="inv-station"><option value="">— اختر المحطة —</option></select>
       </div>
       <div class="fg"><label class="fl">الحالة العامة</label>
-        <select class="fi" id="inv-status">
+        <select class="fi" dir="rtl" id="inv-status">
           <option value="مكتمل">مكتمل</option>
           <option value="ناقص">ناقص</option>
           <option value="معطل">معطل</option>
@@ -1446,7 +1446,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-cam-count" type="number" min="0" value="0"></div>
           <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-cam-spec" type="text" placeholder="نوع الكاميرا..."></div>
           <div class="fg"><label class="fl">الدقة</label>
-            <select class="fi" id="inv-cam-res">
+            <select class="fi" dir="rtl" id="inv-cam-res">
               <option value="">—</option>
               <option value="2MP - 1080p">2MP - 1080p</option>
               <option value="4MP - 2K">4MP - 2K</option>
@@ -1504,7 +1504,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" id="inv-notes" rows="2" style="resize:vertical"></textarea></div>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="inv-notes" rows="2" style="resize:vertical"></textarea></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
@@ -1535,7 +1535,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <input type="hidden" id="d-eid">
     <div class="fgrid">
       <div class="fg full"><label class="fl">القاطع</label>
-        <select class="fi" id="d-district"><option value="">— اختر —</option></select>
+        <select class="fi" dir="rtl" id="d-district"><option value="">— اختر —</option></select>
       </div>
 
       <!-- مخول 1 -->
@@ -1575,12 +1575,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="fgrid">
       <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text" placeholder="اسم المحطة"></div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="st-district">
+        <select class="fi" dir="rtl" id="st-district">
           <option value="">— اختر القاطع —</option>
         </select>
       </div>
       <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" id="st-type" onchange="toggleSandaField()">
+        <select class="fi" dir="rtl" id="st-type" onchange="toggleSandaField()">
           <option value="حكومية">حكومية</option>
           <option value="أهلية">أهلية</option>
         </select>
@@ -1608,7 +1608,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
           <div style="grid-column:1/-1">
             <label class="fl">⏱️ مدة التسجيلات</label>
-            <select class="fi" id="st-main-record-days">
+            <select class="fi" dir="rtl" id="st-main-record-days">
               <option value="">— اختر المدة —</option>
               <option value="7 أيام">7 أيام</option>
               <option value="14 يوم">14 يوم</option>
@@ -1643,7 +1643,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
           <div style="grid-column:1/-1">
             <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
-            <select class="fi" id="st-sanda-record-days">
+            <select class="fi" dir="rtl" id="st-sanda-record-days">
               <option value="">— اختر المدة —</option>
               <option value="7 أيام">7 أيام</option>
               <option value="14 يوم">14 يوم</option>
@@ -1685,7 +1685,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg"><label class="fl">اسم المستخدم *</label><input class="fi" id="u-un" type="text"></div>
       <div class="fg"><label class="fl">كلمة المرور</label><input class="fi" id="u-pw" type="password"></div>
       <div class="fg"><label class="fl">الدور</label>
-        <select class="fi" id="u-role" onchange="toggleUserPerms()">
+        <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()">
           <option value="viewer">مخول قاطع</option>
           <option value="admin">مدير النظام</option>
         </select>
@@ -1722,7 +1722,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full"><label class="fl">العنوان *</label>
         <input class="fi" id="circ-title" type="text" placeholder="عنوان التعميم أو التبليغ"></div>
       <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" id="circ-type">
+        <select class="fi" dir="rtl" id="circ-type">
           <option value="تعميم">تعميم</option>
           <option value="تبليغ">تبليغ</option>
           <option value="أمر إداري">أمر إداري</option>
@@ -1730,12 +1730,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </select>
       </div>
       <div class="fg"><label class="fl">موجه إلى <span style="font-size:11px;color:var(--t3)">(اختياري)</span></label>
-        <select class="fi" id="circ-district">
+        <select class="fi" dir="rtl" id="circ-district">
           <option value="الكل">— جميع القواطع —</option>
         </select>
       </div>
       <div class="fg full"><label class="fl">المحتوى / الملاحظات</label>
-        <textarea class="fi" id="circ-body" rows="3" style="resize:vertical" placeholder="نص التعميم..."></textarea>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="circ-body" rows="3" style="resize:vertical" placeholder="نص التعميم..."></textarea>
       </div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات (حتى 3 ملفات)</label>
@@ -1792,18 +1792,18 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة">
       </div>
       <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" id="coding-district" onchange="filterCodingStations()">
+        <select class="fi" dir="rtl" id="coding-district" onchange="filterCodingStations()">
           <option value="">— اختر —</option>
         </select>
       </div>
       <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" id="coding-station"><option value="">— اختر —</option></select>
+        <select class="fi" dir="rtl" id="coding-station"><option value="">— اختر —</option></select>
       </div>
       <div class="fg"><label class="fl">تاريخ التركيب</label>
         <input class="fi" id="coding-install-date" type="date">
       </div>
       <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" id="coding-status">
+        <select class="fi" dir="rtl" id="coding-status">
           <option value="يعمل">✅ يعمل</option>
           <option value="معطل">❌ معطل</option>
           <option value="صيانة">🔧 صيانة</option>
@@ -3388,10 +3388,10 @@ function openStationModal(id){
       <input type="hidden" id="st-eid">
       <div class="fgrid">
         <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text"></div>
-        <div class="fg"><label class="fl">القاطع *</label><select class="fi" id="st-district"></select></div>
-        <div class="fg"><label class="fl">النوع</label><select class="fi" id="st-type" onchange="toggleStStatus()"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
+        <div class="fg"><label class="fl">القاطع *</label><select class="fi" dir="rtl" id="st-district"></select></div>
+        <div class="fg"><label class="fl">النوع</label><select class="fi" dir="rtl" id="st-type" onchange="toggleStStatus()"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
         <div class="fg" id="st-status-row" style="display:none"><label class="fl">حالة المحطة</label>
-          <select class="fi" id="st-status">
+          <select class="fi" dir="rtl" id="st-status">
             <option value="تعمل">🟢 تعمل</option>
             <option value="متوقفة">🔴 متوقفة</option>
             <option value="صيانة">🟡 تحت الصيانة</option>
@@ -5050,7 +5050,7 @@ function addOtherRow(type='',num='',serial=''){
   row.id='other-'+id;
   row.style.cssText='display:grid;grid-template-columns:130px 80px 1fr auto;gap:6px;align-items:center';
   row.innerHTML=`
-    <select class="fi" id="other-type-${id}" style="font-size:12px">
+    <select class="fi" dir="rtl" id="other-type-${id}" style="font-size:12px">
       ${OTHER_TYPES.map(t=>`<option value="${t}" ${t===type?'selected':''}>${t}</option>`).join('')}
     </select>
     <input class="fi" id="other-num-${id}" type="text" value="${num}" placeholder="رقم" style="font-size:12px">
