@@ -2687,7 +2687,7 @@ async function exportGoLabel(){
     document.body.appendChild(a);
     a.click();
     setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 1000);
-    toast('✅ تم التصدير — '+allCoding.length+' جهاز');
+    toast('✅ تم التصدير — في GoLabel استخدم خط Tahoma لعرض العربي');
   }catch(err){
     console.error('Excel export error:',err);
     toast('خطأ في إنشاء الملف: '+(err.message||err),'err');
