@@ -893,7 +893,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
           </div>
 
-          <!-- Private Stations -->
+          <!-- Private Stations — مُقسّمة حسب القواطع -->
           <div style="padding:0 14px 14px">
             <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:2px solid #f59e0b;margin-bottom:0;cursor:pointer;user-select:none"
                  onclick="toggleStSection('priv')">
@@ -905,22 +905,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 🖨️ طباعة
               </button>
             </div>
+            <!-- فلتر القاطع للمحطات الأهلية -->
             <div id="priv-section-body" style="overflow:hidden;transition:max-height .3s ease">
-              <div class="table-wrap" style="padding-top:10px">
-                <table>
-                  <thead><tr>
-                    <th style="width:40px">#</th>
-                    <th>اسم المحطة</th>
-                    <th style="width:100px">القاطع</th>
-                    <th style="width:80px">الحالة</th>
-                    <th style="text-align:center;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
-                    <th style="text-align:center;width:70px;background:rgba(220,38,38,.15)">❌ معطلة</th>
-                    <th style="width:100px">آخر زيارة</th>
-                    <th style="text-align:center;width:90px">إجراءات</th>
-                  </tr></thead>
-                  <tbody id="stations-priv-tb"></tbody>
-                </table>
+              <div style="padding:10px 0 6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+                <span style="font-size:12px;font-weight:700;color:var(--t2)">اختر القاطع:</span>
+                <div id="priv-dist-tabs" style="display:flex;gap:6px;flex-wrap:wrap"></div>
               </div>
+              <div id="priv-districts-body"></div>
             </div>
           </div>
           <!-- hidden for compat -->
@@ -3521,9 +3512,43 @@ function renderStations(){
     </tr>`;
   };
   const govTb=document.getElementById('stations-gov-tb');
-  const privTb=document.getElementById('stations-priv-tb');
-  if(govTb)  govTb.innerHTML=govList.length?govList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
-  if(privTb) privTb.innerHTML=privList.length?privList.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
+  if(govTb) govTb.innerHTML=govList.length?govList.map(row).join(''):'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات</td></tr>';
+
+  // ── المحطات الأهلية مُقسّمة حسب القواطع ──
+  const privBody=document.getElementById('priv-districts-body');
+  const privTabs=document.getElementById('priv-dist-tabs');
+  if(privBody && privTabs){
+    // القواطع الموجودة فعلاً في الأهلية
+    const privDistricts=[...new Set(privList.map(s=>s.district||'—'))].sort();
+    // اختر القاطع المفعّل (أول واحد افتراضياً)
+    if(!window._privActiveDist || !privDistricts.includes(window._privActiveDist)){
+      window._privActiveDist = privDistricts[0]||'';
+    }
+    // بناء أزرار القواطع
+    privTabs.innerHTML = privDistricts.map(d=>`
+      <button onclick="window._privActiveDist='${d}';renderStations()"
+        style="padding:4px 14px;border-radius:20px;border:1.5px solid ${d===window._privActiveDist?'#f59e0b':'#e2e8f0'};
+               background:${d===window._privActiveDist?'#fef3c7':'#fff'};
+               color:${d===window._privActiveDist?'#d97706':'#64748b'};
+               font-family:Cairo,sans-serif;font-size:12px;font-weight:${d===window._privActiveDist?'800':'600'};cursor:pointer">
+        ${d} <span style="background:${d===window._privActiveDist?'#f59e0b':'#e2e8f0'};color:${d===window._privActiveDist?'#fff':'#64748b'};border-radius:20px;padding:1px 7px;font-size:11px">${privList.filter(s=>(s.district||'—')===d).length}</span>
+      </button>`).join('');
+    // بناء جدول القاطع المختار
+    const filteredPriv = privList.filter(s=>(s.district||'—')===window._privActiveDist);
+    privBody.innerHTML = `<div class="table-wrap" style="padding-top:8px">
+      <table>
+        <thead><tr>
+          <th style="width:40px">#</th>
+          <th>اسم المحطة</th>
+          <th style="width:80px">الحالة</th>
+          <th style="text-align:center;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
+          <th style="text-align:center;width:70px;background:rgba(220,38,38,.15)">❌ معطلة</th>
+          <th style="width:100px">آخر زيارة</th>
+          <th style="text-align:center;width:90px">إجراءات</th>
+        </tr></thead>
+        <tbody>${filteredPriv.length?filteredPriv.map(row).join(''):'<tr><td colspan="7" style="text-align:center;padding:20px;color:var(--t3)">لا توجد محطات في هذا القاطع</td></tr>'}</tbody>
+      </table></div>`;
+  }
   setTimeout(_fixToggleHeights, 50);
 }
 function filterStations(){ renderStations(); }
