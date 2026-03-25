@@ -876,16 +876,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
             <div id="gov-section-body" style="overflow:hidden;transition:max-height .3s ease">
               <div class="table-wrap" style="padding-top:10px">
-                <table>
+                <table style="direction:rtl">
                   <thead><tr>
-                    <th style="width:40px">#</th>
-                    <th>اسم المحطة</th>
-                    <th style="width:100px">القاطع</th>
-                    <th style="width:80px">الحالة</th>
-                    <th style="text-align:center;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
-                    <th style="text-align:center;width:70px;background:rgba(220,38,38,.15)">❌ معطلة</th>
-                    <th style="width:100px">آخر زيارة</th>
-                    <th style="text-align:center;width:90px">إجراءات</th>
+                    <th style="width:40px;text-align:right">#</th>
+                    <th style="text-align:right">اسم المحطة</th>
+                    <th style="width:100px;text-align:right">القاطع</th>
+                    <th style="width:80px;text-align:right">الحالة</th>
+                    <th style="text-align:right;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
+                    <th style="text-align:right;width:70px;background:rgba(220,38,38,.15)">❌ معطلة</th>
+                    <th style="width:100px;text-align:right">آخر زيارة</th>
+                    <th style="text-align:right;width:90px">إجراءات</th>
                   </tr></thead>
                   <tbody id="stations-gov-tb"></tbody>
                 </table>
@@ -3497,15 +3497,15 @@ function renderStations(){
   const row=(s,i)=>{
     const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
     const isAdmin=CU?.role==='admin';
-    return `<tr>
-      <td style="text-align:center"><span class="snum">${i+1}</span></td>
-      <td style="font-weight:700;cursor:pointer;color:var(--p1)" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
-      <td><span class="db" style="font-size:11px">${s.district||'—'}</span></td>
-      <td style="text-align:center">${s.type!=='حكومية'?`<span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}" style="font-size:10px">${s.station_status||'تعمل'}</span>`:'<span style="color:var(--t3);font-size:11px">—</span>'}</td>
-      <td style="text-align:center;color:var(--a3);font-weight:800;font-size:14px">${s.cam_working||0}</td>
-      <td style="text-align:center;color:var(--a2);font-weight:800;font-size:14px">${s.cam_broken||0}</td>
-      <td style="color:var(--t3);font-size:11px;text-align:center">${last?last.date:'—'}</td>
-      <td style="text-align:center">
+    return `<tr style="direction:rtl">
+      <td style="text-align:right"><span class="snum">${i+1}</span></td>
+      <td style="font-weight:700;cursor:pointer;color:var(--p1);text-align:right" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
+      <td style="text-align:right"><span class="db" style="font-size:11px">${s.district||'—'}</span></td>
+      <td style="text-align:right">${s.type!=='حكومية'?`<span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}" style="font-size:10px">${s.station_status||'تعمل'}</span>`:'<span style="color:var(--t3);font-size:11px">—</span>'}</td>
+      <td style="text-align:right;color:var(--a3);font-weight:800;font-size:14px">${s.cam_working||0}</td>
+      <td style="text-align:right;color:var(--a2);font-weight:800;font-size:14px">${s.cam_broken||0}</td>
+      <td style="color:var(--t3);font-size:11px;text-align:right">${last?last.date:'—'}</td>
+      <td style="text-align:right">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}
       </td>
