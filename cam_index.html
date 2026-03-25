@@ -643,7 +643,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="تركيب">تركيب</option>
                 <option value="متابعة">متابعة</option>
               </select>
-              <button class="btn btn-o btn-sm" onclick="printToursTable()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="printToursTable()" style="margin-right:0">🖨️ طباعة</button>
               <button class="btn btn-o btn-sm" onclick="exportToursCSV()">📤 تصدير</button>
               <button class="btn btn-o btn-sm" onclick="loadTours()">🔄</button>
             </div>
@@ -1871,7 +1871,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <!-- LIGHTBOX -->
 <div class="overlay" id="lb" onclick="if(event.target===this)document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
   <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:1">
-    <a id="lb-save" download="صورة.jpg" style="background:rgba(22,163,74,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;font-size:13px;font-weight:700">⬇️ حفظ JPG</a>
+    <a id="lb-save" download="صورة.jpg" style="background:rgba(22,163,74,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;font-size:13px;font-weight:700">⬇️ حفظ</a>
+    <button id="lb-share" style="background:rgba(124,58,237,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">📤 مشاركة</button>
     <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px" onclick="document.getElementById('lb').classList.remove('open')">✕ إغلاق</button>
   </div>
   <div id="lb-content" style="max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center"></div>
@@ -2000,6 +2001,18 @@ function openLB(src){
   // فعّل زر الحفظ
   const sv=document.getElementById('lb-save');
   if(sv){ sv.href=src; sv.download='صورة_'+new Date().toISOString().split('T')[0]+'.jpg'; }
+  // زر مشاركة في الـ lightbox
+  const lbShare=document.getElementById('lb-share');
+  if(lbShare){
+    lbShare.onclick=function(){
+      if(navigator.share){
+        fetch(src).then(function(r){return r.blob();}).then(function(blob){
+          const f=new File([blob],'صورة.jpg',{type:'image/jpeg'});
+          navigator.share({files:[f],title:'صورة'}).catch(function(){});
+        });
+      }
+    };
+  }
   document.getElementById('lb').classList.add('open');
 }
 function toggleSidebar(){}
@@ -2250,7 +2263,7 @@ function openCodingModal(){
   document.getElementById('coding-status').value='يعمل';
   const ds=document.getElementById('coding-district');
   ds.innerHTML='<option value="">— اختر القاطع —</option>';
-  const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+  const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:(CU?.role!=='admin'&&CU?.districts?.length?CU.districts:DISTRICTS_LIST);
   dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   filterCodingStations();
@@ -3322,13 +3335,16 @@ function renderStations(){
     const isAdmin=CU?.role==='admin';
     return `<tr>
       <td><span class="snum">${i+1}</span></td>
-      <td style="font-weight:700">${s.name||'—'}</td>
+      <td style="font-weight:700;cursor:pointer;color:var(--p1);text-decoration:underline" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
       <td><span class="db">${s.district||'—'}</span></td>
       ${s.type!=='حكومية'?`<td><span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}">${s.station_status||'تعمل'}</span></td>`:'<td>—</td>'}
       <td style="text-align:center;color:var(--a3);font-weight:700">${s.cam_working||0}</td>
       <td style="text-align:center;color:var(--a2);font-weight:700">${s.cam_broken||0}</td>
       <td style="color:var(--t3);font-size:12px">${last?last.date:'—'}</td>
-      <td style="text-align:center">${isAdmin?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button> <button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}</td>
+      <td style="text-align:center">
+        ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}
+      </td>
     </tr>`;
   };
   const govTb=document.getElementById('stations-gov-tb');
@@ -4599,11 +4615,12 @@ function showMaintFiles(mid){
       const btns=document.createElement('div');
       btns.style.display='flex';
       btns.style.gap='6px';
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
       if(d.mime&&d.mime.startsWith('image/')){
         const vBtn=document.createElement('button');
         vBtn.className='btn btn-o btn-sm';
         vBtn.textContent='👁️ عرض';
-        vBtn.onclick=function(){openLB('data:'+d.mime+';base64,'+d.data);};
+        vBtn.onclick=function(){openLB(src);};
         btns.appendChild(vBtn);
       }
       const dBtn=document.createElement('button');
@@ -4611,11 +4628,31 @@ function showMaintFiles(mid){
       dBtn.textContent='⬇️ تحميل';
       dBtn.onclick=function(){
         const a=document.createElement('a');
-        a.href='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
-        a.download=d.name||k;
-        a.click();
+        a.href=src; a.download=d.name||k+'.jpg'; a.click();
       };
       btns.appendChild(dBtn);
+      // زر استبدال
+      if(can('edit')){
+        const repInp=document.createElement('input');
+        repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
+        repInp.onchange=function(ev){
+          const file=ev.target.files[0]; if(!file) return;
+          compressImage(file,1280,1280,0.85).then(function(res){
+            return api('POST','/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+          }).then(function(){
+            toast('تم الاستبدال ✅');
+            closeModal('ov-maint-files');
+            showMaintFiles(mid);
+          }).catch(function(e){toast('خطأ: '+e.message,'err');});
+        };
+        const repBtn=document.createElement('button');
+        repBtn.className='btn btn-o btn-sm';
+        repBtn.style.cssText='color:#d97706;border-color:rgba(217,119,6,.3)';
+        repBtn.textContent='🔄 استبدال';
+        repBtn.onclick=function(){repInp.click();};
+        btns.appendChild(repBtn);
+        btns.appendChild(repInp);
+      }
       row.appendChild(btns);
       list.appendChild(row);
     });
@@ -5291,8 +5328,30 @@ function toggleCircImg(cid, btn){
       dl.href = src;
       dl.download = 'تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.jpg';
       dl.className = 'btn btn-p btn-sm';
-      dl.style.cssText = 'font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px;margin-left:6px';
-      dl.textContent = '⬇️ حفظ JPG';
+      dl.style.cssText = 'font-size:12px;text-decoration:none;display:inline-flex;align-items:center;gap:4px';
+      dl.textContent = '⬇️ حفظ';
+
+      // زر مشاركة — يفتح "حفظ في الصور" على الموبايل
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'btn btn-o btn-sm';
+      shareBtn.style.cssText = 'font-size:12px;color:#7c3aed;border-color:rgba(124,58,237,.3)';
+      shareBtn.textContent = '📤 مشاركة';
+      shareBtn.onclick = function(){
+        if(navigator.canShare && navigator.share){
+          // iOS 15+ و Android: مشاركة الملف مباشرة
+          fetch(src).then(function(r){return r.blob();}).then(function(blob){
+            const file=new File([blob],'تعميم_'+cid+'.jpg',{type:'image/jpeg'});
+            if(navigator.canShare({files:[file]})){
+              navigator.share({files:[file], title:'تعميم'}).catch(function(){});
+            } else {
+              // iOS قديم: افتح الصورة وأخبر المستخدم
+              _openImgWindow(src);
+            }
+          }).catch(function(){ _openImgWindow(src); });
+        } else {
+          _openImgWindow(src);
+        }
+      };
 
       // زر تكبير
       const zb = document.createElement('button');
@@ -5302,8 +5361,9 @@ function toggleCircImg(cid, btn){
       zb.onclick = function(){ openLB(src); };
 
       const bar = document.createElement('div');
-      bar.style.cssText = 'display:flex;gap:6px;margin-bottom:6px';
+      bar.style.cssText = 'display:flex;gap:6px;margin-bottom:6px;flex-wrap:wrap';
       bar.appendChild(dl);
+      bar.appendChild(shareBtn);
       bar.appendChild(zb);
       imgDiv.appendChild(bar);
 
@@ -5315,6 +5375,122 @@ function toggleCircImg(cid, btn){
       console.error('circ img error:',e);
       if(btn){ btn.textContent='🖼️ عرض الصورة'; btn.disabled=false; }
     });
+}
+
+function _openImgWindow(src){
+  // iOS fallback: فتح الصورة وطلب الضغط المطول للحفظ
+  const w=window.open('','_blank');
+  if(w){
+    w.document.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>body{margin:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;font-family:Cairo,sans-serif}img{max-width:100vw;max-height:85vh;object-fit:contain}p{color:#fff;font-size:14px;margin-top:12px;text-align:center;padding:0 20px}</style></head><body><img src="'+src+'"><p>📱 اضغط مطولاً على الصورة ← اختر "حفظ الصورة" لحفظها في الصور</p></body></html>');
+    w.document.close();
+  }
+}
+
+// ══ عرض تفاصيل المحطة الكاملة ══
+function showStationDetail(sid){
+  const s=allStations.find(x=>x.id===sid); if(!s) return;
+  const tours=allTours.filter(t=>t.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
+  const maints=allMaint.filter(m=>m.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
+
+  let ov=document.getElementById('ov-station-detail');
+  if(!ov){
+    ov=document.createElement('div');
+    ov.id='ov-station-detail';
+    ov.className='overlay';
+    ov.onclick=function(e){if(e.target===ov)closeModal('ov-station-detail');};
+    document.body.appendChild(ov);
+  }
+
+  const isEdit=can('edit');
+  const isDel=can('del');
+
+  ov.innerHTML=`
+  <div class="modal" style="max-width:680px;width:95vw;max-height:88vh;overflow-y:auto;direction:rtl">
+    <div class="m-title" style="display:flex;justify-content:space-between;align-items:center">
+      <span>📍 ${s.name||'—'} — <span style="font-size:13px;color:var(--t3)">${s.district||''}</span></span>
+      <div style="display:flex;gap:6px">
+        ${isEdit?`<button class="btn btn-o btn-sm" onclick="openStationModal(${sid})">✏️ تعديل</button>`:''}
+        ${isDel?`<button class="btn btn-r btn-sm" onclick="if(confirm('حذف المحطة؟')){delStation(${sid});closeModal('ov-station-detail');}">🗑️</button>`:''}
+      </div>
+    </div>
+
+    <!-- معلومات المحطة -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">
+      <div style="background:var(--bg2);border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--t3)">النوع</div>
+        <div style="font-weight:700">${s.type||'—'}</div>
+      </div>
+      <div style="background:#dcfce7;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--t3)">كاميرات تعمل</div>
+        <div style="font-weight:800;color:#16a34a;font-size:18px">${s.cam_working||0}</div>
+      </div>
+      <div style="background:#fee2e2;border-radius:8px;padding:10px;text-align:center">
+        <div style="font-size:11px;color:var(--t3)">كاميرات معطلة</div>
+        <div style="font-weight:800;color:#dc2626;font-size:18px">${s.cam_broken||0}</div>
+      </div>
+    </div>
+
+    <!-- الجولات -->
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:700;font-size:14px">🚗 الجولات الميدانية (${tours.length})</div>
+        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');showTab('tours');setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
+      </div>
+      ${tours.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:6px;text-align:right">التاريخ</th>
+          <th style="padding:6px;text-align:right">النوع</th>
+          <th style="padding:6px;text-align:right">الفني</th>
+          <th style="padding:6px;text-align:right">الملاحظات</th>
+          <th style="padding:6px"></th>
+        </tr></thead>
+        <tbody>${tours.map(t=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px">${t.date||'—'}</td>
+          <td style="padding:6px"><span class="badge b-blue" style="font-size:10px">${t.visit_type||'—'}</span></td>
+          <td style="padding:6px">${t.technician||'—'}</td>
+          <td style="padding:6px;max-width:150px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
+          <td style="padding:6px;white-space:nowrap">
+            ${isEdit?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
+            ${isDel?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id}).then(()=>showStationDetail(${sid}))">🗑️</button>`:''}
+          </td>
+        </tr>`).join('')}</tbody>
+      </table>`:'<div style="color:var(--t3);text-align:center;padding:12px">لا توجد جولات</div>'}
+    </div>
+
+    <!-- الصيانة -->
+    <div style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <div style="font-weight:700;font-size:14px">🔧 الصيانة الميدانية (${maints.length})</div>
+        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');showTab('maintenance');setTimeout(()=>{openMaintModal(0);setTimeout(()=>{const ds=document.getElementById('maint-district');if(ds){ds.value='${s.district||''}';filterMaintStations();setTimeout(()=>{const ss=document.getElementById('maint-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة صيانة</button>
+      </div>
+      ${maints.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
+        <thead><tr style="background:var(--bg2)">
+          <th style="padding:6px;text-align:right">التاريخ</th>
+          <th style="padding:6px;text-align:right">الجهاز</th>
+          <th style="padding:6px;text-align:right">السبب</th>
+          <th style="padding:6px;text-align:right">الفني</th>
+          <th style="padding:6px"></th>
+        </tr></thead>
+        <tbody>${maints.map(m=>`<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:6px">${m.date||'—'}</td>
+          <td style="padding:6px">${m.device_type||'—'}</td>
+          <td style="padding:6px">${m.reason||'—'}</td>
+          <td style="padding:6px">${m.technician||'—'}</td>
+          <td style="padding:6px;white-space:nowrap">
+            <button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})">📎</button>
+            ${isEdit?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
+            ${isDel?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id}).then(()=>showStationDetail(${sid}))">🗑️</button>`:''}
+          </td>
+        </tr>`).join('')}</tbody>
+      </table>`:'<div style="color:var(--t3);text-align:center;padding:12px">لا توجد صيانة</div>'}
+    </div>
+
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-station-detail')">إغلاق</button>
+    </div>
+  </div>`;
+
+  ov.classList.add('open');
 }
 
 tryAutoLogin();</script>
