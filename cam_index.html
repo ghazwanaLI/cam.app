@@ -1869,9 +1869,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div><!-- /main -->
 </div><!-- /app -->
 <!-- LIGHTBOX -->
-<div class="overlay" id="lb" onclick="document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
-  <button style="position:absolute;top:16px;left:16px;background:rgba(255,255,255,.1);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif" onclick="document.getElementById('lb').classList.remove('open')">✕ إغلاق</button>
-  <div id="lb-content" style="max-width:90vw;max-height:85vh"></div>
+<div class="overlay" id="lb" onclick="if(event.target===this)document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
+  <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:1">
+    <a id="lb-save" download="صورة.jpg" style="background:rgba(22,163,74,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;font-size:13px;font-weight:700">⬇️ حفظ JPG</a>
+    <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px" onclick="document.getElementById('lb').classList.remove('open')">✕ إغلاق</button>
+  </div>
+  <div id="lb-content" style="max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center"></div>
 </div>
 
 <script>const API='';
@@ -1987,7 +1990,18 @@ function showOfflineBanner(){
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;setTimeout(()=>el.classList.remove('show'),3500);}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function closeOv(e,id){if(e.target.id===id)closeModal(id);}
-function openLB(src){document.getElementById('lb-content').innerHTML=`<img src="${src}" style="max-width:90vw;max-height:80vh;border-radius:12px">`;document.getElementById('lb').classList.add('open');}
+function openLB(src){
+  const c=document.getElementById('lb-content');
+  c.innerHTML='';
+  const img=document.createElement('img');
+  img.src=src;
+  img.style.cssText='max-width:90vw;max-height:80vh;border-radius:12px;object-fit:contain';
+  c.appendChild(img);
+  // فعّل زر الحفظ
+  const sv=document.getElementById('lb-save');
+  if(sv){ sv.href=src; sv.download='صورة_'+new Date().toISOString().split('T')[0]+'.jpg'; }
+  document.getElementById('lb').classList.add('open');
+}
 function toggleSidebar(){}
 
 // ── AUTH ──
@@ -3968,26 +3982,36 @@ function renderCirculars(){
     const readBadge=iRead
       ?'<span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ تم الاطلاع</span>'
       :'<button class="btn btn-p btn-sm" style="background:#16a34a;font-size:11px" onclick="markCircRead('+c.id+')">✅ تم الاطلاع</button>';
-    return `<div id="circ-card-${c.id}" style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':' var(--border)'};border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
-      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
-        <div style="font-size:15px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
-        <span class="badge ${typeColor[c.type]||'b-blue'}">${c.type||'تعميم'}</span>
+    return `<div id="circ-card-${c.id}" dir="rtl" style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':'var(--border)'};border-radius:14px;padding:14px 16px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.05);direction:rtl">
+
+      <!-- رأس البطاقة: النوع + العنوان -->
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span class="badge ${typeColor[c.type]||'b-blue'}" style="flex-shrink:0">${c.type||'تعميم'}</span>
+        <div style="font-size:14px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
       </div>
-      ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.7;background:var(--bg2);border-radius:8px;padding:10px 12px">${c.body||c.notes}</div>`:''}
+
+      <!-- النص -->
+      ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:8px;line-height:1.8;background:var(--bg2);border-radius:8px;padding:10px 12px;direction:rtl">${c.body||c.notes}</div>`:''}
+
+      <!-- التاريخ والقاطع -->
+      <div style="display:flex;gap:14px;font-size:11px;color:var(--t3);margin-bottom:10px">
+        <span>📅 ${c.date||''}</span>
+        <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
+        <span>✍️ ${c.added_by||''}</span>
+      </div>
+
+      <!-- منطقة الصورة -->
       <div id="circ-img-${c.id}" style="margin-bottom:8px"></div>
-      <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3);flex-wrap:wrap;gap:6px">
-        <div style="display:flex;gap:12px;align-items:center">
-          <span>📅 ${c.date||''}</span>
-          <span>📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'}</span>
-        </div>
-        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-          ${readBadge}
-          <button class="btn btn-o btn-sm" id="circ-view-btn-${c.id}" onclick="toggleCircImg(${c.id},this)">🖼️ عرض الصورة</button>
-          <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
-          ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
-          ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
-        </div>
+
+      <!-- أزرار الإجراءات -->
+      <div style="display:flex;flex-wrap:wrap;gap:6px;align-items:center;border-top:1px solid var(--border);padding-top:8px">
+        ${readBadge}
+        <button class="btn btn-o btn-sm" id="circ-view-btn-${c.id}" onclick="toggleCircImg(${c.id},this)" style="color:#0891b2;border-color:rgba(8,145,178,.3)">🖼️ الصورة</button>
+        <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
+        ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})" style="margin-right:auto">🗑️</button>`:''}
       </div>
+
     </div>`;
   }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
 
