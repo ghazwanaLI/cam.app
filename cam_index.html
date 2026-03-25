@@ -1163,7 +1163,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full"><label class="fl">ملاحظات</label>
         <textarea class="fi" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات والمستندات</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
+            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
+            <span>🖨️ جودة عالية</span>
+          </label>
+        </div>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div>
             <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
@@ -1265,7 +1271,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <textarea class="fi" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
 
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <label class="fl" style="margin-bottom:12px;display:block">📎 المرفقات والمستندات</label>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
+            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
+            <span>🖨️ جودة طباعة عالية</span>
+          </label>
+        </div>
 
         <!-- صور العطل — رفع دفعة واحدة -->
         <div style="margin-bottom:14px">
@@ -2306,27 +2318,27 @@ function printVoidLabel(id){
   const S='script';
   const w=window.open('','_blank','width=600,height=600');
   w.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    '<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
     +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
     +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",Arial,sans-serif}'
     +'body{background:#ddd;display:flex;flex-direction:column;align-items:center;padding:10px;gap:8px}'
     +'.ctrl{background:#fff;border:1px solid #ccc;border-radius:8px;padding:10px;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;width:440px}'
     +'.cg label{font-size:11px;color:#555;display:block;margin-bottom:2px}'
     +'.cg input{width:100%;border:1px solid #ccc;border-radius:4px;padding:4px;font-size:13px;text-align:center}'
     +'.apply{grid-column:1/-1;background:#0891b2;color:#fff;border:none;border-radius:6px;padding:7px;cursor:pointer;font-size:13px;font-weight:bold}'
     +'.lbl{background:#fff;border:2px solid #111;display:flex;flex-direction:column;overflow:hidden}'
-    +'.hdr{background:#0891b2;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:3px 8px}'
+    +'.hdr{background:#0891b2;color:#fff;display:flex;justify-content:space-between;align-items:center;padding:3px 8px;direction:rtl;font-family:"Cairo",Arial,sans-serif}'
     +'.hdr-l{font-size:8px;font-weight:bold}'
     +'.hdr-r{font-size:8px}'
     +'.body{flex:1;display:flex;flex-direction:row;align-items:center;padding:3px;gap:4px}'
     +'.left{flex-shrink:0;display:flex;align-items:center;justify-content:center}'
     +'.right{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}'
-    +'.dev-info{font-size:7px;font-weight:bold;color:#0891b2;align-self:flex-start;margin-bottom:2px}'
+    +'.dev-info{font-size:7px;font-weight:bold;color:#0891b2;align-self:flex-start;margin-bottom:2px;direction:rtl;font-family:"Cairo",Arial,sans-serif}'
     +'.bc-num{font-family:monospace;font-size:10px;letter-spacing:2px;font-weight:bold;color:#000;margin-top:2px}'
-    +'.ftr{border-top:1px solid #ccc;display:flex;justify-content:space-between;padding:2px 6px;background:#f5f5f5;font-size:6px}'
+    +'.ftr{border-top:1px solid #ccc;display:flex;justify-content:space-between;padding:2px 6px;background:#f5f5f5;font-size:6px;direction:rtl;font-family:"Cairo",Arial,sans-serif}'
     +'.btns{display:flex;gap:8px}'
     +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
     +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
@@ -2890,12 +2902,12 @@ function printGenLabel(){
   const S='script';
   const w=window.open('','_blank','width=620,height=560');
   w.document.write(
-    '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    '<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></'+S+'>'
     +'<'+S+' src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></'+S+'>'
     +'<'+S+' src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></'+S+'>'
     +'<style>'
-    +'*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}'
+    +'*{margin:0;padding:0;box-sizing:border-box;font-family:"Cairo",Arial,sans-serif}'
     +'body{background:#e2e8f0;display:flex;flex-direction:column;align-items:center;padding:16px;gap:12px}'
     +'.lbl{background:#fff;border:2px solid #111;padding:8px;display:flex;flex-direction:column;gap:6px}'
     +'.lbl-info{display:flex;justify-content:space-between;font-size:10px;font-weight:bold}'
@@ -4365,21 +4377,57 @@ async function viewFile(key){
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
+// ── ضغط الصور قبل التخزين (يوفر 90% من الحجم) ──
+function compressImage(file, maxW, maxH, quality){
+  return new Promise(function(resolve){
+    // PDF أو غير صورة: أرجع كما هو
+    if(!file.type.startsWith('image/')){
+      const r=new FileReader();
+      r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
+      r.readAsDataURL(file);
+      return;
+    }
+    const img=new Image();
+    const url=URL.createObjectURL(file);
+    img.onload=function(){
+      URL.revokeObjectURL(url);
+      let w=img.width, h=img.height;
+      // تصغير إذا أكبر من الحد
+      if(w>maxW||h>maxH){
+        const scale=Math.min(maxW/w, maxH/h);
+        w=Math.round(w*scale); h=Math.round(h*scale);
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w; canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      const dataUrl=canvas.toDataURL('image/jpeg', quality);
+      resolve({data:dataUrl.split(',')[1], mime:'image/jpeg'});
+    };
+    img.onerror=function(){
+      // fallback بدون ضغط
+      const r=new FileReader();
+      r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
+      r.readAsDataURL(file);
+    };
+    img.src=url;
+  });
+}
+
 async function doUpload(event, key){
   try{
     const file=event.target.files[0]; if(!file)return;
-    // حد أقصى 5MB
-    if(file.size>5*1024*1024){toast('حجم الملف كبير — الحد الأقصى 5MB','err');event.target.value='';return;}
-    const toB64=f=>new Promise((res,rej)=>{
-      const r=new FileReader();
-      r.onload=()=>res(r.result.split(',')[1]);
-      r.onerror=()=>rej(new Error('فشل قراءة الملف'));
-      r.readAsDataURL(f);
-    });
-    const data=await toB64(file);
-    UF[key]={name:file.name,data,mime:file.type||'application/octet-stream'};
+    if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
+    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
+    // جودة الرفع: عادي=82% | عالية=95%
+    const hiQ=document.getElementById('upload-quality')?.checked;
+    const quality=hiQ?0.95:0.82;
+    const maxPx=hiQ?1920:1280;
+    const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
+    UF[key]={name:file.name, data, mime};
+    // حجم بعد الضغط
+    const kb=Math.round(data.length*0.75/1024);
     const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent=file.name;
+    if(stat) stat.textContent=file.name+' ('+kb+'KB)';
     const box=event.target.closest('.up-box');
     if(box) box.classList.add('hf');
   }catch(e){
@@ -4862,10 +4910,12 @@ function doMultiUpload(event, prefix){
   if(preview) preview.innerHTML='';
   files.forEach((file,idx)=>{
     const key=prefix+(idx>0?'_'+(idx+1):'');
-    const reader=new FileReader();
-    reader.onload=function(e){
-      const data=e.target.result.split(',')[1];
-      UF[key]={name:file.name,data,mime:file.type};
+    // ضغط الصور في الرفع الجماعي
+    const hiQ2=document.getElementById('upload-quality')?.checked;
+    compressImage(file,hiQ2?1920:1280,hiQ2?1920:1280,hiQ2?0.95:0.82).then(function(compressed){
+      const data=compressed.data; const mime=compressed.mime;
+      UF[key]={name:file.name,data,mime};
+      const kb=Math.round(data.length*0.75/1024);
       // عرض مصغّر
       if(preview&&file.type.startsWith('image/')){
         const thumb=document.createElement('div');
@@ -4887,8 +4937,11 @@ function doMultiUpload(event, prefix){
         rm.onclick=function(){delete UF[key];lbl.remove();};
         lbl.appendChild(rm); preview.appendChild(lbl);
       }
-    };
-    reader.readAsDataURL(file);
+    }).catch(function(){
+      const r=new FileReader();
+      r.onload=function(e){ UF[key]={name:file.name,data:e.target.result.split(',')[1],mime:file.type}; };
+      r.readAsDataURL(file);
+    });
   });
   toast('تم تحميل '+files.length+' ملف');
 }
