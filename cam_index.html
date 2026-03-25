@@ -3982,7 +3982,6 @@ function renderCirculars(){
         </div>
         <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
           ${readBadge}
-          <button class="btn btn-o btn-sm" onclick="viewCircImageInline(${c.id},this)" id="circ-img-btn-${c.id}">🖼️ الصورة</button>
           <button class="btn btn-o btn-sm" onclick="viewCircFiles(${c.id})">📎 مرفقات</button>
           ${isAdmin?`<button class="btn btn-o btn-sm" onclick="showCircReads(${c.id},'${(c.title||'').replace(/'/g,'')}')" style="color:#7c3aed;border-color:rgba(124,58,237,.3)">👁️ من اطلع</button>`:''}
           ${can('del')?`<button class="btn btn-r btn-sm" onclick="delCircular(${c.id})">🗑️</button>`:''}
@@ -3991,7 +3990,7 @@ function renderCirculars(){
     </div>`;
   }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
 
-  // تحميل الصور تلقائياً لكل تعميم
+  // تحميل وعرض الصور دائماً في كل تعميم
   list.forEach(c=>{
     const imgDiv=document.getElementById('circ-img-'+c.id);
     if(!imgDiv) return;
@@ -4000,9 +3999,23 @@ function renderCirculars(){
         const d=res.file||res;
         if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
           const src='data:'+d.mime+';base64,'+d.data;
-          imgDiv.innerHTML='<img src="'+src+'" '
-            +'style="width:100%;max-height:280px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block" '
-            +'onclick="openLB(this.src)" title="اضغط للتكبير">';
+          const img=document.createElement('img');
+          img.src=src;
+          img.style.cssText='width:100%;max-height:300px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block;margin-bottom:6px';
+          img.title='اضغط للتكبير أو الحفظ';
+          img.onclick=function(){openLB(src);};
+          // زر حفظ
+          const dl=document.createElement('a');
+          dl.href=src;
+          dl.download='تعميم_'+c.id+'.jpg';
+          dl.className='btn btn-o btn-sm';
+          dl.style.cssText='font-size:11px;text-decoration:none;display:inline-block';
+          dl.textContent='⬇️ حفظ الصورة';
+          const wrap=document.createElement('div');
+          wrap.style.cssText='margin:8px 0 4px';
+          wrap.appendChild(img);
+          wrap.appendChild(dl);
+          imgDiv.appendChild(wrap);
         }
       }).catch(function(){});
   });
