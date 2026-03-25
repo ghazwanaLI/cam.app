@@ -154,12 +154,35 @@ def default_db():
         "next_circular_id":1,
         
         "custom_districts":[],
+        "notifications":[],
+        "next_notif_id":1,
     }
 
 sessions = {}
 
 def add_log_safe(user,action,details,ip=""):
     try: add_log(user,action,details,ip)
+    except: pass
+
+def add_notification(db, user, action, details):
+    """إضافة إشعار للمدير"""
+    try:
+        if user.get("role") == "admin": return  # المدير لا يُخبر نفسه
+        nid = db.get("next_notif_id", 1)
+        db["next_notif_id"] = nid + 1
+        notif = {
+            "id": nid,
+            "user": user.get("fullname", user.get("username", "—")),
+            "username": user.get("username", ""),
+            "action": action,
+            "details": details,
+            "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
+            "read": False,
+        }
+        if "notifications" not in db: db["notifications"] = []
+        db["notifications"].insert(0, notif)
+        # احتفظ بآخر 100 إشعار فقط
+        db["notifications"] = db["notifications"][:100]
     except: pass
 
 
@@ -212,6 +235,12 @@ class Handler(BaseHTTPRequestHandler):
         if not u: return
         db=load_db()
         if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
+        elif p=="/api/notifications":
+            db=load_db()
+            notifs=db.get("notifications",[])
+            unread=sum(1 for n in notifs if not n.get("read"))
+            self.send_json({"notifications":notifs,"unread":unread})
+
         elif p=="/api/stations":
             sts=db["stations"]
             if u["role"]!="admin":
@@ -369,6 +398,8 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["tours"].append(tour); save_db(db)
             add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
+            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','')} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
+            save_db(db)
             self.send_json({"ok":True,"tour":tour})
 
         elif p=="/api/maintenance":
@@ -383,6 +414,8 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["maintenance"].append(maint); save_db(db)
             add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
+            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','')} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
+            save_db(db)
             self.send_json({"ok":True,"maintenance":maint})
 
         elif p=="/api/cameras":
@@ -401,10 +434,18 @@ class Handler(BaseHTTPRequestHandler):
             add_log_safe(u,"إضافة كاميرا",f"كاميرا: {cam['cam_no']} - {station.get('name','')}",self.ip())
             self.send_json({"ok":True,"camera":cam})
 
+        elif p=="/api/notifications":
+            db=load_db()
+            notifs=db.get("notifications",[])
+            unread=sum(1 for n in notifs if not n.get("read"))
+            self.send_json({"notifications":notifs,"unread":unread})
+
         elif p=="/api/stations":
             sid=db["next_station_id"]; db["next_station_id"]+=1
             st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"districts":body.get("districts",[]),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
             db["stations"].append(st); save_db(db)
+            add_notification(db, u, "إضافة محطة جديدة", f"المحطة: {st['name']} | القاطع: {st['district']}")
+            save_db(db)
             self.send_json({"ok":True,"station":st})
 
         elif p=="/api/districts_admin_placeholder":  # removed duplicate
@@ -416,6 +457,13 @@ class Handler(BaseHTTPRequestHandler):
                 self.send_json({"error":"القاطع موجود مسبقاً"},400); return
             db["custom_districts"].append(name); save_db(db)
             self.send_json({"ok":True})
+
+        elif p=="/api/notifications/read":
+            db=load_db()
+            nid=body.get("id")
+            for n in db.get("notifications",[]):
+                if nid is None or n["id"]==nid: n["read"]=True
+            save_db(db); self.send_json({"ok":True})
 
         elif "/api/circulars/" in p and p.endswith("/read"):
             cid=int(p.split("/")[3])
@@ -551,7 +599,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["tours"][idx]["station_name"]=st.get("name","")
-            save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
+            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—')} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
 
         elif p.startswith("/api/maintenance/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
@@ -562,7 +610,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["maintenance"][idx]["station_name"]=st.get("name","")
-            save_db(db); self.send_json({"ok":True})
+            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—')}"); save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/cameras/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
