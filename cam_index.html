@@ -3397,6 +3397,8 @@ function openStationModal(id){
             <option value="صيانة">🟡 تحت الصيانة</option>
           </select>
         </div>
+        <div class="fg"><label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label><input class="fi" id="st-cam-working-m" type="number" min="0" value="0" placeholder="0"></div>
+        <div class="fg"><label class="fl" style="color:var(--a2)">📷 كاميرات معطلة</label><input class="fi" id="st-cam-broken-m" type="number" min="0" value="0" placeholder="0"></div>
       </div>
       <div class="m-footer">
         <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
@@ -3413,14 +3415,22 @@ function openStationModal(id){
   if(statusRow) statusRow.style.display=(s.type==='أهلية')?'':'none';
   const stSt=document.getElementById('st-status');
   if(stSt) stSt.value=s.station_status||'تعمل';
+  document.getElementById('st-cam-working-m').value=s.cam_working||0;
+  document.getElementById('st-cam-broken-m').value=s.cam_broken||0;
   document.getElementById('ov-station').classList.add('open');
 }
 
 async function saveStation(){
   const id=parseInt(document.getElementById('st-eid').value)||0;
   const stType=document.getElementById('st-type').value;
-  const body={name:document.getElementById('st-name').value.trim(), district:document.getElementById('st-district').value, type:stType,
-    station_status:stType==='أهلية'?(document.getElementById('st-status')?.value||'تعمل'):'تعمل'};
+  const body={
+    name:document.getElementById('st-name').value.trim(),
+    district:document.getElementById('st-district').value,
+    type:stType,
+    station_status:stType==='أهلية'?(document.getElementById('st-status')?.value||'تعمل'):'تعمل',
+    cam_working:parseInt(document.getElementById('st-cam-working-m')?.value)||0,
+    cam_broken:parseInt(document.getElementById('st-cam-broken-m')?.value)||0
+  };
   if(!body.name||!body.district){toast('أدخل الاسم والقاطع','err');return;}
   try{
     if(id) await api('PUT','/api/stations/'+id,body);
