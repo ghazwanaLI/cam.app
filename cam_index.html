@@ -989,7 +989,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 1</div>
                     <div class="up-box" id="ub-qcirc-1" style="min-height:65px">
-                      <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'qcirc_1')">
+                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_1')">
                       <button class="up-rm" onclick="rmFile('qcirc_1',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_1" style="font-size:9px">اختر ملف</div>
@@ -998,7 +998,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 2</div>
                     <div class="up-box" id="ub-qcirc-2" style="min-height:65px">
-                      <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'qcirc_2')">
+                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_2')">
                       <button class="up-rm" onclick="rmFile('qcirc_2',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_2" style="font-size:9px">اختر ملف</div>
@@ -1007,7 +1007,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 3</div>
                     <div class="up-box" id="ub-qcirc-3" style="min-height:65px">
-                      <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'qcirc_3')">
+                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_3')">
                       <button class="up-rm" onclick="rmFile('qcirc_3',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_3" style="font-size:9px">اختر ملف</div>
@@ -1743,7 +1743,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div>
             <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 1</div>
             <div class="up-box" id="ub-circ-1">
-              <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'circ_1')">
+              <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'circ_1')">
               <button class="up-rm" onclick="rmFile('circ_1',event)">✕</button>
               <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
               <div class="up-stat" id="us-circ_1">صورة أو PDF</div>
@@ -1752,7 +1752,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div>
             <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 2</div>
             <div class="up-box" id="ub-circ-2">
-              <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'circ_2')">
+              <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'circ_2')">
               <button class="up-rm" onclick="rmFile('circ_2',event)">✕</button>
               <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
               <div class="up-stat" id="us-circ_2">صورة أو PDF</div>
@@ -1761,7 +1761,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div>
             <div style="font-size:11px;color:var(--t3);margin-bottom:5px">مرفق 3</div>
             <div class="up-box" id="ub-circ-3">
-              <input type="file" accept="image/*" capture="environment" onchange="doUpload(event,'circ_3')">
+              <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'circ_3')">
               <button class="up-rm" onclick="rmFile('circ_3',event)">✕</button>
               <div class="up-ico">📷</div><div class="up-lbl">📷 كاميرا أو ملف</div>
               <div class="up-stat" id="us-circ_3">صورة أو PDF</div>
@@ -4411,9 +4411,11 @@ async function viewFile(key){
 // ── ضغط الصور قبل التخزين (يوفر 90% من الحجم) ──
 function compressImage(file, maxW, maxH, quality){
   return new Promise(function(resolve){
-    // غير صورة: ارفض
+    // PDF: أرجع كما هو بدون ضغط
     if(!file.type.startsWith('image/')){
-      resolve({data:null,mime:null});
+      const r=new FileReader();
+      r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
+      r.readAsDataURL(file);
       return;
     }
     const img=new Image();
@@ -4452,10 +4454,13 @@ async function doUpload(event, key){
     const quality=hiQ?0.95:0.82;
     const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // احفظ دائماً كـ JPG
-    const finalMime = mime==='image/jpeg'?'image/jpeg':'image/jpeg';
-    const finalName = file.name.replace(/\.[^.]+$/, '')+'.jpg';
-    UF[key]={name:finalName, data, mime:'image/jpeg'};
+    // صور: احفظ كـ JPG | PDF: احفظ كما هو
+    const isImg = file.type.startsWith('image/');
+    UF[key]={
+      name: isImg ? file.name.replace(/\.[^.]+$/, '')+'.jpg' : file.name,
+      data,
+      mime: isImg ? 'image/jpeg' : file.type
+    };
     // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
     const stat=document.getElementById('us-'+key);
