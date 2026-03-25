@@ -2001,6 +2001,9 @@ function openLB(src){
   // فعّل زر الحفظ
   const sv=document.getElementById('lb-save');
   if(sv){ sv.href=src; sv.download='صورة_'+new Date().toISOString().split('T')[0]+'.jpg'; }
+  // تأكد من أن الـ LB يظهر فوق كل شيء
+  const lb=document.getElementById('lb');
+  if(lb) lb.style.zIndex='999999';
   // زر مشاركة في الـ lightbox
   const lbShare=document.getElementById('lb-share');
   if(lbShare){
@@ -3221,6 +3224,15 @@ function updateDashboard(){
   // ── تحديث إجراءات صيانة اليوم ──
   const today = new Date().toISOString().split('T')[0];
   const todayMaint = allMaint.filter(m=>m.date===today);
+  // ── شريط إخباري للصيانة ──
+  const tickerBar=document.getElementById('maint-ticker-bar');
+  const tickerContent=document.getElementById('maint-ticker-content');
+  if(tickerBar&&tickerContent&&todayMaint.length){
+    tickerContent.textContent=todayMaint.map(m=>`${m.station_name||'—'} | ${m.device_type||'—'} | الفني: ${m.technician||'—'} | ${m.reason||''}`).join('   ◈   ');
+    tickerBar.style.display='flex';
+  } else if(tickerBar){
+    tickerBar.style.display='none';
+  }
   const alertDiv  = document.getElementById('today-maint-alert');
   const alertList = document.getElementById('today-maint-list');
   if(alertDiv && alertList){
@@ -3335,12 +3347,12 @@ function renderStations(){
     const isAdmin=CU?.role==='admin';
     return `<tr>
       <td><span class="snum">${i+1}</span></td>
-      <td style="font-weight:700;cursor:pointer;color:var(--p1);text-decoration:underline" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
-      <td><span class="db">${s.district||'—'}</span></td>
-      ${s.type!=='حكومية'?`<td><span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}">${s.station_status||'تعمل'}</span></td>`:'<td>—</td>'}
-      <td style="text-align:center;color:var(--a3);font-weight:700">${s.cam_working||0}</td>
-      <td style="text-align:center;color:var(--a2);font-weight:700">${s.cam_broken||0}</td>
-      <td style="color:var(--t3);font-size:12px">${last?last.date:'—'}</td>
+      <td style="font-weight:700;cursor:pointer;color:var(--p1)" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
+      <td><span class="db" style="font-size:11px">${s.district||'—'}</span></td>
+      ${s.type!=='حكومية'?`<td><span class="badge ${s.station_status==='تعمل'?'b-ok':s.station_status==='متوقفة'?'b-bad':'b-warn'}" style="font-size:10px">${s.station_status||'تعمل'}</span></td>`:'<td style="color:var(--t3);font-size:11px">—</td>'}
+      <td style="text-align:center;color:var(--a3);font-weight:800;font-size:13px">${s.cam_working||0}</td>
+      <td style="text-align:center;color:var(--a2);font-weight:800;font-size:13px">${s.cam_broken||0}</td>
+      <td style="color:var(--t3);font-size:11px">${last?last.date:'—'}</td>
       <td style="text-align:center">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openStationModal(${s.id})">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delStation(${s.id})">🗑️</button>`:''}
@@ -3391,7 +3403,7 @@ function openStationModal(id){
         <div class="fg"><label class="fl">القاطع *</label><select class="fi" dir="rtl" id="st-district"></select></div>
         <div class="fg"><label class="fl">النوع</label><select class="fi" dir="rtl" id="st-type" onchange="toggleStStatus()"><option value="حكومية">حكومية</option><option value="أهلية">أهلية</option></select></div>
         <div class="fg" id="st-status-row" style="display:none"><label class="fl">حالة المحطة</label>
-          <select class="fi" dir="rtl" id="st-status">
+          <select class="fi" dir="rtl" id="st-status-ov">
             <option value="تعمل">🟢 تعمل</option>
             <option value="متوقفة">🔴 متوقفة</option>
             <option value="صيانة">🟡 تحت الصيانة</option>
@@ -3423,13 +3435,27 @@ function openStationModal(id){
 async function saveStation(){
   const id=parseInt(document.getElementById('st-eid').value)||0;
   const stType=document.getElementById('st-type').value;
+  const el=n=>{const e=document.getElementById(n);return e?e.value:'';};
   const body={
-    name:document.getElementById('st-name').value.trim(),
-    district:document.getElementById('st-district').value,
+    name:el('st-name').trim(),
+    district:el('st-district'),
     type:stType,
-    station_status:stType==='أهلية'?(document.getElementById('st-status')?.value||'تعمل'):'تعمل',
-    cam_working:parseInt(document.getElementById('st-cam-working-m')?.value)||0,
-    cam_broken:parseInt(document.getElementById('st-cam-broken-m')?.value)||0
+    station_status:stType==='أهلية'?(el('st-status-ov')||'تعمل'):'تعمل',
+    cam_working:parseInt(el('st-cam-working'))||0,
+    cam_broken:parseInt(el('st-cam-broken'))||0,
+    spec:{
+      main_cam_count:parseInt(el('st-main-cam-count'))||0,
+      main_cam_type:el('st-main-cam-type'),
+      main_hdd_count:parseInt(el('st-main-hdd-count'))||0,
+      main_hdd_size:el('st-main-hdd-size'),
+      main_record_days:el('st-main-record-days'),
+      sanda_cam_count:parseInt(el('st-sanda-cam-count'))||0,
+      sanda_cam_type:el('st-sanda-cam-type'),
+      sanda_hdd_count:parseInt(el('st-sanda-hdd-count'))||0,
+      sanda_hdd_size:el('st-sanda-hdd-size'),
+      sanda_record_days:el('st-sanda-record-days'),
+      sanda_notes:el('st-sanda-notes')
+    }
   };
   if(!body.name||!body.district){toast('أدخل الاسم والقاطع','err');return;}
   try{
@@ -5630,5 +5656,20 @@ function showTourFiles(tid){
 }
 
 tryAutoLogin();</script>
+
+<!-- شريط إخباري لصيانة اليوم -->
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1d4ed8,#1e3a5f);color:#fff;padding:8px 16px;font-family:'Cairo',sans-serif;font-size:13px;direction:rtl;box-shadow:0 -2px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:12px">
+  <span style="background:#fff;color:#1d4ed8;border-radius:20px;padding:2px 12px;font-weight:800;font-size:11px;white-space:nowrap;flex-shrink:0">🔧 صيانة اليوم</span>
+  <div style="overflow:hidden;flex:1;position:relative;height:22px">
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 25s linear infinite"></div>
+  </div>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:13px">✕</button>
+</div>
+<style>
+@keyframes tickerScroll{
+  0%{transform:translateX(100%)}
+  100%{transform:translateX(-100%)}
+}
+</style>
 </body>
 </html>
