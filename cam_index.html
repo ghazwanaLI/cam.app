@@ -2058,19 +2058,25 @@ async function tryAutoLogin(){
 }
 
 function showTopbarLogin(){
-  // أضف زر دخول في الشريط العلوي بدل حجب الواجهة
-  const tb=document.getElementById('sidebar');
-  if(!tb||document.getElementById('topbar-login-form'))return;
-  const bar=document.createElement('div');
-  bar.id='topbar-login-form';
-  bar.style.cssText='background:#1d4ed8;padding:6px 16px;display:flex;align-items:center;gap:8px;font-family:Cairo,sans-serif;flex-wrap:wrap;justify-content:center';
-  bar.innerHTML=
-    '<span style="color:#bfdbfe;font-size:12px;font-weight:600">🔐 سجل دخول للوصول الكامل</span>'+
-    '<input id="tl-u" type="text" value="admin" placeholder="المستخدم" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:100px">'+
-    '<input id="tl-p" type="password" placeholder="كلمة المرور" style="padding:5px 10px;border-radius:6px;border:none;font-family:Cairo,sans-serif;font-size:12px;width:110px" onkeydown="doTopbarLoginOnEnter(event)">'+
-    '<button onclick="doTopbarLogin()" style="background:#fff;color:#1d4ed8;border:none;border-radius:6px;padding:5px 14px;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer">دخول</button>'+
-    '<span id="tl-err" style="color:#fca5a5;font-size:11px;display:none"></span>';
-  tb.appendChild(bar);
+  if(document.getElementById('topbar-login-form')) return;
+  // إطار منبثق في المنتصف
+  const ov=document.createElement('div');
+  ov.id='topbar-login-form';
+  ov.style.cssText='position:fixed;inset:0;z-index:99990;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl';
+  ov.innerHTML=
+    '<div style="background:#fff;border-radius:20px;padding:32px 28px;width:340px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,.3);text-align:center">'+
+      '<div style="font-size:36px;margin-bottom:8px">🔐</div>'+
+      '<div style="font-size:17px;font-weight:800;color:#1d4ed8;margin-bottom:4px">إعادة الاتصال بالسيرفر</div>'+
+      '<div style="font-size:12px;color:#94a3b8;margin-bottom:20px">أدخل بياناتك للمتابعة</div>'+
+      '<div id="tl-err" style="display:none;background:#fee2e2;border:1px solid #fca5a5;border-radius:8px;padding:8px 12px;font-size:13px;color:#dc2626;margin-bottom:12px"></div>'+
+      '<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:16px">'+
+        '<input id="tl-u" type="text" value="admin" placeholder="اسم المستخدم" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:Cairo,sans-serif;font-size:14px;outline:none;text-align:right">'+
+        '<input id="tl-p" type="password" placeholder="كلمة المرور" style="padding:11px 14px;border:1.5px solid #e2e8f0;border-radius:10px;font-family:Cairo,sans-serif;font-size:14px;outline:none;text-align:right" onkeydown="doTopbarLoginOnEnter(event)">'+
+      '</div>'+
+      '<button onclick="doTopbarLogin()" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:10px;padding:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:700;cursor:pointer">🔑 دخول</button>'+
+    '</div>';
+  document.body.appendChild(ov);
+  setTimeout(function(){document.getElementById('tl-p')?.focus();},200);
 }
 
 function doTopbarLoginOnEnter(e){if(e.key==='Enter')doTopbarLogin();}
@@ -2085,7 +2091,7 @@ async function doTopbarLogin(){
     LS.set('login_creds',{u,p});
     SERVER_ONLINE=true;
     const bar=document.getElementById('topbar-login-form');
-    if(bar)bar.remove();
+    if(bar){ bar.style.opacity='0'; bar.style.transition='opacity .2s'; setTimeout(function(){bar.remove();},200); }
     await initApp();
   } else {
     if(errEl){errEl.textContent='بيانات خاطئة';errEl.style.display='block';}
@@ -4406,9 +4412,67 @@ async function viewFile(key){
 }
 
 // ── ضغط الصور قبل التخزين (يوفر 90% من الحجم) ──
+// تحميل PDF.js عند الحاجة
+function _loadPdfJs(){
+  return new Promise(function(res,rej){
+    if(window.pdfjsLib){res();return;}
+    const s=document.createElement('script');
+    s.src='https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.js';
+    s.onload=function(){
+      window.pdfjsLib.GlobalWorkerOptions.workerSrc=
+        'https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.worker.min.js';
+      res();
+    };
+    s.onerror=rej;
+    document.head.appendChild(s);
+  });
+}
+
+// تحويل PDF إلى JPG (الصفحة الأولى)
+function _pdfToJpg(file, quality){
+  return _loadPdfJs().then(function(){
+    return new Promise(function(resolve, reject){
+      const reader=new FileReader();
+      reader.onload=function(e){
+        const arr=new Uint8Array(e.target.result);
+        window.pdfjsLib.getDocument({data:arr}).promise.then(function(pdf){
+          pdf.getPage(1).then(function(page){
+            const scale=2; // دقة عالية
+            const vp=page.getViewport({scale:scale});
+            const canvas=document.createElement('canvas');
+            canvas.width=vp.width; canvas.height=vp.height;
+            const ctx=canvas.getContext('2d');
+            page.render({canvasContext:ctx, viewport:vp}).promise.then(function(){
+              const jpg=canvas.toDataURL('image/jpeg', quality||0.92);
+              resolve({data:jpg.split(',')[1], mime:'image/jpeg'});
+            }).catch(reject);
+          }).catch(reject);
+        }).catch(reject);
+      };
+      reader.readAsArrayBuffer(file);
+    });
+  }).catch(function(){
+    // fallback: أرجع PDF كما هو
+    return new Promise(function(res){
+      const r=new FileReader();
+      r.onload=function(){res({data:r.result.split(',')[1],mime:file.type});};
+      r.readAsDataURL(file);
+    });
+  });
+}
+
 function compressImage(file, maxW, maxH, quality){
   return new Promise(function(resolve){
-    // PDF: أرجع كما هو بدون ضغط
+    // PDF → تحويل للصفحة الأولى كـ JPG
+    if(file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf')){
+      _pdfToJpg(file, quality).then(resolve).catch(function(){
+        const r=new FileReader();
+        r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
+        r.readAsDataURL(file);
+      });
+      return;
+    }
+    // صورة عادية
     if(!file.type.startsWith('image/')){
       const r=new FileReader();
       r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
@@ -4420,7 +4484,6 @@ function compressImage(file, maxW, maxH, quality){
     img.onload=function(){
       URL.revokeObjectURL(url);
       let w=img.width, h=img.height;
-      // تصغير إذا أكبر من الحد
       if(w>maxW||h>maxH){
         const scale=Math.min(maxW/w, maxH/h);
         w=Math.round(w*scale); h=Math.round(h*scale);
@@ -4432,7 +4495,6 @@ function compressImage(file, maxW, maxH, quality){
       resolve({data:dataUrl.split(',')[1], mime:'image/jpeg'});
     };
     img.onerror=function(){
-      // fallback بدون ضغط
       const r=new FileReader();
       r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
       r.readAsDataURL(file);
@@ -4451,13 +4513,9 @@ async function doUpload(event, key){
     const quality=hiQ?0.95:0.82;
     const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // صور: احفظ كـ JPG | PDF: احفظ كما هو
-    const isImg = file.type.startsWith('image/');
-    UF[key]={
-      name: isImg ? file.name.replace(/\.[^.]+$/, '')+'.jpg' : file.name,
-      data,
-      mime: isImg ? 'image/jpeg' : file.type
-    };
+    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
+    const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
+    UF[key]={ name:finalName, data, mime:'image/jpeg' };
     // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
     const stat=document.getElementById('us-'+key);
