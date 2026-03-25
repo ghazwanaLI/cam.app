@@ -266,93 +266,159 @@ tr:hover td{background:rgba(30,58,95,.03);}
 .sb-overlay{display:none!important;}
 
 /* RESPONSIVE */
-@media(max-width:900px){
-  /* ── تصميم الهاتف الكامل ── */
+/* ════════════════════════════════════
+   RESPONSIVE — tablet + phone + iPhone
+   ════════════════════════════════════ */
+
+/* ── Tablet landscape 768-1024 ── */
+@media(max-width:1024px){
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
+  .content{padding:16px 14px 70px;}
   .main{margin-top:108px;}
-  .content{padding:10px 10px 80px;}
+  #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
+  #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
+  #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
+}
 
-  /* إحصائيات: 2 عمود */
-  .stats-grid{grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;}
-  .sc{padding:12px;}
-  .sc-val{font-size:26px;}
-  .sc-lbl{font-size:11px;}
-  .sc-icon{font-size:20px;}
+/* ── Tablet portrait / large phone 600-900 ── */
+@media(max-width:900px){
+  .main{margin-top:104px;}
+  .content{padding:12px 12px 75px;}
 
-  /* الشريط العلوي */
-  .topbar-logo{padding:6px 10px;}
-  .tb-name{font-size:12px;}
+  /* شريط علوي مضغوط */
+  .topbar-logo{padding:7px 12px;}
   .tb-ver{display:none!important;}
-  .su-name{font-size:11px;}
   .su-role{display:none!important;}
-  .su-district{font-size:10px;}
-  .tb-ico{width:30px!important;height:30px!important;font-size:16px!important;}
-  .su-av{width:28px!important;height:28px!important;font-size:11px!important;}
-  .tb-btn{padding:5px 8px;font-size:11px;}
+  .tb-ico{width:32px!important;height:32px!important;font-size:17px!important;}
+  .su-av{width:30px!important;height:30px!important;font-size:12px!important;}
+  .tb-btn{padding:6px 10px;font-size:12px;}
+  .tb-name{font-size:14px;}
 
-  /* التبويبات — تمرير أفقي ناعم */
-  .topbar-nav{
-    overflow-x:auto;flex-wrap:nowrap!important;
-    -webkit-overflow-scrolling:touch;
-    scrollbar-width:none;padding:0 8px;
-  }
+  /* تبويبات: تمرير أفقي بدون scrollbar */
+  .topbar-nav{overflow-x:auto;flex-wrap:nowrap!important;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 10px;}
   .topbar-nav::-webkit-scrollbar{display:none;}
-  .nav-item{padding:8px 10px;font-size:11px;gap:3px;}
-  .nav-item b{font-size:10px;}
-  .ni{font-size:13px;}
+  .nav-item{padding:9px 12px;font-size:12px;gap:4px;white-space:nowrap;}
+  .ni{font-size:14px;}
 
-  /* النماذج: عمود واحد */
-  .fgrid{grid-template-columns:1fr;}
-  .modal{padding:16px;border-radius:14px;}
-  .modal-sm{width:95vw;}
-  .modal-lg{width:95vw;}
-  .m-title{font-size:14px;margin-bottom:12px;}
+  /* إحصائيات */
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
+  .sc{padding:14px 12px;}
+  .sc-val{font-size:28px;}
+  .sc-lbl{font-size:11px;}
 
-  /* الجداول */
+  /* جداول */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   .section{overflow:hidden;}
-  table{min-width:500px;font-size:12px;}
-  th{padding:8px 10px;font-size:11px;}
-  td{padding:7px 10px;font-size:12px;}
-  .snum{width:20px;height:20px;font-size:10px;}
+  table{min-width:520px;font-size:12px;}
+  th{padding:9px 10px;font-size:11px;}
+  td{padding:8px 10px;font-size:12px;}
 
-  /* رأس القسم */
-  .sec-hdr{padding:10px 12px;flex-wrap:wrap;gap:6px;}
+  /* نماذج */
+  .fgrid{grid-template-columns:1fr;}
+  .modal{padding:18px;border-radius:16px;max-height:90vh;}
+  .modal-sm,.modal-lg{width:92vw;}
+  .m-title{font-size:14px;margin-bottom:14px;}
+
+  /* أقسام */
+  .sec-hdr{padding:10px 14px;flex-wrap:wrap;gap:6px;}
   .sec-title{font-size:13px;}
   .sec-actions{flex-wrap:wrap;gap:5px;}
-  .search-box input{width:130px;}
+  .search-box input{width:140px;}
 
-  /* الأزرار */
-  .btn{padding:7px 12px;font-size:12px;}
-  .btn-sm{padding:4px 8px;font-size:11px;}
+  /* أزرار */
+  .btn{padding:7px 13px;font-size:12px;}
+  .btn-sm{padding:5px 9px;font-size:11px;}
 
   /* لوحة التحكم */
   #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
   #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
   #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
 
-  /* التعاميم */
+  /* تعاميم */
   #circulars-grid > div{padding:12px!important;}
 
-  /* شريط الإخبار */
-  #maint-ticker-bar{font-size:11px!important;padding:6px 10px!important;}
+  /* شريط أخبار */
+  #maint-ticker-bar{font-size:11px!important;padding:6px 12px!important;}
 }
 
-@media(max-width:480px){
-  .main{margin-top:112px;}
+/* ── iPhone / Android صغير 320-600 ── */
+@media(max-width:600px){
+  .main{margin-top:100px;}
   .content{padding:8px 8px 80px;}
-  .stats-grid{grid-template-columns:1fr 1fr;gap:6px;}
-  .sc{padding:10px;}
-  .sc-val{font-size:22px;}
+
+  /* شريط علوي - أصغر */
+  .topbar-logo{padding:6px 10px;}
   .tb-name{font-size:12px;}
-  .tb-actions .tb-btn span{display:none;}
-  .su-name,.su-role,.su-district{display:none!important;}
-  .tb-user{gap:4px!important;}
-  .tb-brand > div > div:last-child{display:none!important;}
+  .su-name{font-size:11px;}
+  .su-district{font-size:10px;}
+  .tb-ico{width:28px!important;height:28px!important;font-size:15px!important;}
+  .su-av{width:26px!important;height:26px!important;font-size:10px!important;}
+  .tb-btn{padding:5px 8px;font-size:11px;}
+  .tb-actions{gap:4px!important;}
+
+  /* تبويبات أصغر */
+  .nav-item{padding:8px 9px;font-size:11px;}
+  .ni{font-size:13px;}
+
+  /* إحصائيات 2×2 */
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:7px;margin-bottom:10px;}
+  .sc{padding:10px 9px;}
+  .sc-val{font-size:24px;}
+  .sc-lbl{font-size:10px;}
+  .sc-icon{font-size:18px;}
+  .sc-sub{font-size:10px;}
+
+  /* جداول */
   table{min-width:420px;font-size:11px;}
-  th,td{padding:6px 8px;}
-  .modal{padding:12px;}
-  .m-footer{gap:6px;}
-  .btn{padding:6px 10px;font-size:11px;}
+  th{padding:7px 8px;font-size:10px;}
+  td{padding:6px 8px;font-size:11px;}
+  .snum{width:18px;height:18px;font-size:9px;}
+
+  /* نماذج */
+  .modal{padding:12px;border-radius:12px;}
+  .modal-sm,.modal-lg{width:96vw;max-height:88vh;}
+  .m-title{font-size:13px;}
+  .m-footer{gap:5px;padding-top:12px;}
+  .fi{padding:8px 10px;font-size:12px;}
+
+  /* أزرار */
+  .btn{padding:7px 10px;font-size:11px;}
+  .btn-sm{padding:4px 7px;font-size:10px;}
+
+  /* أقسام */
+  .sec-hdr{padding:8px 10px;gap:5px;}
+  .sec-title{font-size:12px;}
+  .search-box input{width:110px;font-size:11px;}
+  .sec-actions{gap:4px;}
+
+  /* التعاميم */
+  #circulars-grid > div{padding:10px!important;}
+
+  /* شريط أخبار */
+  #maint-ticker-bar{font-size:10px!important;padding:5px 8px!important;}
+}
+
+/* ── iPhone SE / صغير جداً ≤380 ── */
+@media(max-width:380px){
+  .main{margin-top:96px;}
+  .content{padding:6px 6px 75px;}
+  .stats-grid{grid-template-columns:1fr 1fr;gap:6px;}
+  .sc{padding:8px;}
+  .sc-val{font-size:20px;}
+  .tb-name{font-size:11px;}
+  .su-name,.su-district{display:none!important;}
+  .tb-user{gap:3px!important;}
+  table{min-width:360px;}
+  .nav-item{padding:7px 8px;font-size:10px;}
+  .btn{padding:6px 9px;font-size:10px;}
+  .modal-sm,.modal-lg{width:98vw;}
+}
+
+/* ── iOS safe area (notch/home indicator) ── */
+@supports(padding:env(safe-area-inset-bottom)){
+  .content{padding-bottom:calc(80px + env(safe-area-inset-bottom));}
+  #maint-ticker-bar{padding-bottom:calc(7px + env(safe-area-inset-bottom))!important;}
 }
 
 /* LOGIN */
