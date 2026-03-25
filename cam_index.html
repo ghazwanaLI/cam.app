@@ -1326,6 +1326,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- سبب + فني -->
       <div class="fg"><label class="fl">سبب الصيانة</label>
         <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
+      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="maint-qty" type="number" min="1" value="1" placeholder="1"></div>
+      <div class="fg"><label class="fl">الحالة بعد الصيانة</label><select class="fi" dir="rtl" id="maint-status-after"><option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option><option value="يعمل جزئياً">⚠️ يعمل جزئياً</option><option value="لا يزال معطلاً">❌ لا يزال معطلاً</option></select></div>
       <div class="fg"><label class="fl">اسم الفني</label>
         <input class="fi" id="maint-tech" type="text"></div>
 
@@ -2916,7 +2918,18 @@ function getSizes(){
   return {lblW_cm,lblH_cm,lblW,lblH,qrPx,bcHpx,bcWpx,PAD};
 }
 
+// حقول مخفية لأبعاد الليبل (مستخدمة في الترميز)
+function _ensureLblInputs(){
+  if(document.getElementById('ctrl-lbl-w')) return;
+  ['ctrl-lbl-w','ctrl-lbl-h','ctrl-qr-size','ctrl-bc-h'].forEach(function(id){
+    const inp=document.createElement('input');
+    inp.type='number'; inp.id=id; inp.style.display='none';
+    inp.value=id.includes('w')?5:id.includes('h')&&!id.includes('bc')?2.5:id.includes('qr')?95:38;
+    document.body.appendChild(inp);
+  });
+}
 function rebuildLabel(){
+  _ensureLblInputs();
   if(!_genQrData || !_genCode) return;
   const s=getSizes();
 
@@ -5809,6 +5822,42 @@ document.addEventListener('click', function(e){
     panel.style.display = 'none';
   }
 });
+
+function addDeviceRow(){
+  // إضافة صف جهاز جديد في الترميز
+  const cont=document.getElementById('other-devices-cont');
+  if(!cont) return;
+  addOtherRow(cont);
+}
+
+async function saveDistrict(){
+  const name=(document.getElementById('dist-name')?.value||'').trim();
+  if(!name){toast('أدخل اسم القاطع','err');return;}
+  try{
+    await api('POST','/api/districts',{name});
+    closeModal('ov-district'); toast('تم الحفظ ✅'); await loadStations();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+async function saveDelegate(){
+  const id=parseInt(document.getElementById('del-eid')?.value)||0;
+  const body={
+    name:(document.getElementById('del-name')?.value||'').trim(),
+    district:document.getElementById('del-district')?.value||'',
+    phone:document.getElementById('del-phone')?.value||''
+  };
+  if(!body.name){toast('أدخل الاسم','err');return;}
+  try{
+    if(id) await api('PUT','/api/delegates/'+id,body);
+    else await api('POST','/api/delegates',body);
+    closeModal('ov-delegate'); toast('تم الحفظ ✅');
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+function toggleExtraDelegate(){
+  const extra=document.getElementById('extra-delegate-row');
+  if(extra) extra.style.display=extra.style.display==='none'?'':'none';
+}
 
 tryAutoLogin();</script>
 
