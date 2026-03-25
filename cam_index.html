@@ -3968,12 +3968,13 @@ function renderCirculars(){
     const readBadge=iRead
       ?'<span style="background:#dcfce7;color:#16a34a;border-radius:20px;padding:2px 10px;font-size:11px;font-weight:700">✅ تم الاطلاع</span>'
       :'<button class="btn btn-p btn-sm" style="background:#16a34a;font-size:11px" onclick="markCircRead('+c.id+')">✅ تم الاطلاع</button>';
-    return `<div style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':' var(--border)'};border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
+    return `<div id="circ-card-${c.id}" style="background:#fff;border:1.5px solid ${iRead?'#bbf7d0':' var(--border)'};border-radius:14px;padding:16px 18px;margin-bottom:12px;box-shadow:0 2px 8px rgba(0,0,0,.04)">
       <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:10px">
         <div style="font-size:15px;font-weight:800;color:var(--text);flex:1">${c.title||'—'}</div>
         <span class="badge ${typeColor[c.type]||'b-blue'}">${c.type||'تعميم'}</span>
       </div>
       ${c.body||c.notes?`<div style="font-size:13px;color:var(--t2);margin-bottom:10px;line-height:1.7;background:var(--bg2);border-radius:8px;padding:10px 12px">${c.body||c.notes}</div>`:''}
+      <div id="circ-img-${c.id}" style="margin-bottom:8px"></div>
       <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--t3);flex-wrap:wrap;gap:6px">
         <div style="display:flex;gap:12px;align-items:center">
           <span>📅 ${c.date||''}</span>
@@ -3988,6 +3989,22 @@ function renderCirculars(){
       </div>
     </div>`;
   }).join(''):'<div style="text-align:center;padding:60px;color:var(--t3);font-size:15px">📭 لا توجد تعاميم</div>';
+
+  // تحميل الصور تلقائياً لكل تعميم
+  list.forEach(c=>{
+    const imgDiv=document.getElementById('circ-img-'+c.id);
+    if(!imgDiv) return;
+    api('GET','/api/files/circ_'+c.id+'_circ_1')
+      .then(function(res){
+        const d=res.file||res;
+        if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
+          const src='data:'+d.mime+';base64,'+d.data;
+          imgDiv.innerHTML='<img src="'+src+'" '
+            +'style="width:100%;max-height:280px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block" '
+            +'onclick="openLB(this.src)" title="اضغط للتكبير">';
+        }
+      }).catch(function(){});
+  });
 }
 function filterCirculars(){renderCirculars();}
 function toggleCircForm(){
