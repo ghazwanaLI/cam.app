@@ -268,7 +268,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 /* RESPONSIVE */
 @media(max-width:900px){
   /* ── تصميم الهاتف الكامل ── */
-  .main{margin-top:118px;}
+  .main{margin-top:108px;}
   .content{padding:10px 10px 80px;}
 
   /* إحصائيات: 2 عمود */
@@ -279,12 +279,15 @@ tr:hover td{background:rgba(30,58,95,.03);}
   .sc-icon{font-size:20px;}
 
   /* الشريط العلوي */
-  .topbar-logo{padding:7px 12px;}
-  .tb-name{font-size:13px;}
-  .tb-ver{display:none;}
-  .su-name{font-size:12px;}
-  .su-role{display:none;}
-  .tb-btn{padding:5px 10px;font-size:11px;}
+  .topbar-logo{padding:6px 10px;}
+  .tb-name{font-size:12px;}
+  .tb-ver{display:none!important;}
+  .su-name{font-size:11px;}
+  .su-role{display:none!important;}
+  .su-district{font-size:10px;}
+  .tb-ico{width:30px!important;height:30px!important;font-size:16px!important;}
+  .su-av{width:28px!important;height:28px!important;font-size:11px!important;}
+  .tb-btn{padding:5px 8px;font-size:11px;}
 
   /* التبويبات — تمرير أفقي ناعم */
   .topbar-nav{
@@ -342,6 +345,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
   .sc-val{font-size:22px;}
   .tb-name{font-size:12px;}
   .tb-actions .tb-btn span{display:none;}
+  .su-name,.su-role,.su-district{display:none!important;}
+  .tb-user{gap:4px!important;}
+  .tb-brand > div > div:last-child{display:none!important;}
   table{min-width:420px;font-size:11px;}
   th,td{padding:6px 8px;}
   .modal{padding:12px;}
@@ -472,6 +478,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="su-district" id="su-district"></div>
         </div>
         <div class="tb-actions">
+          <!-- جرس الإشعارات - للمدير فقط -->
+          <div id="notif-bell-wrap" style="display:none;position:relative">
+            <button class="tb-btn" id="notif-bell" onclick="toggleNotifPanel()" title="الإشعارات"
+              style="position:relative;padding:6px 10px">
+              🔔 <span id="notif-badge" style="display:none;position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border-radius:50%;width:18px;height:18px;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center;line-height:1">0</span>
+            </button>
+          </div>
           <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
           <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
         </div>
@@ -800,14 +813,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
           <!-- Government Stations -->
           <div style="padding:0 14px 0;margin-bottom:12px">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #1d4ed8;margin-bottom:0;cursor:pointer;user-select:none"
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:2px solid #1d4ed8;margin-bottom:0;cursor:pointer;user-select:none"
                  onclick="toggleStSection('gov')">
               <span id="gov-toggle-icon" style="font-size:18px;color:#1d4ed8;transition:transform .2s;flex-shrink:0">▲</span>
               <span style="font-size:15px;font-weight:800;color:#1d4ed8">🏛️ المحطات الحكومية</span>
               <span id="gov-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
-              <span style="flex:1"></span>
               <button onclick="event.stopPropagation();printGovStationsReport()"
-                style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8">
+                style="background:none;border:1px solid rgba(29,78,216,.3);border-radius:8px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#1d4ed8;flex-shrink:0">
                 🖨️ طباعة
               </button>
             </div>
@@ -823,14 +835,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
           <!-- Private Stations -->
           <div style="padding:0 14px 14px">
-            <div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:2px solid #f59e0b;margin-bottom:0;cursor:pointer;user-select:none"
+            <div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:2px solid #f59e0b;margin-bottom:0;cursor:pointer;user-select:none"
                  onclick="toggleStSection('priv')">
               <span id="priv-toggle-icon" style="font-size:18px;color:#d97706;transition:transform .2s;flex-shrink:0">▲</span>
               <span style="font-size:15px;font-weight:800;color:#d97706">🏪 المحطات الأهلية</span>
               <span id="priv-count" style="background:#f59e0b;color:#fff;border-radius:20px;padding:2px 10px;font-size:12px;font-weight:700">0</span>
-              <span style="flex:1"></span>
               <button onclick="event.stopPropagation();printPrivStationsReport()"
-                style="background:none;border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:4px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706">
+                style="background:none;border:1px solid rgba(245,158,11,.4);border-radius:8px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;color:#d97706;flex-shrink:0">
                 🖨️ طباعة
               </button>
             </div>
@@ -3167,6 +3178,8 @@ async function initApp(){
     if(nm) nm.textContent = CU.fullname||'';
     if(rl) rl.textContent = CU.role==='admin' ? '🔑 مدير النظام' : 'مستخدم';
     if(dt) dt.textContent = CU.district||'';
+    // تشغيل الإشعارات للمدير
+    if(CU.role==='admin') startNotifPolling();
 
     const isAdmin = CU.role==='admin';
     ['nav-logs','admin-sect'].forEach(id=>{
@@ -4949,13 +4962,18 @@ function printToursTable(){
 // ── طباعة الصيانة ──
 function printMaintTable(){
   const distF=document.getElementById('f-maint-district')?.value||'';
-  let list=[...allMaint].filter(m=>!distF||m.district===distF).sort((a,b)=>b.date>a.date?1:-1);
+  const myDist=CU?.role!=='admin'?CU?.district||'':'';
+  let list=[...allMaint].filter(m=>{
+    if(myDist&&m.district!==myDist)return false;
+    if(distF&&m.district!==distF)return false;
+    return true;
+  }).sort((a,b)=>b.date>a.date?1:-1);
   const tbl='<table>'
-    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th></tr></thead>'
-    +'<tbody>'+list.map((m,i)=>`<tr><td>${i+1}</td><td>${m.date||'—'}</td><td style="font-weight:700">${m.station_name||'—'}</td><td>${m.district||'—'}</td><td>${m.device_type||'—'}</td><td style="text-align:center">${m.qty||'—'}</td><td style="color:#dc2626">${m.reason||'—'}</td><td>${m.technician||'—'}</td></tr>`).join('')
+    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th></tr></thead>'
+    +'<tbody>'+list.map((m,i)=>`<tr><td>${i+1}</td><td>${m.date||'—'}</td><td style="font-weight:700">${m.station_name||'—'}</td><td>${m.district||'—'}</td><td>${m.device_type||'—'}</td><td style="text-align:center">${m.qty||'—'}</td><td style="color:#dc2626">${m.reason||'—'}</td><td>${m.technician||'—'}</td><td style="color:#475569">${m.notes||''}</td></tr>`).join('')
     +'</tbody></table>'
     +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' عملية</div>';
-  _openPrintWindow('سجل الصيانة', tbl);
+  _openPrintWindow('سجل الصيانة الميدانية', tbl);
 }
 
 // ── طباعة الجرد ──
@@ -5708,7 +5726,103 @@ function showTourFiles(tid){
   });
 }
 
+// ══ نظام الإشعارات ══
+let _notifTimer = null;
+let _lastNotifCount = 0;
+
+function startNotifPolling(){
+  if(CU?.role !== 'admin') return; // للمدير فقط
+  document.getElementById('notif-bell-wrap').style.display = 'flex';
+  _checkNotifs();
+  _notifTimer = setInterval(_checkNotifs, 30000); // كل 30 ثانية
+}
+
+async function _checkNotifs(){
+  try{
+    const d = await api('GET','/api/notifications');
+    const unread = d.unread || 0;
+    const badge = document.getElementById('notif-badge');
+    if(badge){
+      badge.textContent = unread > 9 ? '9+' : unread;
+      badge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+    // إشعار صوتي/مرئي إذا جاء إشعار جديد
+    if(unread > _lastNotifCount && _lastNotifCount > 0){
+      toast('🔔 إشعار جديد من مخوّل');
+    }
+    _lastNotifCount = unread;
+    // تحديث القائمة إذا مفتوحة
+    if(document.getElementById('notif-panel').style.display !== 'none'){
+      _renderNotifs(d.notifications || []);
+    }
+  }catch(e){}
+}
+
+function toggleNotifPanel(){
+  const panel = document.getElementById('notif-panel');
+  if(panel.style.display === 'none'){
+    panel.style.display = 'block';
+    api('GET','/api/notifications').then(d => _renderNotifs(d.notifications||[]));
+  } else {
+    panel.style.display = 'none';
+  }
+}
+
+function _renderNotifs(list){
+  const el = document.getElementById('notif-list');
+  if(!el) return;
+  if(!list.length){
+    el.innerHTML = '<div style="text-align:center;padding:24px;color:var(--t3);font-size:13px">لا توجد إشعارات</div>';
+    return;
+  }
+  el.innerHTML = list.map(n => `
+    <div onclick="markNotifRead(${n.id})" style="padding:10px 16px;border-bottom:1px solid var(--border);cursor:pointer;background:${n.read?'#fff':'#eff6ff'};transition:background .2s"
+      onmouseover="this.style.background='#f0f7ff'" onmouseout="this.style.background='${n.read?'#fff':'#eff6ff'}'">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">
+        <div>
+          <div style="font-size:12px;font-weight:800;color:#1d4ed8">${n.action}</div>
+          <div style="font-size:11px;color:#475569;margin-top:2px">${n.details}</div>
+          <div style="font-size:10px;color:#94a3b8;margin-top:4px">👤 ${n.user} — ${n.time}</div>
+        </div>
+        ${!n.read?'<span style="width:8px;height:8px;background:#1d4ed8;border-radius:50%;flex-shrink:0;margin-top:4px"></span>':''}
+      </div>
+    </div>`).join('');
+}
+
+async function markNotifRead(id){
+  await api('POST','/api/notifications/read',{id});
+  _checkNotifs();
+}
+
+async function markAllNotifsRead(){
+  await api('POST','/api/notifications/read',{});
+  _checkNotifs();
+  const panel = document.getElementById('notif-panel');
+  if(panel) panel.style.display = 'none';
+}
+
+// إغلاق اللوحة عند النقر خارجها
+document.addEventListener('click', function(e){
+  const panel = document.getElementById('notif-panel');
+  const bell = document.getElementById('notif-bell-wrap');
+  if(panel && bell && !panel.contains(e.target) && !bell.contains(e.target)){
+    panel.style.display = 'none';
+  }
+});
+
 tryAutoLogin();</script>
+
+<!-- لوحة الإشعارات -->
+<div id="notif-panel" style="display:none;position:fixed;top:55px;left:16px;z-index:9999;width:340px;max-width:95vw;background:#fff;border:1.5px solid var(--border);border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.15);direction:rtl;overflow:hidden">
+  <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;background:#f8fafc">
+    <span style="font-weight:800;font-size:14px;color:#1d4ed8">🔔 الإشعارات</span>
+    <div style="display:flex;gap:8px">
+      <button onclick="markAllNotifsRead()" style="font-size:11px;color:#64748b;background:none;border:none;cursor:pointer;font-family:Cairo,sans-serif">تعليم الكل كمقروء</button>
+      <button onclick="document.getElementById('notif-panel').style.display='none'" style="background:none;border:none;cursor:pointer;font-size:16px;color:#64748b">✕</button>
+    </div>
+  </div>
+  <div id="notif-list" style="max-height:400px;overflow-y:auto;padding:8px 0"></div>
+</div>
 
 <!-- شريط إخباري لصيانة اليوم -->
 <div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1d4ed8,#1e3a5f);color:#fff;padding:8px 16px;font-family:'Cairo',sans-serif;font-size:13px;direction:rtl;box-shadow:0 -2px 12px rgba(0,0,0,.2);display:flex;align-items:center;gap:12px">
