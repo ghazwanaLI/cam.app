@@ -1065,6 +1065,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="أمر إداري">أمر إداري</option>
                 <option value="عام">عام</option>
               </select>
+              <div class="search-box">
+                <span class="si">🔍</span>
+                <input type="text" id="sq-circ" placeholder="بحث في التعاميم..." oninput="filterCirculars()" style="width:160px">
+              </div>
               <button class="btn btn-o btn-sm" onclick="loadCirculars()">🔄</button>
               <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
             </div>
@@ -4223,12 +4227,13 @@ async function loadCirculars(){
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
   const typeF=document.getElementById('f-circ-type')?.value||'';
+  const search=(document.getElementById('sq-circ')?.value||'').toLowerCase().trim();
   const myDist = CU?.role!=='admin'?CU?.district||'':'';
   let list=[...allCirculars].filter(c=>{
-    // المخول: يرى تعاميم قاطعه أو الموجهة للكل فقط
     if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
+    if(search&&!(c.title||'').toLowerCase().includes(search)&&!(c.body||'').toLowerCase().includes(search)&&!(c.type||'').includes(search)) return false;
     return true;
   }).sort((a,b)=>b.date>a.date?1:-1);
   const grid=document.getElementById('circulars-grid');
