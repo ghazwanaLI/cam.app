@@ -1220,7 +1220,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
-            <div class="sec-actions">
+            <div class="sec-actions" id="circ-sec-actions">
               <select class="fi btn-sm" id="f-circ-district" onchange="filterCirculars()" style="width:130px">
                 <option value="">كل القواطع</option>
               </select>
@@ -3590,6 +3590,8 @@ async function initApp(){
     });
     const circBtn=document.getElementById('btn-add-circ');
     if(circBtn) circBtn.style.display=CU?.role==='admin'?'inline-block':'none';
+    const circActions=document.getElementById('circ-sec-actions');
+    if(circActions) circActions.style.display=CU?.role==='admin'?'':'none';
   }
 
   try{
