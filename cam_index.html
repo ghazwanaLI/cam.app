@@ -34,6 +34,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 ::-webkit-scrollbar-thumb:hover{background:#94a3b8;}
 
 /* LOGIN */
+@keyframes popIn{from{opacity:0;transform:scale(.85)}to{opacity:1;transform:scale(1)}}
 .lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
   box-shadow:0 20px 60px rgba(0,0,0,.4);animation:up .5s cubic-bezier(.34,1.56,.64,1);}
 .licon{width:72px;height:72px;margin:0 auto 16px;
@@ -3567,6 +3568,11 @@ async function initApp(){
     if(dt) dt.textContent = CU.district||'';
     // تشغيل الإشعارات للمدير
     if(CU.role==='admin') startNotifPolling();
+    // polling التعاميم للمستخدمين كل 60 ثانية
+    if(CU.role!=='admin'){
+      clearInterval(window._circPollingTimer);
+      window._circPollingTimer=setInterval(loadCirculars,60000);
+    }
 
     const isAdmin = CU.role==='admin';
     ['nav-logs','admin-sect'].forEach(id=>{
@@ -3583,7 +3589,7 @@ async function initApp(){
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
     const circBtn=document.getElementById('btn-add-circ');
-    if(circBtn) circBtn.style.display='inline-block';  // مرئي للجميع
+    if(circBtn) circBtn.style.display=CU?.role==='admin'?'inline-block':'none';
   }
 
   try{
@@ -4513,15 +4519,58 @@ function openDistrictModal(){toast('إضافة القواطع من خلال إع
 // ══════════════════════════════════════════
 
 let allCirculars=[];
+let _lastCircCount=-1;
+let _shownCircIds=new Set(JSON.parse(localStorage.getItem('_shownCircIds')||'[]'));
+
 async function loadCirculars(){
   try{
     const d=await api('GET','/api/circulars');
+    const prevCount=allCirculars.length;
     allCirculars=d.circulars||[];
     renderCirculars();
     const unread=allCirculars.filter(c=>!(d.reads||[]).includes(c.id)).length;
     const badge=document.getElementById('circulars-badge');
     if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
+
+    // إشعار للمستخدمين بتعميم جديد
+    if(CU?.role!=='admin' && _lastCircCount>=0){
+      const newCircs=allCirculars.filter(c=>{
+        if(_shownCircIds.has(c.id)) return false;
+        const myDist=CU?.district||'';
+        return !myDist || c.district==='الكل' || c.district===myDist;
+      });
+      if(newCircs.length>0){
+        newCircs.forEach(c=>_shownCircIds.add(c.id));
+        localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
+        showCircularNotifPopup(newCircs[0]);
+      }
+    }
+    _lastCircCount=allCirculars.length;
   }catch(e){}
+}
+
+function showCircularNotifPopup(c){
+  const existing=document.getElementById('circ-notif-popup');
+  if(existing) existing.remove();
+  const typeColor={'تعميم':'#1d4ed8','تبليغ':'#d97706','أمر إداري':'#dc2626','عام':'#059669'};
+  const color=typeColor[c.type]||'#1d4ed8';
+  const ov=document.createElement('div');
+  ov.id='circ-notif-popup';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl';
+  ov.innerHTML=`
+    <div style="background:#fff;border-radius:20px;padding:28px 24px;width:360px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,.3);text-align:center;direction:rtl;animation:popIn .3s ease">
+      <div style="font-size:42px;margin-bottom:10px">📢</div>
+      <div style="font-size:11px;font-weight:700;color:${color};background:${color}18;border-radius:20px;padding:3px 12px;display:inline-block;margin-bottom:10px">${c.type||'تعميم'}</div>
+      <div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:8px;line-height:1.4">${c.title||''}</div>
+      ${c.body?`<div style="font-size:13px;color:#64748b;background:#f8fafc;border-radius:10px;padding:10px 14px;margin-bottom:12px;line-height:1.7;text-align:right">${c.body}</div>`:''}
+      <div style="font-size:11px;color:#94a3b8;margin-bottom:18px">📅 ${c.date||''} · ✍️ ${c.added_by||''}</div>
+      <div style="display:flex;gap:8px;justify-content:center">
+        <button onclick="markCircRead(${c.id});document.getElementById('circ-notif-popup').remove()" style="flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;padding:11px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer">✅ تم الاطلاع</button>
+        <button onclick="document.getElementById('circ-notif-popup').remove()" style="flex:1;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;padding:11px;font-family:Cairo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">لاحقاً</button>
+      </div>
+    </div>`;
+  document.body.appendChild(ov);
+  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
 }
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
