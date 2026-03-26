@@ -1216,7 +1216,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <option value="أخرى">أخرى</option>
               </select>
 
-              <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="printCodingList()">🖨️ قائمة</button>
+              <button class="btn btn-o btn-sm" onclick="printCodingForm()" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-weight:700">📄 استمارة</button>
               <button class="btn btn-o btn-sm" onclick="exportGoLabel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
@@ -5126,6 +5127,152 @@ function printInv(){
 }
 
 // ── طباعة ترميز الأجهزة ──
+// ── طباعة استمارة الترميز ──
+function printCodingForm(){
+  // اختر الجهاز المحدد أو الأول في القائمة
+  const distF=document.getElementById('f-coding-district')?.value||'';
+  let list=allCoding.filter(d=>!distF||d.district===distF);
+  if(!list.length){toast('لا توجد بيانات','err');return;}
+
+  // بناء استمارة لكل جهاز
+  const today=new Date().toLocaleDateString('ar-IQ');
+
+  function buildForm(d,idx){
+    const nvrs=d.nvrs||[];
+    const hdds=d.hdds||[];
+    const others=d.others||[];
+
+    // بناء شبكة DVR/NVR — حتى 4
+    const dvrRows=[];
+    for(let i=0;i<4;i+=2){
+      const l=nvrs[i]||{};const r=nvrs[i+1]||{};
+      dvrRows.push(`<tr>
+        <td class="lb">S/N DVR${i+1}</td><td class="val">${l.serial||''}</td>
+        <td class="lb">S/N DVR${i+2}</td><td class="val">${r.serial||''}</td>
+      </tr>`);
+    }
+
+    // بناء شبكة HDD — حتى 16
+    const hddRows=[];
+    for(let i=0;i<16;i+=2){
+      const l=hdds[i]||{};const r=hdds[i+1]||{};
+      hddRows.push(`<tr>
+        <td class="lb">HDD${i+1}</td><td class="val">${l.serial||''}</td>
+        <td class="lb">HDD${i+2}</td><td class="val">${r.serial||''}</td>
+      </tr>`);
+    }
+
+    // بناء شبكة SWITCH — حتى 10
+    const swRows=[];
+    const switches=others.filter(o=>(o.type||'').includes('SWITCH')||o.serial);
+    for(let i=0;i<10;i+=2){
+      const l=switches[i]||{};const r=switches[i+1]||{};
+      swRows.push(`<tr>
+        <td class="lb">SWITCH ${i+1}</td><td class="val">${l.serial||''}</td>
+        <td class="lb">SWITCH ${i+2}</td><td class="val">${r.serial||''}</td>
+      </tr>`);
+    }
+
+    const nvrType=nvrs.length?'NVR':'DVR';
+    return `
+    <div class="form-page" ${idx>0?'style="page-break-before:always"':''}>
+      <!-- رأس الاستمارة -->
+      <div class="header-row">
+        <div class="header-right">
+          <div class="co-name">شركة توزيع المنتجات النفطية</div>
+          <div class="co-sub">وحدة تقنية الكاميرات</div>
+        </div>
+        <div class="header-left">
+          <div class="meta-row"><span>العـدد :</span><span class="meta-val">${d.code||''}</span></div>
+          <div class="meta-row"><span>التاريخ :</span><span class="meta-val">${d.install_date||today}</span></div>
+        </div>
+      </div>
+
+      <!-- معلومات المحطة -->
+      <table class="info-table">
+        <tr>
+          <td class="lb" style="width:80px">اسم المحطة</td>
+          <td class="val">${d.station_name||'—'}</td>
+          <td class="lb" style="width:80px">رقم التسلسل</td>
+          <td class="val">${d.code||''}</td>
+          <td class="lb" style="width:60px">قاطع</td>
+          <td class="val">${d.district||'—'}</td>
+        </tr>
+        <tr>
+          <td class="lb">الصنف</td>
+          <td class="val">${nvrType}</td>
+          <td class="lb">نوع DVR OR NVR</td>
+          <td class="val">${nvrType}</td>
+          <td class="lb">عدد الكاميرات</td>
+          <td class="val">${d.cam_total||nvrs.reduce((a,n)=>a+(+n.num||0),0)||'—'}</td>
+        </tr>
+      </table>
+
+      <!-- DVR/NVR -->
+      <table class="data-table">
+        ${dvrRows.join('')}
+      </table>
+
+      <!-- HDD -->
+      <div class="section-title">الهاردات</div>
+      <table class="data-table">
+        ${hddRows.join('')}
+      </table>
+
+      <!-- SWITCH -->
+      <div class="section-title">السويتشات</div>
+      <table class="data-table">
+        ${swRows.join('')}
+      </table>
+
+      <!-- التوقيعات -->
+      <div class="sigs">
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <div class="sig-label">مسؤول وحدة الكاميرات</div>
+        </div>
+        <div class="sig-box">
+          <div class="sig-line"></div>
+          <div class="sig-label">مخول المحطة</div>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;padding:10px;font-size:12px;direction:rtl}
+    .form-page{padding:16px;border:1px solid #999;margin-bottom:20px}
+    .header-row{display:flex;justify-content:space-between;align-items:center;border-bottom:2px solid #333;padding-bottom:10px;margin-bottom:12px}
+    .co-name{font-size:16px;font-weight:900;color:#1a1a1a;text-align:center}
+    .co-sub{font-size:13px;font-weight:700;text-align:center;color:#333}
+    .header-left{text-align:right}
+    .meta-row{display:flex;gap:8px;margin-bottom:4px;font-size:12px}
+    .meta-val{border-bottom:1px solid #333;min-width:120px;font-weight:700}
+    .info-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+    .data-table{width:100%;border-collapse:collapse;margin-bottom:8px}
+    .lb{background:#f0f0f0;font-weight:700;padding:4px 6px;border:1px solid #aaa;white-space:nowrap;font-size:11px}
+    .val{border:1px solid #aaa;padding:4px 6px;min-height:22px;font-family:monospace;font-size:11px}
+    .section-title{font-weight:800;margin:6px 0 2px;font-size:11px;color:#333}
+    .sigs{display:flex;justify-content:space-between;margin-top:20px;gap:30px}
+    .sig-box{flex:1;text-align:center}
+    .sig-line{border-bottom:1px solid #333;margin:30px 10px 4px}
+    .sig-label{font-size:11px;font-weight:700}
+    .no-print{margin-bottom:12px;display:flex;gap:8px}
+    @media print{.no-print{display:none!important}@page{margin:8mm}}
+  </style></head><body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
+    <span style="font-size:12px;color:#64748b;margin-right:10px">عدد الاستمارات: ${list.length}</span>
+  </div>
+  ${list.map((d,i)=>buildForm(d,i)).join('')}
+  </body></html>`);
+  w.document.close();
+}
+
 function printCodingList(){
   const list=[...allCoding];
   if(!list.length){toast('لا توجد بيانات','err');return;}
