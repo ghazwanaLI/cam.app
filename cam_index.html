@@ -2525,6 +2525,8 @@ function openCodingType(type){
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   // فلتر المحطات حسب النوع
   _codingStationType=type;
+  // إعادة تعيين اختيار المحطة
+  document.getElementById('coding-station').innerHTML='<option value="">— اختر المحطة —</option>';
   filterCodingStations();
   resetRows([],[],[]);
   document.getElementById('ov-coding').classList.add('open');
@@ -2777,7 +2779,13 @@ function filterCodingStations(){
   const dist=document.getElementById('coding-district').value;
   const sel=document.getElementById('coding-station');
   sel.innerHTML='<option value="">— اختر المحطة —</option>';
-  allStations.filter(s=>(!dist||s.district===dist)&&(!_codingStationType||s.type===_codingStationType||!s.type)).forEach(s=>{
+  // تحويل gov/priv إلى حكومية/أهلية للمقارنة
+  const stType=_codingStationType==='gov'?'حكومية':_codingStationType==='priv'?'أهلية':null;
+  allStations.filter(s=>{
+    if(dist && s.district!==dist) return false;
+    if(stType && s.type!==stType) return false;
+    return true;
+  }).forEach(s=>{
     const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
   });
 }
