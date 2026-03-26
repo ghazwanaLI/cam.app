@@ -757,10 +757,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div id="tab-tours" style="display:block">
         <div class="section">
           <div class="sec-hdr" style="flex-wrap:nowrap">
-            <button onclick="openCodingModal()" id="btn-add-coding"
-              style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:12px;padding:9px 22px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 3px 12px rgba(8,145,178,.3);display:none;flex-shrink:0;order:-1">
-              ➕ إضافة ترميز
-            </button>
             <div class="sec-actions">
               <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-tours" placeholder="بحث..." oninput="filterTours()"></div>
               <select class="fi btn-sm" id="f-tour-district" onchange="filterTours()" style="width:120px">
@@ -3419,7 +3415,7 @@ async function initApp(){
     // التقارير مرئية للجميع لكن مصفّاة بالقاطع
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
     ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
-      const e=document.getElementById(id); if(e) e.style.display=can('edit')?'':'none';
+      const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
     const circBtn=document.getElementById('btn-add-circ');
     if(circBtn) circBtn.style.display='';  // مرئي للجميع
