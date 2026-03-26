@@ -1221,9 +1221,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <button class="btn btn-o btn-sm" onclick="exportGoLabel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
               <button class="btn btn-o btn-sm" onclick="loadCoding()">🔄</button>
             </div>
-            <div style="display:flex;align-items:center;gap:8px">
+            <div style="display:flex;align-items:center;justify-content:space-between;width:100%">
               <div class="sec-title"><div class="sdot" style="background:#0891b2"></div>🏷️ ترميز الأجهزة</div>
-              <button class="btn btn-p btn-sm" onclick="openCodingModal()" id="btn-add-coding" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">➕ إضافة ترميز</button>
+              <button onclick="openCodingModal()" id="btn-add-coding" style="background:linear-gradient(135deg,#0891b2,#06b6d4);color:#fff;border:none;border-radius:12px;padding:10px 22px;font-family:Cairo,sans-serif;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(8,145,178,.35);transition:all .2s;display:none" onmouseover="this.style.transform='translateY(-1px)'" onmouseout="this.style.transform='none'">➕ إضافة ترميز</button>
             </div>
           </div>
           <div style="padding:14px" id="coding-grid">
