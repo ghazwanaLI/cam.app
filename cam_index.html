@@ -1921,9 +1921,24 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- CODING MODAL -->
 <div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
-  <div class="modal" style="width:600px;max-height:90vh;overflow-y:auto">
+  <div class="modal" style="width:620px;max-height:92vh;overflow-y:auto">
     <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
     <input type="hidden" id="coding-eid">
+
+    <!-- تبويبات حكومي / أهلي -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:14px">
+      <button id="coding-tab-gov" onclick="switchCodingType('gov')"
+        style="flex:1;padding:9px;border:none;background:#eff6ff;color:#1d4ed8;font-family:Cairo,sans-serif;font-size:13px;font-weight:800;cursor:pointer;border-bottom:3px solid #1d4ed8">
+        🏛️ حكومي
+      </button>
+      <button id="coding-tab-priv" onclick="switchCodingType('priv')"
+        style="flex:1;padding:9px;border:none;background:#fff;color:#94a3b8;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent">
+        🏪 أهلي
+      </button>
+    </div>
+    <input type="hidden" id="coding-station-type" value="gov">
+
+    <!-- الحقول المشتركة -->
     <div class="fgrid">
       <div class="fg"><label class="fl">رقم الموقع *</label>
         <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-TK-001">
@@ -1952,9 +1967,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="صيانة">🔧 صيانة</option>
         </select>
       </div>
+    </div>
 
+    <!-- محتوى حكومي -->
+    <div id="coding-gov-content">
       <!-- NVR -->
-      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03)">
+      <div id="coding-nvr-section" class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03);margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
           <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
@@ -1962,9 +1980,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
         <div id="nvr-rows"></div>
       </div>
-
       <!-- HDD -->
-      <div class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03)">
+      <div id="coding-hdd-section" class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03);margin-bottom:10px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
           <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
           <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
@@ -1972,14 +1989,22 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
         <div id="hdd-rows"></div>
       </div>
-
       <!-- أجهزة أخرى -->
-      <div class="fg full" style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:12px;background:rgba(124,58,237,.02)">
+      <div class="fg full" style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:12px;background:rgba(124,58,237,.02);margin-bottom:10px">
         <div style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:10px">🔌 أجهزة أخرى</div>
         <div style="display:flex;flex-direction:column;gap:8px" id="other-rows"></div>
         <button type="button" onclick="addOtherRow()" class="btn btn-o btn-sm" style="margin-top:6px">➕ إضافة جهاز</button>
       </div>
+    </div>
 
+    <!-- محتوى أهلي -->
+    <div id="coding-priv-content" style="display:none">
+      <div style="background:#fef3c7;border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:14px;margin-bottom:10px;color:#92400e;font-size:13px;font-weight:600">
+        🏪 المحطة الأهلية — يُسجَّل الرمز والقاطع والمحطة وعدد الكاميرات والحالة فقط
+      </div>
+    </div>
+
+    <div class="fgrid">
       <div class="fg full"><label class="fl">ملاحظات</label>
         <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
       </div>
@@ -2348,6 +2373,7 @@ function can(p){if(!CU)return false;if(CU.role==='admin')return true;return!!CU.
 
 // ── CODING ──
 let allCoding=[];
+let _codingStationType="حكومية";
 let nvrCount=0, hddCount=0;
 
 async function loadCoding(){
@@ -2414,19 +2440,69 @@ function renderCoding(){
 
 function filterCoding(){ renderCoding(); }
 
+function switchCodingType(type){
+  document.getElementById('coding-station-type').value=type;
+  const isGov = type==='gov';
+  // تبويبات
+  document.getElementById('coding-tab-gov').style.cssText='flex:1;padding:9px;border:none;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;'+(isGov?'background:#eff6ff;color:#1d4ed8;font-weight:800;border-bottom:3px solid #1d4ed8':'background:#fff;color:#94a3b8;font-weight:600;border-bottom:3px solid transparent');
+  document.getElementById('coding-tab-priv').style.cssText='flex:1;padding:9px;border:none;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer;'+(isGov?'background:#fff;color:#94a3b8;font-weight:600;border-bottom:3px solid transparent':'background:#fef3c7;color:#d97706;font-weight:800;border-bottom:3px solid #f59e0b');
+  // المحتوى
+  document.getElementById('coding-gov-content').style.display=isGov?'':'none';
+  document.getElementById('coding-priv-content').style.display=isGov?'none':'';
+}
+
 function openCodingModal(){
-  document.getElementById('coding-ttl').textContent='ترميز موقع جديد';
+  // عرض نافذة اختيار النوع أولاً
+  let sel=document.getElementById('ov-coding-sel');
+  if(!sel){
+    sel=document.createElement('div');
+    sel.id='ov-coding-sel';
+    sel.className='overlay';
+    sel.onclick=function(e){if(e.target===sel)sel.classList.remove('open');};
+    sel.innerHTML=`<div class="modal modal-sm" style="max-width:380px;text-align:center">
+      <div class="m-title" style="justify-content:center">🏷️ نوع المحطة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+        <div onclick="openCodingType('حكومية')" style="cursor:pointer;border:2px solid #1d4ed8;border-radius:14px;padding:20px 10px;background:#eff6ff;transition:all .2s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+          <div style="font-size:30px;margin-bottom:8px">🏛️</div>
+          <div style="font-weight:800;color:#1d4ed8;font-size:15px">حكومية</div>
+        </div>
+        <div onclick="openCodingType('أهلية')" style="cursor:pointer;border:2px solid #f59e0b;border-radius:14px;padding:20px 10px;background:#fffbeb;transition:all .2s" onmouseover="this.style.background='#fef3c7'" onmouseout="this.style.background='#fffbeb'">
+          <div style="font-size:30px;margin-bottom:8px">🏪</div>
+          <div style="font-weight:800;color:#d97706;font-size:15px">أهلية</div>
+        </div>
+      </div>
+      <button class="btn btn-o" onclick="document.getElementById('ov-coding-sel').classList.remove('open')">إلغاء</button>
+    </div>`;
+    document.body.appendChild(sel);
+  }
+  sel.classList.add('open');
+}
+
+function openCodingType(type){
+  document.getElementById('ov-coding-sel').classList.remove('open');
+  // إعداد النموذج
+  document.getElementById('coding-ttl').textContent='ترميز موقع جديد — '+(type==='حكومية'?'🏛️ حكومي':'🏪 أهلي');
   document.getElementById('coding-eid').value='';
   ['coding-code','coding-location','coding-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('coding-status').value='يعمل';
+  switchCodingType('gov');
   const camCount=document.getElementById('coding-cam-count');
   if(camCount) camCount.value=0;
+  // NVR/HDD rows
+  const nvrSection=document.getElementById('coding-nvr-section');
+  const hddSection=document.getElementById('coding-hdd-section');
+  if(nvrSection) nvrSection.style.display=type==='حكومية'?'':'none';
+  if(hddSection) hddSection.style.display=type==='حكومية'?'':'none';
+  // تخزين النوع
+  document.getElementById('coding-eid').dataset.stationType=type;
   const ds=document.getElementById('coding-district');
   ds.innerHTML='<option value="">— اختر القاطع —</option>';
   const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:(CU?.role!=='admin'&&CU?.districts?.length?CU.districts:DISTRICTS_LIST);
   dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  // فلتر المحطات حسب النوع
+  _codingStationType=type;
   filterCodingStations();
   resetRows([],[],[]);
   document.getElementById('ov-coding').classList.add('open');
@@ -2450,6 +2526,7 @@ async function saveCoding(){
     install_date: document.getElementById('coding-install-date')?.value||new Date().toISOString().split('T')[0],
     status: document.getElementById('coding-status')?.value||'يعمل',
     notes: (document.getElementById('coding-notes')?.value||'').trim(),
+    station_type: document.getElementById('coding-station-type')?.value||'gov',
     cam_total: parseInt(document.getElementById('coding-cam-count')?.value)||0,
     nvrs: getNvrs(),
     hdds: getHdds(),
@@ -2487,6 +2564,7 @@ function editCoding(id){
   document.getElementById('coding-status').value=d.status||'يعمل';
   const camCount=document.getElementById('coding-cam-count');
   if(camCount) camCount.value=d.cam_total||0;
+  switchCodingType(d.station_type||'gov');
   const ds=document.getElementById('coding-district');
   ds.innerHTML='<option value="">— اختر —</option>';
   DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
@@ -2673,7 +2751,7 @@ function filterCodingStations(){
   const dist=document.getElementById('coding-district').value;
   const sel=document.getElementById('coding-station');
   sel.innerHTML='<option value="">— اختر المحطة —</option>';
-  allStations.filter(s=>!dist||s.district===dist).forEach(s=>{
+  allStations.filter(s=>(!dist||s.district===dist)&&(!_codingStationType||s.type===_codingStationType||!s.type)).forEach(s=>{
     const o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);
   });
 }
