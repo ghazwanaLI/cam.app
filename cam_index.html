@@ -419,6 +419,171 @@ tr:hover td{background:rgba(30,58,95,.03);}
   #maint-ticker-bar{padding-bottom:calc(7px + env(safe-area-inset-bottom))!important;}
 }
 
+/* ══════════════════════════════════════════
+   تحسينات الهواتف واللوحيات الإضافية
+══════════════════════════════════════════ */
+
+/* لوحي 768px */
+@media(max-width:768px){
+  .modal,.modal-sm,.modal-lg{width:96vw!important;max-width:96vw!important;max-height:92vh!important;border-radius:16px!important;}
+  .fgrid{grid-template-columns:1fr!important;}
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important;}
+  table{min-width:480px;}
+  .search-box input{width:130px!important;}
+  .sc{padding:10px 8px!important;}
+  .sc-val{font-size:22px!important;}
+}
+
+/* هاتف 480px */
+@media(max-width:480px){
+  .main{margin-top:96px!important;}
+  .content{padding:6px 6px 78px!important;}
+  .tb-name{font-size:11px!important;}
+  .su-name,.su-district,.tb-ver,.su-role{display:none!important;}
+  .tb-ico{width:26px!important;height:26px!important;font-size:14px!important;}
+  .su-av{width:24px!important;height:24px!important;}
+  .topbar-logo{padding:5px 8px!important;}
+  .tb-actions{gap:3px!important;}
+  .tb-btn{padding:4px 7px!important;font-size:10px!important;}
+  .nav-item{padding:7px 8px!important;font-size:10px!important;}
+  .nav-item b{display:none;}
+  .ni{font-size:16px!important;}
+  .stats-grid{grid-template-columns:1fr 1fr!important;gap:6px!important;}
+  .sc{padding:8px 6px!important;border-radius:10px!important;}
+  .sc-val{font-size:20px!important;}
+  .sc-lbl{font-size:9px!important;}
+  .sc-icon{font-size:16px!important;}
+  table{min-width:360px!important;font-size:10px!important;}
+  th,td{padding:5px 6px!important;font-size:10px!important;}
+  .snum{width:16px;height:16px;font-size:9px;}
+  .modal{padding:10px!important;border-radius:12px!important;}
+  .fi{padding:7px 8px!important;font-size:12px!important;}
+  .m-title{font-size:12px!important;}
+  .m-footer .btn{padding:8px 12px!important;font-size:12px!important;}
+  .sec-hdr{padding:7px 9px!important;gap:5px!important;flex-wrap:wrap!important;}
+  .sec-title{font-size:11px!important;}
+  .sec-actions .btn-sm{padding:4px 6px!important;font-size:10px!important;}
+  .badge{padding:2px 5px;font-size:9px;}
+  .db{padding:2px 6px;font-size:9px;}
+  #circulars-grid > div{padding:8px 10px!important;margin-bottom:5px!important;}
+}
+
+/* صغير جداً 360px */
+@media(max-width:360px){
+  .modal,.modal-sm,.modal-lg{width:99vw!important;border-radius:10px!important;}
+  .stats-grid{gap:4px!important;}
+  .sc-val{font-size:18px!important;}
+  table{min-width:300px!important;}
+  .nav-item{padding:6px 7px!important;}
+}
+
+/* ══════════════════════════════════════════
+   تحسينات الهواتف واللوحيات
+══════════════════════════════════════════ */
+
+/* لوحي كبير 768-1024 */
+@media(max-width:1024px){
+  .modal{width:90vw!important;max-width:90vw!important;}
+  .fgrid{grid-template-columns:1fr 1fr;}
+  .sec-actions{flex-wrap:wrap;gap:6px;}
+}
+
+/* لوحي صغير / هاتف كبير 600-768 */
+@media(max-width:768px){
+  /* شريط التنقل أفقي مع تمرير */
+  .topbar{position:fixed;top:0;left:0;right:0;z-index:1000;}
+  .main{margin-top:110px!important;}
+
+  /* ألواح الإحصاء: 2 في كل صف */
+  .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important;}
+  #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
+
+  /* الجداول قابلة للتمرير */
+  .table-wrap,.section{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  table{min-width:480px;}
+
+  /* النوافذ المنبثقة ملء الشاشة تقريباً */
+  .modal,.modal-sm,.modal-lg{
+    width:96vw!important;max-width:96vw!important;
+    max-height:92vh!important;
+    border-radius:16px!important;
+  }
+  .fgrid{grid-template-columns:1fr!important;}
+
+  /* أزرار الأقسام أصغر */
+  .sec-actions{gap:5px;flex-wrap:wrap;}
+  .sec-actions .btn{font-size:11px;padding:5px 8px;}
+  .sec-actions .fi{font-size:11px;padding:6px 8px;}
+
+  /* شريط البحث */
+  .search-box input{width:130px!important;}
+
+  /* بطاقات الإحصاء */
+  .sc{padding:10px 8px!important;}
+  .sc-val{font-size:22px!important;}
+}
+
+/* هاتف عادي 480-600 */
+@media(max-width:480px){
+  .main{margin-top:96px!important;}
+  .content{padding:6px 6px 78px!important;}
+
+  /* شريط علوي مضغوط جداً */
+  .tb-name{font-size:11px!important;}
+  .su-name,.su-district,.tb-ver,.su-role{display:none!important;}
+  .tb-ico{width:26px!important;height:26px!important;font-size:14px!important;}
+  .su-av{width:24px!important;height:24px!important;}
+  .topbar-logo{padding:5px 8px!important;}
+  .tb-actions{gap:3px!important;}
+  .tb-btn{padding:4px 7px!important;font-size:10px!important;}
+
+  /* تبويبات ضيقة */
+  .nav-item{padding:7px 8px!important;font-size:10px!important;}
+  .nav-item b{display:none;}
+  .ni{font-size:16px!important;}
+
+  /* إحصاءات 2×2 مضغوطة */
+  .stats-grid{grid-template-columns:1fr 1fr!important;gap:6px!important;}
+  .sc{padding:8px 6px!important;border-radius:10px!important;}
+  .sc-val{font-size:20px!important;}
+  .sc-lbl{font-size:9px!important;}
+  .sc-icon{font-size:16px!important;}
+
+  /* جداول */
+  table{min-width:360px!important;font-size:10px!important;}
+  th,td{padding:5px 6px!important;font-size:10px!important;}
+  .snum{width:16px;height:16px;font-size:9px;}
+
+  /* نماذج الإدخال */
+  .modal{padding:10px!important;border-radius:12px!important;}
+  .fi{padding:7px 8px!important;font-size:12px!important;}
+  .m-title{font-size:12px!important;}
+  .m-footer .btn{padding:8px 12px!important;font-size:12px!important;}
+
+  /* أزرار الأقسام — أيقونات فقط */
+  .sec-hdr{padding:7px 9px!important;gap:5px!important;flex-wrap:wrap!important;}
+  .sec-title{font-size:11px!important;}
+  .sec-actions .btn-sm{padding:4px 6px!important;font-size:10px!important;}
+
+  /* البادجات */
+  .badge{padding:2px 5px;font-size:9px;}
+  .db{padding:2px 6px;font-size:9px;}
+  .nbadge{font-size:9px;padding:1px 5px;}
+
+  /* تعاميم */
+  #circulars-grid > div{padding:8px 10px!important;margin-bottom:5px!important;}
+}
+
+/* أصغر الهواتف ≤ 360 */
+@media(max-width:360px){
+  .modal,.modal-sm,.modal-lg{width:99vw!important;border-radius:10px!important;}
+  .stats-grid{gap:4px!important;}
+  .sc-val{font-size:18px!important;}
+  table{min-width:320px!important;}
+  .topbar-nav{padding:0 4px!important;}
+  .nav-item{padding:6px 7px!important;}
+}
+
 /* LOGIN */
 #login-screen{display:none!important;}
 .lbox{width:420px;max-width:95vw;background:#fff;border-radius:24px;padding:44px 40px;
