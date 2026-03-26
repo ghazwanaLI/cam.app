@@ -1942,6 +1942,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg"><label class="fl">تاريخ التركيب</label>
         <input class="fi" id="coding-install-date" type="date">
       </div>
+      <div class="fg"><label class="fl">عدد الكاميرات 📷</label>
+        <input class="fi" id="coding-cam-count" type="number" min="0" value="0" placeholder="0">
+      </div>
       <div class="fg"><label class="fl">الحالة</label>
         <select class="fi" dir="rtl" id="coding-status">
           <option value="يعمل">✅ يعمل</option>
@@ -2443,6 +2446,7 @@ async function saveCoding(){
     install_date: document.getElementById('coding-install-date')?.value||new Date().toISOString().split('T')[0],
     status: document.getElementById('coding-status')?.value||'يعمل',
     notes: (document.getElementById('coding-notes')?.value||'').trim(),
+    cam_total: parseInt(document.getElementById('coding-cam-count')?.value)||0,
     nvrs: getNvrs(),
     hdds: getHdds(),
     others: getOthers(),
@@ -2477,6 +2481,8 @@ function editCoding(id){
   document.getElementById('coding-notes').value=d.notes||'';
   document.getElementById('coding-install-date').value=d.install_date||'';
   document.getElementById('coding-status').value=d.status||'يعمل';
+  const camCount=document.getElementById('coding-cam-count');
+  if(camCount) camCount.value=d.cam_total||0;
   const ds=document.getElementById('coding-district');
   ds.innerHTML='<option value="">— اختر —</option>';
   DISTRICTS_LIST.forEach(dist=>{const o=document.createElement('option');o.value=dist;o.textContent=dist;ds.appendChild(o);});
@@ -5206,7 +5212,7 @@ function printCodingForm(){
           <td class="lb">نوع DVR OR NVR</td>
           <td class="val">${nvrType}</td>
           <td class="lb">عدد الكاميرات</td>
-          <td class="val">${d.cam_total||nvrs.reduce((a,n)=>a+(+n.num||0),0)||'—'}</td>
+          <td class="val">${d.cam_total||0}</td>
         </tr>
       </table>
 
