@@ -2383,6 +2383,7 @@ function renderCoding(){
       <th style="padding:10px 12px;text-align:right">القاطع</th>
       <th style="padding:10px 12px;text-align:right">تاريخ التركيب</th>
       <th style="padding:10px 12px;text-align:right">NVR/HDDs</th>
+      <th style="padding:10px 12px;text-align:center">📷 الكاميرات</th>
       <th style="padding:10px 12px;text-align:center">الحالة</th>
       <th style="padding:10px 12px;text-align:center">إجراءات</th>
     </tr></thead>
@@ -2398,6 +2399,7 @@ function renderCoding(){
         ${(d.hdds||[]).length?` | HDD: ${d.hdds.length}`:''}
         ${!(d.nvrs||[]).length&&!(d.hdds||[]).length?'—':''}
       </td>
+      <td style="padding:9px 12px;text-align:center;font-weight:700;color:#0891b2">${d.cam_total||0} 📷</td>
       <td style="padding:9px 12px;text-align:center">
         <span class="badge ${d.status==='يعمل'?'b-ok':d.status==='معطل'?'b-bad':'b-warn'}">${d.status||'—'}</span>
       </td>
@@ -2418,6 +2420,8 @@ function openCodingModal(){
   ['coding-code','coding-location','coding-notes'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
   document.getElementById('coding-install-date').value=new Date().toISOString().split('T')[0];
   document.getElementById('coding-status').value='يعمل';
+  const camCount=document.getElementById('coding-cam-count');
+  if(camCount) camCount.value=0;
   const ds=document.getElementById('coding-district');
   ds.innerHTML='<option value="">— اختر القاطع —</option>';
   const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:(CU?.role!=='admin'&&CU?.districts?.length?CU.districts:DISTRICTS_LIST);
