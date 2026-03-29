@@ -1120,25 +1120,22 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <span id="inv-cam-count" style="background:#16a34a;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
           </div>
           <div class="table-wrap" style="padding:8px 0 0">
-            <table id="inv-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0">
+            <table id="inv-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:collapse">
               <colgroup>
-                <col style="width:44px">
-                <col>
-                <col style="width:120px">
-                <col style="width:85px">
-                <col style="width:85px">
-                <col style="width:95px">
-                <col style="width:150px">
+                <col style="width:40px"><col><col style="width:110px">
+                <col style="width:75px"><col style="width:75px">
+                <col style="width:90px"><col style="width:130px"><col style="width:80px">
               </colgroup>
               <thead>
                 <tr style="background:#166534;color:#fff">
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">#</th>
-                  <th style="padding:10px 14px;text-align:right;font-size:12px;font-weight:700;border-left:1px solid #14532d">اسم المحطة</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">نوع الكاميرا</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">عدد الداخلية 🏠</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">عدد الخارجية 🌐</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">حجم العدسة</th>
-                  <th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700">الملاحظات</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">التسلسل</th>
+                  <th style="padding:9px 12px;text-align:right;border:1px solid #14532d;font-size:11px">اسم المحطة</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">نوع الكاميرا</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:10px">عدد الداخلية</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:10px">عدد الخارجية</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">حجم العدسة</th>
+                  <th style="padding:9px 12px;text-align:right;border:1px solid #14532d;font-size:11px">الملاحظات</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">إجراءات</th>
                 </tr>
               </thead>
               <tbody id="inv-tb"></tbody>
@@ -1152,28 +1149,24 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <span id="inv-dvr-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
           </div>
           <div class="table-wrap" style="padding:8px 0 0">
-            <table id="inv-dvr-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0">
+            <table id="inv-dvr-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:collapse">
               <colgroup>
-                <col style="width:44px">
-                <col>
-                <col style="width:120px">
-                <col style="width:85px">
-                <col style="width:130px">
-                <col style="width:85px">
-                <col style="width:110px">
-                <col style="width:140px">
+                <col style="width:40px"><col><col style="width:120px">
+                <col style="width:80px"><col style="width:130px">
+                <col style="width:80px"><col style="width:115px">
+                <col style="width:130px"><col style="width:80px">
               </colgroup>
               <thead>
                 <tr style="background:#1e3a8a;color:#fff">
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">#</th>
-                  <th style="padding:10px 14px;text-align:right;font-size:12px;font-weight:700;border-left:1px solid #1e40af">اسم المحطة</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">نوع الجهاز</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">طريقة الربط</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">حجم التخزين</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">فترة التخزين</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">مصدر الطاقة الكهربائية</th>
-                  <th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700">الملاحظات</th>
-                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;width:80px">إجراءات</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">التسلسل</th>
+                  <th style="padding:9px 12px;text-align:right;border:1px solid #1e40af;font-size:11px">اسم المحطة</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">نوع الجهاز</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">طريقة الربط</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">حجم التخزين</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">فترة التخزين</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:10px">مصدر الطاقة</th>
+                  <th style="padding:9px 12px;text-align:right;border:1px solid #1e40af;font-size:11px">الملاحظات</th>
+                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">إجراءات</th>
                 </tr>
               </thead>
               <tbody id="inv-dvr-tb"></tbody>
