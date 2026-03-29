@@ -5768,54 +5768,122 @@ function printInv(){
   const list=[...allInventory].filter(x=>!filterDist||x.district===filterDist);
   if(!list.length){toast('لا توجد بيانات','err');return;}
 
-  const camRows=list.map((x,i)=>`<tr>
-    <td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td>
-    <td>${x.cam_spec||'—'}</td><td style="text-align:center">${x.cam_count||0}</td>
-    <td style="text-align:center">—</td><td>${x.cam_res||'—'}</td>
-    <td style="color:#475569">${x.notes||''}</td>
-  </tr>`).join('');
+  const now=new Date();
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dateStr=now.toLocaleDateString('ar-IQ');
+  const totalCams=list.reduce((a,x)=>a+(+x.cam_count||0),0);
 
-  const dvrRows=list.map((x,i)=>`<tr>
-    <td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td>
-    <td>${x.dvr_model||x.dvr_spec||'—'}</td><td style="text-align:center">شبكة</td>
-    <td style="text-align:center">${x.hdd_size?x.hdd_size+' TB / '+x.hdd_count+' قطعة':'—'}</td>
-    <td style="text-align:center">—</td><td style="text-align:center">كهرباء المحطة</td>
-    <td style="color:#475569">${x.notes||''}</td>
-  </tr>`).join('');
+  const camRows=list.map((x,i)=>`
+    <tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${x.station_name||'—'}</td>
+      <td style="text-align:center">${x.cam_spec||'—'}</td>
+      <td style="text-align:center">${x.cam_count||0}</td>
+      <td style="text-align:center">—</td>
+      <td style="text-align:center">${x.cam_res||'—'}</td>
+    </tr>`).join('');
 
-  const html=`
-    <h3 style="text-align:center;margin-bottom:6px">جرد الكاميرات والأجهزة${filterDist?' — '+filterDist:''}</h3>
-    <p style="text-align:center;font-size:11px;color:#555;margin-bottom:12px">
-      شركة توزيع المنتجات النفطية / فرع صلاح الدين — ${new Date().toLocaleDateString('ar-IQ')}
-    </p>
-    <div style="font-weight:800;font-size:12px;background:#16a34a;color:#fff;padding:5px 10px;border-radius:4px 4px 0 0">📷 جدول الكاميرات</div>
-    <table>
-      <thead><tr>
-        <th style="width:30px">#</th><th>المحطة</th><th style="width:80px">القاطع</th>
-        <th>نوع الكاميرا</th><th style="width:65px">عدد الداخلية</th>
-        <th style="width:65px">عدد الخارجية</th><th style="width:80px">حجم العدسة</th><th>ملاحظات</th>
-      </tr></thead>
-      <tbody>${camRows}</tbody>
-      <tfoot><tr style="background:#f0fdf4;font-weight:700">
-        <td colspan="3" style="text-align:center">المجموع</td><td></td>
-        <td style="text-align:center">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
-        <td>—</td><td></td><td></td>
-      </tr></tfoot>
-    </table>
-    <div style="height:20px"></div>
-    <div style="font-weight:800;font-size:12px;background:#1d4ed8;color:#fff;padding:5px 10px;border-radius:4px 4px 0 0">🎥 جدول أجهزة التسجيل الفيديوي</div>
-    <table>
-      <thead><tr>
-        <th style="width:30px">#</th><th>المحطة</th><th style="width:80px">القاطع</th>
-        <th>نوع الجهاز</th><th style="width:75px">طريقة الربط</th>
-        <th>حجم التخزين</th><th style="width:75px">فترة التخزين</th>
-        <th>مصدر الطاقة</th><th>ملاحظات</th>
-      </tr></thead>
-      <tbody>${dvrRows}</tbody>
-    </table>
-    <div style="margin-top:8px;font-size:11px;color:#64748b;text-align:center">إجمالي المحطات: ${list.length}</div>`;
+  const dvrRows=list.map((x,i)=>`
+    <tr>
+      <td style="text-align:center">${i+1}</td>
+      <td>${x.station_name||'—'}</td>
+      <td style="text-align:center">${x.dvr_model||x.dvr_spec||'—'}</td>
+      <td style="text-align:center">شبكة IP</td>
+      <td style="text-align:center">${x.dvr_count||1} × ${x.hdd_count||0} HDD ${x.hdd_size||''}</td>
+      <td style="text-align:center">${x.power_source||'—'}</td>
+      <td>${x.notes||''}</td>
+    </tr>`).join('');
 
-  _openPrintWindow('جرد الكاميرات والأجهزة', html);
+  const w=window.open('','_blank','width=1050,height=750');
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+  <meta charset="UTF-8"><title>جرد كاميرات المراقبة</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Arial',sans-serif;direction:rtl;padding:14px;font-size:11px;color:#111}
+    .no-print{margin-bottom:12px;display:flex;gap:8px}
+    h2{font-size:14px;font-weight:900;text-align:center;margin-bottom:2px}
+    h3{font-size:12px;text-align:center;color:#444;margin-bottom:10px}
+    .section-hdr{font-weight:800;font-size:12px;margin:14px 0 4px;padding:5px 10px;border-right:4px solid #166534;background:#f0fdf4}
+    .section-hdr.blue{border-right-color:#1e3a8a;background:#eff6ff}
+    table{width:100%;border-collapse:collapse;margin-bottom:4px}
+    th{background:#166534;color:#fff;padding:7px 8px;border:1px solid #14532d;font-size:11px;text-align:center}
+    th.blue-hd{background:#1e3a8a;border-color:#1e40af}
+    td{border:1px solid #cbd5e1;padding:6px 8px;font-size:11px}
+    tr:nth-child(even){background:#f8fafc}
+    .total-row{background:#166534!important;color:#fff;font-weight:800}
+    .total-row.blue{background:#1e3a8a!important}
+    .sigs{display:flex;justify-content:space-between;margin-top:24px;gap:20px}
+    .sig-box{flex:1;text-align:center}
+    .sig-line{border-bottom:1px solid #333;margin:28px 10px 4px}
+    .sig-label{font-size:10px;font-weight:700}
+    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
+  </style></head><body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
+    <span style="font-size:11px;color:#64748b;margin-right:8px">عدد المحطات: ${list.length} | إجمالي الكاميرات: ${totalCams}</span>
+  </div>
+
+  <h2>جرد كاميرات المراقبة وأجهزة التسجيل</h2>
+  <h3>شركة توزيع المنتجات النفطية / فرع صلاح الدين / شعبة تقنية المعلومات — ${dateStr}</h3>
+
+  <!-- جدول الكاميرات -->
+  <div class="section-hdr">📷 جدول الكاميرات</div>
+  <table>
+    <thead>
+      <tr>
+        <th style="width:35px">التسلسل</th>
+        <th>اسم المحطة</th>
+        <th style="width:120px">حجم عدسة الكاميرا</th>
+        <th style="width:80px">عدد الداخلية</th>
+        <th style="width:80px">عدد الخارجية</th>
+        <th style="width:90px">نوع الكاميرا</th>
+      </tr>
+    </thead>
+    <tbody>${camRows}</tbody>
+    <tfoot>
+      <tr class="total-row">
+        <td colspan="3" style="text-align:center;font-size:12px">المجموع الكلي للكاميرات</td>
+        <td style="text-align:center;font-size:16px">${totalCams}</td>
+        <td colspan="2"></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- جدول أجهزة التسجيل -->
+  <div class="section-hdr blue">🎥 جدول أجهزة التسجيل الفيديوي</div>
+  <table>
+    <thead>
+      <tr>
+        <th class="blue-hd" style="width:35px">التسلسل</th>
+        <th class="blue-hd">اسم المحطة</th>
+        <th class="blue-hd" style="width:140px">نوع الجهاز</th>
+        <th class="blue-hd" style="width:80px">طريقة الربط</th>
+        <th class="blue-hd" style="width:130px">العدد / سعة الهارد</th>
+        <th class="blue-hd" style="width:130px">مصدر الطاقة الكهربائية</th>
+        <th class="blue-hd">الملاحظات</th>
+      </tr>
+    </thead>
+    <tbody>${dvrRows}</tbody>
+  </table>
+
+  <!-- التوقيعات -->
+  <div class="sigs">
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div class="sig-line"></div>
+      <div class="sig-label">اسم الموظف مسؤول الكاميرات</div>
+      <div style="font-size:10px;color:#555;margin-top:4px">التاريخ: _______________</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div class="sig-line"></div>
+      <div class="sig-label">اسم مدير الدائرة</div>
+      <div style="font-size:10px;color:#555;margin-top:4px">التاريخ: _______________</div>
+    </div>
+  </div>
+  </body></html>`);
+  w.document.close();
 }
 
 // ── طباعة ترميز الأجهزة ──
