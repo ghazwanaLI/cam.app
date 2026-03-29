@@ -1087,7 +1087,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 
       <!-- INVENTORY TAB -->
-      <div id="tab-inventory" style="display:none"><div style="max-width:1200px;margin:0 auto;padding:0">
+      <div id="tab-inventory" style="display:none"><div style="padding:0">
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
@@ -1095,14 +1095,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <select class="fi btn-sm" id="f-inv-district" onchange="filterInv()" style="width:120px">
                 <option value="">كل القواطع</option>
               </select>
-              <select class="fi btn-sm" id="f-inv-status" onchange="filterInv()" style="width:110px">
-                <option value="">كل الحالات</option>
-                <option value="مكتمل">مكتمل</option>
-                <option value="ناقص">ناقص</option>
-                <option value="معطل">معطل</option>
+              <select class="fi btn-sm" id="f-inv-station" onchange="filterInv()" style="width:160px">
+                <option value="">كل المحطات الحكومية</option>
               </select>
               <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
               <button class="btn btn-o btn-sm" onclick="printInv()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="printInvOfficial()" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-weight:700">📄 طباعة رسمية</button>
               <button class="btn btn-o btn-sm" onclick="loadInventory()">🔄</button>
             </div>
             <div class="sec-title"><div class="sdot" style="background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.4)"></div>📦 جرد الكاميرات والأجهزة</div>
@@ -1115,46 +1113,69 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvModal()" style="display:none">➕ إضافة جرد محطة</button>
             <span style="font-size:12px;color:var(--t3)" id="inv-total-label"></span>
           </div>
-          <div class="table-wrap">
-            <table id="inv-table">
+          <!-- جدول الكاميرات -->
+          <div style="padding:10px 16px 0;display:flex;align-items:center;gap:8px;margin-top:6px">
+            <div style="width:4px;height:22px;background:#16a34a;border-radius:2px"></div>
+            <span style="font-size:14px;font-weight:800;color:#15803d">📷 جدول الكاميرات</span>
+            <span id="inv-cam-count" style="background:#16a34a;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
+          </div>
+          <div class="table-wrap" style="padding:8px 0 0">
+            <table id="inv-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0">
+              <colgroup>
+                <col style="width:44px">
+                <col>
+                <col style="width:120px">
+                <col style="width:85px">
+                <col style="width:85px">
+                <col style="width:95px">
+                <col style="width:150px">
+              </colgroup>
               <thead>
-                <tr>
-                  <th rowspan="2" style="width:35px">#</th>
-                  <th rowspan="2" style="min-width:140px">المحطة</th>
-                  <th rowspan="2" style="width:90px">القاطع</th>
-                  <th colspan="3" style="text-align:center;background:rgba(29,78,216,.08)">📹 أجهزة التسجيل DVR/NVR</th>
-                  <th colspan="2" style="text-align:center;background:rgba(124,58,237,.08)">💾 الهاردات</th>
-                  <th colspan="3" style="text-align:center;background:rgba(22,163,74,.08)">📷 الكاميرات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(217,119,6,.08)">🔌 سويجات POE</th>
-                  <th colspan="2" style="text-align:center;background:rgba(3,105,161,.08)">🖥️ الشاشات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(220,38,38,.08)">⚡ العاكسات UPS</th>
-                  <th colspan="2" style="text-align:center;background:rgba(107,114,128,.08)">🔋 البطاريات</th>
-                  <th colspan="2" style="text-align:center;background:rgba(34,197,94,.08)">📦 البوكسات</th>
-                  <th rowspan="2" style="width:80px;text-align:center">الحالة</th>
-                  <th rowspan="2" style="width:90px;text-align:center">إجراءات</th>
-                </tr>
-                <tr style="font-size:10px;color:var(--t3)">
-                  <th style="background:rgba(29,78,216,.05)">عدد</th>
-                  <th style="background:rgba(29,78,216,.05)">المواصفات</th>
-                  <th style="background:rgba(29,78,216,.05)">الموديل</th>
-                  <th style="background:rgba(124,58,237,.05)">عدد</th>
-                  <th style="background:rgba(124,58,237,.05)">الحجم (TB)</th>
-                  <th style="background:rgba(22,163,74,.05)">عدد</th>
-                  <th style="background:rgba(22,163,74,.05)">المواصفات</th>
-                  <th style="background:rgba(22,163,74,.05)">الدقة</th>
-                  <th style="background:rgba(217,119,6,.05)">عدد</th>
-                  <th style="background:rgba(217,119,6,.05)">المواصفات</th>
-                  <th style="background:rgba(3,105,161,.05)">عدد</th>
-                  <th style="background:rgba(3,105,161,.05)">المواصفات</th>
-                  <th style="background:rgba(220,38,38,.05)">عدد</th>
-                  <th style="background:rgba(220,38,38,.05)">المواصفات</th>
-                  <th style="background:rgba(107,114,128,.05)">عدد</th>
-                  <th style="background:rgba(107,114,128,.05)">المواصفات</th>
-                  <th style="background:rgba(34,197,94,.05)">عدد</th>
-                  <th style="background:rgba(34,197,94,.05)">المواصفات</th>
+                <tr style="background:#166534;color:#fff">
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">#</th>
+                  <th style="padding:10px 14px;text-align:right;font-size:12px;font-weight:700;border-left:1px solid #14532d">اسم المحطة</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">نوع الكاميرا</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">عدد الداخلية</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">عدد الخارجية</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #14532d">حجم العدسة</th>
+                  <th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700">الملاحظات</th>
                 </tr>
               </thead>
               <tbody id="inv-tb"></tbody>
+            </table>
+          </div>
+
+          <!-- جدول أجهزة التسجيل -->
+          <div style="padding:10px 16px 0;display:flex;align-items:center;gap:8px;margin-top:18px">
+            <div style="width:4px;height:22px;background:#1d4ed8;border-radius:2px"></div>
+            <span style="font-size:14px;font-weight:800;color:#1e40af">🎥 جدول أجهزة التسجيل الفيديوي</span>
+            <span id="inv-dvr-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
+          </div>
+          <div class="table-wrap" style="padding:8px 0 0">
+            <table id="inv-dvr-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:separate;border-spacing:0">
+              <colgroup>
+                <col style="width:44px">
+                <col>
+                <col style="width:120px">
+                <col style="width:85px">
+                <col style="width:130px">
+                <col style="width:85px">
+                <col style="width:110px">
+                <col style="width:140px">
+              </colgroup>
+              <thead>
+                <tr style="background:#1e3a8a;color:#fff">
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">#</th>
+                  <th style="padding:10px 14px;text-align:right;font-size:12px;font-weight:700;border-left:1px solid #1e40af">اسم المحطة</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">نوع الجهاز</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">طريقة الربط</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">حجم التخزين</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">فترة التخزين</th>
+                  <th style="padding:10px 8px;text-align:center;font-size:11px;font-weight:700;border-left:1px solid #1e40af">مصدر الطاقة الكهربائية</th>
+                  <th style="padding:10px 14px;text-align:right;font-size:11px;font-weight:700">الملاحظات</th>
+                </tr>
+              </thead>
+              <tbody id="inv-dvr-tb"></tbody>
             </table>
           </div>
           <div class="pagination" id="pg-inv"></div>
@@ -1717,7 +1738,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <input type="hidden" id="inv-eid">
     <div class="fgrid">
       <div class="fg"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="inv-station"><option value="">— اختر المحطة —</option></select>
+        <select class="fi" dir="rtl" id="inv-station" onchange="importFromStation()"><option value="">— اختر المحطة —</option></select>
       </div>
       <div class="fg"><label class="fl">الحالة العامة</label>
         <select class="fi" dir="rtl" id="inv-status">
@@ -1726,6 +1747,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <option value="معطل">معطل</option>
         </select>
       </div>
+      <div class="fg full">
+        <div style="background:#f0f9ff;border:1px solid rgba(8,145,178,.3);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
+          <span style="font-size:12px;color:#0891b2;font-weight:600">💡 جلب بيانات الكاميرات من تبويب المحطات تلقائياً</span>
+          <button type="button" onclick="importFromStation()" class="btn btn-o btn-sm" style="color:#0891b2;border-color:rgba(8,145,178,.4);font-size:12px;white-space:nowrap">
+            📥 جلب من المحطة
+          </button>
+        </div>
+      </div>
 
       <!-- DVR/NVR -->
       <div class="fg full" style="border:1px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
@@ -1733,7 +1762,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="fgrid">
           <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-dvr-count" type="number" min="0" value="0"></div>
           <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-dvr-spec" type="text" placeholder="عدد القنوات، الدقة..."></div>
-          <div class="fg full"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
+          <div class="fg"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
+          <div class="fg"><label class="fl">مصدر الطاقة الكهربائية</label>
+            <select class="fi" dir="rtl" id="inv-power-source">
+              <option value="كهرباء المحطة">كهرباء المحطة</option>
+              <option value="UPS">UPS</option>
+              <option value="مولد كهربائي">مولد كهربائي</option>
+              <option value="طاقة شمسية">طاقة شمسية</option>
+              <option value="أخرى">أخرى</option>
+            </select>
+          </div>
         </div>
       </div>
 
@@ -4297,36 +4335,86 @@ function renderInv(){
   const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
   const distF=document.getElementById('f-inv-district')?.value||'';
   const stF=document.getElementById('f-inv-status')?.value||'';
+  const stationF=document.getElementById('f-inv-station')?.value||'';
   const userDists=CU?.role!=='admin'?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[]))  :[];
   let list=allInventory.filter(x=>{
     if(userDists.length&&!userDists.includes(x.district))return false;
     if(distF&&x.district!==distF)return false;
-    if(stF&&x.status!==stF)return false;
+    if(stationF&&String(x.station_id)!==String(stationF)&&x.station_name!==stationF)return false;
     if(search&&!(x.station_name||'').toLowerCase().includes(search))return false;
     return true;
   });
   const lbl=document.getElementById('inv-total-label');
   if(lbl) lbl.textContent='إجمالي: '+list.length+' محطة';
+  const camCount=document.getElementById('inv-cam-count');
+  if(camCount) camCount.textContent=list.length+' محطة';
+  const dvrCount=document.getElementById('inv-dvr-count');
+  if(dvrCount) dvrCount.textContent=list.length+' محطة';
   const tb=document.getElementById('inv-tb');
-  if(!tb)return;
-  tb.innerHTML=list.length?list.map((x,i)=>`<tr>
-    <td><span class="snum">${i+1}</span></td>
-    <td style="font-weight:700">${x.station_name||'—'}</td>
-    <td><span class="db">${x.district||'—'}</span></td>
-    <td style="text-align:center">${x.dvr_count||0}</td><td>${x.dvr_spec||'—'}</td><td>${x.dvr_model||'—'}</td>
-    <td style="text-align:center">${x.hdd_count||0}</td><td>${x.hdd_size||'—'}</td>
-    <td style="text-align:center">${x.cam_count||0}</td><td>${x.cam_spec||'—'}</td><td>${x.cam_res||'—'}</td>
-    <td style="text-align:center">${x.poe_count||0}</td><td>${x.poe_spec||'—'}</td>
-    <td style="text-align:center">${x.mon_count||0}</td><td>${x.mon_spec||'—'}</td>
-    <td style="text-align:center">${x.ups_count||0}</td><td>${x.ups_spec||'—'}</td>
-    <td style="text-align:center">${x.bat_count||0}</td><td>${x.bat_spec||'—'}</td>
-    <td style="text-align:center">${x.box_count||0}</td><td>${x.box_spec||'—'}</td>
-    <td><span class="badge ${x.status==='مكتمل'?'b-ok':x.status==='معطل'?'b-bad':'b-warn'}">${x.status||'—'}</span></td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInv(${x.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="23" style="text-align:center;padding:30px;color:var(--t3)">لا يوجد جرد</td></tr>';
+  const dvrTb=document.getElementById('inv-dvr-tb');
+
+  // جدول الكاميرات
+  const B='border:1px solid #e2e8f0';
+  if(tb) tb.innerHTML=list.length?list.map((x,i)=>`<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
+    <td style="padding:9px 8px;text-align:center;${B};font-size:11px;color:#94a3b8;font-weight:600">${i+1}</td>
+    <td style="padding:9px 14px;font-weight:700;text-align:right;${B};font-size:12px;color:#0f172a">${x.station_name||'—'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.cam_spec||'—'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-weight:800;font-size:15px;color:#16a34a">${x.cam_count||0}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#94a3b8">—</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.cam_res||'—'}</td>
+    <td style="padding:9px 14px;text-align:right;${B};font-size:11px;color:#64748b">${x.notes||''}</td>
+  </tr>`).join('')+`<tr style="direction:rtl;background:#166534;color:#fff">
+    <td colspan="2" style="padding:10px 14px;text-align:center;font-size:12px;font-weight:800">المجموع الكلي</td>
+    <td style="padding:10px 8px"></td>
+    <td style="padding:10px 8px;text-align:center;font-size:18px;font-weight:900">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
+    <td colspan="3" style="padding:10px 8px"></td>
+  </tr>`
+    :'<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--t3)">لا يوجد جرد</td></tr>';
+
+  // جدول أجهزة التسجيل
+  if(dvrTb) dvrTb.innerHTML=list.length?list.map((x,i)=>`<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
+    <td style="padding:9px 8px;text-align:center;${B};font-size:11px;color:#94a3b8;font-weight:600">${i+1}</td>
+    <td style="padding:9px 14px;font-weight:700;text-align:right;${B};font-size:12px;color:#0f172a">${x.station_name||'—'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.dvr_model||x.dvr_spec||'—'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">شبكة</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-weight:700;font-size:12px;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB / '+x.hdd_count+' قطعة':'—'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#94a3b8">—</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.power_source||'كهرباء المحطة'}</td>
+    <td style="padding:9px 14px;text-align:right;${B};font-size:11px;color:#64748b">${x.notes||''}</td>
+  </tr>`).join('')
+    :'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--t3)">لا يوجد جرد</td></tr>';
 }
 function filterInv(){renderInv();}
+function importFromStation(){
+  const sid=document.getElementById('inv-station')?.value;
+  if(!sid){toast('اختر المحطة أولاً','err');return;}
+  const st=allStations.find(s=>String(s.id)===String(sid));
+  if(!st){toast('لم يتم العثور على المحطة','err');return;}
+
+  // جلب بيانات الكاميرات من المحطة
+  const camCount=(st.cam_working||0)+(st.cam_broken||0)||st.main_cam_count||0;
+  const camType=st.main_cam_type||'';
+  const camRes=st.main_cam_type||'';
+  const dvrCount=1;
+  const hddCount=st.main_hdd_count||0;
+  const hddSize=st.main_hdd_size||'';
+  // تعبئة حقول الكاميرات
+  const cc=document.getElementById('inv-cam-count');
+  const cs=document.getElementById('inv-cam-spec');
+  if(cc) cc.value=camCount||'';
+  if(cs) cs.value=camType||'';
+
+  // تعبئة حقول DVR/HDD
+  const dc=document.getElementById('inv-dvr-count');
+  const hc=document.getElementById('inv-hdd-count');
+  const hs=document.getElementById('inv-hdd-size');
+  if(dc) dc.value=dvrCount;
+  if(hc) hc.value=hddCount||'';
+  if(hs) hs.value=hddSize||'';
+
+  toast(`✅ تم جلب بيانات ${st.name}`);
+}
+
 function openInvModal(id){
   const m=id?allInventory.find(x=>x.id===id)||{}:{};
   document.getElementById('inv-eid').value=id||'';
@@ -4347,6 +4435,7 @@ function openInvModal(id){
   };
   Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
   const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
+  const pwEl=document.getElementById('inv-power-source');if(pwEl)pwEl.value=m.power_source||'كهرباء المحطة';
   document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
   document.getElementById('ov-inv').classList.add('open');
 }
@@ -4362,6 +4451,7 @@ async function saveInv(){
   const body={station_id:stId,station_name:st.name||'',district:st.district||'',
     status:v('inv-status'),
     dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
+    power_source:v('inv-power-source'),
     hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
     cam_count:g('inv-cam-count'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
     poe_count:g('inv-poe-count'),poe_spec:v('inv-poe-spec'),
@@ -4381,6 +4471,205 @@ async function delInv(id){
   try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
   catch(e){toast('خطأ: '+e.message,'err');}
 }
+async function printInvOfficial(){
+  if(!allInventory.length){
+    toast('جاري تحميل البيانات...');
+    try{ await loadInventory(); }catch(e){}
+  }
+  if(!allInventory.length){ toast('لا توجد بيانات جرد','err'); return; }
+
+  const distF=document.getElementById('f-inv-district')?.value||'';
+  const list=allInventory.filter(x=>!distF||x.district===distF);
+  if(!list.length){ toast('لا توجد بيانات للقاطع المختار','err'); return; }
+
+  const now=new Date();
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayName=days[now.getDay()];
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
+
+  const camRows=list.map((x,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${x.station_name||'—'}</td>
+      <td>${x.cam_spec||x.cam_res||'—'}</td>
+      <td style="text-align:center">${x.cam_count||0}</td>
+      <td style="text-align:center">—</td>
+      <td style="text-align:center">—</td>
+      <td>${x.notes||''}</td>
+    </tr>`).join('');
+
+  const dvrRows=list.map((x,i)=>`
+    <tr>
+      <td>${i+1}</td>
+      <td>${x.dvr_model||x.dvr_spec||'—'}</td>
+      <td>شبكة</td>
+      <td>${x.hdd_size?x.hdd_size+' TB':'—'} / ${x.hdd_count||0} قطعة</td>
+      <td>—</td>
+      <td>كهرباء المحطة</td>
+      <td>${x.notes||''}</td>
+    </tr>`).join('');
+
+  const w=window.open('','_blank','width=1000,height=750');
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
+  <meta charset="UTF-8">
+  <title>جرد كاميرات المراقبة</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Arial',sans-serif;direction:rtl;padding:18px;font-size:12px;color:#111;}
+    .no-print{margin-bottom:14px;display:flex;gap:8px;}
+    h2{font-size:15px;font-weight:900;text-align:center;margin-bottom:4px;}
+    h3{font-size:13px;font-weight:700;text-align:center;margin-bottom:14px;color:#444;}
+    .header-info{border:1.5px solid #333;border-radius:4px;padding:10px 14px;margin-bottom:14px;}
+    .header-info table{width:100%;border-collapse:collapse;}
+    .header-info td{padding:4px 8px;font-size:11px;vertical-align:top;}
+    .header-info .lbl{font-weight:700;width:220px;color:#1a1a1a;}
+    .section-title{background:#1d4ed8;color:#fff;font-weight:800;font-size:12px;
+      padding:6px 12px;border-radius:4px 4px 0 0;margin-top:16px;margin-bottom:0;}
+    table.data{width:100%;border-collapse:collapse;margin-bottom:16px;}
+    table.data th{background:#f0f0f0;border:1px solid #aaa;padding:5px 7px;font-size:11px;font-weight:700;text-align:center;}
+    table.data td{border:1px solid #bbb;padding:5px 7px;font-size:11px;}
+    .sigs{display:flex;justify-content:space-between;margin-top:28px;gap:20px;page-break-inside:avoid;}
+    .sig-box{flex:1;text-align:center;border-top:1px solid #333;padding-top:8px;}
+    .sig-label{font-size:11px;font-weight:700;margin-bottom:6px;}
+    .sig-line{font-size:10px;color:#555;margin-top:4px;}
+    @media print{.no-print{display:none!important} @page{margin:10mm;size:A4 landscape;}}
+  </style>
+  </head><body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
+  </div>
+
+  <h2>استمارة جرد كاميرات المراقبة</h2>
+  <h3>شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</h3>
+
+  <div class="header-info">
+    <table>
+      <tr>
+        <td class="lbl">اليوم / التاريخ / الوقت :</td>
+        <td>${dayName} — ${dateStr} — ${timeStr}</td>
+        <td class="lbl">نوع النشاط :</td>
+        <td>أمني ورقابي</td>
+      </tr>
+      <tr>
+        <td class="lbl">اسم المنفذ التوزيعي / البناية :</td>
+        <td>${distF||'جميع القواطع'}</td>
+        <td class="lbl">الاحداثيات للموقع التوزيعي :</td>
+        <td></td>
+      </tr>
+      <tr>
+        <td class="lbl">اسم الدائرة :</td>
+        <td colspan="3">شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</td>
+      </tr>
+      <tr>
+        <td class="lbl">العنوان الكامل :</td>
+        <td></td>
+        <td class="lbl">البريد / الهاتف :</td>
+        <td>07712111177 - 07816940742</td>
+      </tr>
+    </table>
+  </div>
+
+  <!-- جدول الكاميرات -->
+  <div class="section-title">📷 جدول الكاميرات</div>
+  <table class="data">
+    <thead>
+      <tr>
+        <th style="width:35px">تسلسل</th>
+        <th>المحطة</th>
+        <th>نوع الكاميرا</th>
+        <th style="width:70px">عدد الداخلية</th>
+        <th style="width:70px">عدد الخارجية</th>
+        <th style="width:90px">حجم عدسة الكاميرا</th>
+        <th>الملاحظات</th>
+      </tr>
+    </thead>
+    <tbody>${camRows||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">لا توجد بيانات</td></tr>'}</tbody>
+    <tfoot>
+      <tr style="background:#f9f9f9;font-weight:700">
+        <td colspan="2" style="text-align:center">المجموع</td>
+        <td></td>
+        <td style="text-align:center">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
+        <td style="text-align:center">—</td>
+        <td></td><td></td>
+      </tr>
+    </tfoot>
+  </table>
+
+  <!-- جدول أجهزة التسجيل -->
+
+  <div class="sigs">
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div style="height:40px"></div>
+      <div class="sig-line">اسم الموظف مسؤول الكاميرات</div>
+      <div class="sig-line">التاريخ : _______________</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div style="height:40px"></div>
+      <div class="sig-line">اسم مدير الدائرة</div>
+      <div class="sig-line">التاريخ : _______________</div>
+    </div>
+  </div>
+
+  <!-- فصل الصفحة -->
+  <div style="page-break-before:always"></div>
+
+  <h2>استمارة جرد كاميرات المراقبة</h2>
+  <h3>شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</h3>
+  <div class="header-info" style="margin-bottom:14px">
+    <table>
+      <tr>
+        <td class="lbl">اليوم / التاريخ / الوقت :</td>
+        <td>${dayName} — ${dateStr} — ${timeStr}</td>
+        <td class="lbl">نوع النشاط :</td>
+        <td>أمني ورقابي</td>
+      </tr>
+      <tr>
+        <td class="lbl">اسم الدائرة :</td>
+        <td colspan="3">شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="section-title">🎥 جدول أجهزة التسجيل الفيديوي</div>
+  <table class="data">
+    <thead>
+      <tr>
+        <th style="width:35px">تسلسل</th>
+        <th>نوع الجهاز</th>
+        <th>طريقة الربط</th>
+        <th>حجم التخزين (سعة الهارد / العدد)</th>
+        <th>فترة التخزين</th>
+        <th>مصدر الطاقة الكهربائية</th>
+        <th>الملاحظات</th>
+      </tr>
+    </thead>
+    <tbody>${dvrRows||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">لا توجد بيانات</td></tr>'}</tbody>
+  </table>
+
+  <!-- التوقيعات -->
+  <div class="sigs">
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div style="height:40px"></div>
+      <div class="sig-line">اسم الموظف مسؤول الكاميرات</div>
+      <div class="sig-line">التاريخ : _______________</div>
+    </div>
+    <div class="sig-box">
+      <div class="sig-label">التوقيع</div>
+      <div style="height:40px"></div>
+      <div class="sig-line">اسم مدير الدائرة</div>
+      <div class="sig-line">التاريخ : _______________</div>
+    </div>
+  </div>
+
+  </body></html>`);
+  w.document.close();
+}
+
 async function exportInvExcel(){
   if(!allInventory.length){
     toast('جاري تحميل البيانات...');
@@ -4963,6 +5252,14 @@ function populateDistrictFilters(){
     sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
     if(cur) sel.value=cur;
   });
+  // تحميل المحطات الحكومية فقط في فلتر الجرد
+  const invStSel=document.getElementById('f-inv-station');
+  if(invStSel){
+    const cur=invStSel.value;
+    const govSts=allStations.filter(s=>s.type==='حكومية');
+    invStSel.innerHTML='<option value="">كل المحطات الحكومية</option>'+govSts.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+    if(cur) invStSel.value=cur;
+  }
 }
 
 function renderPagination(containerId, current, total, onChange){
@@ -5457,22 +5754,60 @@ function printMaintTable(){
 
 // ── طباعة الجرد ──
 function printInv(){
-  // فلتر بالقاطع المختار + قاطع المخول
   const distF=document.getElementById('f-inv-district')?.value||'';
   const myDist=CU?.role!=='admin'?CU?.district||'':'';
   const filterDist=myDist||distF;
-  let list=[...allInventory].filter(x=>{
-    if(filterDist&&x.district!==filterDist)return false;
-    return true;
-  });
+  const list=[...allInventory].filter(x=>!filterDist||x.district===filterDist);
   if(!list.length){toast('لا توجد بيانات','err');return;}
-  const title='جرد الكاميرات والأجهزة'+(filterDist?' — '+filterDist:'');
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>الحالة</th><th>DVR/NVR</th><th>HDD</th><th>كاميرات</th><th>ملاحظات</th></tr></thead>'
-    +'<tbody>'+list.map((x,i)=>`<tr><td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td><td><span class="${x.status==='مكتمل'?'badge-ok':'badge-bad'}">${x.status||'—'}</span></td><td>${x.dvr_count||0} (${x.dvr_model||'—'})</td><td>${x.hdd_count||0} × ${x.hdd_size||'—'}</td><td>${x.cam_count||0}</td><td style="color:#475569">${x.notes||''}</td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' محطة</div>';
-  _openPrintWindow('جرد الكاميرات والأجهزة', tbl);
+
+  const camRows=list.map((x,i)=>`<tr>
+    <td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td>
+    <td>${x.cam_spec||'—'}</td><td style="text-align:center">${x.cam_count||0}</td>
+    <td style="text-align:center">—</td><td>${x.cam_res||'—'}</td>
+    <td style="color:#475569">${x.notes||''}</td>
+  </tr>`).join('');
+
+  const dvrRows=list.map((x,i)=>`<tr>
+    <td>${i+1}</td><td style="font-weight:700">${x.station_name||'—'}</td><td>${x.district||'—'}</td>
+    <td>${x.dvr_model||x.dvr_spec||'—'}</td><td style="text-align:center">شبكة</td>
+    <td style="text-align:center">${x.hdd_size?x.hdd_size+' TB / '+x.hdd_count+' قطعة':'—'}</td>
+    <td style="text-align:center">—</td><td style="text-align:center">كهرباء المحطة</td>
+    <td style="color:#475569">${x.notes||''}</td>
+  </tr>`).join('');
+
+  const html=`
+    <h3 style="text-align:center;margin-bottom:6px">جرد الكاميرات والأجهزة${filterDist?' — '+filterDist:''}</h3>
+    <p style="text-align:center;font-size:11px;color:#555;margin-bottom:12px">
+      شركة توزيع المنتجات النفطية / فرع صلاح الدين — ${new Date().toLocaleDateString('ar-IQ')}
+    </p>
+    <div style="font-weight:800;font-size:12px;background:#16a34a;color:#fff;padding:5px 10px;border-radius:4px 4px 0 0">📷 جدول الكاميرات</div>
+    <table>
+      <thead><tr>
+        <th style="width:30px">#</th><th>المحطة</th><th style="width:80px">القاطع</th>
+        <th>نوع الكاميرا</th><th style="width:65px">عدد الداخلية</th>
+        <th style="width:65px">عدد الخارجية</th><th style="width:80px">حجم العدسة</th><th>ملاحظات</th>
+      </tr></thead>
+      <tbody>${camRows}</tbody>
+      <tfoot><tr style="background:#f0fdf4;font-weight:700">
+        <td colspan="3" style="text-align:center">المجموع</td><td></td>
+        <td style="text-align:center">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
+        <td>—</td><td></td><td></td>
+      </tr></tfoot>
+    </table>
+    <div style="height:20px"></div>
+    <div style="font-weight:800;font-size:12px;background:#1d4ed8;color:#fff;padding:5px 10px;border-radius:4px 4px 0 0">🎥 جدول أجهزة التسجيل الفيديوي</div>
+    <table>
+      <thead><tr>
+        <th style="width:30px">#</th><th>المحطة</th><th style="width:80px">القاطع</th>
+        <th>نوع الجهاز</th><th style="width:75px">طريقة الربط</th>
+        <th>حجم التخزين</th><th style="width:75px">فترة التخزين</th>
+        <th>مصدر الطاقة</th><th>ملاحظات</th>
+      </tr></thead>
+      <tbody>${dvrRows}</tbody>
+    </table>
+    <div style="margin-top:8px;font-size:11px;color:#64748b;text-align:center">إجمالي المحطات: ${list.length}</div>`;
+
+  _openPrintWindow('جرد الكاميرات والأجهزة', html);
 }
 
 // ── طباعة ترميز الأجهزة ──
