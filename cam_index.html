@@ -721,9 +721,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
-        <div class="nav-item" id="nav-inventory" onclick="goInventorySub('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+        <div class="nav-item" id="nav-inventory" onclick="typeof goInventorySub!=='undefined'?goInventorySub('inv-stations'):switchInvSub('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
         <div class="nav-sub">
-          <div class="nav-sub-item" onclick="goInventorySub('inv-stations')">📋 جرد المحطات</div>
+          <div class="nav-sub-item" onclick="typeof goInventorySub!=='undefined'?goInventorySub('inv-stations'):switchInvSub('inv-stations')">📋 جرد المحطات</div>
           <div class="nav-sub-item" onclick="goInventorySub('inv-devices')">🎥 أجهزة التسجيل</div>
           <div class="nav-sub-item" onclick="goInventorySub('inv-report')">📄 التقارير</div>
         </div>
@@ -3676,22 +3676,28 @@ function printInvSingle(id){
   const date=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
   const time=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
 
-  // صفوف الكاميرات
+  // صفوف الكاميرات — يدعم الصيغة الجديدة (cam_rows) والقديمة (cam_spec/cam_res/cam_count)
   var cams=Array.isArray(x.cam_rows)?x.cam_rows:[];
   try{if(!cams.length&&x.cam_rows)cams=JSON.parse(x.cam_rows);}catch(e){}
+  // إذا ماكو cam_rows نبني من الحقول القديمة
+  if(!cams.length && (+x.cam_count||0)>0){
+    cams=[{type:x.cam_spec||'IP', indoor:+x.cam_indoor||+x.cam_count||0, outdoor:+x.cam_outdoor||0, lens:x.cam_res||'—'}];
+  }
   var camIn=0,camOut=0;
   cams.forEach(function(r){camIn+=(parseInt(r.indoor)||0);camOut+=(parseInt(r.outdoor)||0);});
   var total=camIn+camOut||+x.cam_count||0;
+  // إذا cam_indoor وcam_outdoor صفر لكن cam_count موجود، اعرض الإجمالي في indoor
+  if(total>0 && camIn===0 && camOut===0){ camIn=total; }
 
   var camRows='';
   for(var i=0;i<cams.length;i++){
     var r=cams[i];
     camRows+='<tr>'+
       '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.type||'—')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#166534">'+(r.indoor||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#1d4ed8">'+(r.outdoor||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.lens&&r.lens!=='—'?r.lens:'—')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444">'+(r.type||x.cam_spec||'—')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#166534">'+(r.indoor||x.cam_indoor||x.cam_count||0)+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#1d4ed8">'+(r.outdoor||x.cam_outdoor||0)+'</td>'+
+      '<td style="text-align:center;border:1px solid #444">'+(r.lens&&r.lens!=='—'?r.lens:(x.cam_res||'—'))+'</td>'+
       '<td style="border:1px solid #444"></td></tr>';
   }
   for(var j=cams.length;j<5;j++){
