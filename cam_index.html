@@ -4473,15 +4473,15 @@ function printInvSingle(id){
   <meta charset="UTF-8"><title>استمارة جرد - ${x.station_name}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Arial',sans-serif;direction:rtl;font-size:11px;color:#000;padding:12px 14px}
-    .no-print{margin-bottom:10px;display:flex;gap:8px}
+    body{font-family:'Arial',sans-serif;direction:rtl;font-size:10px;color:#000;padding:6px 8px}
+    .no-print{margin-bottom:6px;display:flex;gap:6px}
     table{border-collapse:collapse;width:100%}
-    td,th{border:1.5px solid #333;padding:5px 7px;font-size:11px;vertical-align:middle}
-    th{background:#ddd;font-weight:800;text-align:center}
-    .sec-hdr{background:#222;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;margin-top:10px}
-    .kl{border:2px solid #000;padding:8px 12px;margin-bottom:10px}
-    .kl-btm{border:2px solid #000;padding:5px 12px;margin-top:10px;display:flex;justify-content:space-between;font-size:10px;align-items:center}
-    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4}}
+    td,th{border:1px solid #444;padding:2px 5px;font-size:10px;vertical-align:middle;line-height:1.3}
+    th{background:#d0d0d0;font-weight:800;text-align:center}
+    .sec-hdr{background:#222;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;margin-top:6px}
+    .kl{border:1.5px solid #000;padding:2px 6px;margin-bottom:6px}
+    .kl-btm{border:1.5px solid #000;padding:3px 8px;margin-top:6px;display:flex;justify-content:space-between;font-size:9px;align-items:center}
+    @media print{.no-print{display:none!important}@page{margin:5mm;size:A4}}
   </style></head><body>
 
   <div class="no-print">
@@ -4491,39 +4491,39 @@ function printInvSingle(id){
 
   <!-- رأس الصفحة -->
   <div class="kl">
-    <div style="text-align:center;font-size:15px;font-weight:900;margin-bottom:8px;border-bottom:1.5px solid #000;padding-bottom:6px">
+    <div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:4px;border-bottom:1px solid #000;padding-bottom:3px">
       استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي
     </div>
-    <table style="border-collapse:collapse;font-size:11px">
+    <table style="border-collapse:collapse;font-size:10px">
       <tr>
-        <td style="padding:4px 8px;width:16%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td>
-        <td style="padding:4px 8px;width:14%;border:1px solid #aaa">${dayName}</td>
-        <td style="padding:4px 8px;width:13%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td>
-        <td style="padding:4px 8px;width:22%;border:1px solid #aaa">${dateStr}</td>
-        <td style="padding:4px 8px;width:10%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td>
-        <td style="padding:4px 8px;border:1px solid #aaa">${timeStr}</td>
+        <td style="padding:2px 6px;width:16%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td>
+        <td style="padding:2px 6px;width:14%;border:1px solid #aaa">${dayName}</td>
+        <td style="padding:2px 6px;width:13%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td>
+        <td style="padding:2px 6px;width:22%;border:1px solid #aaa">${dateStr}</td>
+        <td style="padding:2px 6px;width:10%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td>
+        <td style="padding:2px 6px;border:1px solid #aaa">${timeStr}</td>
       </tr>
       <tr>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td>
-        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">${x.station_name||'—'}</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">${x.station_name||'—'}</td>
       </tr>
       <tr>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td>
-        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:600">محافظة صلاح الدين${x.district?' — قضاء '+x.district+' — مركز القضاء':''}</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">محافظة صلاح الدين${x.district?' — قضاء '+x.district+' — مركز القضاء':''}</td>
       </tr>
       <tr>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td>
-        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
       </tr>
       <tr>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
-        <td colspan="2" style="padding:4px 8px;border:1px solid #aaa">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
-        <td colspan="2" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
+        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
+        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
       </tr>
       <tr>
-        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
-        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa">&nbsp;</td>
+        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa">&nbsp;</td>
       </tr>
     </table>
   </div>
@@ -4552,9 +4552,9 @@ function printInvSingle(id){
         <td style="text-align:right">${x.cam_res||'—'}</td>
         <td></td>
       </tr>
-      <tr style="height:22px"><td style="text-align:center">2</td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr style="height:22px"><td style="text-align:center">3</td><td></td><td></td><td></td><td></td><td></td></tr>
-      <tr style="height:22px"><td style="text-align:center">4</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr style="height:16px"><td style="text-align:center">2</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr style="height:16px"><td style="text-align:center">3</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr style="height:16px"><td style="text-align:center">4</td><td></td><td></td><td></td><td></td><td></td></tr>
     </tbody>
     <tfoot><tr>
       <td style="text-align:center;font-weight:800;background:#ccc" colspan="2">المجموع الكلي</td>
@@ -4566,7 +4566,7 @@ function printInvSingle(id){
   </table>
 
   <!-- جدول أجهزة التسجيل -->
-  <div class="sec-hdr" style="margin-top:12px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+  <div class="sec-hdr" style="margin-top:6px">🎥 جدول أجهزة التسجيل الفيديوي</div>
   <table>
     <colgroup>
       <col style="width:42px"><col style="width:130px"><col style="width:85px">
@@ -4601,16 +4601,16 @@ function printInvSingle(id){
   </table>
 
   <!-- التذييل -->
-  <div style="display:flex;justify-content:space-between;margin-top:20px;gap:20px">
-    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:10px 14px;border-radius:4px">
-      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:11px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+  <div style="display:flex;justify-content:space-between;margin-top:10px;gap:14px">
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">
+      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
     </div>
-    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:10px 14px;border-radius:4px">
-      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:11px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">
+      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
     </div>
   </div>
 
@@ -4677,7 +4677,7 @@ async function printInvOfficial(){
     h3{font-size:13px;font-weight:700;text-align:center;margin-bottom:14px;color:#444;}
     .header-info{border:1.5px solid #333;border-radius:4px;padding:10px 14px;margin-bottom:14px;}
     .header-info table{width:100%;border-collapse:collapse;}
-    .header-info td{padding:4px 8px;font-size:11px;vertical-align:top;}
+    .header-info td{padding:2px 6px;font-size:11px;vertical-align:top;}
     .header-info .lbl{font-weight:700;width:220px;color:#1a1a1a;}
     .section-title{background:#1d4ed8;color:#fff;font-weight:800;font-size:12px;
       padding:6px 12px;border-radius:4px 4px 0 0;margin-top:16px;margin-bottom:0;}
@@ -5046,7 +5046,7 @@ function renderCirculars(){
         <div style="font-size:12px;font-weight:700;color:var(--text);flex:1">${c.title||'—'}</div>
         <span style="font-size:10px;color:var(--t3);white-space:nowrap">📅 ${c.date||''}</span>
       </div>
-      ${c.body||c.notes?`<div style="font-size:11px;color:var(--t2);margin-bottom:5px;line-height:1.6;padding:4px 8px;background:var(--bg2);border-radius:6px;direction:rtl">${c.body||c.notes}</div>`:''}
+      ${c.body||c.notes?`<div style="font-size:11px;color:var(--t2);margin-bottom:5px;line-height:1.6;padding:2px 6px;background:var(--bg2);border-radius:6px;direction:rtl">${c.body||c.notes}</div>`:''}
       <div id="circ-img-${c.id}"></div>
       <div style="display:flex;flex-wrap:wrap;gap:4px;align-items:center;justify-content:space-between;margin-top:5px">
         <span style="font-size:10px;color:var(--t3)">📢 ${c.district==='الكل'?'جميع القواطع':c.district||'الكل'} · ✍️ ${c.added_by||''}</span>
@@ -5970,7 +5970,7 @@ function printInv(){
     td{border:1px solid #cbd5e1;padding:6px 8px;font-size:11px}
     tr:nth-child(even){background:#f8fafc}
     .total-row{background:#166534!important;color:#fff;font-weight:800}
-    .sigs{display:flex;justify-content:space-between;margin-top:20px;gap:20px}
+    .sigs{display:flex;justify-content:space-between;margin-top:10px;gap:14px}
     .sig-box{flex:1;text-align:center}
     .sig-line{border-bottom:1px solid #333;margin:28px 10px 4px}
     .sig-label{font-size:10px;font-weight:700}
