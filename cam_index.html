@@ -1764,15 +1764,18 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-dvr-spec" type="text" placeholder="عدد القنوات، الدقة..."></div>
           <div class="fg"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
           <div class="fg"><label class="fl">مصدر الطاقة الكهربائية</label>
-            <select class="fi" dir="rtl" id="inv-power-source">
-              <option value="كهرباء وطني">كهرباء وطني</option>
-              <option value="مولد">مولد</option>
-              <option value="عاكسة 4KVA">عاكسة 4KVA</option>
-              <option value="مولد + كهرباء وطني">مولد + كهرباء وطني</option>
-              <option value="عاكسة + كهرباء وطني">عاكسة + كهرباء وطني</option>
-              <option value="مولد + عاكسة">مولد + عاكسة</option>
-              <option value="أخرى">أخرى</option>
-            </select>
+            <div id="inv-power-source-wrap" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0">
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
+                <input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
+                <input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
+                <input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
+                <input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
+              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
+                <input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
+            </div>
           </div>
         </div>
       </div>
@@ -4437,6 +4440,9 @@ function openInvModal(id){
   };
   Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
   const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
+  // استعادة checkboxes مصدر الطاقة
+  const pwVals=(m.power_source||'').split(' + ');
+  document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
   const pwEl=document.getElementById('inv-power-source');if(pwEl)pwEl.value=m.power_source||'كهرباء المحطة';
   document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
   document.getElementById('ov-inv').classList.add('open');
@@ -4453,7 +4459,7 @@ async function saveInv(){
   const body={station_id:stId,station_name:st.name||'',district:st.district||'',
     status:v('inv-status'),
     dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
-    power_source:v('inv-power-source'),
+    power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
     hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
     cam_count:g('inv-cam-count'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
     poe_count:g('inv-poe-count'),poe_spec:v('inv-poe-spec'),
