@@ -241,7 +241,7 @@ class Handler(BaseHTTPRequestHandler):
         u=self.require_auth()
         if not u: return
         db=load_db()
-        if p=="/api/me": pass
+        if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
         elif p=="/api/notifications":
             db=load_db()
             notifs=db.get("notifications",[])
@@ -556,6 +556,13 @@ class Handler(BaseHTTPRequestHandler):
                 "bat_count":body.get("bat_count",0),"bat_spec":body.get("bat_spec",""),
                 "box_count":body.get("box_count",0),"box_spec":body.get("box_spec",""),
                 "notes":body.get("notes",""),"created_by":u["fullname"],"updated_at":now,
+                "storage_days":body.get("storage_days",""),
+                "power_source":body.get("power_source",""),
+                "phone":body.get("phone",""),
+                "coords":body.get("coords",""),
+                "cam_rows":body.get("cam_rows","[]"),
+                "cam_indoor":body.get("cam_indoor",0),
+                "cam_outdoor":body.get("cam_outdoor",0),
             }
             db["inventory"].append(inv_item); save_db(db)
             add_log_safe(u,"إضافة جرد",f"جرد: {inv_item['station_name']}",self.ip())
@@ -636,7 +643,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes"]
+            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes","storage_days","power_source","phone","coords","cam_rows","cam_indoor","cam_outdoor"]
             for f in fields:
                 if f in body: db["inventory"][idx][f]=body[f]
             db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
