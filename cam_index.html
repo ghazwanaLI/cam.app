@@ -4444,198 +4444,168 @@ async function delInv(id){
 function printInvSingle(id){
   const x=allInventory.find(i=>i.id===id);
   if(!x){toast('لم يتم العثور على البيانات','err');return;}
-  const dateStr=new Date().toLocaleDateString('ar-IQ');
+
+  const now=new Date();
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayName=days[now.getDay()];
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
-  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
+  const pwList=['كهرباء وطنية','عاكسة 4KVA','مولد'];
   const totalCams=(+x.cam_indoor||0)+(+x.cam_outdoor||0);
 
-  // صفوف الكاميرات — صف البيانات + 4 صفوف فارغة
-  const camDataRow=`<tr>
-    <td style="text-align:center;font-weight:700">1</td>
-    <td style="text-align:center">${x.cam_res||'—'}</td>
-    <td style="text-align:center;font-weight:800;font-size:14px">${x.cam_indoor||0}</td>
-    <td style="text-align:center;font-weight:800;font-size:14px">${x.cam_outdoor||0}</td>
-    <td style="text-align:center">${x.cam_spec||'—'}</td>
-    <td style="text-align:center">C</td>
-  </tr>`;
-  const emptyRow=(n)=>`<tr style="height:22px">
-    <td style="text-align:center">${n}</td>
-    <td></td><td></td><td></td><td></td>
-    <td style="text-align:center">${n}</td>
-  </tr>`;
-  const camRows=camDataRow+[2,3,4,5].map(n=>emptyRow(n)).join('');
-
-  // صفوف أجهزة التسجيل
-  const dvrDataRow=`<tr>
-    <td style="text-align:center;font-weight:700">1</td>
-    <td style="text-align:right;font-weight:700">${x.dvr_model||x.dvr_spec||'—'}</td>
-    <td style="text-align:center">IP شبكي</td>
-    <td style="text-align:center;font-weight:700">${x.dvr_count||1} جهاز</td>
-    <td style="text-align:center;font-weight:700;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB':''}</td>
-    <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||0}</td>
-  </tr>`;
-  const emptyDvrRow=(n)=>`<tr style="height:22px">
-    <td style="text-align:center">${n}</td>
-    <td></td><td></td><td></td><td></td><td></td>
-  </tr>`;
-  const dvrRows=dvrDataRow+[2,3].map(n=>emptyDvrRow(n)).join('');
-
-  // checkboxes مصدر الطاقة
-  const pwChecks=pwList.map(p=>`
-    <div style="display:flex;align-items:center;gap:5px;margin-bottom:4px">
+  const pwCell=`<div style="display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap">
+    ${pwList.map(p=>`<div style="display:flex;align-items:center;gap:3px">
       <div style="width:13px;height:13px;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0">${pw.includes(p)?'✓':''}</div>
-      <span style="font-size:11px">${p}</span>
-    </div>`).join('');
+      <span style="font-size:10px;white-space:nowrap">${p}</span>
+    </div>`).join('')}
+  </div>`;
 
-  const w=window.open('','_blank','width=860,height=720');
+  const emptyDvrRow=(n)=>'<tr style="height:22px"><td style="text-align:center;border:1.5px solid #333">'+n+'</td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td></tr>';
+
+  const w=window.open('','_blank','width=900,height=750');
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
   <meta charset="UTF-8"><title>استمارة جرد - ${x.station_name}</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Arial',sans-serif;direction:rtl;font-size:11px;color:#000;padding:10px 14px}
+    body{font-family:'Arial',sans-serif;direction:rtl;font-size:11px;color:#000;padding:12px 14px}
     .no-print{margin-bottom:10px;display:flex;gap:8px}
-    /* كليشة */
-    .kl{border:2px solid #000;padding:7px 12px;margin-bottom:8px}
-    .kl-inner{display:flex;justify-content:space-between;align-items:center}
-    .kl-org{text-align:center;flex:1}
-    .kl-title{font-size:14px;font-weight:900;line-height:1.6}
-    .kl-sub{font-size:11px;line-height:1.5}
-    .kl-meta{font-size:11px;min-width:110px}
-    .kl-meta .row{display:flex;gap:4px;margin-bottom:4px;align-items:baseline}
-    .kl-meta .lb{font-weight:700;white-space:nowrap}
-    .kl-meta .val{border-bottom:1px solid #000;flex:1;min-width:80px}
-    /* معلومات المحطة */
-    .st-bar{display:flex;border:1.5px solid #000;margin-bottom:8px}
-    .st-bar .cell{flex:1;padding:5px 8px;border-left:1px solid #000;font-size:11px}
-    .st-bar .cell:last-child{border-left:none}
-    .st-bar .lbl{font-weight:700;color:#444;font-size:10px;margin-bottom:2px}
-    .st-bar .val{font-weight:800;font-size:13px}
-    .st-bar .total{color:#166534;font-size:16px}
-    /* جداول */
-    .sec-hdr{background:#333;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;margin-top:8px}
-    table.t{width:100%;border-collapse:collapse}
-    table.t th{background:#555;color:#fff;border:1px solid #333;padding:7px 6px;font-size:11px;font-weight:700;text-align:center}
-    table.t td{border:1px solid #bbb;padding:5px 6px;font-size:11px;min-height:20px}
-    table.t tr:nth-child(even){background:#f5f5f5}
-    table.t tfoot td{background:#ddd;font-weight:800;border:1px solid #999}
-    /* قسم مصدر الطاقة */
-    .pw-section{border:1.5px solid #000;padding:8px 12px;margin-top:8px;display:flex;gap:20px}
-    .pw-title{font-weight:800;font-size:12px;margin-bottom:6px;border-bottom:1px solid #000;padding-bottom:4px}
-    /* التوقيعات */
-    .sigs{display:flex;justify-content:space-between;gap:40px;margin-top:16px;border-top:2px solid #000;padding-top:10px}
-    .sig-box{flex:1;text-align:center}
-    .sig-line{border-bottom:1.5px solid #000;margin:26px 10px 4px}
-    .sig-lbl{font-size:11px;font-weight:700}
-    /* كليشة أسفل */
-    .kl-btm{border:2px solid #000;padding:5px 12px;margin-top:10px;display:flex;justify-content:space-between;font-size:10px}
+    table{border-collapse:collapse;width:100%}
+    td,th{border:1.5px solid #333;padding:5px 7px;font-size:11px;vertical-align:middle}
+    th{background:#ddd;font-weight:800;text-align:center}
+    .sec-hdr{background:#222;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;margin-top:10px}
+    .kl{border:2px solid #000;padding:8px 12px;margin-bottom:10px}
+    .kl-btm{border:2px solid #000;padding:5px 12px;margin-top:10px;display:flex;justify-content:space-between;font-size:10px;align-items:center}
     @media print{.no-print{display:none!important}@page{margin:8mm;size:A4}}
   </style></head><body>
 
   <div class="no-print">
-    <button onclick="window.print()" style="background:#333;color:#fff;border:none;padding:7px 18px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:7px 14px;border:1px solid #aaa;border-radius:4px;cursor:pointer">✕ إغلاق</button>
+    <button onclick="window.print()" style="background:#222;color:#fff;border:none;padding:8px 20px;border-radius:4px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #aaa;border-radius:4px;cursor:pointer">✕ إغلاق</button>
   </div>
 
-  <!-- كليشة أعلى -->
+  <!-- رأس الصفحة -->
   <div class="kl">
-    <div class="kl-inner">
-      <div class="kl-meta">
-        <div class="row"><span class="lb">العـدد :</span><span class="val">&nbsp;</span></div>
-        <div class="row" style="margin-top:4px"><span class="lb">التاريخ :</span><span class="val">&nbsp;</span></div>
-      </div>
-      <div class="kl-org">
-        <div class="kl-title">جمهورية العراق / وزارة النفط</div>
-        <div class="kl-sub">شركة توزيع المنتجات النفطية</div>
-        <div class="kl-sub">هيأة توزيع المنطقة الغربية / فرع صلاح الدين</div>
-        <div class="kl-sub">شعبة تقنية المعلومات / وحدة كاميرات المراقبة</div>
-      </div>
-      <div class="kl-meta" style="text-align:left">
-        <div>📞 07712111177</div>
-        <div style="margin-top:3px">📞 07816940742</div>
-      </div>
-    </div>
-    <div style="text-align:center;font-weight:800;font-size:12px;margin-top:5px;border-top:1px solid #aaa;padding-top:4px">
+    <div style="text-align:center;font-size:15px;font-weight:900;margin-bottom:8px;border-bottom:1.5px solid #000;padding-bottom:6px">
       استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي
     </div>
-  </div>
-
-  <!-- معلومات المحطة -->
-  <div class="st-bar">
-    <div class="cell">
-      <div class="lbl">اسم المحطة</div>
-      <div class="val">${x.station_name||'—'}</div>
-    </div>
-    <div class="cell">
-      <div class="lbl">القاطع</div>
-      <div class="val">${x.district||'—'}</div>
-    </div>
-    <div class="cell">
-      <div class="lbl">نوع المحطة</div>
-      <div class="val">حكومية</div>
-    </div>
-    <div class="cell">
-      <div class="lbl">فترة التخزين</div>
-      <div class="val">${x.storage_days?x.storage_days+' شهر':'—'}</div>
-    </div>
-    <div class="cell" style="text-align:center">
-      <div class="lbl">إجمالي الكاميرات</div>
-      <div class="val total">${totalCams}</div>
-    </div>
+    <table style="border-collapse:collapse;font-size:11px">
+      <tr>
+        <td style="padding:4px 8px;width:16%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td>
+        <td style="padding:4px 8px;width:14%;border:1px solid #aaa">${dayName}</td>
+        <td style="padding:4px 8px;width:13%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td>
+        <td style="padding:4px 8px;width:22%;border:1px solid #aaa">${dateStr}</td>
+        <td style="padding:4px 8px;width:10%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td>
+        <td style="padding:4px 8px;border:1px solid #aaa">${timeStr}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td>
+        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">${x.station_name||'—'}</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td>
+        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa">${x.district||''}&nbsp;</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td>
+        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
+        <td colspan="2" style="padding:4px 8px;border:1px solid #aaa">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
+        <td colspan="2" style="padding:4px 8px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
+      </tr>
+      <tr>
+        <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
+        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa">&nbsp;</td>
+      </tr>
+    </table>
   </div>
 
   <!-- جدول الكاميرات -->
   <div class="sec-hdr">📷 جدول الكاميرات</div>
-  <table class="t">
+  <table>
+    <colgroup>
+      <col style="width:42px"><col style="width:100px"><col style="width:90px">
+      <col style="width:90px"><col><col style="width:120px">
+    </colgroup>
     <thead><tr>
-      <th style="width:40px">التسلسل</th>
+      <th>التسلسل</th>
+      <th>نوع الكاميرا</th>
+      <th>عدد الكاميرات الداخلية</th>
+      <th>عدد الكاميرات الخارجية</th>
       <th>حجم عدسة الكاميرا</th>
-      <th style="width:85px">عدد الداخلية</th>
-      <th style="width:85px">عدد الخارجية</th>
-      <th style="width:110px">نوع الكاميرا</th>
-      <th style="width:40px">C</th>
+      <th>الملاحظات</th>
     </tr></thead>
-    <tbody>${camRows}</tbody>
+    <tbody>
+      <tr>
+        <td style="text-align:center;font-weight:800">1</td>
+        <td style="text-align:center">${x.cam_spec||'—'}</td>
+        <td style="text-align:center;font-weight:900;font-size:14px;color:#166534">${x.cam_indoor||0}</td>
+        <td style="text-align:center;font-weight:900;font-size:14px;color:#1d4ed8">${x.cam_outdoor||0}</td>
+        <td style="text-align:right">${x.cam_res||'—'}</td>
+        <td></td>
+      </tr>
+      <tr style="height:22px"><td style="text-align:center">2</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr style="height:22px"><td style="text-align:center">3</td><td></td><td></td><td></td><td></td><td></td></tr>
+      <tr style="height:22px"><td style="text-align:center">4</td><td></td><td></td><td></td><td></td><td></td></tr>
+    </tbody>
     <tfoot><tr>
-      <td colspan="2" style="text-align:center">المجموع</td>
-      <td style="text-align:center;font-size:14px">${x.cam_indoor||0}</td>
-      <td style="text-align:center;font-size:14px">${x.cam_outdoor||0}</td>
-      <td colspan="2" style="text-align:center">الإجمالي: <strong style="font-size:14px">${totalCams}</strong></td>
+      <td style="text-align:center;font-weight:800;background:#ccc" colspan="2">المجموع الكلي</td>
+      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${x.cam_indoor||0}</td>
+      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${x.cam_outdoor||0}</td>
+      <td style="background:#ccc"></td>
+      <td style="text-align:center;font-weight:900;background:#ccc;color:#166534">الإجمالي: <span style="font-size:15px">${totalCams}</span> كاميرا</td>
     </tr></tfoot>
   </table>
 
   <!-- جدول أجهزة التسجيل -->
-  <div class="sec-hdr" style="margin-top:10px">🎥 جدول أجهزة التسجيل الفيديوي</div>
-  <div style="display:flex;gap:0;border:1.5px solid #000;border-top:none">
-    <div style="flex:1">
-      <table class="t" style="border:none">
-        <thead><tr>
-          <th style="width:40px;border-top:1px solid #333">التسلسل</th>
-          <th style="border-top:1px solid #333">نوع الجهاز</th>
-          <th style="width:90px;border-top:1px solid #333">طريقة الربط</th>
-          <th style="width:70px;border-top:1px solid #333">العدد</th>
-          <th style="width:80px;border-top:1px solid #333">سعة الهارد</th>
-          <th style="width:70px;border-top:1px solid #333">عدد الهاردات</th>
-        </tr></thead>
-        <tbody>${dvrRows}</tbody>
-      </table>
-    </div>
-    <div style="border-right:1.5px solid #000;padding:8px 12px;min-width:180px">
-      <div class="pw-title">مصدر الطاقة الكهربائية</div>
-      ${pwChecks}
-    </div>
-  </div>
+  <div class="sec-hdr" style="margin-top:12px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+  <table>
+    <colgroup>
+      <col style="width:42px"><col style="width:130px"><col style="width:85px">
+      <col style="width:75px"><col style="width:55px">
+      <col style="width:75px"><col style="width:160px"><col>
+    </colgroup>
+    <thead><tr>
+      <th>التسلسل</th>
+      <th>نوع جهاز التسجيل</th>
+      <th>طريقة الربط</th>
+      <th>سعة الهارد (TB)</th>
+      <th>العدد</th>
+      <th>فترة التخزين (شهر)</th>
+      <th>مصدر الطاقة الكهربائية</th>
+      <th>الملاحظات</th>
+    </tr></thead>
+    <tbody>
+      <tr>
+        <td style="text-align:center;font-weight:800">1</td>
+        <td style="text-align:right;font-weight:700">${x.dvr_model||x.dvr_spec||'—'}</td>
+        <td style="text-align:center">IP شبكي</td>
+        <td style="text-align:center;font-weight:700;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB':'—'}</td>
+        <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||0}</td>
+        <td style="text-align:center">${x.storage_days?x.storage_days+' شهر':'—'}</td>
+        <td style="padding:5px 8px">${pwCell}</td>
+        <td></td>
+      </tr>
+      ${emptyDvrRow(2)}
+      ${emptyDvrRow(3)}
+      ${emptyDvrRow(4)}
+    </tbody>
+  </table>
 
-  <!-- التوقيعات -->
-  <div class="sigs">
-    <div class="sig-box">
-      <div class="sig-line"></div>
-      <div class="sig-lbl">الموظف مسؤول كاميرات المراقبة</div>
-      <div style="font-size:10px;color:#444;margin-top:3px">التاريخ : ___________________</div>
+  <!-- التذييل -->
+  <div style="display:flex;justify-content:space-between;margin-top:20px;gap:20px">
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:10px 14px;border-radius:4px">
+      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:11px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
     </div>
-    <div class="sig-box">
-      <div class="sig-line"></div>
-      <div class="sig-lbl">مدير الدائرة</div>
-      <div style="font-size:10px;color:#444;margin-top:3px">التاريخ : ___________________</div>
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:10px 14px;border-radius:4px">
+      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:11px;margin-bottom:8px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
+      <div style="font-size:11px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
     </div>
   </div>
 
@@ -4643,7 +4613,7 @@ function printInvSingle(id){
   <div class="kl-btm">
     <div>نظام إدارة كاميرات المراقبة — OPDC</div>
     <div style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة</div>
-    <div>تاريخ الطباعة: ${dateStr}</div>
+    <div>${dateStr}</div>
   </div>
 
   </body></html>`);
