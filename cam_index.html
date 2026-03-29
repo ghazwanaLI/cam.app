@@ -5799,11 +5799,21 @@ function printInv(){
   <meta charset="UTF-8"><title>جرد كاميرات المراقبة</title>
   <style>
     *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Arial',sans-serif;direction:rtl;padding:14px;font-size:11px;color:#111}
-    .no-print{margin-bottom:12px;display:flex;gap:8px}
-    h2{font-size:14px;font-weight:900;text-align:center;margin-bottom:2px}
-    h3{font-size:12px;text-align:center;color:#444;margin-bottom:10px}
-    .section-hdr{font-weight:800;font-size:12px;margin:14px 0 4px;padding:5px 10px;border-right:4px solid #166534;background:#f0fdf4}
+    body{font-family:'Arial',sans-serif;direction:rtl;padding:0;font-size:11px;color:#111}
+    .no-print{padding:10px 14px;display:flex;gap:8px}
+    .page-header{width:100%;border-bottom:3px double #1e3a8a;padding:10px 16px 8px;background:#fff}
+    .page-footer{width:100%;border-top:3px double #1e3a8a;padding:8px 16px;background:#fff;margin-top:16px}
+    .header-inner{display:flex;align-items:center;justify-content:space-between}
+    .header-org{text-align:center;flex:1}
+    .org-title{font-size:15px;font-weight:900;color:#1e3a8a;line-height:1.5}
+    .org-sub{font-size:11px;color:#374151;line-height:1.6}
+    .header-meta{text-align:left;font-size:10px;color:#555;min-width:130px}
+    .header-meta div{margin-bottom:3px}
+    .header-meta span{font-weight:700;color:#111}
+    .content{padding:8px 16px}
+    h2{font-size:13px;font-weight:900;text-align:center;margin-bottom:2px;color:#1e3a8a}
+    h3{font-size:11px;text-align:center;color:#555;margin-bottom:10px}
+    .section-hdr{font-weight:800;font-size:12px;margin:12px 0 3px;padding:5px 10px;border-right:4px solid #166534;background:#f0fdf4}
     .section-hdr.blue{border-right-color:#1e3a8a;background:#eff6ff}
     table{width:100%;border-collapse:collapse;margin-bottom:4px}
     th{background:#166534;color:#fff;padding:7px 8px;border:1px solid #14532d;font-size:11px;text-align:center}
@@ -5811,21 +5821,52 @@ function printInv(){
     td{border:1px solid #cbd5e1;padding:6px 8px;font-size:11px}
     tr:nth-child(even){background:#f8fafc}
     .total-row{background:#166534!important;color:#fff;font-weight:800}
-    .total-row.blue{background:#1e3a8a!important}
-    .sigs{display:flex;justify-content:space-between;margin-top:24px;gap:20px}
+    .sigs{display:flex;justify-content:space-between;margin-top:20px;gap:20px}
     .sig-box{flex:1;text-align:center}
     .sig-line{border-bottom:1px solid #333;margin:28px 10px 4px}
     .sig-label{font-size:10px;font-weight:700}
-    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
+    .footer-inner{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#555}
+    @media print{
+      .no-print{display:none!important}
+      .page-header{position:running(header)}
+      .page-footer{position:running(footer)}
+      @page{margin:12mm;size:A4 landscape}
+    }
   </style></head><body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#1e3a8a;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
+  </div>
+
+  <!-- كليشة الأعلى -->
+  <div class="page-header">
+    <div class="header-inner">
+      <div style="text-align:right;min-width:130px;font-size:10px;color:#555">
+        <div>العـدد: ________________</div>
+        <div style="margin-top:4px">التاريخ: ${dateStr}</div>
+      </div>
+      <div class="header-org">
+        <div class="org-title">جمهورية العراق</div>
+        <div class="org-title">وزارة النفط</div>
+        <div class="org-sub">شركة توزيع المنتجات النفطية</div>
+        <div class="org-sub">هيأة توزيع المنطقة الغربية / فرع صلاح الدين</div>
+        <div class="org-sub">شعبة تقنية المعلومات / وحدة كاميرات المراقبة</div>
+      </div>
+      <div style="text-align:left;min-width:130px;font-size:10px;color:#555">
+        <div>📞 07712111177</div>
+        <div>📞 07816940742</div>
+      </div>
+    </div>
+  </div>
   <div class="no-print">
     <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
     <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
     <span style="font-size:11px;color:#64748b;margin-right:8px">عدد المحطات: ${list.length} | إجمالي الكاميرات: ${totalCams}</span>
   </div>
 
+  <div class="content">
   <h2>جرد كاميرات المراقبة وأجهزة التسجيل</h2>
-  <h3>شركة توزيع المنتجات النفطية / فرع صلاح الدين / شعبة تقنية المعلومات — ${dateStr}</h3>
+  <h3>${filterDist?'القاطع: '+filterDist:'جميع القواطع'} — عدد المحطات: ${list.length} | إجمالي الكاميرات: ${totalCams}</h3>
 
   <!-- جدول الكاميرات -->
   <div class="section-hdr">📷 جدول الكاميرات</div>
@@ -5868,7 +5909,7 @@ function printInv(){
   </table>
 
   <!-- التوقيعات -->
-  <div class="sigs">
+  <div class="sigs" style="padding:0 16px">
     <div class="sig-box">
       <div class="sig-label">التوقيع</div>
       <div class="sig-line"></div>
@@ -5880,6 +5921,18 @@ function printInv(){
       <div class="sig-line"></div>
       <div class="sig-label">اسم مدير الدائرة</div>
       <div style="font-size:10px;color:#555;margin-top:4px">التاريخ: _______________</div>
+    </div>
+  </div>
+  </div><!-- /content -->
+
+  <!-- كليشة الأسفل -->
+  <div class="page-footer">
+    <div class="footer-inner">
+      <div style="font-size:10px;color:#64748b">نظام إدارة كاميرات المراقبة — OPDC</div>
+      <div style="font-size:11px;font-weight:700;color:#1e3a8a;text-align:center">
+        شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة
+      </div>
+      <div style="font-size:10px;color:#64748b">تاريخ الطباعة: ${dateStr}</div>
     </div>
   </div>
   </body></html>`);
