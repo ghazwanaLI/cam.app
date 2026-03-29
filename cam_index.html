@@ -721,7 +721,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
-        <div class="nav-item" id="nav-inventory"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+        <div class="nav-item" id="nav-inventory" onclick="goInventorySub('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
         <div class="nav-sub">
           <div class="nav-sub-item" onclick="goInventorySub('inv-stations')">📋 جرد المحطات</div>
           <div class="nav-sub-item" onclick="goInventorySub('inv-devices')">🎥 أجهزة التسجيل</div>
@@ -3705,13 +3705,11 @@ function printInvSingle(id){
 }
 
 function goInventorySub(sub){
-  // انتقل لتبويب الجرد ثم فتح التبويب الفرعي
   const navInv=document.getElementById('nav-inventory');
   goTab('inventory', navInv);
   setTimeout(()=>switchInvSub(sub), 50);
 }
 function switchInvSub(sub){
-  // إخفاء جميع المحتويات الفرعية
   document.querySelectorAll('.inv-sub-content').forEach(d=>d.style.display='none');
   document.querySelectorAll('.inv-sub-tab').forEach(t=>{
     t.style.borderBottomColor='transparent';
@@ -3719,16 +3717,12 @@ function switchInvSub(sub){
     t.style.background='';
     t.style.fontWeight='600';
   });
-  // إظهار المختار
-  const content=document.getElementById('inv-sub-'+sub);
-  const tab=document.getElementById('isub-'+sub);
-  if(content) content.style.display='';
-  if(tab){
-    tab.style.borderBottomColor='#1d4ed8';
-    tab.style.color='#1d4ed8';
-    tab.style.background='#fff';
-    tab.style.fontWeight='700';
-  }
+  const ct=document.getElementById('inv-sub-'+sub);
+  const tb=document.getElementById('isub-'+sub);
+  if(ct) ct.style.display='';
+  if(tb){tb.style.borderBottomColor='#1d4ed8';tb.style.color='#1d4ed8';tb.style.background='#fff';tb.style.fontWeight='700';}
+  // تحميل البيانات عند فتح جرد المحطات
+  if(sub==='inv-stations') loadInvStations();
 }
 
 function goTab(name, el){
