@@ -3599,7 +3599,7 @@ function renderInvList(){
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage_days||'—'}</td>
       <td style="padding:5px 6px;text-align:center;${B}">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
-        <button class="btn btn-o btn-sm" onclick="printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
+        <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
     </tr>`;
@@ -3663,9 +3663,13 @@ async function delInv(id){
 }
 
 function printInvSingle(id){
+  // منع الاستدعاء المزدوج (touch + click)
+  if(printInvSingle._busy) return;
+  printInvSingle._busy=true;
+  setTimeout(()=>{printInvSingle._busy=false;},600);
+
   const x=allInventory.find(i=>String(i.id)===String(id));
   if(!x){
-    console.error('printInvSingle: id='+id+', allInventory=', allInventory);
     toast('لم يتم العثور على البيانات (id='+id+')','err');
     return;
   }
@@ -3720,8 +3724,6 @@ function printInvSingle(id){
   for(var k=0;k<3;k++){
     empDvr+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(k+2)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
   }
-
-  console.log('printInvSingle x:', JSON.stringify(x).slice(0,500));
 
   var stName=x.station_name||x.station||'—';
   var district=x.district||'';
