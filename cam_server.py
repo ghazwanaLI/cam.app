@@ -233,10 +233,15 @@ class Handler(BaseHTTPRequestHandler):
             with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
         if p=="/favicon.ico":
             self.send_response(204); self.end_headers(); return
+        if p=="/api/me":
+            u2=self.get_user()
+            if u2: self.send_json({"ok":True,"user":{k:v for k,v in u2.items() if k!="password"}})
+            else:  self.send_json({"ok":False,"user":None})
+            return
         u=self.require_auth()
         if not u: return
         db=load_db()
-        if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
+        if p=="/api/me": pass
         elif p=="/api/notifications":
             db=load_db()
             notifs=db.get("notifications",[])
