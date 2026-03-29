@@ -3711,33 +3711,36 @@ function printInvSingle(id){
   var camRows='';
   for(var i=0;i<cams.length;i++){
     var r=cams[i];
-    camRows+='<tr>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.type||x.cam_spec||'—')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#166534">'+(r.indoor||x.cam_indoor||x.cam_count||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#1d4ed8">'+(r.outdoor||x.cam_outdoor||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.lens&&r.lens!=='—'?r.lens:(x.cam_res||'—'))+'</td>'+
-      '<td style="border:1px solid #444"></td></tr>';
+    var rIn=parseInt(r.indoor)||0;
+    var rOut=parseInt(r.outdoor)||0;
+    camRows+=
+      '<tr>'+
+      '<td class="tc n">'+  (i+1)+'</td>'+
+      '<td class="tc">'+    (r.type||'—')+'</td>'+
+      '<td class="tc grn">'+rIn+'</td>'+
+      '<td class="tc blu">'+rOut+'</td>'+
+      '<td class="tc">'+    (r.lens&&r.lens!=='—'?r.lens:'—')+'</td>'+
+      '<td></td>'+
+      '</tr>';
   }
   for(var j=cams.length;j<5;j++){
-    camRows+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(j+1)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
+    camRows+='<tr class="erow"><td class="tc n">'+(j+1)+'</td><td></td><td></td><td></td><td></td><td></td></tr>';
   }
 
   // مصدر الطاقة
   var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
   var pwSaved=(x.power_source||x.power||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
-  var pwHtml='<table style="border-collapse:collapse;border:none"><tr>';
+  var pwHtml='';
   pwList.forEach(function(p){
     var chk=pwSaved.some(function(s){return s===p;});
-    pwHtml+='<td style="border:none;padding:1px 5px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">'+
-      '<span style="width:13px;height:13px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+(chk?'&#10003;':'')+'</span>'+
-      '<span style="font-size:9px;white-space:nowrap">'+p+'</span></span></td>';
+    pwHtml+='<span style="display:inline-flex;align-items:center;gap:3px;margin-left:8px">'+
+      '<span style="width:12px;height:12px;border:1.5px solid #1e3a5f;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:'+(chk?'#1e3a5f':'#fff')+';color:#fff">'+(chk?'✓':'')+'</span>'+
+      '<span style="font-size:9.5px">'+p+'</span></span>';
   });
-  pwHtml+='</tr></table>';
 
   var empDvr='';
   for(var k=0;k<3;k++){
-    empDvr+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(k+2)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
+    empDvr+='<tr class="erow"><td class="tc n">'+(k+2)+'</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
   }
 
   var stName=x.station_name||x.station||'—';
@@ -3753,70 +3756,102 @@ function printInvSingle(id){
   var address='محافظة صلاح الدين'+(district?' — قضاء '+district+' — مركز القضاء':'');
 
   var html=
-  '<style>table{border-collapse:collapse;width:100%}td,th{border:1px solid #444;padding:2px 5px;font-size:10px;vertical-align:middle;line-height:1.3}th{background:#d0d0d0;font-weight:800;text-align:center}.sh{background:#222;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;margin-top:6px}.kl{border:1.5px solid #000;padding:4px 8px;margin-bottom:6px}.kb{border:1.5px solid #000;padding:3px 8px;margin-top:6px;display:flex;justify-content:space-between;font-size:9px;align-items:center}</style>'+
+  '<style>'+
+    '@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap");'+
+    '*{box-sizing:border-box}'+
+    'body{font-family:Cairo,sans-serif;color:#0f1923;background:#fff}'+
+    'table{border-collapse:collapse;width:100%}'+
+    'td,th{border:1px solid #b0bec5;padding:3px 6px;font-size:10px;vertical-align:middle;line-height:1.4}'+
+    'th{background:#1e3a5f;color:#fff;font-weight:700;text-align:center;font-size:10px}'+
+    '.tc{text-align:center}'+
+    '.n{font-weight:800;background:#f0f4ff}'+
+    '.grn{font-weight:900;font-size:12px;color:#166534;background:#f0fff4}'+
+    '.blu{font-weight:900;font-size:12px;color:#1d4ed8;background:#eff6ff}'+
+    '.erow td{height:18px;background:#fafafa}'+
+    '.lbl{font-weight:700;color:#1e3a5f;font-size:10px;background:#eef2ff}'+
+    '.sec-hdr{background:#1e3a5f;color:#fff;font-weight:800;font-size:10.5px;padding:4px 10px;margin-top:8px;margin-bottom:0;letter-spacing:.3px;border-radius:3px 3px 0 0}'+
+    '.wrap{border:1.5px solid #1e3a5f;border-radius:4px;margin-bottom:8px;overflow:hidden}'+
+    '.footer-bar{border:1.5px solid #1e3a5f;border-radius:4px;padding:4px 10px;display:flex;justify-content:space-between;font-size:9px;margin-top:8px;background:#f0f4ff}'+
+    '.title-bar{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;text-align:center;padding:7px;font-size:14px;font-weight:900;border-radius:4px;margin-bottom:6px;letter-spacing:.5px}'+
+    '.sig-box{border:1px solid #b0bec5;border-radius:4px;padding:8px 12px;flex:1}'+
+    '.sig-line{font-size:10px;margin-bottom:8px;border-bottom:1px dashed #ccc;padding-bottom:4px}'+
+    '.pw-box{padding:3px 6px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}'+
+  '</style>'+
 
-  '<div class="kl">'+
-    '<div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:4px;border-bottom:1px solid #000;padding-bottom:3px">استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي</div>'+
-    '<table style="font-size:10px;margin-top:4px">'+
+  '<div class="title-bar">📋 استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي</div>'+
+
+  '<div class="wrap">'+
+    '<table style="font-size:10px">'+
       '<tr>'+
-        '<td style="padding:2px 6px;width:15%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td>'+
-        '<td style="padding:2px 6px;width:13%;border:1px solid #aaa">'+day+'</td>'+
-        '<td style="padding:2px 6px;width:12%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td>'+
-        '<td style="padding:2px 6px;width:22%;border:1px solid #aaa">'+date+'</td>'+
-        '<td style="padding:2px 6px;width:9%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td>'+
-        '<td style="padding:2px 6px;border:1px solid #aaa">'+time+'</td>'+
+        '<td class="lbl" style="width:14%">اليوم</td><td style="width:12%">'+day+'</td>'+
+        '<td class="lbl" style="width:11%">التاريخ</td><td style="width:20%">'+date+'</td>'+
+        '<td class="lbl" style="width:9%">الوقت</td><td>'+time+'</td>'+
       '</tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">'+stName+'</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">'+address+'</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa">'+phone+'</td><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700;color:#dc2626">أمني رقابي</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa">'+coords+'</td></tr>'+
+      '<tr><td class="lbl">اسم المحطة</td><td colspan="5" style="font-weight:800;font-size:11px;color:#1e3a5f">'+stName+'</td></tr>'+
+      '<tr><td class="lbl">العنوان</td><td colspan="5" style="font-weight:600">'+address+'</td></tr>'+
+      '<tr><td class="lbl">الدائرة</td><td colspan="5" style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td></tr>'+
+      '<tr>'+
+        '<td class="lbl">البريد / الهاتف</td><td colspan="2" style="direction:ltr;text-align:right">'+phone+'</td>'+
+        '<td class="lbl">نوع النشاط</td><td colspan="2" style="font-weight:800;color:#dc2626">أمني رقابي</td>'+
+      '</tr>'+
+      '<tr><td class="lbl">الإحداثيات</td><td colspan="5" style="font-size:9px;direction:ltr;text-align:right">'+coords+'</td></tr>'+
     '</table>'+
   '</div>'+
 
-  '<div class="sh">&#128247; جدول الكاميرات</div>'+
-  '<table><colgroup><col style="width:38px"><col style="width:90px"><col style="width:80px"><col style="width:80px"><col style="width:90px"><col></colgroup>'+
-  '<thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>عدد الداخلية</th><th>عدد الخارجية</th><th>حجم عدسة الكاميرا</th><th>الملاحظات</th></tr></thead>'+
-  '<tbody>'+camRows+'</tbody>'+
-  '<tfoot><tr>'+
-    '<td colspan="2" style="text-align:center;font-weight:800;background:#ccc;border:1px solid #888">المجموع الكلي</td>'+
-    '<td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">'+camIn+'</td>'+
-    '<td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">'+camOut+'</td>'+
-    '<td style="background:#ccc;border:1px solid #888"></td>'+
-    '<td style="text-align:center;font-weight:900;background:#ccc;border:1px solid #888;color:#166534">الإجمالي: <span style="font-size:13px;font-weight:900">'+total+'</span> كاميرا</td>'+
-  '</tr></tfoot></table>'+
+  '<div class="sec-hdr">📷 جدول الكاميرات</div>'+
+  '<div class="wrap" style="border-top:none;border-radius:0 0 4px 4px">'+
+  '<table>'+
+    '<colgroup><col style="width:36px"><col style="width:100px"><col style="width:85px"><col style="width:85px"><col style="width:100px"><col></colgroup>'+
+    '<thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>عدد الداخلية</th><th>عدد الخارجية</th><th>حجم العدسة</th><th>الملاحظات</th></tr></thead>'+
+    '<tbody>'+camRows+'</tbody>'+
+    '<tfoot><tr>'+
+      '<td colspan="2" class="tc" style="font-weight:800;background:#1e3a5f;color:#fff">المجموع الكلي</td>'+
+      '<td class="tc grn" style="font-size:13px;background:#dcfce7">'+camIn+'</td>'+
+      '<td class="tc blu" style="font-size:13px;background:#dbeafe">'+camOut+'</td>'+
+      '<td style="background:#f0f4ff"></td>'+
+      '<td class="tc" style="font-weight:800;background:#1e3a5f;color:#fff">الإجمالي: '+total+' كاميرا</td>'+
+    '</tr></tfoot>'+
+  '</table>'+
+  '</div>'+
 
-  '<div class="sh" style="margin-top:6px">&#127909; جدول أجهزة التسجيل الفيديوي</div>'+
-  '<table><colgroup><col style="width:38px"><col style="width:130px"><col style="width:80px"><col style="width:70px"><col style="width:55px"><col style="width:80px"><col style="width:170px"><col></colgroup>'+
-  '<thead><tr><th>التسلسل</th><th>نوع جهاز التسجيل</th><th>طريقة الربط</th><th>سعة الهارد (TB)</th><th>العدد</th><th>فترة التسجيل</th><th>مصدر الطاقة الكهربائية</th><th>الملاحظات</th></tr></thead>'+
-  '<tbody><tr>'+
-    '<td style="text-align:center;font-weight:800;border:1px solid #444">1</td>'+
-    '<td style="text-align:right;font-weight:700;border:1px solid #444">'+dvr+'</td>'+
-    '<td style="text-align:center;border:1px solid #444">'+conn+'</td>'+
-    '<td style="text-align:center;font-weight:700;color:#1d4ed8;border:1px solid #444">'+hddSize+'</td>'+
-    '<td style="text-align:center;font-weight:700;color:#7c3aed;border:1px solid #444">'+hddCount+'</td>'+
-    '<td style="text-align:center;border:1px solid #444">'+storage+'</td>'+
-    '<td style="padding:3px 5px;border:1px solid #444">'+pwHtml+'</td>'+
-    '<td style="border:1px solid #444">'+notes+'</td>'+
-  '</tr>'+empDvr+'</tbody></table>'+
+  '<div class="sec-hdr" style="margin-top:8px">🎥 جدول أجهزة التسجيل الفيديوي</div>'+
+  '<div class="wrap" style="border-top:none;border-radius:0 0 4px 4px">'+
+  '<table>'+
+    '<colgroup><col style="width:36px"><col style="width:130px"><col style="width:80px"><col style="width:65px"><col style="width:50px"><col style="width:75px"><col><col></colgroup>'+
+    '<thead><tr><th>ت</th><th>نوع جهاز التسجيل</th><th>طريقة الربط</th><th>سعة الهارد</th><th>العدد</th><th>فترة التسجيل</th><th>مصدر الطاقة</th><th>ملاحظات</th></tr></thead>'+
+    '<tbody>'+
+      '<tr>'+
+        '<td class="tc n">1</td>'+
+        '<td style="font-weight:700">'+dvr+'</td>'+
+        '<td class="tc">'+conn+'</td>'+
+        '<td class="tc blu" style="font-weight:700">'+hddSize+'</td>'+
+        '<td class="tc" style="font-weight:700;color:#7c3aed">'+hddCount+'</td>'+
+        '<td class="tc" style="font-weight:700;color:#0891b2">'+storage+'</td>'+
+        '<td class="pw-box">'+pwHtml+'</td>'+
+        '<td style="font-size:9px">'+notes+'</td>'+
+      '</tr>'+
+      empDvr+
+    '</tbody>'+
+  '</table>'+
+  '</div>'+
 
-  '<div style="display:flex;justify-content:space-between;margin-top:10px;gap:14px">'+
-    '<div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">'+
-      '<div style="font-size:10px;margin-bottom:6px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
-      '<div style="font-size:10px;margin-bottom:6px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
-      '<div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
+  '<div style="display:flex;gap:10px;margin-top:8px">'+
+    '<div class="sig-box">'+
+      '<div class="sig-line"><b>التوقيع :-</b></div>'+
+      '<div class="sig-line"><b>مسؤول وحدة الكاميرات :-</b></div>'+
+      '<div style="font-size:10px"><b>التاريخ :-</b></div>'+
     '</div>'+
-    '<div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">'+
-      '<div style="font-size:10px;margin-bottom:6px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
-      '<div style="font-size:10px;margin-bottom:6px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
-      '<div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>'+
+    '<div class="sig-box">'+
+      '<div class="sig-line"><b>التوقيع :-</b></div>'+
+      '<div class="sig-line"><b>مدير فرع صلاح الدين :-</b></div>'+
+      '<div style="font-size:10px"><b>التاريخ :-</b></div>'+
     '</div>'+
   '</div>'+
 
-  '<div class="kb">'+
-    '<div>نظام إدارة كاميرات المراقبة — OPDC</div>'+
-    '<div style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة</div>'+
-    '<div>'+date+'</div>'+
+  '<div class="footer-bar">'+
+    '<span>نظام إدارة كاميرات المراقبة — OPDC</span>'+
+    '<span style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة</span>'+
+    '<span>'+date+'</span>'+
   '</div>';
 
   // طباعة بديل: استبدال محتوى الصفحة مؤقتاً
