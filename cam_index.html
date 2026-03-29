@@ -1132,6 +1132,7 @@ function _navInv(sub){
                   <option value="">كل المحطات</option>
                 </select>
                 <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
+                <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#166534;border-color:rgba(22,163,74,.4)">📊 تصدير Excel</button>
                 <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
               </div>
             </div>
@@ -3911,10 +3912,12 @@ function printInvSingle(id){
     document.head.appendChild(styleEl);
   }
   document.title='جرد كاميرات - '+stName;
+  var _xData=x; // حفظ البيانات للتصدير
   document.body.innerHTML=
     '<div style="font-family:Cairo,sans-serif;direction:rtl;padding:10px">'+
     '<div class="no-print" style="display:flex;gap:8px;margin-bottom:12px">'+
       '<button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;font-family:Cairo,sans-serif">🖨️ طباعة</button>'+
+      '<button id="_inv_excel_btn" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;font-family:Cairo,sans-serif">📊 تصدير Excel</button>'+
       '<button id="_inv_close_btn" style="padding:8px 16px;border:1px solid #aaa;border-radius:6px;cursor:pointer;font-size:13px;font-family:Cairo,sans-serif">✕ إغلاق</button>'+
     '</div>'+
     html+
@@ -3922,8 +3925,10 @@ function printInvSingle(id){
   document.getElementById('_inv_close_btn').onclick=function(){
     document.body.innerHTML=prevBody;
     document.title=prevTitle;
-    // إعادة تهيئة البرنامج
     if(typeof initApp==='function') initApp();
+  };
+  document.getElementById('_inv_excel_btn').onclick=function(){
+    exportInvSingleExcel(_xData);
   };
 }
 
@@ -4741,6 +4746,121 @@ function filterCamStations(){
 //  INVENTORY
 // ══════════════════════════════════════════
 function exportInvCSV(){ exportInvExcel(); }
+
+async function _loadXlsx(){
+  if(window.XLSX) return;
+  await new Promise((res,rej)=>{
+    const s=document.createElement('script');
+    s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload=res; s.onerror=rej; document.head.appendChild(s);
+  });
+}
+
+// تصدير كل الجرد
+async function exportInvExcel(){
+  if(!allInventory.length){toast('لا توجد بيانات جرد','err');return;}
+  toast('جاري إنشاء الملف...');
+  await _loadXlsx();
+  const hdr=['#','اسم المحطة','القاطع','نوع الكاميرا','داخلية','خارجية','الإجمالي','نوع الجهاز','طريقة الربط','سعة الهارد','عدد الهاردات','فترة التسجيل','مصدر الطاقة','الهاتف','الإحداثيات','ملاحظات'];
+  const rows=allInventory.map((x,i)=>{
+    let cams=[];try{cams=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){}
+    const camIn=cams.reduce((a,r)=>a+(+r.indoor||0),0)||+x.cam_indoor||0;
+    const camOut=cams.reduce((a,r)=>a+(+r.outdoor||0),0)||+x.cam_outdoor||0;
+    let dvrs=[];try{dvrs=x.dvr_rows?JSON.parse(x.dvr_rows):[];}catch(e){}
+    const firstDvr=dvrs[0]||{};
+    return [
+      i+1,
+      x.station_name||'',x.district||'',
+      cams.map(r=>r.type).join(' + ')||x.cam_spec||'',
+      camIn,camOut,camIn+camOut||+x.cam_count||0,
+      firstDvr.model||x.dvr_model||'',firstDvr.spec||x.dvr_spec||'',
+      (firstDvr.hdd_size||x.hdd_size||'')+(firstDvr.hdd_size||x.hdd_size?' TB':''),
+      firstDvr.hdd_count||x.hdd_count||0,
+      firstDvr.storage||x.storage_days||'',
+      x.power_source||'',x.phone||'',x.coords||'',x.notes||''
+    ];
+  });
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.aoa_to_sheet([hdr,...rows]);
+  // عرض الأعمدة
+  ws['!cols']=[{wch:4},{wch:20},{wch:12},{wch:16},{wch:8},{wch:8},{wch:8},{wch:20},{wch:12},{wch:10},{wch:8},{wch:14},{wch:20},{wch:14},{wch:22},{wch:20}];
+  ws['!rightToLeft']=true;
+  XLSX.utils.book_append_sheet(wb,ws,'جرد الكاميرات');
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([out],{type:'application/octet-stream'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  toast('تم التصدير ✅');
+}
+
+// تصدير جرد محطة واحدة
+async function exportInvSingleExcel(x){
+  toast('جاري إنشاء الملف...');
+  await _loadXlsx();
+
+  let cams=[];try{cams=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){}
+  if(!cams.length&&+x.cam_count>0) cams=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||+x.cam_count||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
+  const camIn=cams.reduce((a,r)=>a+(parseInt(r.indoor)||0),0);
+  const camOut=cams.reduce((a,r)=>a+(parseInt(r.outdoor)||0),0);
+
+  let dvrs=[];try{dvrs=x.dvr_rows?JSON.parse(x.dvr_rows):[];}catch(e){}
+  if(!dvrs.length&&x.dvr_model) dvrs=[{model:x.dvr_model,spec:x.dvr_spec||'',hdd_size:x.hdd_size||'',hdd_count:x.hdd_count||0,storage:x.storage_days||''}];
+
+  const wb=XLSX.utils.book_new();
+
+  // ورقة 1: معلومات المحطة
+  const district=x.district||'';
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const infoRows=[
+    ['استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي'],
+    [],
+    ['التاريخ',dateStr],
+    ['اسم المحطة',x.station_name||''],
+    ['القاطع',district],
+    ['العنوان','محافظة صلاح الدين'+(district?' — قضاء '+district:'')],
+    ['الدائرة','شركة توزيع المنتجات النفطية / فرع صلاح الدين'],
+    ['الهاتف',x.phone||''],
+    ['الإحداثيات',x.coords||''],
+    ['نوع النشاط','أمني رقابي'],
+    [],
+    ['مصدر الطاقة',x.power_source||''],
+    ['ملاحظات',x.notes||''],
+  ];
+  const wsInfo=XLSX.utils.aoa_to_sheet(infoRows);
+  wsInfo['!cols']=[{wch:20},{wch:40}];
+  wsInfo['!rightToLeft']=true;
+  XLSX.utils.book_append_sheet(wb,wsInfo,'معلومات المحطة');
+
+  // ورقة 2: جدول الكاميرات
+  const camHdr=['التسلسل','نوع الكاميرا','عدد الداخلية','عدد الخارجية','حجم العدسة'];
+  const camDataRows=cams.map((r,i)=>[i+1,r.type||'',parseInt(r.indoor)||0,parseInt(r.outdoor)||0,r.lens||'']);
+  camDataRows.push(['','المجموع الكلي',camIn,camOut,camIn+camOut+' كاميرا']);
+  const wsCam=XLSX.utils.aoa_to_sheet([camHdr,...camDataRows]);
+  wsCam['!cols']=[{wch:10},{wch:16},{wch:14},{wch:14},{wch:16}];
+  wsCam['!rightToLeft']=true;
+  XLSX.utils.book_append_sheet(wb,wsCam,'جدول الكاميرات');
+
+  // ورقة 3: جدول أجهزة التسجيل
+  const dvrHdr=['التسلسل','نوع جهاز التسجيل','طريقة الربط','سعة الهارد (TB)','عدد الهاردات','فترة التسجيل'];
+  const dvrDataRows=dvrs.map((r,i)=>[i+1,r.model||'',r.spec||'',r.hdd_size||'',r.hdd_count||0,r.storage||'']);
+  const wsDvr=XLSX.utils.aoa_to_sheet([dvrHdr,...dvrDataRows]);
+  wsDvr['!cols']=[{wch:10},{wch:24},{wch:14},{wch:14},{wch:12},{wch:18}];
+  wsDvr['!rightToLeft']=true;
+  XLSX.utils.book_append_sheet(wb,wsDvr,'أجهزة التسجيل');
+
+  const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([out],{type:'application/octet-stream'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='جرد_'+(x.station_name||'محطة')+'_'+new Date().toISOString().split('T')[0]+'.xlsx';
+  document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+  toast('تم التصدير ✅');
+}
 
 
 // ══════════════════════════════════════════
