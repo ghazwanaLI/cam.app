@@ -3663,8 +3663,12 @@ async function delInv(id){
 }
 
 function printInvSingle(id){
-  const x=allInventory.find(i=>i.id===id);
-  if(!x){toast('لم يتم العثور على البيانات','err');return;}
+  const x=allInventory.find(i=>String(i.id)===String(id));
+  if(!x){
+    console.error('printInvSingle: id='+id+', allInventory=', allInventory);
+    toast('لم يتم العثور على البيانات (id='+id+')','err');
+    return;
+  }
 
   const now=new Date();
   const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -3710,6 +3714,8 @@ function printInvSingle(id){
   for(var k=0;k<3;k++){
     empDvr+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(k+2)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
   }
+
+  console.log('printInvSingle x:', JSON.stringify(x).slice(0,500));
 
   var stName=x.station_name||x.station||'—';
   var district=x.district||'';
