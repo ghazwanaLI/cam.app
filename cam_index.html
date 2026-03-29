@@ -1728,108 +1728,145 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- INVENTORY MODAL -->
 <div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
-  <div class="modal" style="width:780px">
-    <div class="m-title">📦 <span id="inv-ttl">إضافة جرد محطة</span></div>
-    <input type="hidden" id="inv-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="inv-station" onchange="importFromStation()"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">الحالة العامة</label>
-        <select class="fi" dir="rtl" id="inv-status">
-          <option value="مكتمل">مكتمل</option>
-          <option value="ناقص">ناقص</option>
-          <option value="معطل">معطل</option>
-        </select>
-      </div>
-      <div class="fg full">
-        <div style="background:#f0f9ff;border:1px solid rgba(8,145,178,.3);border-radius:10px;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px">
-          <span style="font-size:12px;color:#0891b2;font-weight:600">💡 جلب بيانات الكاميرات من تبويب المحطات تلقائياً</span>
-          <button type="button" onclick="importFromStation()" class="btn btn-o btn-sm" style="color:#0891b2;border-color:rgba(8,145,178,.4);font-size:12px;white-space:nowrap">
-            📥 جلب من المحطة
-          </button>
-        </div>
-      </div>
+  <div class="modal" style="width:880px;max-height:92vh;overflow-y:auto;padding:0">
 
-      <!-- DVR/NVR -->
-      <div class="fg full" style="border:1px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
-        <div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:10px">📹 أجهزة التسجيل DVR/NVR</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-dvr-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">نوع جهاز التسجيل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32ch أو DVR 16ch"></div>
-          <div class="fg"><label class="fl">طريقة الربط</label>
-            <select class="fi" dir="rtl" id="inv-dvr-spec">
-              <option value="IP شبكي">IP شبكي</option>
-              <option value="Coaxial">Coaxial</option>
-            </select>
-          </div>
-          <div class="fg"><label class="fl">مصدر الطاقة الكهربائية</label>
-            <div id="inv-power-source-wrap" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0">
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
-                <input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
-                <input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
-                <input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
-                <input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-              <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
-                <input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- HDD -->
-      <div class="fg full" style="border:1px solid rgba(124,58,237,.25);border-radius:12px;padding:14px;background:rgba(124,58,237,.03)">
-        <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:10px">💾 الهاردات (HDD)</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">💽 سعة الهارد (TB)</label><input class="fi" id="inv-hdd-size" type="text" placeholder="مثال: 2 أو 4"></div>
-          <div class="fg"><label class="fl">🔢 عدد الهاردات</label><input class="fi" id="inv-hdd-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">📅 فترة التسجيل</label><input class="fi" id="inv-storage-days" type="text" placeholder="مثال: 6 أشهر فما فوق"></div>
-        </div>
-      </div>
-
-      <!-- Cameras -->
-      <div class="fg full" style="border:1px solid rgba(22,163,74,.25);border-radius:12px;padding:14px;background:rgba(22,163,74,.03)">
-        <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:10px">📷 الكاميرات</div>
-        <div class="fgrid">
-          <div class="fg full" style="overflow-x:auto">
-            <table id="cam-types-tbl" style="width:100%;border-collapse:collapse;font-size:12px">
-              <thead>
-                <tr style="background:#e8f5e9">
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9;text-align:right">#</th>
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9">نوع الكاميرا</th>
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:90px">عدد الداخلية</th>
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:90px">عدد الخارجية</th>
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:130px">حجم العدسة</th>
-                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:32px"></th>
-                </tr>
-              </thead>
-              <tbody id="cam-types-body"></tbody>
-            </table>
-            <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="margin-top:6px;color:#16a34a;border-color:rgba(22,163,74,.4)">➕ إضافة نوع كاميرا</button>
-          </div>
-        </div>
-      </div>
-
-
-
-
-
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="inv-notes" rows="2" style="resize:vertical"></textarea></div>
-      <div class="fg"><label class="fl">📞 رقم الهاتف / البريد الإلكتروني</label><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx / email@..."></div>
-      <div class="fg"><label class="fl">📍 الإحداثيات</label><input class="fi" id="inv-coords" type="text" placeholder="latitude, longitude"></div>
+    <!-- عنوان النموذج -->
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
+      📦 <span id="inv-ttl">إضافة جرد محطة</span>
     </div>
+    <input type="hidden" id="inv-eid">
+
+    <div style="padding:14px 16px">
+
+      <!-- ══ معلومات المنفذ ══ -->
+      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">بيانات المنفذ التوزيعي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:160px">اسم المنفذ / البناية :</td>
+            <td colspan="5" style="padding:3px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="inv-station" onchange="importFromStation();updateInvAddress()" style="width:100%;font-size:11px">
+                <option value="">— اختر المحطة —</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="inv-address-cell" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:3px 6px;border:1px solid #e2e8f0">
+              <input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px">
+            </td>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:110px">نوع النشاط :</td>
+            <td colspan="2" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+          </tr>
+          <tr>
+            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:3px 6px;border:1px solid #e2e8f0">
+              <input class="fi" id="inv-coords" type="text" placeholder="latitude, longitude" style="width:100%;font-size:11px">
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- ══ جدول الكاميرات ══ -->
+      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#f0fdf4">
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:38px">#</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:110px">نوع الكاميرا</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الداخلية</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الخارجية</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0">حجم العدسة</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="cam-types-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- ══ جدول أجهزة التسجيل ══ -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">🎥 جهاز التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#eff6ff">
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:38px">#</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe">نوع جهاز التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:110px">طريقة الربط</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:85px">سعة الهارد (TB)</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:65px">عدد الهاردات</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:110px">فترة التسجيل</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;color:#94a3b8">1</td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32-ch 16-HDD" style="width:100%;font-size:11px;padding:3px 6px">
+              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <select class="fi" dir="rtl" id="inv-dvr-spec" style="width:100%;font-size:11px;padding:3px 6px">
+                  <option value="IP شبكي">IP شبكي</option>
+                  <option value="Coaxial">Coaxial</option>
+                </select>
+              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <input class="fi" id="inv-hdd-size" type="text" placeholder="مثال: 8" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
+              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <input class="fi" id="inv-hdd-count" type="number" min="0" value="0" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
+              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <input class="fi" id="inv-storage-days" type="text" placeholder="6 أشهر فما فوق" style="width:100%;font-size:11px;padding:3px 6px">
+              </td>
+            </tr>
+          </tbody>
+        </table>
+
+        <!-- مصدر الطاقة -->
+        <div style="padding:6px 10px;background:#eff6ff;border-top:1px solid #bfdbfe">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8;margin-left:10px">⚡ مصدر الطاقة الكهربائية :</span>
+          <span id="inv-power-source-wrap" style="display:inline-flex;flex-wrap:wrap;gap:10px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
+              <input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
+              <input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
+              <input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
+              <input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
+              <input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
+          </span>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div style="margin-bottom:10px">
+        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;color:#475569">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right;font-size:11px;resize:vertical" id="inv-notes" rows="2"></textarea>
+      </div>
+
+    </div>
+
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
-      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ</button>
+      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
     </div>
   </div>
 </div>
-
 <!-- DISTRICT MODAL -->
 <div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
   <div class="modal modal-sm">
@@ -4369,6 +4406,11 @@ function renderInv(){
 function filterInv(){renderInv();}
 function importFromStation(){
   const sid=document.getElementById('inv-station')?.value;
+  const addrEl=document.getElementById('inv-addr-display');
+  if(!sid){if(addrEl)addrEl.textContent='يتم تحديده تلقائياً';return;}
+  const stObj=allStations.find(s=>String(s.id)===String(sid));
+  if(!stObj)return;
+  if(addrEl) addrEl.textContent=stObj.district?'محافظة صلاح الدين — قضاء '+stObj.district+' — مركز القضاء':'يتم تحديده تلقائياً';
   if(!sid){toast('اختر المحطة أولاً','err');return;}
   const st=allStations.find(s=>String(s.id)===String(sid));
   if(!st){toast('لم يتم العثور على المحطة','err');return;}
@@ -4395,6 +4437,13 @@ function importFromStation(){
   if(hs) hs.value=hddSize||'';
 
   toast(`✅ تم جلب بيانات ${st.name}`);
+}
+
+function updateInvAddress(){
+  const stId=document.getElementById('inv-station')?.value;
+  const st=allStations.find(s=>String(s.id)===String(stId));
+  const cell=document.getElementById('inv-address-cell');
+  if(cell) cell.textContent=st&&st.district?'محافظة صلاح الدين — قضاء '+st.district+' — مركز القضاء':'—';
 }
 
 const LENS_OPTS=['—','2.8 mm','4 mm','6 mm','8 mm','12 mm','2.8 mm - 5 مزدوج','زاوية 180°','أخرى'];
@@ -4455,6 +4504,8 @@ function openInvModal(id){
   const pwEl=document.getElementById('inv-power-source');if(pwEl)pwEl.value=m.power_source||'كهرباء المحطة';
   // تحميل صفوف الكاميرات
   try{setCamRows(m.cam_rows?JSON.parse(m.cam_rows):[]);}catch(e){setCamRows([]);}
+  // تحديث العنوان
+  updateInvAddress();
   document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
   document.getElementById('ov-inv').classList.add('open');
 }
