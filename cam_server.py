@@ -231,6 +231,8 @@ class Handler(BaseHTTPRequestHandler):
         if p in ("","/"): 
             f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
             with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
+        if p=="/favicon.ico":
+            self.send_response(204); self.end_headers(); return
         u=self.require_auth()
         if not u: return
         db=load_db()
