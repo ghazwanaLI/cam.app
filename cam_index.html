@@ -3772,9 +3772,9 @@ function printInvSingle(id){
   var pwHtml='';
   pwList.forEach(function(p){
     var chk=pwSaved.some(function(s){return s===p;});
-    pwHtml+='<span style="display:inline-flex;align-items:center;gap:3px;margin-left:8px">'+
-      '<span style="width:12px;height:12px;border:1.5px solid #1e3a5f;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;background:'+(chk?'#1e3a5f':'#fff')+';color:#fff">'+(chk?'✓':'')+'</span>'+
-      '<span style="font-size:9.5px">'+p+'</span></span>';
+    pwHtml+='<span style="display:inline-flex;align-items:center;gap:4px;margin-left:10px">'+
+      '<span style="width:14px;height:14px;border:1.5px solid #1e3a5f;border-radius:2px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;background:'+(chk?'#1e3a5f':'#fff')+';color:#fff">'+(chk?'✓':'')+'</span>'+
+      '<span style="font-size:12px">'+p+'</span></span>';
   });
 
   var empDvr='';
@@ -3817,42 +3817,42 @@ function printInvSingle(id){
   '<style>'+
     '@import url("https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap");'+
     '*{box-sizing:border-box}'+
-    'body{font-family:Cairo,sans-serif;color:#0f1923;background:#fff}'+
+    'body{font-family:Cairo,sans-serif;color:#0f1923;background:#fff;font-size:12px}'+
     'table{border-collapse:collapse;width:100%}'+
-    'td,th{border:1px solid #b0bec5;padding:3px 6px;font-size:10px;vertical-align:middle;line-height:1.4}'+
-    'th{background:#1e3a5f;color:#fff;font-weight:700;text-align:center;font-size:10px}'+
+    'td,th{border:1px solid #b0bec5;padding:4px 7px;font-size:12px;vertical-align:middle;line-height:1.5}'+
+    'th{background:#1e3a5f;color:#fff;font-weight:700;text-align:center;font-size:12px}'+
     '.tc{text-align:center}'+
     '.n{font-weight:800;background:#f0f4ff}'+
-    '.grn{font-weight:900;font-size:12px;color:#166534;background:#f0fff4}'+
-    '.blu{font-weight:900;font-size:12px;color:#1d4ed8;background:#eff6ff}'+
-    '.erow td{height:18px;background:#fafafa}'+
-    '.lbl{font-weight:700;color:#1e3a5f;font-size:10px;background:#eef2ff}'+
-    '.sec-hdr{background:#1e3a5f;color:#fff;font-weight:800;font-size:10.5px;padding:4px 10px;margin-top:8px;margin-bottom:0;letter-spacing:.3px;border-radius:3px 3px 0 0}'+
+    '.grn{font-weight:900;font-size:14px;color:#166534;background:#f0fff4}'+
+    '.blu{font-weight:900;font-size:14px;color:#1d4ed8;background:#eff6ff}'+
+    '.erow td{height:20px;background:#fafafa}'+
+    '.lbl{font-weight:700;color:#1e3a5f;font-size:12px;background:#eef2ff}'+
+    '.sec-hdr{background:#1e3a5f;color:#fff;font-weight:800;font-size:12px;padding:5px 10px;margin-top:8px;margin-bottom:0;letter-spacing:.3px;border-radius:3px 3px 0 0}'+
     '.wrap{border:1.5px solid #1e3a5f;border-radius:4px;margin-bottom:8px;overflow:hidden}'+
-    '.footer-bar{border:1.5px solid #1e3a5f;border-radius:4px;padding:4px 10px;display:flex;justify-content:space-between;font-size:9px;margin-top:8px;background:#f0f4ff}'+
-    '.title-bar{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;text-align:center;padding:7px;font-size:14px;font-weight:900;border-radius:4px;margin-bottom:6px;letter-spacing:.5px}'+
+    '.footer-bar{border:1.5px solid #1e3a5f;border-radius:4px;padding:5px 10px;display:flex;justify-content:space-between;font-size:15px;margin-top:8px;background:#f0f4ff}'+
+    '.title-bar{background:linear-gradient(135deg,#1e3a5f,#2563eb);color:#fff;text-align:center;padding:8px;font-size:16px;font-weight:900;border-radius:4px;margin-bottom:6px;letter-spacing:.5px}'+
     '.sig-box{border:1px solid #b0bec5;border-radius:4px;padding:8px 12px;flex:1}'+
-    '.sig-line{font-size:10px;margin-bottom:8px;border-bottom:1px dashed #ccc;padding-bottom:4px}'+
-    '.pw-box{padding:3px 6px;display:flex;flex-wrap:wrap;gap:2px;align-items:center}'+
+    '.sig-line{font-size:12px;margin-bottom:10px;border-bottom:1px dashed #ccc;padding-bottom:4px}'+
+    '.pw-box{padding:3px 6px;display:flex;flex-wrap:wrap;gap:3px;align-items:center}'+
   '</style>'+
 
   '<div class="title-bar">📋 استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي</div>'+
 
   '<div class="wrap">'+
-    '<table style="font-size:10px">'+
+    '<table style="font-size:12px">'+
       '<tr>'+
         '<td class="lbl" style="width:14%">اليوم</td><td style="width:12%">'+day+'</td>'+
         '<td class="lbl" style="width:11%">التاريخ</td><td style="width:20%">'+date+'</td>'+
         '<td class="lbl" style="width:9%">الوقت</td><td>'+time+'</td>'+
       '</tr>'+
-      '<tr><td class="lbl">اسم المحطة</td><td colspan="5" style="font-weight:800;font-size:11px;color:#1e3a5f">'+stName+'</td></tr>'+
+      '<tr><td class="lbl">اسم المحطة</td><td colspan="5" style="font-weight:800;font-size:15px;color:#1e3a5f">'+stName+'</td></tr>'+
       '<tr><td class="lbl">العنوان</td><td colspan="5" style="font-weight:600">'+address+'</td></tr>'+
       '<tr><td class="lbl">الدائرة</td><td colspan="5" style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td></tr>'+
       '<tr>'+
         '<td class="lbl">البريد / الهاتف</td><td colspan="2" style="direction:ltr;text-align:right">'+phone+'</td>'+
         '<td class="lbl">نوع النشاط</td><td colspan="2" style="font-weight:800;color:#dc2626">أمني رقابي</td>'+
       '</tr>'+
-      '<tr><td class="lbl">الإحداثيات</td><td colspan="5" style="font-size:9px;direction:ltr;text-align:right">'+coords+'</td></tr>'+
+      '<tr><td class="lbl">الإحداثيات</td><td colspan="5" style="font-size:15px;direction:ltr;text-align:right">'+coords+'</td></tr>'+
     '</table>'+
   '</div>'+
 
@@ -3864,8 +3864,8 @@ function printInvSingle(id){
     '<tbody>'+camRows+'</tbody>'+
     '<tfoot><tr>'+
       '<td colspan="2" class="tc" style="font-weight:800;background:#1e3a5f;color:#fff">المجموع الكلي</td>'+
-      '<td class="tc grn" style="font-size:13px;background:#dcfce7">'+camIn+'</td>'+
-      '<td class="tc blu" style="font-size:13px;background:#dbeafe">'+camOut+'</td>'+
+      '<td class="tc grn" style="font-size:15px;background:#dcfce7">'+camIn+'</td>'+
+      '<td class="tc blu" style="font-size:15px;background:#dbeafe">'+camOut+'</td>'+
       '<td style="background:#f0f4ff"></td>'+
       '<td class="tc" style="font-weight:800;background:#1e3a5f;color:#fff">الإجمالي: '+total+' كاميرا</td>'+
     '</tr></tfoot>'+
@@ -3885,12 +3885,12 @@ function printInvSingle(id){
     '<div class="sig-box">'+
       '<div class="sig-line"><b>التوقيع :-</b></div>'+
       '<div class="sig-line"><b>مسؤول وحدة الكاميرات :-</b></div>'+
-      '<div style="font-size:10px"><b>التاريخ :-</b></div>'+
+      '<div style="font-size:12px"><b>التاريخ :-</b></div>'+
     '</div>'+
     '<div class="sig-box">'+
       '<div class="sig-line"><b>التوقيع :-</b></div>'+
       '<div class="sig-line"><b>مدير فرع صلاح الدين :-</b></div>'+
-      '<div style="font-size:10px"><b>التاريخ :-</b></div>'+
+      '<div style="font-size:12px"><b>التاريخ :-</b></div>'+
     '</div>'+
   '</div>'+
 
