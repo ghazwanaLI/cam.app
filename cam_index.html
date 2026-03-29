@@ -103,6 +103,13 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .nav-item.active{color:#1d4ed8;font-weight:700;border-bottom:3px solid #1d4ed8;background:#eff6ff;}
 .ni{font-size:14px;}
 .nav-sect{font-size:13px;color:#cbd5e1;padding:0 4px;white-space:nowrap;}
+.nav-dropdown{position:relative;display:inline-flex;align-items:center;}
+.nav-dropdown:hover .nav-sub{display:flex;}
+.nav-sub{display:none;position:absolute;top:100%;right:0;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;min-width:160px;overflow:hidden;}
+.nav-sub-item{padding:9px 16px;font-size:12px;font-weight:600;color:#334155;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;border-bottom:1px solid #f1f5f9;}
+.nav-sub-item:last-child{border-bottom:none;}
+.nav-sub-item:hover{background:#eff6ff;color:#1d4ed8;}
+.nav-dropdown>.nav-item::after{content:'▾';font-size:9px;margin-right:2px;opacity:.6;}
 .hidden{display:none!important;}
 
 /* MAIN */
@@ -713,7 +720,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
-      <div class="nav-item" onclick="goTab('inventory',this)"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+      <div class="nav-dropdown">
+        <div class="nav-item" id="nav-inventory"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+        <div class="nav-sub">
+          <div class="nav-sub-item" onclick="goInventorySub('inv-stations')">📋 جرد المحطات</div>
+          <div class="nav-sub-item" onclick="goInventorySub('inv-devices')">🎥 أجهزة التسجيل</div>
+          <div class="nav-sub-item" onclick="goInventorySub('inv-report')">📄 التقارير</div>
+        </div>
+      </div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
       <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
@@ -1087,95 +1101,78 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 
       <!-- INVENTORY TAB -->
-      <div id="tab-inventory" style="display:none"><div style="padding:0">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-inv" placeholder="بحث بالمحطة..." oninput="filterInv()"></div>
-              <select class="fi btn-sm" id="f-inv-district" onchange="filterInv()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-inv-station" onchange="filterInv()" style="width:160px">
-                <option value="">كل المحطات الحكومية</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-weight:700">📊 تصدير Excel</button>
-              <button class="btn btn-o btn-sm" onclick="printInv()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="printInvOfficial()" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-weight:700">📄 طباعة رسمية</button>
-              <button class="btn btn-o btn-sm" onclick="loadInventory()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot" style="background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.4)"></div>📦 جرد الكاميرات والأجهزة</div>
-          </div>
 
-          <!-- Summary cards per district -->
-          <div id="inv-district-summary" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:14px 16px;border-bottom:1px solid var(--border)"></div>
-
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-            <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvModal()" style="display:none">➕ إضافة جرد محطة</button>
-            <span style="font-size:12px;color:var(--t3)" id="inv-total-label"></span>
-          </div>
-          <!-- جدول الكاميرات -->
-          <div style="padding:10px 16px 0;display:flex;align-items:center;gap:8px;margin-top:6px">
-            <div style="width:4px;height:22px;background:#16a34a;border-radius:2px"></div>
-            <span style="font-size:14px;font-weight:800;color:#15803d">📷 جدول الكاميرات</span>
-            <span id="inv-cam-count" style="background:#16a34a;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
-          </div>
-          <div class="table-wrap" style="padding:8px 0 0">
-            <table id="inv-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:collapse">
-              <colgroup>
-                <col style="width:40px"><col><col style="width:110px">
-                <col style="width:75px"><col style="width:75px">
-                <col style="width:90px"><col style="width:130px"><col style="width:80px">
-              </colgroup>
-              <thead>
-                <tr style="background:#166534;color:#fff">
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">التسلسل</th>
-                  <th style="padding:9px 12px;text-align:right;border:1px solid #14532d;font-size:11px">اسم المحطة</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">نوع الكاميرا</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:10px">عدد الداخلية</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:10px">عدد الخارجية</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">حجم العدسة</th>
-                  <th style="padding:9px 12px;text-align:right;border:1px solid #14532d;font-size:11px">الملاحظات</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #14532d;font-size:11px">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="inv-tb"></tbody>
-            </table>
-          </div>
-
-          <!-- جدول أجهزة التسجيل -->
-          <div style="padding:10px 16px 0;display:flex;align-items:center;gap:8px;margin-top:18px">
-            <div style="width:4px;height:22px;background:#1d4ed8;border-radius:2px"></div>
-            <span style="font-size:14px;font-weight:800;color:#1e40af">🎥 جدول أجهزة التسجيل الفيديوي</span>
-            <span id="inv-dvr-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:2px 12px;font-size:11px;font-weight:700"></span>
-          </div>
-          <div class="table-wrap" style="padding:8px 0 0">
-            <table id="inv-dvr-table" style="direction:rtl;table-layout:fixed;width:100%;border-collapse:collapse">
-              <colgroup>
-                <col style="width:40px"><col><col style="width:110px">
-                <col style="width:80px"><col style="width:75px"><col style="width:75px">
-                <col style="width:80px"><col style="width:110px">
-                <col style="width:130px"><col style="width:80px">
-              </colgroup>
-              <thead>
-                <tr style="background:#1e3a8a;color:#fff">
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">التسلسل</th>
-                  <th style="padding:9px 12px;text-align:right;border:1px solid #1e40af;font-size:11px">اسم المحطة</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">نوع الجهاز</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">طريقة الربط</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">سعة الهارد (TB)</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">عدد الهاردات</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">فترة التخزين</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:10px">مصدر الطاقة</th>
-                  <th style="padding:9px 12px;text-align:right;border:1px solid #1e40af;font-size:11px">الملاحظات</th>
-                  <th style="padding:9px 6px;text-align:center;border:1px solid #1e40af;font-size:11px">إجراءات</th>
-                </tr>
-              </thead>
-              <tbody id="inv-dvr-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-inv"></div>
+      <!-- INVENTORY TAB -->
+      <div id="tab-inventory" style="display:none">
+        <!-- تبويبات فرعية -->
+        <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:0;background:#f8fafc">
+          <div class="inv-sub-tab active" id="isub-inv-stations" onclick="switchInvSub('inv-stations')" style="padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid #1d4ed8;color:#1d4ed8;background:#fff">📋 جرد المحطات</div>
+          <div class="inv-sub-tab" id="isub-inv-devices" onclick="switchInvSub('inv-devices')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">🎥 أجهزة التسجيل</div>
+          <div class="inv-sub-tab" id="isub-inv-report" onclick="switchInvSub('inv-report')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">📄 التقارير</div>
         </div>
-      </div><!-- /center -->
+
+        <!-- محتوى: جرد المحطات -->
+        <div id="inv-sub-inv-stations" class="inv-sub-content">
+          <div class="section">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot" style="background:#1d4ed8;box-shadow:0 0 8px rgba(29,78,216,.4)"></div>📋 جرد المحطات</div>
+              <div class="sec-actions">
+                <select class="fi btn-sm" id="f-inv-district" onchange="filterInv()" style="width:130px">
+                  <option value="">كل القواطع</option>
+                </select>
+                <select class="fi btn-sm" id="f-inv-station" onchange="filterInv()" style="width:160px">
+                  <option value="">كل المحطات</option>
+                </select>
+                <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
+                <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
+              </div>
+            </div>
+            <!-- جدول القائمة -->
+            <div class="table-wrap">
+              <table id="inv-list-table" style="direction:rtl;width:100%;border-collapse:collapse">
+                <thead>
+                  <tr style="background:#1e3a8a;color:#fff">
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:40px">#</th>
+                    <th style="padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right">اسم المحطة</th>
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">القاطع</th>
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:70px">الكاميرات</th>
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:120px">نوع الجهاز</th>
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">فترة التسجيل</th>
+                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:85px">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="inv-list-body">
+                  <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="pagination" id="pg-inv"></div>
+          </div>
+        </div>
+
+        <!-- محتوى: أجهزة التسجيل -->
+        <div id="inv-sub-inv-devices" class="inv-sub-content" style="display:none">
+          <div class="section">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot" style="background:#7c3aed;box-shadow:0 0 8px rgba(124,58,237,.4)"></div>🎥 أجهزة التسجيل</div>
+            </div>
+            <div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">
+              سيتم إضافة بيانات الأجهزة هنا
+            </div>
+          </div>
+        </div>
+
+        <!-- محتوى: التقارير -->
+        <div id="inv-sub-inv-report" class="inv-sub-content" style="display:none">
+          <div class="section">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot" style="background:#16a34a;box-shadow:0 0 8px rgba(22,163,74,.4)"></div>📄 تقارير الجرد</div>
+            </div>
+            <div style="padding:20px;text-align:center;color:var(--t3);font-size:13px">
+              سيتم إضافة التقارير هنا
+            </div>
+          </div>
+        </div>
       </div><!-- /tab-inventory -->
 
       <!-- REPORTS TAB -->
@@ -1726,58 +1723,52 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
+
 <!-- INVENTORY MODAL -->
 <div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
-  <div class="modal" style="width:880px;max-height:92vh;overflow-y:auto;padding:0">
-
-    <!-- عنوان النموذج -->
+  <div class="modal" style="width:860px;max-height:92vh;overflow-y:auto;padding:0">
     <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
       📦 <span id="inv-ttl">إضافة جرد محطة</span>
     </div>
     <input type="hidden" id="inv-eid">
-
     <div style="padding:14px 16px">
 
-      <!-- ══ معلومات المنفذ ══ -->
+      <!-- معلومات المنفذ -->
       <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">بيانات المنفذ التوزيعي</div>
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنفذ التوزيعي</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <tr>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:160px">اسم المنفذ / البناية :</td>
-            <td colspan="5" style="padding:3px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="inv-station" onchange="importFromStation();updateInvAddress()" style="width:100%;font-size:11px">
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المنفذ / البناية :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="width:100%;font-size:11px">
                 <option value="">— اختر المحطة —</option>
               </select>
             </td>
           </tr>
           <tr>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="inv-address-cell" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="inv-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
           </tr>
           <tr>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
           </tr>
           <tr>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:3px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px">
-            </td>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:110px">نوع النشاط :</td>
-            <td colspan="2" style="padding:4px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
+            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
           </tr>
           <tr>
-            <td style="padding:4px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:3px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="inv-coords" type="text" placeholder="latitude, longitude" style="width:100%;font-size:11px">
-            </td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
           </tr>
         </table>
       </div>
 
-      <!-- ══ جدول الكاميرات ══ -->
+      <!-- جدول الكاميرات -->
       <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">📷 جدول الكاميرات</div>
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead>
             <tr style="background:#f0fdf4">
@@ -1796,9 +1787,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
-      <!-- ══ جدول أجهزة التسجيل ══ -->
+      <!-- جهاز التسجيل -->
       <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:4px 10px">🎥 جهاز التسجيل الفيديوي</div>
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead>
             <tr style="background:#eff6ff">
@@ -1807,66 +1798,47 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:110px">طريقة الربط</th>
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:85px">سعة الهارد (TB)</th>
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:65px">عدد الهاردات</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:110px">فترة التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:130px">فترة التسجيل</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;color:#94a3b8">1</td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe">
-                <input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32-ch 16-HDD" style="width:100%;font-size:11px;padding:3px 6px">
-              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32-ch" style="width:100%;font-size:11px;padding:3px 6px"></td>
               <td style="padding:2px 4px;border:1px solid #dbeafe">
                 <select class="fi" dir="rtl" id="inv-dvr-spec" style="width:100%;font-size:11px;padding:3px 6px">
                   <option value="IP شبكي">IP شبكي</option>
                   <option value="Coaxial">Coaxial</option>
                 </select>
               </td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe">
-                <input class="fi" id="inv-hdd-size" type="text" placeholder="مثال: 8" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
-              </td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe">
-                <input class="fi" id="inv-hdd-count" type="number" min="0" value="0" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
-              </td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe">
-                <input class="fi" id="inv-storage-days" type="text" placeholder="6 أشهر فما فوق" style="width:100%;font-size:11px;padding:3px 6px">
-              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-size" type="text" placeholder="8" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-count" type="number" min="0" value="0" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-storage-days" type="text" placeholder="6 أشهر فما فوق" style="width:100%;font-size:11px;padding:3px 6px"></td>
             </tr>
           </tbody>
         </table>
-
-        <!-- مصدر الطاقة -->
-        <div style="padding:6px 10px;background:#eff6ff;border-top:1px solid #bfdbfe">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8;margin-left:10px">⚡ مصدر الطاقة الكهربائية :</span>
-          <span id="inv-power-source-wrap" style="display:inline-flex;flex-wrap:wrap;gap:10px">
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
-              <input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
-              <input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
-              <input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
-              <input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-            <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer;font-weight:600">
-              <input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
-          </span>
+        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
         </div>
       </div>
 
       <!-- ملاحظات -->
-      <div style="margin-bottom:10px">
-        <label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px;color:#475569">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right;font-size:11px;resize:vertical" id="inv-notes" rows="2"></textarea>
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
       </div>
-
     </div>
-
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
       <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
     </div>
   </div>
 </div>
+
 <!-- DISTRICT MODAL -->
 <div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
   <div class="modal modal-sm">
@@ -2057,7 +2029,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="perm-item"><div><div style="font-size:13px;font-weight:600">حذف</div><div style="font-size:11px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
       <div class="perm-item"><div><div style="font-size:13px;font-weight:600">ملفات</div><div style="font-size:11px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
       <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تقارير</div><div style="font-size:11px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item" style="border:1px solid rgba(124,58,237,.3);background:rgba(124,58,237,.04)"><div><div style="font-size:13px;font-weight:600;color:#7c3aed">📦 جرد الكاميرات</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل الجرد</div></div><div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-user')">إلغاء</button>
@@ -2347,7 +2318,7 @@ function lsApi(method,path,body){
     const list=lsGetList(res);
     return {[res]:list, tours:res==='tours'?list:undefined, maintenance:res==='maintenance'?list:undefined,
       stations:res==='stations'?list:undefined, cameras:res==='cameras'?list:undefined,
-      inventory:res==='inventory'?list:undefined, coding:res==='coding'?list:undefined,
+      coding:res==='coding'?list:undefined,
       circulars:res==='circulars'?list:undefined, reads:[], delegates:res==='delegates'?list:undefined,
       users:res==='users'?list:undefined};
   }
@@ -3539,6 +3510,227 @@ async function saveGenToList(){
 
 const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
 
+function updateInvAddress(){
+  const stId=document.getElementById('inv-station')?.value;
+  const st=allStations.find(s=>String(s.id)===String(stId));
+  const cell=document.getElementById('inv-address-cell');
+  if(cell) cell.textContent=st&&st.district?'محافظة صلاح الدين — قضاء '+st.district+' — مركز القضاء':'—';
+}
+
+const LENS_OPTS=['—','2.8 mm','4 mm','6 mm','8 mm','12 mm','2.8 mm - 5 مزدوج','زاوية 180°','أخرى'];
+function addCamRow(data={}){
+  const tb=document.getElementById('cam-types-body');if(!tb)return;
+  const idx=tb.rows.length+1;
+  const lensOpts=LENS_OPTS.map(o=>`<option value="${o}"${(data.lens||'')===(o)?' selected':''}>${o}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td style="padding:3px 6px;border:1px solid #ddd;text-align:center;font-size:11px;color:#888">${idx}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-type-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px"><option value="IP"${data.type==='IP'?' selected':''}>IP</option><option value="Analog"${data.type==='Analog'?' selected':''}>Analog</option><option value="HDCVI"${data.type==='HDCVI'?' selected':''}>HDCVI</option><option value="AHD"${data.type==='AHD'?' selected':''}>AHD</option></select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-lens-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">${lensOpts}</select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd;text-align:center"><button type="button" onclick="this.closest('tr').remove()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px">✕</button></td>`;
+  tb.appendChild(tr);
+}
+function getCamRows(){
+  return [...document.querySelectorAll('#cam-types-body tr')].map(r=>({
+    type:r.querySelector('.cam-type-sel')?.value||'',
+    indoor:parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
+    outdoor:parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
+    lens:r.querySelector('.cam-lens-sel')?.value||''
+  }));
+}
+function setCamRows(rows){
+  const tb=document.getElementById('cam-types-body');if(!tb)return;
+  tb.innerHTML='';
+  if(!rows||!rows.length){addCamRow();return;}
+  rows.forEach(r=>addCamRow(r));
+}
+
+let allInventory=[];
+async function loadInvStations(){
+  try{
+    const d=await api('GET','/api/inventory');
+    allInventory=d.inventory||[];
+    renderInvList();
+    // تحديث فلتر القواطع
+    const dsel=document.getElementById('f-inv-district');
+    if(dsel){
+      const cur=dsel.value;
+      const dists=[...new Set(allInventory.map(x=>x.district).filter(Boolean))];
+      dsel.innerHTML='<option value="">كل القواطع</option>'+dists.map(d=>`<option value="${d}">${d}</option>`).join('');
+      if(cur)dsel.value=cur;
+    }
+    // تحديث فلتر المحطات
+    const ssel=document.getElementById('f-inv-station');
+    if(ssel){
+      const cur=ssel.value;
+      ssel.innerHTML='<option value="">كل المحطات</option>'+allInventory.map(x=>`<option value="${x.id}">${x.station_name}</option>`).join('');
+      if(cur)ssel.value=cur;
+    }
+  }catch(e){console.error(e);}
+}
+function renderInvList(){
+  const distF=document.getElementById('f-inv-district')?.value||'';
+  const stF=document.getElementById('f-inv-station')?.value||'';
+  const list=allInventory.filter(x=>{
+    if(distF&&x.district!==distF)return false;
+    if(stF&&String(x.id)!==String(stF))return false;
+    return true;
+  });
+  const tb=document.getElementById('inv-list-body');
+  if(!tb)return;
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات جرد</td></tr>';return;}
+  const B='border:1px solid #e2e8f0';
+  tb.innerHTML=list.map((x,i)=>{
+    let camRows=[];try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){}
+    const totalCams=camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0)||+x.cam_count||0;
+    return `<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.station_name||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#166534">${totalCams}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr_model||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage_days||'—'}</td>
+      <td style="padding:5px 6px;text-align:center;${B}">
+        ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
+        <button class="btn btn-o btn-sm" onclick="printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
+      </td>
+    </tr>`;
+  }).join('');
+}
+function filterInv(){renderInvList();}
+
+function openInvForm(id){
+  const m=id?allInventory.find(x=>x.id===id)||{}:{};
+  document.getElementById('inv-eid').value=id||'';
+  document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
+  // تحميل المحطات الحكومية
+  const ss=document.getElementById('inv-station');
+  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}"${m.station_id===s.id?' selected':''}>${s.name}</option>`).join('');}
+  // تحميل الحقول
+  const flds={'inv-dvr-model':'dvr_model','inv-hdd-size':'hdd_size','inv-storage-days':'storage_days','inv-phone':'phone','inv-coords':'coords','inv-notes':'notes'};
+  Object.entries(flds).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
+  const dvrSpec=document.getElementById('inv-dvr-spec');if(dvrSpec)dvrSpec.value=m.dvr_spec||'IP شبكي';
+  const hddCount=document.getElementById('inv-hdd-count');if(hddCount)hddCount.value=m.hdd_count||0;
+  // مصدر الطاقة
+  const pwVals=(m.power_source||'').split('+').map(s=>s.trim());
+  document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
+  // صفوف الكاميرات
+  let camRows=[];try{camRows=m.cam_rows?JSON.parse(m.cam_rows):[];}catch(e){}
+  setCamRows(camRows);
+  updateInvAddress();
+  document.getElementById('ov-inv').classList.add('open');
+}
+
+async function saveInv(){
+  const id=parseInt(document.getElementById('inv-eid').value)||0;
+  const stId=parseInt(document.getElementById('inv-station').value)||0;
+  if(!stId){toast('اختر المحطة أولاً','err');return;}
+  const st=allStations.find(s=>s.id===stId)||{};
+  const v=id=>document.getElementById(id)?.value||'';
+  const g=id=>parseInt(document.getElementById(id)?.value)||0;
+  const camRows=getCamRows();
+  const body={
+    station_id:stId,station_name:st.name||'',district:st.district||'',
+    dvr_model:v('inv-dvr-model'),dvr_spec:v('inv-dvr-spec'),
+    hdd_size:v('inv-hdd-size'),hdd_count:g('inv-hdd-count'),
+    storage_days:v('inv-storage-days'),
+    power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
+    phone:v('inv-phone'),coords:v('inv-coords'),notes:v('inv-notes'),
+    cam_rows:JSON.stringify(camRows),
+    cam_indoor:camRows.reduce((a,r)=>a+(+r.indoor||0),0),
+    cam_outdoor:camRows.reduce((a,r)=>a+(+r.outdoor||0),0),
+    cam_count:camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0),
+    cam_spec:camRows.map(r=>r.type).filter(Boolean).join(' + ')||'',
+    cam_res:camRows.map(r=>r.lens).filter(s=>s&&s!=='—').join(' + ')||''
+  };
+  try{
+    id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
+    closeModal('ov-inv');toast('تم الحفظ ✅');await loadInvStations();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function delInv(id){
+  if(!confirm('حذف هذا الجرد؟'))return;
+  try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInvStations();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+function printInvSingle(id){
+  const x=allInventory.find(i=>i.id===id);
+  if(!x){toast('لم يتم العثور على البيانات','err');return;}
+  const now=new Date();
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayName=days[now.getDay()];
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
+  let camRows=[];try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){}
+  if(!camRows.length) camRows=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
+  const camIndoor=camRows.reduce((a,r)=>a+(+r.indoor||0),0);
+  const camOutdoor=camRows.reduce((a,r)=>a+(+r.outdoor||0),0);
+  const totalCams=camIndoor+camOutdoor||+x.cam_count||0;
+  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
+  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
+  const empCam=[...Array(Math.max(0,4-camRows.length))].map((_,i)=>`<tr style="height:16px"><td style="text-align:center;border:1px solid #444">${camRows.length+i+1}</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>`).join('');
+  const empDvr=[...Array(3)].map((_,i)=>`<tr style="height:16px"><td style="text-align:center;border:1px solid #444">${i+2}</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>`).join('');
+  const pwHtml='<table style="border-collapse:collapse;border:none"><tr>'+pwList.map(p=>'<td style="border:none;padding:1px 6px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px"><span style="width:13px;height:13px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900">'+(pwSaved.some(s=>s===p)?'&#10003;':'')+'</span><span style="font-size:9px;white-space:nowrap">'+p+'</span></span></td>').join('')+'</tr></table>';
+  const camTbody=camRows.map((r,i)=>`<tr><td style="text-align:center;font-weight:800;border:1px solid #444">${i+1}</td><td style="text-align:center;border:1px solid #444">${r.type||'—'}</td><td style="text-align:center;font-weight:900;font-size:13px;color:#166534;border:1px solid #444">${r.indoor||0}</td><td style="text-align:center;font-weight:900;font-size:13px;color:#1d4ed8;border:1px solid #444">${r.outdoor||0}</td><td style="text-align:center;border:1px solid #444">${r.lens&&r.lens!=='—'?r.lens:'—'}</td><td style="border:1px solid #444"></td></tr>`).join('')+empCam;
+  const w=window.open('','_blank','width=920,height=780');
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8"><title>استمارة جرد - ${x.station_name}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Arial',sans-serif;direction:rtl;font-size:10px;color:#000;padding:10px 12px}table{border-collapse:collapse;width:100%}td,th{border:1px solid #444;padding:2px 5px;font-size:10px;vertical-align:middle;line-height:1.3}th{background:#d0d0d0;font-weight:800;text-align:center}.sec-hdr{background:#222;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;margin-top:6px}.kl{border:1.5px solid #000;padding:4px 8px;margin-bottom:6px}.kl-btm{border:1.5px solid #000;padding:3px 8px;margin-top:6px;display:flex;justify-content:space-between;font-size:9px}.no-print{margin-bottom:8px;display:flex;gap:8px}@media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}</style></head><body>
+  <div class="no-print"><button onclick="window.print()" style="background:#222;color:#fff;border:none;padding:7px 20px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">🖨️ طباعة</button><button onclick="window.close()" style="padding:7px 14px;border:1px solid #aaa;border-radius:4px;cursor:pointer">✕ إغلاق</button></div>
+  <div class="kl"><div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:4px;border-bottom:1px solid #000;padding-bottom:3px">استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي</div>
+  <table style="font-size:10px;margin-top:4px"><tr><td style="padding:2px 6px;width:16%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td><td style="padding:2px 6px;width:14%;border:1px solid #aaa">${dayName}</td><td style="padding:2px 6px;width:13%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td><td style="padding:2px 6px;width:22%;border:1px solid #aaa">${dateStr}</td><td style="padding:2px 6px;width:10%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td><td style="padding:2px 6px;border:1px solid #aaa">${timeStr}</td></tr>
+  <tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">${x.station_name||'—'}</td></tr>
+  <tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">محافظة صلاح الدين${x.district?' — قضاء '+x.district+' — مركز القضاء':''}</td></tr>
+  <tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td></tr>
+  <tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa">${x.phone||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">أمني رقابي</td></tr>
+  <tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa">${x.coords||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td></tr></table></div>
+  <div class="sec-hdr">📷 جدول الكاميرات</div>
+  <table><colgroup><col style="width:38px"><col style="width:90px"><col style="width:80px"><col style="width:80px"><col style="width:90px"><col></colgroup>
+  <thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>عدد الداخلية</th><th>عدد الخارجية</th><th>حجم العدسة</th><th>الملاحظات</th></tr></thead>
+  <tbody>${camTbody}</tbody>
+  <tfoot><tr><td style="text-align:center;font-weight:800;background:#ccc;border:1px solid #888" colspan="2">المجموع الكلي</td><td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">${camIndoor}</td><td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">${camOutdoor}</td><td style="background:#ccc;border:1px solid #888"></td><td style="text-align:center;font-weight:900;background:#ccc;border:1px solid #888;color:#166534">الإجمالي: <span style="font-size:13px">${totalCams}</span> كاميرا</td></tr></tfoot></table>
+  <div class="sec-hdr" style="margin-top:6px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+  <table><colgroup><col style="width:38px"><col style="width:130px"><col style="width:80px"><col style="width:70px"><col style="width:55px"><col style="width:80px"><col style="width:160px"><col></colgroup>
+  <thead><tr><th>التسلسل</th><th>نوع جهاز التسجيل</th><th>طريقة الربط</th><th>سعة الهارد (TB)</th><th>العدد</th><th>فترة التسجيل</th><th>مصدر الطاقة الكهربائية</th><th>الملاحظات</th></tr></thead>
+  <tbody><tr><td style="text-align:center;font-weight:800;border:1px solid #444">1</td><td style="text-align:right;font-weight:700;border:1px solid #444">${x.dvr_model||'—'}</td><td style="text-align:center;border:1px solid #444">${x.dvr_spec||'IP شبكي'}</td><td style="text-align:center;font-weight:700;color:#1d4ed8;border:1px solid #444">${x.hdd_size?x.hdd_size+' TB':'—'}</td><td style="text-align:center;font-weight:700;color:#7c3aed;border:1px solid #444">${x.hdd_count||0}</td><td style="text-align:center;border:1px solid #444">${x.storage_days||'—'}</td><td style="padding:3px 5px;border:1px solid #444">${pwHtml}</td><td style="border:1px solid #444"></td></tr>${empDvr}</tbody></table>
+  <div style="display:flex;justify-content:space-between;margin-top:10px;gap:14px">
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px"><div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
+    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px"><div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div><div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div></div>
+  </div>
+  <div class="kl-btm"><div>نظام إدارة كاميرات المراقبة — OPDC</div><div style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة</div><div>${dateStr}</div></div>
+  </body></html>`);
+  w.document.close();
+}
+
+function goInventorySub(sub){
+  // انتقل لتبويب الجرد ثم فتح التبويب الفرعي
+  const navInv=document.getElementById('nav-inventory');
+  goTab('inventory', navInv);
+  setTimeout(()=>switchInvSub(sub), 50);
+}
+function switchInvSub(sub){
+  // إخفاء جميع المحتويات الفرعية
+  document.querySelectorAll('.inv-sub-content').forEach(d=>d.style.display='none');
+  document.querySelectorAll('.inv-sub-tab').forEach(t=>{
+    t.style.borderBottomColor='transparent';
+    t.style.color='#64748b';
+    t.style.background='';
+    t.style.fontWeight='600';
+  });
+  // إظهار المختار
+  const content=document.getElementById('inv-sub-'+sub);
+  const tab=document.getElementById('isub-'+sub);
+  if(content) content.style.display='';
+  if(tab){
+    tab.style.borderBottomColor='#1d4ed8';
+    tab.style.color='#1d4ed8';
+    tab.style.background='#fff';
+    tab.style.fontWeight='700';
+  }
+}
+
 function goTab(name, el){
   ALL_TABS.forEach(t => {
     const tab = document.getElementById('tab-'+t);
@@ -3559,7 +3751,6 @@ function goTab(name, el){
   if(name==='field')      { loadTours(); loadMaintenance(); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
-  if(name==='inventory')  { loadInventory(); if(!allStations.length) loadStations(); else populateDistrictFilters(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
   if(name==='reports')    { populateReportDistricts(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
@@ -3632,7 +3823,7 @@ async function initApp(){
     if(camStats) camStats.style.display=isAdmin?'grid':'none';
     // التقارير مرئية للجميع لكن مصفّاة بالقاطع
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
-    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-inv','btn-add-coding'].forEach(id=>{
+    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-coding'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
     const circBtn=document.getElementById('btn-add-circ');
@@ -4331,659 +4522,6 @@ function filterCamStations(){
 // ══════════════════════════════════════════
 //  INVENTORY
 // ══════════════════════════════════════════
-
-let allInventory=[];
-async function loadInventory(){
-  try{
-    const d=await api('GET','/api/inventory');
-    allInventory=d.inventory||[];
-    renderInv();
-  }catch(e){toast('loadInventory: '+e.message,'err');console.error('loadInventory',e);}
-}
-function renderInv(){
-  const search=(document.getElementById('sq-inv')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-inv-district')?.value||'';
-  const stF=document.getElementById('f-inv-status')?.value||'';
-  const stationF=document.getElementById('f-inv-station')?.value||'';
-  const userDists=CU?.role!=='admin'?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[]))  :[];
-  let list=allInventory.filter(x=>{
-    if(userDists.length&&!userDists.includes(x.district))return false;
-    if(distF&&x.district!==distF)return false;
-    if(stationF&&String(x.station_id)!==String(stationF)&&x.station_name!==stationF)return false;
-    if(search&&!(x.station_name||'').toLowerCase().includes(search))return false;
-    return true;
-  });
-  const lbl=document.getElementById('inv-total-label');
-  if(lbl) lbl.textContent='إجمالي: '+list.length+' محطة';
-  const camCount=document.getElementById('inv-cam-count');
-  if(camCount) camCount.textContent=list.length+' محطة';
-  const dvrCount=document.getElementById('inv-dvr-count');
-  if(dvrCount) dvrCount.textContent=list.length+' محطة';
-  const tb=document.getElementById('inv-tb');
-  const dvrTb=document.getElementById('inv-dvr-tb');
-
-  // جدول الكاميرات
-  const B='border:1px solid #e2e8f0';
-  if(tb) tb.innerHTML=list.length?list.map((x,i)=>`<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
-    <td style="padding:9px 8px;text-align:center;${B};font-size:11px;color:#94a3b8;font-weight:600">${i+1}</td>
-    <td style="padding:9px 14px;font-weight:700;text-align:right;${B};font-size:12px;color:#0f172a">${x.station_name||'—'}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.cam_spec||'—'}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-weight:800;font-size:15px;color:#16a34a">${x.cam_count||0}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#94a3b8">—</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.cam_res||'—'}</td>
-    <td style="padding:9px 14px;text-align:right;${B};font-size:11px;color:#64748b">${x.notes||''}</td>
-    <td style="padding:6px 8px;text-align:center;${B}">
-      ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInv(${x.id})" style="padding:3px 7px;font-size:11px">✏️</button>`:''}
-      <button class="btn btn-o btn-sm" onclick="printInvSingle(${x.id})" style="padding:3px 7px;font-size:11px;color:#1d4ed8;border-color:rgba(29,78,216,.3)">📄</button>
-      ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 7px;font-size:11px">🗑️</button>`:''}
-    </td>
-  </tr>`).join('')+`<tr style="direction:rtl;background:#166534;color:#fff">
-    <td colspan="2" style="padding:10px 14px;text-align:center;font-size:12px;font-weight:800">المجموع الكلي</td>
-    <td style="padding:10px 8px"></td>
-    <td style="padding:10px 8px;text-align:center;font-size:18px;font-weight:900">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
-    <td colspan="3" style="padding:10px 8px"></td>
-  </tr>`
-    :'<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--t3)">لا يوجد جرد</td></tr>';
-
-  // جدول أجهزة التسجيل
-  if(dvrTb) dvrTb.innerHTML=list.length?list.map((x,i)=>`<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
-    <td style="padding:9px 8px;text-align:center;${B};font-size:11px;color:#94a3b8;font-weight:600">${i+1}</td>
-    <td style="padding:9px 14px;font-weight:700;text-align:right;${B};font-size:12px;color:#0f172a">${x.station_name||'—'}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.dvr_model||x.dvr_spec||'—'}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">شبكة</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-weight:700;font-size:12px;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB / '+x.hdd_count+' قطعة':'—'}</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#94a3b8">—</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.power_source||'كهرباء وطني'}</td>
-    <td style="padding:9px 14px;text-align:right;${B};font-size:11px;color:#64748b">${x.notes||''}</td>
-    <td style="padding:6px 8px;text-align:center;${B}">
-      ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInv(${x.id})" style="padding:3px 7px;font-size:11px">✏️</button>`:''}
-      <button class="btn btn-o btn-sm" onclick="printInvSingle(${x.id})" style="padding:3px 7px;font-size:11px;color:#1d4ed8;border-color:rgba(29,78,216,.3)">📄</button>
-      ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 7px;font-size:11px">🗑️</button>`:''}
-    </td>
-  </tr>`).join('')
-    :'<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--t3)">لا يوجد جرد</td></tr>';
-}
-function filterInv(){renderInv();}
-function importFromStation(){
-  const sid=document.getElementById('inv-station')?.value;
-  const addrEl=document.getElementById('inv-addr-display');
-  if(!sid){if(addrEl)addrEl.textContent='يتم تحديده تلقائياً';return;}
-  const stObj=allStations.find(s=>String(s.id)===String(sid));
-  if(!stObj)return;
-  if(addrEl) addrEl.textContent=stObj.district?'محافظة صلاح الدين — قضاء '+stObj.district+' — مركز القضاء':'يتم تحديده تلقائياً';
-  if(!sid){toast('اختر المحطة أولاً','err');return;}
-  const st=allStations.find(s=>String(s.id)===String(sid));
-  if(!st){toast('لم يتم العثور على المحطة','err');return;}
-
-  // جلب بيانات الكاميرات من المحطة
-  const camCount=(st.cam_working||0)+(st.cam_broken||0)||st.main_cam_count||0;
-  const camType=st.main_cam_type||'';
-  const camRes=st.main_cam_type||'';
-  const dvrCount=1;
-  const hddCount=st.main_hdd_count||0;
-  const hddSize=st.main_hdd_size||'';
-  // تعبئة حقول الكاميرات
-  const cc=document.getElementById('inv-cam-count');
-  const cs=document.getElementById('inv-cam-spec');
-  if(cc) cc.value=camCount||'';
-  if(cs) cs.value=camType||'';
-
-  // تعبئة حقول DVR/HDD
-  const dc=document.getElementById('inv-dvr-count');
-  const hc=document.getElementById('inv-hdd-count');
-  const hs=document.getElementById('inv-hdd-size');
-  if(dc) dc.value=dvrCount;
-  if(hc) hc.value=hddCount||'';
-  if(hs) hs.value=hddSize||'';
-
-  toast(`✅ تم جلب بيانات ${st.name}`);
-}
-
-function updateInvAddress(){
-  const stId=document.getElementById('inv-station')?.value;
-  const st=allStations.find(s=>String(s.id)===String(stId));
-  const cell=document.getElementById('inv-address-cell');
-  if(cell) cell.textContent=st&&st.district?'محافظة صلاح الدين — قضاء '+st.district+' — مركز القضاء':'—';
-}
-
-const LENS_OPTS=['—','2.8 mm','4 mm','6 mm','8 mm','12 mm','2.8 mm - 5 مزدوج','زاوية 180°','أخرى'];
-function addCamRow(data={}){
-  const tb=document.getElementById('cam-types-body');
-  if(!tb)return;
-  const idx=tb.rows.length+1;
-  const lensOpts=LENS_OPTS.map(o=>`<option value="${o}" ${(data.lens||'')===(o)?'selected':''}>${o}</option>`).join('');
-  const tr=document.createElement('tr');
-  tr.innerHTML=`
-    <td style="padding:3px 6px;border:1px solid #ddd;text-align:center;font-size:11px;color:#888">${idx}</td>
-    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-type-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px"><option value="IP">IP</option><option value="Analog" ${data.type==='Analog'?'selected':''}>Analog</option><option value="HDCVI" ${data.type==='HDCVI'?'selected':''}>HDCVI</option><option value="AHD" ${data.type==='AHD'?'selected':''}>AHD</option></select></td>
-    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
-    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
-    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-lens-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">${lensOpts}</select></td>
-    <td style="padding:2px 4px;border:1px solid #ddd;text-align:center"><button type="button" onclick="this.closest('tr').remove();updateCamNums()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px">✕</button></td>`;
-  tb.appendChild(tr);
-}
-function updateCamNums(){
-  const rows=document.querySelectorAll('#cam-types-body tr');
-  rows.forEach((r,i)=>{const c=r.querySelector('td');if(c)c.textContent=i+1;});
-}
-function getCamRows(){
-  return [...document.querySelectorAll('#cam-types-body tr')].map(r=>({
-    type:r.querySelector('.cam-type-sel')?.value||'',
-    indoor:parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
-    outdoor:parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
-    lens:r.querySelector('.cam-lens-sel')?.value||''
-  }));
-}
-function setCamRows(rows){
-  const tb=document.getElementById('cam-types-body');
-  if(!tb)return;
-  tb.innerHTML='';
-  if(!rows||!rows.length){addCamRow();return;}
-  rows.forEach(r=>addCamRow(r));
-}
-
-function openInvModal(id){
-  const m=id?allInventory.find(x=>x.id===id)||{}:{};
-  document.getElementById('inv-eid').value=id||'';
-  // Populate station select
-  const ss=document.getElementById('inv-station');
-  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
-  document.getElementById('inv-status').value=m.status||'مكتمل';
-  const fields={
-    'inv-dvr-count':'dvr_count','inv-dvr-model':'dvr_model',
-    'inv-hdd-count':'hdd_count','inv-hdd-size':'hdd_size','inv-storage-days':'storage_days',
-    'inv-notes':'notes','inv-phone':'phone','inv-coords':'coords'
-  };
-  Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
-  // DVR spec (select)
-  const dvrSpecEl=document.getElementById('inv-dvr-spec');
-  if(dvrSpecEl) dvrSpecEl.value=m.dvr_spec||'IP شبكي';
-  // استعادة checkboxes مصدر الطاقة
-  const pwVals=(m.power_source||'').split(' + ');
-  document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
-  const pwEl=document.getElementById('inv-power-source');if(pwEl)pwEl.value=m.power_source||'كهرباء المحطة';
-  // تحميل صفوف الكاميرات
-  try{setCamRows(m.cam_rows?JSON.parse(m.cam_rows):[]);}catch(e){setCamRows([]);}
-  // تحديث العنوان
-  updateInvAddress();
-  document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
-  document.getElementById('ov-inv').classList.add('open');
-}
-function editInv(id){openInvModal(id);}
-
-async function saveInv(){
-  const id=parseInt(document.getElementById('inv-eid').value)||0;
-  const stId=parseInt(document.getElementById('inv-station').value)||0;
-  if(!stId){toast('اختر المحطة أولاً','err');return;}
-  const st=allStations.find(s=>s.id===stId)||{};
-  const g=id=>parseInt(document.getElementById(id)?.value)||0;
-  const v=id=>document.getElementById(id)?.value||'';
-  const body={station_id:stId,station_name:st.name||'',district:st.district||'',
-    status:v('inv-status'),
-    dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
-    power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
-    hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
-    storage_days:g('inv-storage-days'),
-    notes:v('inv-notes'),phone:v('inv-phone'),coords:v('inv-coords')};
-  // احسب الكاميرات من الصفوف
-  const camRows=getCamRows();
-  body.cam_rows=JSON.stringify(camRows);
-  body.cam_indoor=camRows.reduce((a,r)=>a+r.indoor,0);
-  body.cam_outdoor=camRows.reduce((a,r)=>a+r.outdoor,0);
-  body.cam_count=body.cam_indoor+body.cam_outdoor;
-  body.cam_spec=camRows.map(r=>r.type).filter(Boolean).join(' + ')||'';
-  body.cam_res=camRows.map(r=>r.lens).filter(s=>s&&s!=='—').join(' + ')||'';
-  try{
-    id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
-    closeModal('ov-inv');toast('تم الحفظ ✅');await loadInventory();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-async function delInv(id){
-  if(!confirm('حذف؟'))return;
-  try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInventory();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function printInvSingle(id){
-  const x=allInventory.find(i=>i.id===id);
-  if(!x){toast('لم يتم العثور على البيانات','err');return;}
-
-  const now=new Date();
-  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dayName=days[now.getDay()];
-  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
-  const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
-
-  // بيانات الكاميرات
-  let camRows=[];
-  try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){camRows=[];}
-  if(!camRows.length){
-    camRows=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
-  }
-  const camIndoor=camRows.reduce((a,r)=>a+(+r.indoor||0),0);
-  const camOutdoor=camRows.reduce((a,r)=>a+(+r.outdoor||0),0);
-  const totalCams=camIndoor+camOutdoor||+x.cam_count||0;
-
-  // بيانات الكاميرات — صفوف الجدول
-  const emptyCamRows=[...Array(Math.max(0,4-camRows.length))].map((_,i)=>`<tr style="height:16px"><td style="text-align:center;border:1px solid #444">${camRows.length+i+1}</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>`).join('');
-
-  const camTbody=camRows.map((r,i)=>`<tr>
-    <td style="text-align:center;font-weight:800;border:1px solid #444">${i+1}</td>
-    <td style="text-align:center;border:1px solid #444">${r.type||'—'}</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;color:#166534;border:1px solid #444">${r.indoor||0}</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;color:#1d4ed8;border:1px solid #444">${r.outdoor||0}</td>
-    <td style="text-align:center;border:1px solid #444">${r.lens&&r.lens!=='—'?r.lens:'—'}</td>
-    <td style="border:1px solid #444"></td>
-  </tr>`).join('')+emptyCamRows;
-
-  // مصدر الطاقة
-  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
-  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
-  const pwHtml='<table style="border-collapse:collapse;direction:rtl;border:none"><tr>'+
-    pwList.map(p=>{
-      const chk=pwSaved.some(s=>s===p);
-      return '<td style="border:none;padding:1px 6px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">'+
-        '<span style="width:13px;height:13px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">'+(chk?'&#10003;':'')+'</span>'+
-        '<span style="font-size:9px;white-space:nowrap">'+p+'</span></span></td>';
-    }).join('')+'</tr></table>';
-
-  // صفوف فارغة للأجهزة
-  const emptyDvr=[...Array(3)].map((_,i)=>`<tr style="height:16px"><td style="text-align:center;border:1px solid #444">${i+2}</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>`).join('');
-
-  const w=window.open('','_blank','width=920,height=780');
-  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
-  <meta charset="UTF-8"><title>استمارة جرد - ${x.station_name}</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Arial',sans-serif;direction:rtl;font-size:10px;color:#000;padding:10px 12px}
-    .no-print{margin-bottom:8px;display:flex;gap:8px}
-    table{border-collapse:collapse;width:100%}
-    td,th{border:1px solid #444;padding:2px 5px;font-size:10px;vertical-align:middle;line-height:1.3}
-    th{background:#d0d0d0;font-weight:800;text-align:center}
-    .sec-hdr{background:#222;color:#fff;font-weight:800;font-size:10px;padding:2px 7px;margin-top:6px}
-    .kl{border:1.5px solid #000;padding:4px 8px;margin-bottom:6px}
-    .kl-btm{border:1.5px solid #000;padding:3px 8px;margin-top:6px;display:flex;justify-content:space-between;font-size:9px;align-items:center}
-    @media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}
-  </style></head><body>
-
-  <div class="no-print">
-    <button onclick="window.print()" style="background:#222;color:#fff;border:none;padding:7px 20px;border-radius:4px;cursor:pointer;font-size:12px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:7px 14px;border:1px solid #aaa;border-radius:4px;cursor:pointer">✕ إغلاق</button>
-  </div>
-
-  <!-- رأس الصفحة -->
-  <div class="kl">
-    <div style="text-align:center;font-size:13px;font-weight:900;margin-bottom:4px;border-bottom:1px solid #000;padding-bottom:3px">
-      استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي
-    </div>
-    <table style="border-collapse:collapse;font-size:10px;margin-top:4px">
-      <tr>
-        <td style="padding:2px 6px;width:16%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اليوم :</td>
-        <td style="padding:2px 6px;width:14%;border:1px solid #aaa">${dayName}</td>
-        <td style="padding:2px 6px;width:13%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">التاريخ :</td>
-        <td style="padding:2px 6px;width:22%;border:1px solid #aaa">${dateStr}</td>
-        <td style="padding:2px 6px;width:10%;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الوقت :</td>
-        <td style="padding:2px 6px;border:1px solid #aaa">${timeStr}</td>
-      </tr>
-      <tr>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">${x.station_name||'—'}</td>
-      </tr>
-      <tr>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">محافظة صلاح الدين${x.district?' — قضاء '+x.district+' — مركز القضاء':''}</td>
-      </tr>
-      <tr>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-      </tr>
-      <tr>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
-        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">${x.phone||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
-        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
-      </tr>
-      <tr>
-        <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa">${x.coords||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- جدول الكاميرات -->
-  <div class="sec-hdr">📷 جدول الكاميرات</div>
-  <table>
-    <colgroup>
-      <col style="width:38px"><col style="width:90px"><col style="width:80px">
-      <col style="width:80px"><col style="width:90px"><col>
-    </colgroup>
-    <thead><tr>
-      <th>التسلسل</th>
-      <th>نوع الكاميرا</th>
-      <th>عدد الكاميرات الداخلية</th>
-      <th>عدد الكاميرات الخارجية</th>
-      <th>حجم عدسة الكاميرا</th>
-      <th>الملاحظات</th>
-    </tr></thead>
-    <tbody>${camTbody}</tbody>
-    <tfoot><tr>
-      <td style="text-align:center;font-weight:800;background:#ccc;border:1px solid #888" colspan="2">المجموع الكلي</td>
-      <td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">${camIndoor}</td>
-      <td style="text-align:center;font-weight:900;font-size:13px;background:#ccc;border:1px solid #888">${camOutdoor}</td>
-      <td style="background:#ccc;border:1px solid #888"></td>
-      <td style="text-align:center;font-weight:900;background:#ccc;border:1px solid #888;color:#166534">الإجمالي: <span style="font-size:13px;font-weight:900">${totalCams}</span> كاميرا</td>
-    </tr></tfoot>
-  </table>
-
-  <!-- جدول أجهزة التسجيل -->
-  <div class="sec-hdr" style="margin-top:6px">🎥 جدول أجهزة التسجيل الفيديوي</div>
-  <table>
-    <colgroup>
-      <col style="width:38px"><col style="width:130px"><col style="width:80px">
-      <col style="width:70px"><col style="width:55px">
-      <col style="width:80px"><col style="width:160px"><col>
-    </colgroup>
-    <thead><tr>
-      <th>التسلسل</th>
-      <th>نوع جهاز التسجيل</th>
-      <th>طريقة الربط</th>
-      <th>سعة الهارد (TB)</th>
-      <th>العدد</th>
-      <th>فترة التسجيل</th>
-      <th>مصدر الطاقة الكهربائية</th>
-      <th>الملاحظات</th>
-    </tr></thead>
-    <tbody>
-      <tr>
-        <td style="text-align:center;font-weight:800;border:1px solid #444">1</td>
-        <td style="text-align:right;font-weight:700;border:1px solid #444">${x.dvr_model||'—'}</td>
-        <td style="text-align:center;border:1px solid #444">${x.dvr_spec||'IP شبكي'}</td>
-        <td style="text-align:center;font-weight:700;color:#1d4ed8;border:1px solid #444">${x.hdd_size?x.hdd_size+' TB':'—'}</td>
-        <td style="text-align:center;font-weight:700;color:#7c3aed;border:1px solid #444">${x.hdd_count||0}</td>
-        <td style="text-align:center;border:1px solid #444">${x.storage_days||'—'}</td>
-        <td style="padding:3px 5px;border:1px solid #444">${pwHtml}</td>
-        <td style="border:1px solid #444"></td>
-      </tr>
-      ${emptyDvr}
-    </tbody>
-  </table>
-
-  <!-- التذييل -->
-  <div style="display:flex;justify-content:space-between;margin-top:10px;gap:14px">
-    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">
-      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مسؤول الكاميرات :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-    </div>
-    <div style="flex:1;text-align:right;border:1px solid #aaa;padding:6px 10px;border-radius:4px">
-      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">التوقيع :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:10px;margin-bottom:5px"><span style="font-weight:700">مدير فرع صلاح الدين :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-      <div style="font-size:10px"><span style="font-weight:700">التاريخ :-</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</div>
-    </div>
-  </div>
-
-  <!-- كليشة أسفل -->
-  <div class="kl-btm">
-    <div>نظام إدارة كاميرات المراقبة — OPDC</div>
-    <div style="font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة</div>
-    <div>${dateStr}</div>
-  </div>
-
-  </body></html>`);
-  w.document.close();
-}
-
-
-async function printInvOfficial(){
-  if(!allInventory.length){
-    toast('جاري تحميل البيانات...');
-    try{ await loadInventory(); }catch(e){}
-  }
-  if(!allInventory.length){ toast('لا توجد بيانات جرد','err'); return; }
-
-  const distF=document.getElementById('f-inv-district')?.value||'';
-  const list=allInventory.filter(x=>!distF||x.district===distF);
-  if(!list.length){ toast('لا توجد بيانات للقاطع المختار','err'); return; }
-
-  const now=new Date();
-  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dayName=days[now.getDay()];
-  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
-  const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
-
-  const camRows=list.map((x,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td>${x.station_name||'—'}</td>
-      <td>${x.cam_spec||x.cam_res||'—'}</td>
-      <td style="text-align:center">${x.cam_count||0}</td>
-      <td style="text-align:center">—</td>
-      <td style="text-align:center">—</td>
-      <td>${x.notes||''}</td>
-    </tr>`).join('');
-
-  const dvrRows=list.map((x,i)=>`
-    <tr>
-      <td>${i+1}</td>
-      <td>${x.dvr_model||x.dvr_spec||'—'}</td>
-      <td>شبكة</td>
-      <td>${x.hdd_size?x.hdd_size+' TB':'—'} / ${x.hdd_count||0} قطعة</td>
-      <td>—</td>
-      <td>كهرباء المحطة</td>
-      <td>${x.notes||''}</td>
-    </tr>`).join('');
-
-  const w=window.open('','_blank','width=1000,height=750');
-  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
-  <meta charset="UTF-8">
-  <title>جرد كاميرات المراقبة</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box;}
-    body{font-family:'Arial',sans-serif;direction:rtl;padding:18px;font-size:12px;color:#111;}
-    .no-print{margin-bottom:14px;display:flex;gap:8px;}
-    h2{font-size:15px;font-weight:900;text-align:center;margin-bottom:4px;}
-    h3{font-size:13px;font-weight:700;text-align:center;margin-bottom:14px;color:#444;}
-    .header-info{border:1.5px solid #333;border-radius:4px;padding:10px 14px;margin-bottom:14px;}
-    .header-info table{width:100%;border-collapse:collapse;}
-    .header-info td{padding:2px 6px;font-size:11px;vertical-align:top;}
-    .header-info .lbl{font-weight:700;width:220px;color:#1a1a1a;}
-    .section-title{background:#1d4ed8;color:#fff;font-weight:800;font-size:12px;
-      padding:6px 12px;border-radius:4px 4px 0 0;margin-top:16px;margin-bottom:0;}
-    table.data{width:100%;border-collapse:collapse;margin-bottom:16px;}
-    table.data th{background:#f0f0f0;border:1px solid #aaa;padding:5px 7px;font-size:11px;font-weight:700;text-align:center;}
-    table.data td{border:1px solid #bbb;padding:5px 7px;font-size:11px;}
-    .sigs{display:flex;justify-content:space-between;margin-top:28px;gap:20px;page-break-inside:avoid;}
-    .sig-box{flex:1;text-align:center;border-top:1px solid #333;padding-top:8px;}
-    .sig-label{font-size:11px;font-weight:700;margin-bottom:6px;}
-    .sig-line{font-size:10px;color:#555;margin-top:4px;}
-    @media print{.no-print{display:none!important} @page{margin:10mm;size:A4 landscape;}}
-  </style>
-  </head><body>
-  <div class="no-print">
-    <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
-  </div>
-
-  <h2>استمارة جرد كاميرات المراقبة</h2>
-  <h3>شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</h3>
-
-  <div class="header-info">
-    <table>
-      <tr>
-        <td class="lbl">اليوم / التاريخ / الوقت :</td>
-        <td>${dayName} — ${dateStr} — ${timeStr}</td>
-        <td class="lbl">نوع النشاط :</td>
-        <td>أمني ورقابي</td>
-      </tr>
-      <tr>
-        <td class="lbl">اسم المنفذ التوزيعي / البناية :</td>
-        <td>${distF||'جميع القواطع'}</td>
-        <td class="lbl">الاحداثيات للموقع التوزيعي :</td>
-        <td></td>
-      </tr>
-      <tr>
-        <td class="lbl">اسم الدائرة :</td>
-        <td colspan="3">شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</td>
-      </tr>
-      <tr>
-        <td class="lbl">العنوان الكامل :</td>
-        <td></td>
-        <td class="lbl">البريد / الهاتف :</td>
-        <td>07712111177 - 07816940742</td>
-      </tr>
-    </table>
-  </div>
-
-  <!-- جدول الكاميرات -->
-  <div class="section-title">📷 جدول الكاميرات</div>
-  <table class="data">
-    <thead>
-      <tr>
-        <th style="width:35px">تسلسل</th>
-        <th>المحطة</th>
-        <th>نوع الكاميرا</th>
-        <th style="width:70px">عدد الداخلية</th>
-        <th style="width:70px">عدد الخارجية</th>
-        <th style="width:90px">حجم عدسة الكاميرا</th>
-        <th>الملاحظات</th>
-      </tr>
-    </thead>
-    <tbody>${camRows||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">لا توجد بيانات</td></tr>'}</tbody>
-    <tfoot>
-      <tr style="background:#f9f9f9;font-weight:700">
-        <td colspan="2" style="text-align:center">المجموع</td>
-        <td></td>
-        <td style="text-align:center">${list.reduce((a,x)=>a+(+x.cam_count||0),0)}</td>
-        <td style="text-align:center">—</td>
-        <td></td><td></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <!-- جدول أجهزة التسجيل -->
-
-  <div class="sigs">
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div style="height:40px"></div>
-      <div class="sig-line">اسم الموظف مسؤول الكاميرات</div>
-      <div class="sig-line">التاريخ : _______________</div>
-    </div>
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div style="height:40px"></div>
-      <div class="sig-line">اسم مدير الدائرة</div>
-      <div class="sig-line">التاريخ : _______________</div>
-    </div>
-  </div>
-
-  <!-- فصل الصفحة -->
-  <div style="page-break-before:always"></div>
-
-  <h2>استمارة جرد كاميرات المراقبة</h2>
-  <h3>شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</h3>
-  <div class="header-info" style="margin-bottom:14px">
-    <table>
-      <tr>
-        <td class="lbl">اليوم / التاريخ / الوقت :</td>
-        <td>${dayName} — ${dateStr} — ${timeStr}</td>
-        <td class="lbl">نوع النشاط :</td>
-        <td>أمني ورقابي</td>
-      </tr>
-      <tr>
-        <td class="lbl">اسم الدائرة :</td>
-        <td colspan="3">شركة توزيع المنتجات النفطية / هيأة توزيع المنطقة الغربية / فرع صلاح الدين</td>
-      </tr>
-    </table>
-  </div>
-
-  <div class="section-title">🎥 جدول أجهزة التسجيل الفيديوي</div>
-  <table class="data">
-    <thead>
-      <tr>
-        <th style="width:35px">تسلسل</th>
-        <th>نوع الجهاز</th>
-        <th>طريقة الربط</th>
-        <th>حجم التخزين (سعة الهارد / العدد)</th>
-        <th>فترة التخزين</th>
-        <th>مصدر الطاقة الكهربائية</th>
-        <th>الملاحظات</th>
-      </tr>
-    </thead>
-    <tbody>${dvrRows||'<tr><td colspan="7" style="text-align:center;padding:20px;color:#aaa">لا توجد بيانات</td></tr>'}</tbody>
-  </table>
-
-  <!-- التوقيعات -->
-  <div class="sigs">
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div style="height:40px"></div>
-      <div class="sig-line">اسم الموظف مسؤول الكاميرات</div>
-      <div class="sig-line">التاريخ : _______________</div>
-    </div>
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div style="height:40px"></div>
-      <div class="sig-line">اسم مدير الدائرة</div>
-      <div class="sig-line">التاريخ : _______________</div>
-    </div>
-  </div>
-
-  </body></html>`);
-  w.document.close();
-}
-
-async function exportInvExcel(){
-  if(!allInventory.length){
-    toast('جاري تحميل البيانات...');
-    try{ await loadInventory(); }catch(e){}
-  }
-  if(!allInventory.length){ toast('لا توجد بيانات جرد','err'); return; }
-  const loadLib=(src)=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');
-    s.src=src; s.onload=res; s.onerror=rej;
-    document.head.appendChild(s);
-  });
-  try{
-    await loadLib('https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js')
-      .catch(()=>loadLib('https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js'));
-  }catch(e){ toast('تعذّر تحميل مكتبة Excel','err'); return; }
-  try{
-    const h=['المحطة','القاطع','الحالة',
-      'DVR/NVR عدد','DVR مواصفات','DVR موديل',
-      'HDD عدد','HDD حجم',
-      'كاميرات عدد','كاميرات مواصفات','كاميرات دقة',
-      'POE عدد','POE مواصفات',
-      'شاشات عدد','شاشات مواصفات',
-      'UPS عدد','UPS مواصفات',
-      'بطاريات عدد','بطاريات مواصفات',
-      'بوكسات عدد','بوكسات مواصفات','ملاحظات'];
-    const rows=allInventory.map(x=>[
-      x.station_name||'',x.district||'',x.status||'',
-      x.dvr_count||'',x.dvr_spec||'',x.dvr_model||'',
-      x.hdd_count||'',x.hdd_size||'',
-      x.cam_count||'',x.cam_spec||'',x.cam_res||'',
-      x.poe_count||'',x.poe_spec||'',
-      x.mon_count||'',x.mon_spec||'',
-      x.ups_count||'',x.ups_spec||'',
-      x.bat_count||'',x.bat_spec||'',
-      x.box_count||'',x.box_spec||'',x.notes||''
-    ]);
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:22},{wch:12},{wch:10},...Array(19).fill({wch:14})];
-    XLSX.utils.book_append_sheet(wb,ws,'جرد الكاميرات');
-    const wbout=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    const blob=new Blob([wbout],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.xlsx';
-    document.body.appendChild(a); a.click();
-    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); },1000);
-    toast('✅ تم تصدير الجرد — '+allInventory.length+' محطة');
-  }catch(err){ toast('خطأ: '+(err.message||err),'err'); }
-}
 function exportInvCSV(){ exportInvExcel(); }
 
 
@@ -5310,7 +4848,7 @@ function renderUsers(){
       <tbody>${allUsers.map(u=>{
         const perms=u.perms||{};
         const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
-          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير',inventory:'جرد'})
+          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
             .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
         return `<tr style="border-bottom:1px solid var(--border)">
           <td style="padding:10px 14px;font-weight:700">
@@ -5351,7 +4889,7 @@ function openUserModal(id){
       </label>`).join('');
   }
   const perms=u.perms||{};
-  ['edit','del','files','reports','inventory'].forEach(p=>{
+  ['edit','del','files','reports'].forEach(p=>{
     const el=document.getElementById('p-'+p);
     if(el) el.classList.toggle('on', perms[p]===true);
   });
@@ -5382,8 +4920,7 @@ async function saveUser(){
     del:   document.getElementById('p-del')?.classList.contains('on'),
     files: document.getElementById('p-files')?.classList.contains('on'),
     reports:document.getElementById('p-reports')?.classList.contains('on'),
-    inventory:document.getElementById('p-inventory')?.classList.contains('on'),
-  };
+    };
   const body={fullname:fn,username:un,role,district,districts,perms};
   if(pw) body.password=pw;
   try{
@@ -5515,14 +5052,7 @@ function populateDistrictFilters(){
     sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
     if(cur) sel.value=cur;
   });
-  // تحميل المحطات الحكومية فقط في فلتر الجرد
-  const invStSel=document.getElementById('f-inv-station');
-  if(invStSel){
-    const cur=invStSel.value;
-    const govSts=allStations.filter(s=>s.type==='حكومية');
-    invStSel.innerHTML='<option value="">كل المحطات الحكومية</option>'+govSts.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-    if(cur) invStSel.value=cur;
-  }
+
 }
 
 function renderPagination(containerId, current, total, onChange){
@@ -6015,190 +5545,7 @@ function printMaintTable(){
   _openPrintWindow('سجل الصيانة الميدانية', tbl);
 }
 
-// ── طباعة الجرد ──
-function printInv(){
-  const distF=document.getElementById('f-inv-district')?.value||'';
-  const myDist=CU?.role!=='admin'?CU?.district||'':'';
-  const filterDist=myDist||distF;
-  const list=[...allInventory].filter(x=>!filterDist||x.district===filterDist);
-  if(!list.length){toast('لا توجد بيانات','err');return;}
-
-  const now=new Date();
-  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dateStr=now.toLocaleDateString('ar-IQ');
-  const totalCams=list.reduce((a,x)=>a+(+x.cam_count||0),0);
-
-  const camRows=list.map((x,i)=>`
-    <tr>
-      <td style="text-align:center">${i+1}</td>
-      <td>${x.station_name||'—'}</td>
-      <td style="text-align:center">${x.cam_spec||'—'}</td>
-      <td style="text-align:center">${x.cam_count||0}</td>
-      <td style="text-align:center">—</td>
-      <td style="text-align:center">${x.cam_res||'—'}</td>
-    </tr>`).join('');
-
-  const dvrRows=list.map((x,i)=>`
-    <tr>
-      <td style="text-align:center">${i+1}</td>
-      <td>${x.station_name||'—'}</td>
-      <td style="text-align:center">${x.dvr_model||x.dvr_spec||'—'}</td>
-      <td style="text-align:center">شبكة IP</td>
-      <td style="text-align:center;font-weight:700">${x.hdd_size?x.hdd_size+' TB':'—'}</td>
-      <td style="text-align:center;font-weight:700">${x.hdd_count||0}</td>
-      <td style="text-align:center">${x.storage_days?x.storage_days+' شهر':'—'}</td>
-      <td style="text-align:center;font-size:10px;word-break:break-word;white-space:normal">${x.power_source||'—'}</td>
-      <td>${x.notes||''}</td>
-    </tr>`).join('');
-
-  const w=window.open('','_blank','width=1050,height=750');
-  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head>
-  <meta charset="UTF-8"><title>جرد كاميرات المراقبة</title>
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:'Arial',sans-serif;direction:rtl;padding:0;font-size:11px;color:#111}
-    .no-print{padding:10px 14px;display:flex;gap:8px}
-    .page-header{width:100%;border-bottom:3px double #1e3a8a;padding:10px 16px 8px;background:#fff}
-    .page-footer{width:100%;border-top:3px double #1e3a8a;padding:8px 16px;background:#fff;margin-top:16px}
-    .header-inner{display:flex;align-items:center;justify-content:space-between}
-    .header-org{text-align:center;flex:1}
-    .org-title{font-size:15px;font-weight:900;color:#1e3a8a;line-height:1.5}
-    .org-sub{font-size:11px;color:#374151;line-height:1.6}
-    .header-meta{text-align:left;font-size:10px;color:#555;min-width:130px}
-    .header-meta div{margin-bottom:3px}
-    .header-meta span{font-weight:700;color:#111}
-    .content{padding:8px 16px}
-    h2{font-size:13px;font-weight:900;text-align:center;margin-bottom:2px;color:#1e3a8a}
-    h3{font-size:11px;text-align:center;color:#555;margin-bottom:10px}
-    .section-hdr{font-weight:800;font-size:12px;margin:12px 0 3px;padding:5px 10px;border-right:4px solid #166534;background:#f0fdf4}
-    .section-hdr.blue{border-right-color:#1e3a8a;background:#eff6ff}
-    table{width:100%;border-collapse:collapse;margin-bottom:4px}
-    th{background:#166534;color:#fff;padding:7px 8px;border:1px solid #14532d;font-size:11px;text-align:center}
-    th.blue-hd{background:#1e3a8a;border-color:#1e40af}
-    td{border:1px solid #cbd5e1;padding:6px 8px;font-size:11px}
-    tr:nth-child(even){background:#f8fafc}
-    .total-row{background:#166534!important;color:#fff;font-weight:800}
-    .sigs{display:flex;justify-content:space-between;margin-top:10px;gap:14px}
-    .sig-box{flex:1;text-align:center}
-    .sig-line{border-bottom:1px solid #333;margin:28px 10px 4px}
-    .sig-label{font-size:10px;font-weight:700}
-    .footer-inner{display:flex;justify-content:space-between;align-items:center;font-size:10px;color:#555}
-    @media print{
-      .no-print{display:none!important}
-      .page-header{position:running(header)}
-      .page-footer{position:running(footer)}
-      @page{margin:12mm;size:A4 landscape}
-    }
-  </style></head><body>
-  <div class="no-print">
-    <button onclick="window.print()" style="background:#1e3a8a;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
-  </div>
-
-  <!-- كليشة الأعلى -->
-  <div class="page-header">
-    <div class="header-inner">
-      <div style="text-align:right;min-width:130px;font-size:10px;color:#555">
-        <div>العـدد: ________________</div>
-        <div style="margin-top:4px">التاريخ: ${dateStr}</div>
-      </div>
-      <div class="header-org">
-        <div class="org-title">جمهورية العراق</div>
-        <div class="org-title">وزارة النفط</div>
-        <div class="org-sub">شركة توزيع المنتجات النفطية</div>
-        <div class="org-sub">هيأة توزيع المنطقة الغربية / فرع صلاح الدين</div>
-        <div class="org-sub">شعبة تقنية المعلومات / وحدة كاميرات المراقبة</div>
-      </div>
-      <div style="text-align:left;min-width:130px;font-size:10px;color:#555">
-        <div>📞 07712111177</div>
-        <div>📞 07816940742</div>
-      </div>
-    </div>
-  </div>
-  <div class="no-print">
-    <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
-    <span style="font-size:11px;color:#64748b;margin-right:8px">عدد المحطات: ${list.length} | إجمالي الكاميرات: ${totalCams}</span>
-  </div>
-
-  <div class="content">
-  <h2>جرد كاميرات المراقبة وأجهزة التسجيل</h2>
-  <h3>${filterDist?'القاطع: '+filterDist:'جميع القواطع'} — عدد المحطات: ${list.length} | إجمالي الكاميرات: ${totalCams}</h3>
-
-  <!-- جدول الكاميرات -->
-  <div class="section-hdr">📷 جدول الكاميرات</div>
-  <table>
-    <thead>
-      <tr>
-        <th style="width:35px">التسلسل</th>
-        <th>اسم المحطة</th>
-        <th style="width:120px">حجم عدسة الكاميرا</th>
-        <th style="width:80px">عدد الداخلية</th>
-        <th style="width:80px">عدد الخارجية</th>
-        <th style="width:90px">نوع الكاميرا</th>
-      </tr>
-    </thead>
-    <tbody>${camRows}</tbody>
-    <tfoot>
-      <tr class="total-row">
-        <td colspan="3" style="text-align:center;font-size:12px">المجموع الكلي للكاميرات</td>
-        <td style="text-align:center;font-size:16px">${totalCams}</td>
-        <td colspan="2"></td>
-      </tr>
-    </tfoot>
-  </table>
-
-  <!-- جدول أجهزة التسجيل -->
-  <div class="section-hdr blue">🎥 جدول أجهزة التسجيل الفيديوي</div>
-  <table>
-    <thead>
-      <tr>
-        <th class="blue-hd" style="width:35px">التسلسل</th>
-        <th class="blue-hd">اسم المحطة</th>
-        <th class="blue-hd" style="width:140px">نوع الجهاز</th>
-        <th class="blue-hd" style="width:80px">طريقة الربط</th>
-        <th class="blue-hd" style="width:80px">سعة الهارد</th>
-        <th class="blue-hd" style="width:60px">العدد</th>
-        <th class="blue-hd" style="width:80px">فترة التخزين</th>
-        <th class="blue-hd" style="width:130px">مصدر الطاقة الكهربائية</th>
-        <th class="blue-hd">الملاحظات</th>
-      </tr>
-    </thead>
-    <tbody>${dvrRows}</tbody>
-  </table>
-
-  <!-- التوقيعات -->
-  <div class="sigs" style="padding:0 16px">
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div class="sig-line"></div>
-      <div class="sig-label">اسم الموظف مسؤول الكاميرات</div>
-      <div style="font-size:10px;color:#555;margin-top:4px">التاريخ: _______________</div>
-    </div>
-    <div class="sig-box">
-      <div class="sig-label">التوقيع</div>
-      <div class="sig-line"></div>
-      <div class="sig-label">اسم مدير الدائرة</div>
-      <div style="font-size:10px;color:#555;margin-top:4px">التاريخ: _______________</div>
-    </div>
-  </div>
-  </div><!-- /content -->
-
-  <!-- كليشة الأسفل -->
-  <div class="page-footer">
-    <div class="footer-inner">
-      <div style="font-size:10px;color:#64748b">نظام إدارة كاميرات المراقبة — OPDC</div>
-      <div style="font-size:11px;font-weight:700;color:#1e3a8a;text-align:center">
-        شركة توزيع المنتجات النفطية / فرع صلاح الدين / وحدة كاميرات المراقبة
-      </div>
-      <div style="font-size:10px;color:#64748b">تاريخ الطباعة: ${dateStr}</div>
-    </div>
-  </div>
-  </body></html>`);
-  w.document.close();
-}
-
-// ── طباعة ترميز الأجهزة ──
+// ── طباعة الجرد ──// ── طباعة ترميز الأجهزة ──
 // ── طباعة استمارة محطة واحدة ──
 function printCodingFormSingle(id){
   const d=allCoding.find(x=>x.id===id);
