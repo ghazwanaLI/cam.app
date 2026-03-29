@@ -1815,6 +1815,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
       <div class="fg full"><label class="fl">ملاحظات</label>
         <textarea class="fi" dir="rtl" style="text-align:right" id="inv-notes" rows="2" style="resize:vertical"></textarea></div>
+      <div class="fg"><label class="fl">📞 رقم الهاتف / البريد الإلكتروني</label><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx / email@..."></div>
+      <div class="fg"><label class="fl">📍 الإحداثيات</label><input class="fi" id="inv-coords" type="text" placeholder="latitude, longitude"></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
@@ -4401,7 +4403,7 @@ function openInvModal(id){
     'inv-dvr-count':'dvr_count','inv-dvr-spec':'dvr_spec','inv-dvr-model':'dvr_model',
     'inv-hdd-count':'hdd_count','inv-hdd-size':'hdd_size','inv-storage-days':'storage_days',
     'inv-cam-indoor':'cam_indoor','inv-cam-outdoor':'cam_outdoor','inv-cam-spec':'cam_spec',
-    'inv-notes':'notes'
+    'inv-notes':'notes','inv-phone':'phone','inv-coords':'coords'
   };
   Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
   const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
@@ -4432,7 +4434,7 @@ async function saveInv(){
     cam_count:g('inv-cam-indoor')+g('inv-cam-outdoor'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
     storage_days:g('inv-storage-days'),
 
-    notes:v('inv-notes')};
+    notes:v('inv-notes'),phone:v('inv-phone'),coords:v('inv-coords')};
   try{
     id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
     closeModal('ov-inv');toast('تم الحفظ ✅');await loadInventory();
@@ -4454,7 +4456,7 @@ function printInvSingle(id){
   const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
   const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
-  const pwList=['كهرباء وطني','عاكسة 4KVA','مولد'];
+  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
   const camIndoor=+x.cam_indoor||0;
   const camOutdoor=+x.cam_outdoor||0;
   const totalCams=camIndoor+camOutdoor || +x.cam_count||0;
@@ -4517,13 +4519,13 @@ function printInvSingle(id){
       </tr>
       <tr>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
-        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">${x.phone||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
         <td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
       </tr>
       <tr>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa">&nbsp;</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa">${x.coords||''}&nbsp;</td>
       </tr>
     </table>
   </div>
@@ -4532,8 +4534,8 @@ function printInvSingle(id){
   <div class="sec-hdr">📷 جدول الكاميرات</div>
   <table>
     <colgroup>
-      <col style="width:42px"><col style="width:100px"><col style="width:90px">
-      <col style="width:90px"><col><col style="width:120px">
+      <col style="width:38px"><col style="width:90px"><col style="width:80px">
+      <col style="width:80px"><col style="width:90px"><col style="width:100px">
     </colgroup>
     <thead><tr>
       <th>التسلسل</th>
@@ -4549,7 +4551,7 @@ function printInvSingle(id){
         <td style="text-align:center">${x.cam_spec||'—'}</td>
         <td style="text-align:center;font-weight:900;font-size:14px;color:#166534">${camIndoor||'—'}</td>
         <td style="text-align:center;font-weight:900;font-size:14px;color:#1d4ed8">${camOutdoor||'—'}</td>
-        <td style="text-align:right">${x.cam_res||'—'}</td>
+        <td style="text-align:center">${x.cam_res||'—'}</td>
         <td></td>
       </tr>
       <tr style="height:16px"><td style="text-align:center">2</td><td></td><td></td><td></td><td></td><td></td></tr>
@@ -4561,7 +4563,7 @@ function printInvSingle(id){
       <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${camIndoor||0}</td>
       <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${camOutdoor||0}</td>
       <td style="background:#ccc"></td>
-      <td style="text-align:center;font-weight:900;background:#ccc;color:#166534">الإجمالي: <span style="font-size:15px">${totalCams}</span> كاميرا</td>
+      <td style="text-align:center;font-weight:900;background:#ccc;color:#166534">الإجمالي: <span style="font-size:13px;font-weight:900">${totalCams}</span> كاميرا</td>
     </tr></tfoot>
   </table>
 
@@ -4579,7 +4581,7 @@ function printInvSingle(id){
       <th>طريقة الربط</th>
       <th>سعة الهارد (TB)</th>
       <th>العدد</th>
-      <th>فترة التخزين (شهر)</th>
+      <th>فترة التسجيل</th>
       <th>مصدر الطاقة الكهربائية</th>
       <th>الملاحظات</th>
     </tr></thead>
@@ -4590,7 +4592,7 @@ function printInvSingle(id){
         <td style="text-align:center">${x.dvr_spec||"IP شبكي"}</td>
         <td style="text-align:center;font-weight:700;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB':'—'}</td>
         <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||'—'}</td>
-        <td style="text-align:center">${x.storage_days?x.storage_days+' شهر':'—'}</td>
+        <td style="text-align:center">${x.storage_days?x.storage_days+' شهر فما فوق':'—'}</td>
         <td style="padding:5px 8px">${pwCell}</td>
         <td></td>
       </tr>
