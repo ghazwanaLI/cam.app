@@ -1789,21 +1789,21 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="fg full" style="border:1px solid rgba(22,163,74,.25);border-radius:12px;padding:14px;background:rgba(22,163,74,.03)">
         <div style="font-size:13px;font-weight:700;color:#16a34a;margin-bottom:10px">📷 الكاميرات</div>
         <div class="fgrid">
-          <div class="fg"><label class="fl">عدد الكاميرات الداخلية 🏠</label><input class="fi" id="inv-cam-indoor" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">عدد الكاميرات الخارجية 🌐</label><input class="fi" id="inv-cam-outdoor" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">نوع الكاميرا</label><input class="fi" id="inv-cam-spec" type="text" placeholder="نوع الكاميرا..."></div>
-          <div class="fg"><label class="fl">حجم العدسة</label>
-            <select class="fi" dir="rtl" id="inv-cam-res">
-              <option value="">—</option>
-              <option value="2.8 mm">2.8 mm</option>
-              <option value="4 mm">4 mm</option>
-              <option value="6 mm">6 mm</option>
-              <option value="8 mm">8 mm</option>
-              <option value="12 mm">12 mm</option>
-              <option value="2.8 mm - 5 مزدوج">2.8 mm - 5 مزدوج</option>
-              <option value="زاوية 180°">زاوية 180°</option>
-              <option value="أخرى">أخرى</option>
-            </select>
+          <div class="fg full" style="overflow-x:auto">
+            <table id="cam-types-tbl" style="width:100%;border-collapse:collapse;font-size:12px">
+              <thead>
+                <tr style="background:#e8f5e9">
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9;text-align:right">#</th>
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9">نوع الكاميرا</th>
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:90px">عدد الداخلية</th>
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:90px">عدد الخارجية</th>
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:130px">حجم العدسة</th>
+                  <th style="padding:5px 8px;border:1px solid #c8e6c9;width:32px"></th>
+                </tr>
+              </thead>
+              <tbody id="cam-types-body"></tbody>
+            </table>
+            <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="margin-top:6px;color:#16a34a;border-color:rgba(22,163,74,.4)">➕ إضافة نوع كاميرا</button>
           </div>
         </div>
       </div>
@@ -4392,6 +4392,42 @@ function importFromStation(){
   toast(`✅ تم جلب بيانات ${st.name}`);
 }
 
+const LENS_OPTS=['—','2.8 mm','4 mm','6 mm','8 mm','12 mm','2.8 mm - 5 مزدوج','زاوية 180°','أخرى'];
+function addCamRow(data={}){
+  const tb=document.getElementById('cam-types-body');
+  if(!tb)return;
+  const idx=tb.rows.length+1;
+  const lensOpts=LENS_OPTS.map(o=>`<option value="${o}" ${(data.lens||'')===(o)?'selected':''}>${o}</option>`).join('');
+  const tr=document.createElement('tr');
+  tr.innerHTML=`
+    <td style="padding:3px 6px;border:1px solid #ddd;text-align:center;font-size:11px;color:#888">${idx}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-type-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px"><option value="IP">IP</option><option value="Analog" ${data.type==='Analog'?'selected':''}>Analog</option><option value="HDCVI" ${data.type==='HDCVI'?'selected':''}>HDCVI</option><option value="AHD" ${data.type==='AHD'?'selected':''}>AHD</option></select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi cam-lens-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">${lensOpts}</select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd;text-align:center"><button type="button" onclick="this.closest('tr').remove();updateCamNums()" style="background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px">✕</button></td>`;
+  tb.appendChild(tr);
+}
+function updateCamNums(){
+  const rows=document.querySelectorAll('#cam-types-body tr');
+  rows.forEach((r,i)=>{const c=r.querySelector('td');if(c)c.textContent=i+1;});
+}
+function getCamRows(){
+  return [...document.querySelectorAll('#cam-types-body tr')].map(r=>({
+    type:r.querySelector('.cam-type-sel')?.value||'',
+    indoor:parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
+    outdoor:parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
+    lens:r.querySelector('.cam-lens-sel')?.value||''
+  }));
+}
+function setCamRows(rows){
+  const tb=document.getElementById('cam-types-body');
+  if(!tb)return;
+  tb.innerHTML='';
+  if(!rows||!rows.length){addCamRow();return;}
+  rows.forEach(r=>addCamRow(r));
+}
+
 function openInvModal(id){
   const m=id?allInventory.find(x=>x.id===id)||{}:{};
   document.getElementById('inv-eid').value=id||'';
@@ -4413,6 +4449,8 @@ function openInvModal(id){
   const pwVals=(m.power_source||'').split(' + ');
   document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
   const pwEl=document.getElementById('inv-power-source');if(pwEl)pwEl.value=m.power_source||'كهرباء المحطة';
+  // تحميل صفوف الكاميرات
+  try{setCamRows(m.cam_rows?JSON.parse(m.cam_rows):[]);}catch(e){setCamRows([]);}
   document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
   document.getElementById('ov-inv').classList.add('open');
 }
@@ -4430,11 +4468,16 @@ async function saveInv(){
     dvr_count:g('inv-dvr-count'),dvr_spec:v('inv-dvr-spec'),dvr_model:v('inv-dvr-model'),
     power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
     hdd_count:g('inv-hdd-count'),hdd_size:v('inv-hdd-size'),
-    cam_indoor:g('inv-cam-indoor'),cam_outdoor:g('inv-cam-outdoor'),
-    cam_count:g('inv-cam-indoor')+g('inv-cam-outdoor'),cam_spec:v('inv-cam-spec'),cam_res:v('inv-cam-res'),
     storage_days:g('inv-storage-days'),
-
     notes:v('inv-notes'),phone:v('inv-phone'),coords:v('inv-coords')};
+  // احسب الكاميرات من الصفوف
+  const camRows=getCamRows();
+  body.cam_rows=JSON.stringify(camRows);
+  body.cam_indoor=camRows.reduce((a,r)=>a+r.indoor,0);
+  body.cam_outdoor=camRows.reduce((a,r)=>a+r.outdoor,0);
+  body.cam_count=body.cam_indoor+body.cam_outdoor;
+  body.cam_spec=camRows.map(r=>r.type).filter(Boolean).join(' + ')||'';
+  body.cam_res=camRows.map(r=>r.lens).filter(s=>s&&s!=='—').join(' + ')||'';
   try{
     id?await api('PUT','/api/inventory/'+id,body):await api('POST','/api/inventory',body);
     closeModal('ov-inv');toast('تم الحفظ ✅');await loadInventory();
@@ -4457,16 +4500,20 @@ function printInvSingle(id){
   const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
   const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
-  const camIndoor=+x.cam_indoor||0;
-  const camOutdoor=+x.cam_outdoor||0;
-  const totalCams=camIndoor+camOutdoor || +x.cam_count||0;
+  // صفوف الكاميرات
+  let camRows=[];
+  try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){camRows=[];}
+  if(!camRows.length && (+x.cam_count||0)>0){
+    camRows=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
+  }
+  const camIndoor=camRows.reduce((a,r)=>a+(+r.indoor||0),0)||+x.cam_indoor||0;
+  const camOutdoor=camRows.reduce((a,r)=>a+(+r.outdoor||0),0)||+x.cam_outdoor||0;
+  const totalCams=camIndoor+camOutdoor||+x.cam_count||0;
 
-  const pwCell=`<div style="display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap">
-    ${pwList.map(p=>`<div style="display:flex;align-items:center;gap:3px">
-      <div style="width:13px;height:13px;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:900;flex-shrink:0">${pw.includes(p)?'✓':''}</div>
-      <span style="font-size:10px;white-space:nowrap">${p}</span>
-    </div>`).join('')}
-  </div>`;
+  // split power source for exact matching
+  const pwSelected=pw.split('+').map(s=>s.trim()).filter(Boolean);
+  const pwCheck=(p)=>pwSelected.some(s=>s===p||s.includes(p)||p.includes(s));
+  const pwCell='<table style="border-collapse:collapse"><tr>'+pwList.map(p=>'<td style="border:none;padding:1px 6px 1px 2px"><div style="display:flex;align-items:center;gap:4px"><div style="width:14px;height:14px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;background:'+( pwCheck(p) ? '#f0f0f0' : '#fff')+'">'+( pwCheck(p) ? '&#10003;' : '&nbsp;')+'</div><span style="font-size:9px;white-space:nowrap">'+p+'</span></div></td>').join('')+'</tr></table>';
 
   const emptyDvrRow=(n)=>'<tr style="height:22px"><td style="text-align:center;border:1.5px solid #333">'+n+'</td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td></tr>';
 
