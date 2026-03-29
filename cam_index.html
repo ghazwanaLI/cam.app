@@ -2252,7 +2252,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <script>const API='';
 let TOKEN=localStorage.getItem('cam_token')||'';
 let CU=null;
-// دوال التنقل الآمنة — تُعرَّف مبكراً لتجنب ReferenceError عند الضغط السريع
+// دالة تنقل الجرد الآمنة
 function _navInv(sub){
   if(typeof goInventorySub==='function') goInventorySub(sub);
   else if(typeof switchInvSub==='function') switchInvSub(sub);
@@ -2290,8 +2290,11 @@ async function api(method,path,body=null){
         const ok=await silentLogin();
         _refreshing=false;
         if(ok) return api(method,path,body);
-        // السيرفر رفض — اشتغل offline
+        // السيرفر رفض — اشتغل offline وأوقف polling
         SERVER_ONLINE=false;
+        if(typeof _activityTimer!=='undefined' && _activityTimer){
+          clearInterval(_activityTimer); _activityTimer=null;
+        }
         showOfflineBanner();
         return lsApi(method,path,body);
       }
@@ -6631,6 +6634,7 @@ function startNotifPolling(){
 
 async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
+  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
   try{
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
