@@ -1792,13 +1792,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="fg"><label class="fl">عدد الكاميرات الداخلية 🏠</label><input class="fi" id="inv-cam-indoor" type="number" min="0" value="0"></div>
           <div class="fg"><label class="fl">عدد الكاميرات الخارجية 🌐</label><input class="fi" id="inv-cam-outdoor" type="number" min="0" value="0"></div>
           <div class="fg"><label class="fl">نوع الكاميرا</label><input class="fi" id="inv-cam-spec" type="text" placeholder="نوع الكاميرا..."></div>
-          <div class="fg"><label class="fl">الدقة</label>
+          <div class="fg"><label class="fl">حجم العدسة</label>
             <select class="fi" dir="rtl" id="inv-cam-res">
               <option value="">—</option>
-              <option value="2MP - 1080p">2MP - 1080p</option>
-              <option value="4MP - 2K">4MP - 2K</option>
-              <option value="5MP">5MP</option>
-              <option value="8MP - 4K">8MP - 4K</option>
+              <option value="2.8 mm">2.8 mm</option>
+              <option value="4 mm">4 mm</option>
+              <option value="6 mm">6 mm</option>
+              <option value="8 mm">8 mm</option>
+              <option value="12 mm">12 mm</option>
+              <option value="2.8 mm - 5 مزدوج">2.8 mm - 5 مزدوج</option>
+              <option value="زاوية 180°">زاوية 180°</option>
               <option value="أخرى">أخرى</option>
             </select>
           </div>
@@ -4504,7 +4507,7 @@ function printInvSingle(id){
       </tr>
       <tr>
         <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td>
-        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa">${x.district||''}&nbsp;</td>
+        <td colspan="5" style="padding:4px 8px;border:1px solid #aaa;font-weight:600">محافظة صلاح الدين${x.district?' — قضاء '+x.district+' — مركز القضاء':''}</td>
       </tr>
       <tr>
         <td style="padding:4px 8px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td>
