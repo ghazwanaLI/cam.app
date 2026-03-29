@@ -2487,8 +2487,9 @@ async function tryAutoLogin(){
   // 1. جرب التوكن المحفوظ
   if(TOKEN){
     try{
-      const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
-      if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true; document.getElementById('app').style.display='block'; await initApp(); return; }
+      const r=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
+      const j=await r.json();
+      if(j.ok && j.user){ CU=j.user; SERVER_ONLINE=true; document.getElementById('app').style.display='block'; await initApp(); return; }
     }catch(e){}
     TOKEN=''; localStorage.removeItem('cam_token');
   }
