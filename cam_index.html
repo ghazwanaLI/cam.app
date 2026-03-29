@@ -3674,7 +3674,8 @@ function printInvSingle(id){
 
   // بيانات الكاميرات
   let camRows=[];
-  try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){camRows=[];}
+  if(Array.isArray(x.cam_rows)) camRows=x.cam_rows;
+  else try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){camRows=[];}
   if(!camRows.length) camRows=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
   const camIndoor=camRows.reduce((a,r)=>a+(+r.indoor||0),0);
   const camOutdoor=camRows.reduce((a,r)=>a+(+r.outdoor||0),0);
@@ -3701,7 +3702,7 @@ function printInvSingle(id){
 
   // مصدر الطاقة
   const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
-  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
+  const pwSaved=(x.power_source||x.power||'').split('+').map(s=>s.trim()).filter(Boolean);
   const pwHtml='<table style="border-collapse:collapse;border:none"><tr>'+
     pwList.map(p=>'<td style="border:none;padding:1px 5px 1px 2px">'+
       '<span style="display:inline-flex;align-items:center;gap:3px">'+
