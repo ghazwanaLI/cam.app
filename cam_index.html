@@ -4455,7 +4455,9 @@ function printInvSingle(id){
   const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
   const pwList=['كهرباء وطني','عاكسة 4KVA','مولد'];
-  const totalCams=(+x.cam_indoor||0)+(+x.cam_outdoor||0);
+  const camIndoor=+x.cam_indoor||0;
+  const camOutdoor=+x.cam_outdoor||0;
+  const totalCams=camIndoor+camOutdoor || +x.cam_count||0;
 
   const pwCell=`<div style="display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap">
     ${pwList.map(p=>`<div style="display:flex;align-items:center;gap:3px">
@@ -4545,8 +4547,8 @@ function printInvSingle(id){
       <tr>
         <td style="text-align:center;font-weight:800">1</td>
         <td style="text-align:center">${x.cam_spec||'—'}</td>
-        <td style="text-align:center;font-weight:900;font-size:14px;color:#166534">${x.cam_indoor||0}</td>
-        <td style="text-align:center;font-weight:900;font-size:14px;color:#1d4ed8">${x.cam_outdoor||0}</td>
+        <td style="text-align:center;font-weight:900;font-size:14px;color:#166534">${camIndoor||'—'}</td>
+        <td style="text-align:center;font-weight:900;font-size:14px;color:#1d4ed8">${camOutdoor||'—'}</td>
         <td style="text-align:right">${x.cam_res||'—'}</td>
         <td></td>
       </tr>
@@ -4556,8 +4558,8 @@ function printInvSingle(id){
     </tbody>
     <tfoot><tr>
       <td style="text-align:center;font-weight:800;background:#ccc" colspan="2">المجموع الكلي</td>
-      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${x.cam_indoor||0}</td>
-      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${x.cam_outdoor||0}</td>
+      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${camIndoor||0}</td>
+      <td style="text-align:center;font-weight:900;font-size:14px;background:#ccc">${camOutdoor||0}</td>
       <td style="background:#ccc"></td>
       <td style="text-align:center;font-weight:900;background:#ccc;color:#166534">الإجمالي: <span style="font-size:15px">${totalCams}</span> كاميرا</td>
     </tr></tfoot>
@@ -4585,9 +4587,9 @@ function printInvSingle(id){
       <tr>
         <td style="text-align:center;font-weight:800">1</td>
         <td style="text-align:right;font-weight:700">${x.dvr_model||x.dvr_spec||'—'}</td>
-        <td style="text-align:center">IP شبكي</td>
+        <td style="text-align:center">${x.dvr_spec||"IP شبكي"}</td>
         <td style="text-align:center;font-weight:700;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB':'—'}</td>
-        <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||0}</td>
+        <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||'—'}</td>
         <td style="text-align:center">${x.storage_days?x.storage_days+' شهر':'—'}</td>
         <td style="padding:5px 8px">${pwCell}</td>
         <td></td>
