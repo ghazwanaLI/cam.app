@@ -664,6 +664,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
   #cam-stats-section{ grid-template-columns:1fr!important; }
 }
 </style>
+<!-- دوال التنقل الآمنة — مُعرَّفة في الـ head لضمان توفرها قبل أي نقرة -->
+<script>
+function _navInv(sub){
+  if(typeof goInventorySub==='function') goInventorySub(sub);
+  else if(typeof switchInvSub==='function') switchInvSub(sub);
+  else console.warn('_navInv: لم تُحمَّل الدوال بعد');
+}
+</script>
 </head>
 <body>
 
