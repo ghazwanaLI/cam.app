@@ -1820,8 +1820,6 @@ function _navInv(sub){
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
         </div>
       </div>
 
@@ -3769,7 +3767,7 @@ function printInvSingle(id){
   }
 
   // مصدر الطاقة
-  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
+  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA'];
   var pwSaved=(x.power_source||x.power||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
   var pwHtml='';
   pwList.forEach(function(p){
@@ -3797,11 +3795,11 @@ function printInvSingle(id){
       '<td class="tc blu" style="font-weight:700">'+dHdd+'</td>'+
       '<td class="tc" style="font-weight:700;color:#7c3aed">'+(dr.hdd_count||0)+'</td>'+
       '<td class="tc" style="font-weight:700;color:#0891b2">'+(dr.storage||'—')+'</td>'+
-      '<td class="pw-box">'+(di===0?pwHtml:'')+'</td>'+
-      '<td style="font-size:9px">'+(di===0?notes:'')+'</td>'+
+      '<td style="padding:3px 6px">'+(di===0?pwHtml:'')+'</td>'+
+      '<td style="font-size:9.5px;padding:3px 6px">'+(di===0?notes:'')+'</td>'+
       '</tr>';
   }
-  if(!dvrHtml) dvrHtml='<tr class="erow"><td class="tc n">1</td><td></td><td></td><td></td><td></td><td></td><td class="pw-box">'+pwHtml+'</td><td></td></tr>';
+  if(!dvrHtml) dvrHtml='<tr><td class="tc n">1</td><td></td><td></td><td></td><td></td><td></td><td style="padding:3px 6px">'+pwHtml+'</td><td></td></tr>';
 
   var stName=x.station_name||x.station||'—';
   var district=x.district||'';
@@ -3877,8 +3875,8 @@ function printInvSingle(id){
   '<div class="sec-hdr" style="margin-top:8px">🎥 جدول أجهزة التسجيل الفيديوي</div>'+
   '<div class="wrap" style="border-top:none;border-radius:0 0 4px 4px">'+
   '<table>'+
-    '<colgroup><col style="width:36px"><col style="width:130px"><col style="width:80px"><col style="width:65px"><col style="width:50px"><col style="width:75px"><col><col></colgroup>'+
-    '<thead><tr><th>ت</th><th>نوع جهاز التسجيل</th><th>طريقة الربط</th><th>سعة الهارد</th><th>العدد</th><th>فترة التسجيل</th><th>مصدر الطاقة</th><th>ملاحظات</th></tr></thead>'+
+    '<colgroup><col style="width:34px"><col style="width:130px"><col style="width:78px"><col style="width:62px"><col style="width:45px"><col style="width:80px"><col style="width:160px"><col></colgroup>'+
+    '<thead><tr><th>ت</th><th>نوع جهاز التسجيل</th><th>طريقة الربط</th><th>سعة الهارد</th><th>العدد</th><th>فترة التسجيل</th><th>مصدر الطاقة الكهربائية</th><th>الملاحظات</th></tr></thead>'+
     '<tbody>'+dvrHtml+'</tbody>'+
   '</table>'+
   '</div>'+
