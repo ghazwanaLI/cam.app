@@ -6716,7 +6716,14 @@ function toggleExtraDelegate(){
   if(extra) extra.style.display=extra.style.display==='none'?'':'none';
 }
 
-tryAutoLogin();</script>
+tryAutoLogin();
+window.addEventListener('beforeprint',function(){
+  const ov=document.getElementById('inv-print-overlay');
+  if(ov) ov.style.setProperty('display','block','important');
+});
+window.addEventListener('afterprint',function(){
+  // لا نغلق الـ overlay تلقائياً — المستخدم يغلقه بنفسه
+});</script>
 
 
 <!-- شريط إخباري لصيانة اليوم -->
@@ -6747,8 +6754,8 @@ tryAutoLogin();</script>
 </div>
 <style>
 @media print{
-  body > *:not(#inv-print-overlay){display:none!important}
-  #inv-print-overlay{position:static!important;background:none!important;padding:0!important;overflow:visible!important}
+  body > *{display:none!important}
+  #inv-print-overlay{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important}
   #inv-print-overlay > div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
   #inv-print-overlay > div > div:first-child{display:none!important}
   @page{margin:6mm;size:A4 landscape}
