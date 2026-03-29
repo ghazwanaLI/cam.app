@@ -1765,10 +1765,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="fg"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
           <div class="fg"><label class="fl">مصدر الطاقة الكهربائية</label>
             <select class="fi" dir="rtl" id="inv-power-source">
-              <option value="كهرباء المحطة">كهرباء المحطة</option>
-              <option value="UPS">UPS</option>
-              <option value="مولد كهربائي">مولد كهربائي</option>
-              <option value="طاقة شمسية">طاقة شمسية</option>
+              <option value="كهرباء وطني">كهرباء وطني</option>
+              <option value="مولد">مولد</option>
+              <option value="عاكسة 4KVA">عاكسة 4KVA</option>
+              <option value="مولد + كهرباء وطني">مولد + كهرباء وطني</option>
+              <option value="عاكسة + كهرباء وطني">عاكسة + كهرباء وطني</option>
+              <option value="مولد + عاكسة">مولد + عاكسة</option>
               <option value="أخرى">أخرى</option>
             </select>
           </div>
@@ -4379,7 +4381,7 @@ function renderInv(){
     <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">شبكة</td>
     <td style="padding:9px 10px;text-align:center;${B};font-weight:700;font-size:12px;color:#1d4ed8">${x.hdd_size?x.hdd_size+' TB / '+x.hdd_count+' قطعة':'—'}</td>
     <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#94a3b8">—</td>
-    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.power_source||'كهرباء المحطة'}</td>
+    <td style="padding:9px 10px;text-align:center;${B};font-size:11px;color:#374151">${x.power_source||'كهرباء وطني'}</td>
     <td style="padding:9px 14px;text-align:right;${B};font-size:11px;color:#64748b">${x.notes||''}</td>
   </tr>`).join('')
     :'<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--t3)">لا يوجد جرد</td></tr>';
