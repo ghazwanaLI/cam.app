@@ -3515,7 +3515,7 @@ function goTab(name, el){
   if(name==='field')      { loadTours(); loadMaintenance(); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
-  if(name==='inventory')  { loadInventory(); }
+  if(name==='inventory')  { loadInventory(); if(!allStations.length) loadStations(); else populateDistrictFilters(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
   if(name==='reports')    { populateReportDistricts(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
@@ -4395,7 +4395,7 @@ function openInvModal(id){
   document.getElementById('inv-eid').value=id||'';
   // Populate station select
   const ss=document.getElementById('inv-station');
-  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
+  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
   document.getElementById('inv-status').value=m.status||'مكتمل';
   const fields={
     'inv-dvr-count':'dvr_count','inv-dvr-spec':'dvr_spec','inv-dvr-model':'dvr_model',
@@ -4454,7 +4454,7 @@ function printInvSingle(id){
   const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
   const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
-  const pwList=['كهرباء وطنية','عاكسة 4KVA','مولد'];
+  const pwList=['كهرباء وطني','عاكسة 4KVA','مولد'];
   const totalCams=(+x.cam_indoor||0)+(+x.cam_outdoor||0);
 
   const pwCell=`<div style="display:flex;flex-direction:row;align-items:center;gap:8px;flex-wrap:nowrap">
