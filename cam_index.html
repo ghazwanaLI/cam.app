@@ -3819,9 +3819,31 @@ function printInvSingle(id){
     '<div>'+date+'</div>'+
   '</div>';
 
-  document.getElementById('inv-print-content').innerHTML=html;
-  document.getElementById('inv-print-overlay').style.display='block';
-  document.getElementById('inv-print-overlay').scrollTop=0;
+  // طباعة بديل: استبدال محتوى الصفحة مؤقتاً
+  var prevBody=document.body.innerHTML;
+  var prevTitle=document.title;
+  var styleEl=document.getElementById('_inv_print_style');
+  if(!styleEl){
+    styleEl=document.createElement('style');
+    styleEl.id='_inv_print_style';
+    styleEl.textContent='@media print{@page{size:A4 landscape;margin:6mm}.no-print{display:none!important}}';
+    document.head.appendChild(styleEl);
+  }
+  document.title='جرد كاميرات - '+stName;
+  document.body.innerHTML=
+    '<div style="font-family:Cairo,sans-serif;direction:rtl;padding:10px">'+
+    '<div class="no-print" style="display:flex;gap:8px;margin-bottom:12px">'+
+      '<button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700;font-family:Cairo,sans-serif">🖨️ طباعة</button>'+
+      '<button id="_inv_close_btn" style="padding:8px 16px;border:1px solid #aaa;border-radius:6px;cursor:pointer;font-size:13px;font-family:Cairo,sans-serif">✕ إغلاق</button>'+
+    '</div>'+
+    html+
+    '</div>';
+  document.getElementById('_inv_close_btn').onclick=function(){
+    document.body.innerHTML=prevBody;
+    document.title=prevTitle;
+    // إعادة تهيئة البرنامج
+    if(typeof initApp==='function') initApp();
+  };
 }
 
 
