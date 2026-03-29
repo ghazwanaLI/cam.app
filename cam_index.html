@@ -721,11 +721,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
-        <div class="nav-item" id="nav-inventory" onclick="typeof goInventorySub!=='undefined'?goInventorySub('inv-stations'):switchInvSub('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+        <div class="nav-item" id="nav-inventory" onclick="_navInv('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
         <div class="nav-sub">
-          <div class="nav-sub-item" onclick="typeof goInventorySub!=='undefined'?goInventorySub('inv-stations'):switchInvSub('inv-stations')">📋 جرد المحطات</div>
-          <div class="nav-sub-item" onclick="goInventorySub('inv-devices')">🎥 أجهزة التسجيل</div>
-          <div class="nav-sub-item" onclick="goInventorySub('inv-report')">📄 التقارير</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-stations')">📋 جرد المحطات</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-devices')">🎥 أجهزة التسجيل</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-report')">📄 التقارير</div>
         </div>
       </div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
@@ -2252,6 +2252,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <script>const API='';
 let TOKEN=localStorage.getItem('cam_token')||'';
 let CU=null;
+// دوال التنقل الآمنة — تُعرَّف مبكراً لتجنب ReferenceError عند الضغط السريع
+function _navInv(sub){
+  if(typeof goInventorySub==='function') goInventorySub(sub);
+  else if(typeof switchInvSub==='function') switchInvSub(sub);
+}
 let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
 let sP_t=1,sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
@@ -3663,11 +3668,9 @@ async function delInv(id){
 }
 
 function printInvSingle(id){
-  // منع الاستدعاء المزدوج (touch + click)
   if(printInvSingle._busy) return;
   printInvSingle._busy=true;
   setTimeout(()=>{printInvSingle._busy=false;},600);
-
   const x=allInventory.find(i=>String(i.id)===String(id));
   if(!x){
     toast('لم يتم العثور على البيانات (id='+id+')','err');
@@ -3724,6 +3727,8 @@ function printInvSingle(id){
   for(var k=0;k<3;k++){
     empDvr+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(k+2)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
   }
+
+  console.log('printInvSingle x:', JSON.stringify(x).slice(0,500));
 
   var stName=x.station_name||x.station||'—';
   var district=x.district||'';
