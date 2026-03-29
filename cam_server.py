@@ -563,6 +563,7 @@ class Handler(BaseHTTPRequestHandler):
                 "cam_rows":body.get("cam_rows","[]"),
                 "cam_indoor":body.get("cam_indoor",0),
                 "cam_outdoor":body.get("cam_outdoor",0),
+                "dvr_rows":body.get("dvr_rows","[]"),
             }
             db["inventory"].append(inv_item); save_db(db)
             add_log_safe(u,"إضافة جرد",f"جرد: {inv_item['station_name']}",self.ip())
@@ -643,7 +644,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes","storage_days","power_source","phone","coords","cam_rows","cam_indoor","cam_outdoor"]
+            fields=["station_id","station_name","district","status","dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","cam_count","cam_spec","cam_res","poe_count","poe_spec","mon_count","mon_spec","ups_count","ups_spec","bat_count","bat_spec","box_count","box_spec","notes","storage_days","power_source","phone","coords","cam_rows","cam_indoor","cam_outdoor","dvr_rows"]
             for f in fields:
                 if f in body: db["inventory"][idx][f]=body[f]
             db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
