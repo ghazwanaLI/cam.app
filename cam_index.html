@@ -1756,8 +1756,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:10px">📹 أجهزة التسجيل DVR/NVR</div>
         <div class="fgrid">
           <div class="fg"><label class="fl">العدد</label><input class="fi" id="inv-dvr-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">المواصفات</label><input class="fi" id="inv-dvr-spec" type="text" placeholder="عدد القنوات، الدقة..."></div>
-          <div class="fg"><label class="fl">الموديل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="اسم الموديل"></div>
+          <div class="fg"><label class="fl">نوع جهاز التسجيل</label><input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32ch أو DVR 16ch"></div>
+          <div class="fg"><label class="fl">طريقة الربط</label>
+            <select class="fi" dir="rtl" id="inv-dvr-spec">
+              <option value="IP شبكي">IP شبكي</option>
+              <option value="Coaxial">Coaxial</option>
+            </select>
+          </div>
           <div class="fg"><label class="fl">مصدر الطاقة الكهربائية</label>
             <div id="inv-power-source-wrap" style="display:flex;flex-wrap:wrap;gap:8px;padding:8px 0">
               <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;font-weight:600">
@@ -1781,7 +1786,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="fgrid">
           <div class="fg"><label class="fl">💽 سعة الهارد (TB)</label><input class="fi" id="inv-hdd-size" type="text" placeholder="مثال: 2 أو 4"></div>
           <div class="fg"><label class="fl">🔢 عدد الهاردات</label><input class="fi" id="inv-hdd-count" type="number" min="0" value="0"></div>
-          <div class="fg"><label class="fl">📅 فترة التخزين (شهر)</label><input class="fi" id="inv-storage-days" type="number" min="0" value="0" placeholder="مثال: 3"></div>
+          <div class="fg"><label class="fl">📅 فترة التسجيل</label><input class="fi" id="inv-storage-days" type="text" placeholder="مثال: 6 أشهر فما فوق"></div>
         </div>
       </div>
 
@@ -4436,15 +4441,14 @@ function openInvModal(id){
   if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}" ${m.station_id===s.id?'selected':''}>${s.name}</option>`).join('');}
   document.getElementById('inv-status').value=m.status||'مكتمل';
   const fields={
-    'inv-dvr-count':'dvr_count','inv-dvr-spec':'dvr_spec','inv-dvr-model':'dvr_model',
+    'inv-dvr-count':'dvr_count','inv-dvr-model':'dvr_model',
     'inv-hdd-count':'hdd_count','inv-hdd-size':'hdd_size','inv-storage-days':'storage_days',
-    'inv-cam-indoor':'cam_indoor','inv-cam-outdoor':'cam_outdoor','inv-cam-spec':'cam_spec',
     'inv-notes':'notes','inv-phone':'phone','inv-coords':'coords'
   };
   Object.entries(fields).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
-  const camResEl=document.getElementById('inv-cam-res');if(camResEl)camResEl.value=m.cam_res||'';
-  const ciEl=document.getElementById('inv-cam-indoor');if(ciEl)ciEl.value=m.cam_indoor||0;
-  const coEl=document.getElementById('inv-cam-outdoor');if(coEl)coEl.value=m.cam_outdoor||0;
+  // DVR spec (select)
+  const dvrSpecEl=document.getElementById('inv-dvr-spec');
+  if(dvrSpecEl) dvrSpecEl.value=m.dvr_spec||'IP شبكي';
   // استعادة checkboxes مصدر الطاقة
   const pwVals=(m.power_source||'').split(' + ');
   document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
@@ -4500,20 +4504,17 @@ function printInvSingle(id){
   const timeStr=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit'});
   const pw=x.power_source||'';
   const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
-  // صفوف الكاميرات
-  let camRows=[];
-  try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){camRows=[];}
-  if(!camRows.length && (+x.cam_count||0)>0){
-    camRows=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||''}];
+  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
+  function mkPwCell(){
+    return '<table style="border-collapse:collapse;direction:rtl"><tr>'+
+      pwList.map(p=>{
+        const checked=pwSaved.some(s=>s===p);
+        return '<td style="border:none;padding:1px 8px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">'+
+          '<span style="width:14px;height:14px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0">'+(checked?'&#10003;':'')+'</span>'+
+          '<span style="font-size:9px;white-space:nowrap">'+p+'</span></span></td>';
+      }).join('')+
+    '</tr></table>';
   }
-  const camIndoor=camRows.reduce((a,r)=>a+(+r.indoor||0),0)||+x.cam_indoor||0;
-  const camOutdoor=camRows.reduce((a,r)=>a+(+r.outdoor||0),0)||+x.cam_outdoor||0;
-  const totalCams=camIndoor+camOutdoor||+x.cam_count||0;
-
-  // split power source for exact matching
-  const pwSelected=pw.split('+').map(s=>s.trim()).filter(Boolean);
-  const pwCheck=(p)=>pwSelected.some(s=>s===p||s.includes(p)||p.includes(s));
-  const pwCell='<table style="border-collapse:collapse"><tr>'+pwList.map(p=>'<td style="border:none;padding:1px 6px 1px 2px"><div style="display:flex;align-items:center;gap:4px"><div style="width:14px;height:14px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:900;flex-shrink:0;background:'+( pwCheck(p) ? '#f0f0f0' : '#fff')+'">'+( pwCheck(p) ? '&#10003;' : '&nbsp;')+'</div><span style="font-size:9px;white-space:nowrap">'+p+'</span></div></td>').join('')+'</tr></table>';
 
   const emptyDvrRow=(n)=>'<tr style="height:22px"><td style="text-align:center;border:1.5px solid #333">'+n+'</td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td><td style="border:1.5px solid #333"></td></tr>';
 
@@ -4566,13 +4567,13 @@ function printInvSingle(id){
       </tr>
       <tr>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td>
-        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">${x.phone||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
+        <td colspan="2" style="padding:2px 6px;border:1px solid #aaa">${x.phone||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td>
         <td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">أمني رقابي</td>
       </tr>
       <tr>
         <td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td>
-        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa">${x.coords||''}&nbsp;</td>
+        <td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">${x.coords||'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;'}</td>
       </tr>
     </table>
   </div>
@@ -4639,8 +4640,8 @@ function printInvSingle(id){
         <td style="text-align:center">${x.dvr_spec||'IP شبكي'}</td>
         <td style="text-align:center;font-weight:700;color:#1d4ed8">${x.hdd_size||'—'}</td>
         <td style="text-align:center;font-weight:700;color:#7c3aed">${x.hdd_count||0}</td>
-        <td style="text-align:center">${x.storage_days?x.storage_days+' شهر فما فوق':'—'}</td>
-        <td style="padding:5px 8px">${pwCell}</td>
+        <td style="text-align:center">${x.storage_days||'—'}</td>
+        <td style="padding:4px 6px">${mkPwCell()}</td>
         <td></td>
       </tr>
       ${emptyDvrRow(2)}
