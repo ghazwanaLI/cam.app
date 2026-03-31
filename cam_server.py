@@ -584,9 +584,9 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p.startswith("/api/files/"):
             key="/".join(p.split("/")[3:])
-            # المخولون يستطيعون رفع ملفات الصيانة فقط
+            # أي مستخدم مسجل يستطيع رفع ملفات الصيانة
             is_maint_file = key.startswith("maint_")
-            if not self.can(u,"files") and not (is_maint_file and self.can(u,"edit")):
+            if not self.can(u,"files") and not is_maint_file:
                 self.send_json({"error":"لا صلاحية"},403); return
             try:
                 save_file(key,body.get("name",""),body.get("data",""),body.get("mime",""))
