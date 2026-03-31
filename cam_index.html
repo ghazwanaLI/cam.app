@@ -3881,11 +3881,12 @@ async function initApp(){
     if(circActions) circActions.style.display=CU?.role==='admin'?'':'none';
   }
 
+  const DEFAULT_DISTRICTS=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
   try{
     const d=await api('GET','/api/districts');
-    DISTRICTS_LIST=d.districts||[];
+    DISTRICTS_LIST=d.districts?.length ? d.districts : DEFAULT_DISTRICTS;
   }catch(e){
-    DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+    DISTRICTS_LIST=DEFAULT_DISTRICTS;
   }
 
   try{
@@ -5328,18 +5329,15 @@ function generateMaintReport(){
 // ══════════════════════════════════════════
 
 function populateDistrictFilters(){
-  const isAdm=CU?.role==='admin';
-  const uDists=!isAdm?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[])):[];
-  const distOptions=uDists.length?uDists:DISTRICTS_LIST;
-  ['f-tour-district','f-maint-district','f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
+  const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+  ['f-tour-district','f-maint-district','f-maint-gov-district','f-maint-priv-district',
+   'f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
     const cur=sel.value;
-    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
     sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
     if(cur) sel.value=cur;
   });
-
 }
 
 function renderPagination(containerId, current, total, onChange){
