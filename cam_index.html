@@ -730,10 +730,10 @@ function _navInv(sub){
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
       <div class="nav-dropdown">
-        <div class="nav-item" id="nav-maint-main" onclick="goTab('maint-gov',this)"><span class="ni">🔧</span><b>الصيانة</b></div>
+        <div class="nav-item" id="nav-maint-main" onclick="goMaintTab('gov')"><span class="ni">🔧</span><b>الصيانة</b></div>
         <div class="nav-sub">
-          <div class="nav-sub-item" onclick="goMaintTab('maint-gov')">🏛️ صيانة محطة حكومية</div>
-          <div class="nav-sub-item" onclick="goMaintTab('maint-priv')">🏪 صيانة محطة أهلية</div>
+          <div class="nav-sub-item" onclick="goMaintTab('gov')">🏛️ صيانة محطة حكومية</div>
+          <div class="nav-sub-item" onclick="goMaintTab('priv')">🏪 صيانة محطة أهلية</div>
         </div>
       </div>
       <div class="nav-sect">|</div>
@@ -4105,11 +4105,22 @@ async function loadMaintType(type){
   if(btn)btn.style.display=can('edit')?'inline-block':'none';
 }
 function getMaintByType(type){
-  // حكومية: المحطات التي نوعها حكومية، أهلية: الباقي
   const govIds=new Set(allStations.filter(s=>s.type==='حكومية').map(s=>s.id));
   return allMaint.filter(m=>{
-    const isGov=govIds.has(m.station_id);
-    return type==='gov'?isGov:!isGov;
+    // أولاً: استخدم حقل station_type إذا موجود
+    if(m.station_type){
+      const isGov=m.station_type==='حكومية';
+      return type==='gov'?isGov:!isGov;
+    }
+    // ثانياً: ابحث عن المحطة في allStations بالـ id
+    if(m.station_id && govIds.has(m.station_id)){
+      return type==='gov';
+    }
+    if(m.station_id && !govIds.has(m.station_id)){
+      return type==='priv';
+    }
+    // fallback: حكومية افتراضياً
+    return type==='gov';
   });
 }
 function renderMaintType(type){
@@ -4231,7 +4242,8 @@ async function saveMaint(){
   const stId=parseInt(document.getElementById('maint-station').value)||0;
   const st=allStations.find(s=>s.id===stId)||{};
   const body={date:document.getElementById('maint-date').value, district:document.getElementById('maint-district').value,
-    station_id:stId, station_name:st.name||'', device_type:document.getElementById('maint-device').value||'',
+    station_id:stId, station_name:st.name||'', station_type:st.type||'حكومية',
+    device_type:document.getElementById('maint-device').value||'',
     qty:parseInt(document.getElementById('maint-qty')?.value)||1, reason:document.getElementById('maint-reason').value,
     technician:document.getElementById('maint-tech').value, notes:document.getElementById('maint-notes').value,
     status_after:document.getElementById('maint-status-after')?.value||''};
