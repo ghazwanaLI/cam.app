@@ -4642,7 +4642,14 @@ async function saveMaint(){
     // رفع الملفات المرفقة
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     for(const k of fileKeys){
-      if(UF[k]){ await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime}); delete UF[k]; }
+      if(UF[k]){
+        try{
+          await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime});
+          delete UF[k];
+        }catch(fe){
+          console.warn('file upload failed:',k,fe.message);
+        }
+      }
     }
     closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
