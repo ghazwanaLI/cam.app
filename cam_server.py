@@ -415,7 +415,8 @@ class Handler(BaseHTTPRequestHandler):
             station=next((s for s in db["stations"] if s["id"]==body.get("station_id")),{})
             maint={
                 "id":mid,"date":body.get("date",""),"district":body.get("district",u.get("district","")),"station_id":body.get("station_id"),
-                "station_name":station.get("name",""),"device_type":body.get("device_type",""),"qty":body.get("qty",1),
+                "station_name":station.get("name",""),"station_type":body.get("station_type",station.get("type","حكومية")),
+                "device_type":body.get("device_type",""),"qty":body.get("qty",1),
                 "reason":body.get("reason",""),"technician":body.get("technician",""),"notes":body.get("notes",""),
                 "created_by":u["fullname"],"created_at":now,
             }
@@ -615,7 +616,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
             mid=int(p.split("/")[-1]); idx=next((i for i,m in enumerate(db["maintenance"]) if m["id"]==mid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            for f in ["date","district","station_id","device_type","qty","reason","technician","notes"]:
+            for f in ["date","district","station_id","station_type","device_type","qty","reason","technician","notes"]:
                 if f in body: db["maintenance"][idx][f]=body[f]
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
