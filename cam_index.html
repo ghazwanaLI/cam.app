@@ -4210,7 +4210,7 @@ function openStationModal(id){
   document.getElementById('st-name').value=s.name||'';
   // القاطع
   const ds=document.getElementById('st-district');
-  ds.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
+  ds.innerHTML='<option value="">— اختر القاطع —</option>'+(DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']).map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   // النوع
   document.getElementById('st-type').value=s.type||'حكومية';
@@ -4529,7 +4529,8 @@ function openMaintModal(id, stationType){
   _suggFilter='all';
   document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('maint-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
+  const dlist=DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+  ds.innerHTML='<option value="">— اختر القاطع —</option>'+dlist.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   filterMaintStations();
   if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
@@ -4655,7 +4656,7 @@ function openCamModal(id){
   document.getElementById('ov-cam').classList.add('open');
   document.getElementById('cam-eid').value=id||'';
   const ds=document.getElementById('cam-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${c.district===d?'selected':''}>${d}</option>`).join('');
+  ds.innerHTML='<option value="">— اختر —</option>'+(DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']).map(d=>`<option value="${d}" ${c.district===d?'selected':''}>${d}</option>`).join('');
   filterCamStations();
   if(c.station_id)setTimeout(()=>document.getElementById('cam-station').value=c.station_id,50);
   [{id:'cam-no',key:'cam_no'},{id:'cam-loc',key:'location_detail'},{id:'cam-mfr',key:'manufacturer'},
@@ -5005,7 +5006,7 @@ function toggleCircForm(){
   if(isOpen){ cancelQuickCirc(); return; }
   const ds=document.getElementById('q-circ-district');
   if(ds) ds.innerHTML='<option value="الكل">— جميع القواطع —</option>'
-    +DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+    +(DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']).map(d=>`<option value="${d}">${d}</option>`).join('');
   if(f) f.style.display='block';
   if(ov) ov.style.display='block';
   setTimeout(()=>document.getElementById('q-circ-title')?.focus(),100);
@@ -5170,7 +5171,7 @@ function openUserModal(id){
   const userDistricts = Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
   const wrap=document.getElementById('u-districts-wrap');
   if(wrap){
-    wrap.innerHTML=DISTRICTS_LIST.map(d=>`
+    wrap.innerHTML=(DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']).map(d=>`
       <label style="display:flex;align-items:center;gap:6px;cursor:pointer;background:#fff;border:1px solid var(--border);border-radius:6px;padding:5px 10px;font-size:12px;font-weight:600;white-space:nowrap">
         <input type="checkbox" value="${d}" ${userDistricts.includes(d)?'checked':''} style="width:15px;height:15px;cursor:pointer">
         ${d}
@@ -5261,7 +5262,7 @@ function populateReportDistricts(){
       sel.value=myDist;
       sel.disabled=true;
     } else {
-      sel.innerHTML='<option value="">الكل</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+      sel.innerHTML='<option value="">الكل</option>'+(DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']).map(d=>`<option value="${d}">${d}</option>`).join('');
       sel.disabled=false;
     }
   });
