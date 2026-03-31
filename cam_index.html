@@ -729,7 +729,6 @@ function _navInv(sub){
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
@@ -760,22 +759,6 @@ function _navInv(sub){
 
         <!-- 4 Circular Stats -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
-
-          <!-- الجولات -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(29,78,216,.1);border:1.5px solid rgba(29,78,216,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0e7ff" stroke-width="8"/>
-                <circle id="circ-tours" cx="45" cy="45" r="38" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">🚗</div>
-              </div>
-            </div>
-            <div style="font-size:26px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
-            <div style="font-size:12px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-tours-sub">—</div>
-          </div>
 
           <!-- الصيانة -->
           <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
@@ -847,15 +830,6 @@ function _navInv(sub){
                 </div>
                 <div id="cam-pct-lbl" style="font-size:10px;color:var(--t3);margin-top:4px;text-align:center">—</div>
               </div>
-            </div>
-
-            <!-- Recent Tours Widget -->
-            <div class="section" style="flex:1">
-              <div class="sec-hdr" style="padding:10px 14px">
-                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>🚗 أحدث الجولات</div>
-                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)">+ جولة</button>
-              </div>
-              <div id="widget-tours" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
             </div>
 
             <!-- Today's Maintenance Alert -->
@@ -935,55 +909,13 @@ function _navInv(sub){
       <div id="tab-field" style="display:none">
         <!-- Sub tabs -->
         <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:16px;background:#fff;position:sticky;top:110px;z-index:10">
-          <button onclick="switchField('tours',this)" id="sub-tours"
-            style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700;color:#1d4ed8;border-bottom:3px solid #1d4ed8;cursor:pointer;display:flex;align-items:center;gap:6px">
-            🚗 الجولات الميدانية
-          </button>
-          <button onclick="switchField('maintenance',this)" id="sub-maint"
             style="padding:10px 24px;border:none;background:none;font-family:'Cairo',sans-serif;font-size:13px;font-weight:600;color:#64748b;border-bottom:3px solid transparent;cursor:pointer;display:flex;align-items:center;gap:6px">
             🔧 الصيانة والأجهزة
           </button>
         </div>
 
-      <!-- TOURS TAB -->
-      <div id="tab-tours" style="display:block">
-        <div class="section">
-          <div class="sec-hdr" style="flex-wrap:nowrap">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-tours" placeholder="بحث..." oninput="filterTours()"></div>
-              <select class="fi btn-sm" id="f-tour-district" onchange="filterTours()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="f-tour-type" onchange="filterTours()" style="width:110px">
-                <option value="">كل الأنواع</option>
-                <option value="كشف">كشف</option>
-                <option value="صيانة">صيانة</option>
-                <option value="تركيب">تركيب</option>
-                <option value="متابعة">متابعة</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="printToursTable()" style="margin-right:0">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportToursCSV()">📤 تصدير</button>
-              <button class="btn btn-o btn-sm" onclick="loadTours()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot"></div>🚗 سجل الجولات الميدانية</div>
-          </div>
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn btn-p btn-sm" id="btn-add-tour" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)" style="display:none">➕ إضافة جولة</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الزيارة</th><th>الفني</th><th>صورة</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
-              <tbody id="tours-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-tours"></div>
-        </div>
-      </div>
-
-      </div><!-- /tab-tours -->
-
       <!-- MAINTENANCE TAB -->
-      <div id="tab-maintenance" style="display:none">
+      <div id="tab-maintenance" style="display:block">
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
@@ -1467,379 +1399,6 @@ function _navInv(sub){
         </div>
       </div>
 
-<!-- TOUR MODAL -->
-<div class="overlay" id="ov-tour" onclick="closeOv(event,'ov-tour')">
-  <div class="modal">
-    <div class="m-title">🚗 <span id="tour-ttl">إضافة جولة</span></div>
-    <input type="hidden" id="tour-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="tour-district" onchange="filterTourStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="tour-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">نوع الزيارة</label>
-        <select class="fi" dir="rtl" id="tour-type">
-          <option value="كشف">كشف</option>
-          <option value="صيانة">صيانة</option>
-          <option value="تركيب">تركيب</option>
-          <option value="متابعة">متابعة</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
-            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
-            <span>🖨️ جودة عالية</span>
-          </label>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
-            <div class="up-box" id="ub-tour">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_img')">
-              <button class="up-rm" onclick="rmFile('tour_img',event)">✕</button>
-              <div class="up-ico">📸</div>
-              <div class="up-lbl">صورة الموقع</div>
-              <div class="up-stat" id="us-tour_img">صورة أو PDF</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
-            <div class="up-box" id="ub-tour-rep">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
-              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
-              <div class="up-ico">📄</div>
-              <div class="up-lbl">تقرير الزيارة</div>
-              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📋 مستند إضافي</div>
-            <div class="up-box" id="ub-tour-doc">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_doc')">
-              <button class="up-rm" onclick="rmFile('tour_doc',event)">✕</button>
-              <div class="up-ico">📋</div>
-              <div class="up-lbl">مستند إضافي</div>
-              <div class="up-stat" id="us-tour_doc">PDF أو صورة</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-tour')">إلغاء</button>
-      <button class="btn btn-p" id="save-tour-btn" onclick="saveTour()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- MAINTENANCE MODAL -->
-<div class="overlay" id="ov-maint" onclick="closeOv(event,'ov-maint')">
-  <div class="modal">
-    <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
-    <input type="hidden" id="maint-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="maint-district" onchange="filterMaintStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="maint-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <!-- قائمة الأجهزة المتعددة -->
-      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
-          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
-        </div>
-        <div id="devices-list"></div>
-      </div>
-
-      <!-- نوع العطل العام -->
-      <div class="fg">
-        <label class="fl">نوع العطل العام</label>
-        <select class="fi" dir="rtl" id="maint-device">
-          <option value="عطل كلي">عطل كلي</option>
-          <option value="عطل جزئي">عطل جزئي</option>
-          <option value="كسر فيزيائي">كسر فيزيائي</option>
-          <option value="مشكلة برمجية">مشكلة برمجية</option>
-          <option value="انقطاع كابل">انقطاع كابل</option>
-          <option value="خلل في الطاقة">خلل في الطاقة</option>
-          <option value="صيانة دورية">صيانة دورية</option>
-          <option value="استبدال وقائي">استبدال وقائي</option>
-        </select>
-      </div>
-
-      <!-- سبب + فني -->
-      <div class="fg"><label class="fl">سبب الصيانة</label>
-        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
-      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="maint-qty" type="number" min="1" value="1" placeholder="1"></div>
-      <div class="fg"><label class="fl">الحالة بعد الصيانة</label><select class="fi" dir="rtl" id="maint-status-after"><option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option><option value="يعمل جزئياً">⚠️ يعمل جزئياً</option><option value="لا يزال معطلاً">❌ لا يزال معطلاً</option></select></div>
-      <div class="fg"><label class="fl">اسم الفني</label>
-        <input class="fi" id="maint-tech" type="text"></div>
-
-      <!-- الحالة بعد الصيانة -->
-      <div class="fg">
-        <label class="fl">الحالة بعد الصيانة</label>
-        <select class="fi" dir="rtl" id="m-status-after">
-          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
-          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
-          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
-          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
-        </select>
-      </div>
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
-
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
-            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
-            <span>🖨️ جودة طباعة عالية</span>
-          </label>
-        </div>
-
-        <!-- صور العطل — رفع دفعة واحدة -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل</div>
-          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s"
-            onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
-            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
-            <div style="font-size:28px">📸</div>
-            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
-            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
-          </label>
-          <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-        </div>
-
-        <!-- سجلات الاشتغال — 3 سجلات -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
-              <div class="up-box" id="ub-maint-rep">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep')">
-                <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال المحطة</div>
-                <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
-              <div class="up-box" id="ub-maint-rep2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep2')">
-                <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال الصيانة</div>
-                <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
-              <div class="up-box" id="ub-maint-rep3">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep3')">
-                <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل إنجاز عمل</div>
-                <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- التكليف -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
-              <div class="up-box" id="ub-maint-tawkeef">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">وثيقة التكليف</div>
-                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
-              <div class="up-box" id="ub-maint-tawkeef2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef2')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">تكليف إضافي</div>
-                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-maint')">إلغاء</button>
-      <button class="btn btn-o" id="btn-print-maint" onclick="printMaintDocs()" style="display:none">🖨️ طباعة المستندات</button>
-      <button class="btn btn-p" id="save-maint-btn" onclick="saveMaint()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<!-- CAMERA MODAL -->
-<div class="overlay" id="ov-cam" onclick="closeOv(event,'ov-cam')">
-  <div class="modal">
-    <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
-    <input type="hidden" id="cam-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" dir="rtl" id="cam-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
-      <div class="fg"><label class="fl">نوع الكاميرا</label>
-        <select class="fi" dir="rtl" id="cam-type">
-          <option value="داخلية">داخلية</option>
-          <option value="خارجية">خارجية</option>
-          <option value="PTZ">PTZ</option>
-          <option value="بُللت">بُللت</option>
-          <option value="돔">돔 Dome</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
-      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" dir="rtl" id="cam-status">
-          <option value="working">شغالة</option>
-          <option value="broken">معطلة</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
-      <button class="btn btn-p" id="save-cam-btn" onclick="saveCam()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-
-<!-- INVENTORY MODAL -->
-<div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
-  <div class="modal" style="width:860px;max-height:92vh;overflow-y:auto;padding:0">
-    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
-      📦 <span id="inv-ttl">إضافة جرد محطة</span>
-    </div>
-    <input type="hidden" id="inv-eid">
-    <div style="padding:14px 16px">
-
-      <!-- معلومات المنفذ -->
-      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنفذ التوزيعي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المنفذ / البناية :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="width:100%;font-size:11px">
-                <option value="">— اختر المحطة —</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="inv-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
-            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- جدول الكاميرات -->
-      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead>
-            <tr style="background:#f0fdf4">
-              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:38px">#</th>
-              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:110px">نوع الكاميرا</th>
-              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الداخلية</th>
-              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الخارجية</th>
-              <th style="padding:5px 8px;border:1px solid #bbf7d0">حجم العدسة</th>
-              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:32px"></th>
-            </tr>
-          </thead>
-          <tbody id="cam-types-body"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
-      </div>
-
-      <!-- جهاز التسجيل -->
-      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 أجهزة التسجيل الفيديوي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead>
-            <tr style="background:#eff6ff">
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:30px">#</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe">نوع جهاز التسجيل</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:100px">طريقة الربط</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:75px">سعة الهارد</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:55px">العدد</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:120px">فترة التسجيل</th>
-              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:28px"></th>
-            </tr>
-          </thead>
-          <tbody id="dvr-types-body"></tbody>
-        </table>
-        <div style="padding:5px 12px;background:#eff6ff;border-top:1px solid #bfdbfe">
-          <button type="button" onclick="addDvrRow()" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
-        </div>
-        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-        </div>
-      </div>
-
-      <!-- ملاحظات -->
-      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
-      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
-    </div>
-  </div>
-</div>
-
 <!-- DISTRICT MODAL -->
 <div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
   <div class="modal modal-sm">
@@ -2260,7 +1819,7 @@ function _navInv(sub){
 }
 let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
 let allInventory=[];
-let sP_t=1,sP_m=1,sP_c=1,PP=12;
+let sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
 let SERVER_ONLINE=false;
 
@@ -3990,7 +3549,7 @@ function goTab(name, el){
   });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
-  if(name==='field')      { loadTours(); loadMaintenance(); }
+  if(name==='field')      { loadMaintenance(); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
@@ -4002,16 +3561,13 @@ function goTab(name, el){
 }
 
 function switchField(sub, el){
-  const tours = document.getElementById('tab-tours');
   const maint = document.getElementById('tab-maintenance');
-  [tours, maint].forEach(t=>{ if(t) t.style.display='none'; });
-  const active = sub==='tours' ? tours : maint;
-  if(active){
-    active.style.display='block';
-    active.classList.remove('tab-enter');
-    void active.offsetWidth;
-    active.classList.add('tab-enter');
-    active.addEventListener('animationend',()=>active.classList.remove('tab-enter'),{once:true});
+  if(maint){
+    maint.style.display='block';
+    maint.classList.remove('tab-enter');
+    void maint.offsetWidth;
+    maint.classList.add('tab-enter');
+    maint.addEventListener('animationend',()=>maint.classList.remove('tab-enter'),{once:true});
   }
   document.querySelectorAll('#tab-field > div:first-child > button').forEach(b => {
     b.style.borderBottomColor = 'transparent';
@@ -4084,8 +3640,7 @@ async function initApp(){
   try{
     await Promise.all([
       loadStations(),
-      loadTours(),
-      loadMaintenance(),
+        loadMaintenance(),
       loadDelegates(),
       loadCirculars(),
     ]);
@@ -4116,9 +3671,9 @@ function setCircle(id, pct){
 }
 
 function updateDashboard(){
-  const tTotal=allTours.length;
+  const tTotal=0;
   document.getElementById('s-tours-count').textContent=tTotal;
-  const thisMonth=allTours.filter(t=>t.date?.startsWith(new Date().toISOString().slice(0,7))).length;
+  const thisMonth=0;
   document.getElementById('s-tours-sub').textContent='هذا الشهر: '+thisMonth;
   setCircle('circ-tours', Math.min(tTotal/50,1));
 
@@ -4134,7 +3689,7 @@ function updateDashboard(){
 
   const now=Date.now();
   const unvisited=allStations.filter(s=>{
-    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
+    const last=null;
     return !last || (now-new Date(last.date).getTime())>30*864e5;
   }).length;
   document.getElementById('s-unvisited').textContent=unvisited;
@@ -4159,17 +3714,6 @@ function updateDashboard(){
   if(bar) bar.style.width=pct+'%';
   const lbl=document.getElementById('cam-pct-lbl');
   if(lbl) lbl.textContent=total?`${pct}% تعمل (${camOk} من ${total})`:'لا بيانات';
-
-  const wt=document.getElementById('widget-tours');
-  if(wt){
-    const recent=[...allTours].sort((a,b)=>b.date>a.date?1:-1).slice(0,5);
-    wt.innerHTML=recent.length?recent.map(t=>`
-      <div style="padding:6px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-size:12px">
-        <span style="font-weight:700">${t.station_name||'—'}</span>
-        <span style="color:var(--t3)">${t.date||''}</span>
-        <span class="badge b-blue">${t.visit_type||'—'}</span>
-      </div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--t3);font-size:12px">لا توجد جولات</div>';
-  }
 
   // ── تحديث إجراءات صيانة اليوم ──
   const today = new Date().toISOString().split('T')[0];
@@ -4286,7 +3830,7 @@ function renderStations(){
   document.getElementById('gov-count').textContent=govList.length;
   document.getElementById('priv-count').textContent=privList.length;
   const row=(s,i)=>{
-    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
+    const last=null;
     const isAdmin=CU?.role==='admin';
     return `<tr style="direction:rtl">
       <td style="text-align:right"><span class="snum">${i+1}</span></td>
@@ -4304,7 +3848,7 @@ function renderStations(){
   };
   // صف الأهلية — بدون عمود القاطع
   const rowPriv=(s,i)=>{
-    const last=[...allTours].filter(t=>t.station_id===s.id).sort((a,b)=>b.date>a.date?1:-1)[0];
+    const last=null;
     return `<tr>
       <td style="text-align:right"><span class="snum">${i+1}</span></td>
       <td style="font-weight:700;cursor:pointer;color:var(--p1);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" onclick="showStationDetail(${s.id})">${s.name||'—'}</td>
@@ -4461,116 +4005,6 @@ async function delStation(id){
 //  TOURS
 // ══════════════════════════════════════════
 
-async function loadTours(){
-  try{
-    const d=await api('GET','/api/tours');
-    allTours=d.tours||[];
-    renderTours();
-  }catch(e){toast('loadTours: '+e.message,'err');console.error('loadTours',e);}
-}
-
-function renderTours(){
-  const search=(document.getElementById('sq-tours')?.value||'').toLowerCase();
-  const distF=document.getElementById('f-tour-district')?.value||'';
-  const typeF=document.getElementById('f-tour-type')?.value||'';
-  let list=allTours.filter(t=>{
-    if(CU?.role!=='admin'&&CU?.district&&t.district!==CU.district)return false;
-    if(distF&&t.district!==distF)return false;
-    if(typeF&&t.visit_type!==typeF)return false;
-    if(search&&!JSON.stringify(t).toLowerCase().includes(search))return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-
-  const pages=Math.max(1,Math.ceil(list.length/PP));
-  sP_t=Math.min(sP_t,pages);
-  const slice=list.slice((sP_t-1)*PP, sP_t*PP);
-  const tb=document.getElementById('tours-tb');
-  if(!tb)return;
-  tb.innerHTML=slice.length?slice.map((t,i)=>`<tr>
-    <td><span class="snum">${(sP_t-1)*PP+i+1}</span></td>
-    <td>${t.date||'—'}</td>
-    <td style="font-weight:700">${t.station_name||'—'}</td>
-    <td><span class="db">${t.district||'—'}</span></td>
-    <td><span class="badge b-blue">${t.visit_type||'—'}</span></td>
-    <td>${t.technician||'—'}</td>
-    <td><button class="btn btn-o btn-sm" onclick="showTourFiles(${t.id})" title="عرض الملفات">📎 ملفات</button></td>
-    <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
-    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
-        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id})">🗑️</button>`:''}</td>
-  </tr>`).join(''):'<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--t3)">لا توجد جولات</td></tr>';
-  renderPagination('pg-tours', sP_t, pages, p=>{sP_t=p;renderTours();});
-}
-function filterTours(){sP_t=1;renderTours();}
-
-function openTourModal(id){
-  const t=id?allTours.find(x=>x.id===id)||{}:{};
-  document.getElementById('ov-tour').classList.add('open');
-  document.getElementById('tour-eid').value=id||'';
-  document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
-  const ds=document.getElementById('tour-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
-  filterTourStations();
-  if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
-  document.getElementById('tour-type').value=t.visit_type||'كشف';
-  document.getElementById('tour-tech').value=t.technician||'';
-  document.getElementById('tour-notes').value=t.notes||'';
-}
-async function saveTour(){
-  const id=parseInt(document.getElementById('tour-eid').value)||0;
-  const stId=parseInt(document.getElementById('tour-station').value)||0;
-  const st=allStations.find(s=>s.id===stId)||{};
-  const body={date:document.getElementById('tour-date').value, district:document.getElementById('tour-district').value,
-    station_id:stId, station_name:st.name||'', visit_type:document.getElementById('tour-type').value,
-    technician:document.getElementById('tour-tech').value, notes:document.getElementById('tour-notes').value};
-  if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
-  try{
-    const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
-    const tid=id||r.id;
-    for(const fk of ['tour_img','tour_rep','tour_doc']){
-      if(UF[fk]){
-        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
-        delete UF[fk];
-      }
-    }
-    closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-function editTour(id){openTourModal(id);}
-async function delTour(id){
-  if(!confirm('حذف الجولة؟'))return;
-  try{await api('DELETE','/api/tours/'+id);toast('تم الحذف');await loadTours();updateDashboard();}
-  catch(e){toast('خطأ: '+e.message,'err');}
-}
-function filterTourStations(){
-  const d=document.getElementById('tour-district')?.value||'';
-  const sel=document.getElementById('tour-station');
-  if(!sel)return;
-  const list=allStations.filter(s=>!d||s.district===d);
-  sel.innerHTML='<option value="">— اختر المحطة —</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
-}
-function exportToursCSV(){
-  const loadXLSX=()=>new Promise((res,rej)=>{
-    if(typeof XLSX!=='undefined'){res();return;}
-    const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
-    s.onload=res;s.onerror=rej;document.head.appendChild(s);
-  });
-  loadXLSX().then(()=>{
-    const h=['التاريخ','المحطة','القاطع','نوع الزيارة','الفني','الملاحظات'];
-    const rows=allTours.map(t=>[t.date,t.station_name,t.district,t.visit_type,t.technician,t.notes]);
-    const wb=XLSX.utils.book_new();
-    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
-    ws['!cols']=[{wch:12},{wch:22},{wch:12},{wch:12},{wch:16},{wch:30}];
-    XLSX.utils.book_append_sheet(wb,ws,'الجولات');
-    (()=>{const _o=XLSX.write(wb,{bookType:'xlsx',type:'array'});const _b=new Blob([_o],{type:'application/octet-stream'});const _u=URL.createObjectURL(_b);const _a=document.createElement('a');_a.href=_u;_a.download='جولات_'+new Date().toISOString().split('T')[0]+'.xlsx';document.body.appendChild(_a);_a.click();setTimeout(()=>{URL.revokeObjectURL(_u);_a.remove();},1000);})();
-    toast('تم التصدير ✅');
-  }).catch(()=>toast('خطأ','err'));
-}
-
-// ══════════════════════════════════════════
-//  MAINTENANCE
-// ══════════════════════════════════════════
-
 async function loadMaintenance(){
   try{
     const d=await api('GET','/api/maintenance');
@@ -4658,6 +4092,11 @@ function editMaint(id){openMaintModal(id);}
 async function delMaint(id){
   if(!confirm('حذف؟'))return;
   try{await api('DELETE','/api/maintenance/'+id);toast('تم الحذف');await loadMaintenance();updateDashboard();}
+  catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function _delMaintStation(id,sid){
+  if(!confirm('حذف؟'))return;
+  try{await api('DELETE','/api/maintenance/'+id);toast('تم الحذف');await loadMaintenance();updateDashboard();showStationDetail(sid);}
   catch(e){toast('خطأ: '+e.message,'err');}
 }
 function filterMaintStations(){
@@ -5348,7 +4787,7 @@ function generateReport(){
   const to=document.getElementById('r-to')?.value||'9999';
   const myDist=CU?.role!=='admin'&&CU?.district?CU.district:'';
   const dist=myDist||document.getElementById('r-district')?.value||'';
-  let tours=allTours.filter(t=>{
+  let tours=[].filter(t=>{
     if(from&&t.date<from)return false;
     if(to&&t.date>to)return false;
     if(dist&&t.district!==dist)return false;
@@ -5876,22 +5315,6 @@ function _openPrintWindow(title, tableHTML, extraStyle){
 }
 
 // ── طباعة الجولات الميدانية ──
-function printToursTable(){
-  const distF=document.getElementById('f-tour-district')?.value||'';
-  const typeF=document.getElementById('f-tour-type')?.value||'';
-  let list=[...allTours].filter(t=>{
-    if(distF&&t.district!==distF)return false;
-    if(typeF&&t.visit_type!==typeF)return false;
-    return true;
-  }).sort((a,b)=>b.date>a.date?1:-1);
-  const tbl='<table>'
-    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الزيارة</th><th>الفني</th><th>ملاحظات</th></tr></thead>'
-    +'<tbody>'+list.map((t,i)=>`<tr><td>${i+1}</td><td>${t.date||'—'}</td><td style="font-weight:700">${t.station_name||'—'}</td><td>${t.district||'—'}</td><td><span class="badge-ok">${t.visit_type||'—'}</span></td><td>${t.technician||'—'}</td><td style="color:#475569">${t.notes||''}</td></tr>`).join('')
-    +'</tbody></table>'
-    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' زيارة</div>';
-  _openPrintWindow('سجل الجولات الميدانية', tbl);
-}
-
 // ── طباعة الصيانة ──
 function printMaintTable(){
   const distF=document.getElementById('f-maint-district')?.value||'';
@@ -6677,7 +6100,6 @@ function _openImgWindow(src){
 // ══ عرض تفاصيل المحطة الكاملة ══
 function showStationDetail(sid){
   const s=allStations.find(x=>x.id===sid); if(!s) return;
-  const tours=allTours.filter(t=>t.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
   const maints=allMaint.filter(m=>m.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
 
   let ov=document.getElementById('ov-station-detail');
@@ -6718,33 +6140,6 @@ function showStationDetail(sid){
       </div>
     </div>
 
-    <!-- الجولات -->
-    <div style="margin-bottom:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
-        <div style="font-weight:700;font-size:14px">🚗 الجولات الميدانية (${tours.length})</div>
-        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');showTab('tours');setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
-      </div>
-      ${tours.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
-        <thead><tr style="background:var(--bg2)">
-          <th style="padding:6px;text-align:right">التاريخ</th>
-          <th style="padding:6px;text-align:right">النوع</th>
-          <th style="padding:6px;text-align:right">الفني</th>
-          <th style="padding:6px;text-align:right">الملاحظات</th>
-          <th style="padding:6px"></th>
-        </tr></thead>
-        <tbody>${tours.map(t=>`<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:6px">${t.date||'—'}</td>
-          <td style="padding:6px"><span class="badge b-blue" style="font-size:10px">${t.visit_type||'—'}</span></td>
-          <td style="padding:6px">${t.technician||'—'}</td>
-          <td style="padding:6px;max-width:150px;overflow:hidden;text-overflow:ellipsis">${t.notes||'—'}</td>
-          <td style="padding:6px;white-space:nowrap">
-            ${isEdit?`<button class="btn btn-o btn-sm" onclick="editTour(${t.id})">✏️</button>`:''}
-            ${isDel?`<button class="btn btn-r btn-sm" onclick="delTour(${t.id}).then(()=>showStationDetail(${sid}))">🗑️</button>`:''}
-          </td>
-        </tr>`).join('')}</tbody>
-      </table>`:'<div style="color:var(--t3);text-align:center;padding:12px">لا توجد جولات</div>'}
-    </div>
-
     <!-- الصيانة -->
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
@@ -6767,7 +6162,7 @@ function showStationDetail(sid){
           <td style="padding:6px;white-space:nowrap">
             <button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})">📎</button>
             ${isEdit?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
-            ${isDel?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id}).then(()=>showStationDetail(${sid}))">🗑️</button>`:''}
+            ${isDel?'<button class="btn btn-r btn-sm" onclick="_delMaintStation('+m.id+','+sid+')">🗑️</button>':''}
           </td>
         </tr>`).join('')}</tbody>
       </table>`:'<div style="color:var(--t3);text-align:center;padding:12px">لا توجد صيانة</div>'}
@@ -6781,178 +6176,6 @@ function showStationDetail(sid){
   ov.classList.add('open');
 }
 
-function showTourFiles(tid){
-  const labels={tour_img:'صورة الجولة',tour_rep:'التقرير',tour_doc:'المستند'};
-  const keys=['tour_img','tour_rep','tour_doc'];
-  let ov=document.getElementById('ov-tour-files');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='ov-tour-files';
-    ov.className='overlay';
-    ov.onclick=function(e){if(e.target===ov)closeModal('ov-tour-files');};
-    const inner=document.createElement('div');
-    inner.className='modal modal-sm';
-    inner.innerHTML='<div class="m-title">📎 ملفات الجولة الميدانية</div>'
-      +'<div id="tour-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>'
-      +'<div class="m-footer"><button class="btn btn-o" onclick="closeModal(\'ov-tour-files\')">إغلاق</button></div>';
-    ov.appendChild(inner);
-    document.body.appendChild(ov);
-  }
-  const list=document.getElementById('tour-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:12px">⏳ جاري التحميل...</div>';
-  ov.classList.add('open');
-
-  Promise.all(keys.map(function(k){
-    return api('GET','/api/files/tour_'+tid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
-      .catch(function(){return null;});
-  })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
-    if(!found.length){
-      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
-      return;
-    }
-    list.innerHTML='';
-    found.forEach(function(item){
-      const k=item.k; const d=item.d;
-      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg=d.mime&&d.mime.startsWith('image/');
-      const card=document.createElement('div');
-      card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
-      // هيدر البطاقة
-      const hdr=document.createElement('div');
-      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3,#f1f5f9)';
-      const lbl=document.createElement('span');
-      lbl.style.cssText='font-weight:700;font-size:13px';
-      lbl.textContent=labels[k]||k;
-      hdr.appendChild(lbl);
-      const btns=document.createElement('div');
-      btns.style.cssText='display:flex;gap:6px';
-      // تكبير
-      if(isImg){
-        const zb=document.createElement('button');
-        zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px';
-        zb.textContent='🔍 تكبير';
-        zb.onclick=function(){openLB(src);};
-        btns.appendChild(zb);
-      }
-      // حفظ
-      const dl=document.createElement('a');
-      dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.jpg';
-      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
-      dl.textContent='⬇️ حفظ';
-      btns.appendChild(dl);
-      // استبدال — للمخولين والمدير
-      if(can('edit')){
-        const repInp=document.createElement('input');
-        repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
-        repInp.onchange=function(ev){
-          const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,1280,1280,0.85).then(function(res){
-            return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
-          }).then(function(){
-            toast('تم الاستبدال ✅');
-            closeModal('ov-tour-files');
-            showTourFiles(tid);
-          }).catch(function(e){toast('خطأ: '+e.message,'err');});
-        };
-        const repBtn=document.createElement('button');
-        repBtn.className='btn btn-o btn-sm';
-        repBtn.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
-        repBtn.textContent='🔄 استبدال';
-        repBtn.onclick=function(){repInp.click();};
-        btns.appendChild(repBtn);
-        btns.appendChild(repInp);
-      }
-      hdr.appendChild(btns);
-      card.appendChild(hdr);
-      // عرض الصورة مباشرة
-      if(isImg){
-        const img=document.createElement('img');
-        img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
-        img.onclick=function(){openLB(src);};
-        card.appendChild(img);
-      }
-      list.appendChild(card);
-    });
-  });
-}
-
-// ══ شريط فعاليات المخولين ══
-let _activityTimer = null;
-let _lastNotifCount = 0;
-
-function startNotifPolling(){
-  if(CU?.role !== 'admin') return;
-  updateActivityTicker();
-  _activityTimer = setInterval(updateActivityTicker, 30000);
-}
-
-async function updateActivityTicker(){
-  if(CU?.role !== 'admin') return;
-  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
-  try{
-    const d = await api('GET','/api/notifications');
-    const list = d.notifications || [];
-    const tickerBar = document.getElementById('maint-ticker-bar');
-    const tickerContent = document.getElementById('maint-ticker-content');
-    if(!tickerBar || !tickerContent) return;
-
-    if(!list.length){ tickerBar.style.display='none'; return; }
-
-    // فلتر فعاليات اليوم فقط
-    const todayStr = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const todayList = list.filter(n => {
-      if(!n.time) return false;
-      // n.time مثل "2026-03-29 14:30" أو "14:30"
-      return n.time.startsWith(todayStr) || (!n.time.includes('-') && n.time.includes(':'));
-    });
-    const displayList = todayList.length ? todayList : [];
-    if(!displayList.length){ tickerBar.style.display='none'; return; }
-
-    // بناء نص الشريط من فعاليات اليوم
-    const items = displayList.map(n=>{
-      const icon = n.action.includes('جولة')?'🚗':
-                   n.action.includes('صيانة')?'🔧':
-                   n.action.includes('محطة')?'📍':'📋';
-      return `${icon} ${n.user}: ${n.action} — ${n.details} [${n.time}]`;
-    });
-    tickerContent.textContent = items.join('   ❙   ');
-    tickerBar.style.display = 'block';
-
-    // ساعة متحركة
-    const clockEl=document.getElementById('ticker-clock');
-    if(clockEl&&!clockEl._int){
-      clockEl._int=setInterval(()=>{
-        clockEl.textContent=new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
-      },1000);
-    }
-
-    // تنبيه عاجل عند وجود فعالية جديدة
-    const unread = d.unread || 0;
-    const headlineEl=document.getElementById('ticker-headline');
-    const headlineTxt=document.getElementById('ticker-headline-text');
-    if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
-      // أظهر الشريط الأحمر العاجل
-      const newest=displayList[0];
-      if(headlineEl && headlineTxt && newest){
-        const icon=newest.action.includes('جولة')?'🚗':newest.action.includes('صيانة')?'🔧':newest.action.includes('محطة')?'📍':'📋';
-        headlineTxt.textContent=`${icon} ${newest.user}: ${newest.action} — ${newest.details}`;
-        headlineEl.style.display='flex';
-        setTimeout(()=>{ if(headlineEl) headlineEl.style.display='none'; },8000);
-      }
-      toast('📡 فعالية جديدة من مخوّل');
-    }
-    _lastNotifCount = unread;
-
-    // تعليم كل مقروء تلقائياً بعد العرض
-    if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
-  }catch(e){}
-}
-
-// دوال وهمية للتوافق
 function toggleNotifPanel(){}
 function markNotifRead(){}
 function markAllNotifsRead(){}
