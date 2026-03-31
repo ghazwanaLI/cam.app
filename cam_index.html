@@ -3736,28 +3736,25 @@ function setCircle(id, pct){
 }
 
 function updateDashboard(){
-  const tTotal=0;
-  document.getElementById('s-tours-count').textContent=tTotal;
-  const thisMonth=0;
-  document.getElementById('s-tours-sub').textContent='هذا الشهر: '+thisMonth;
-  setCircle('circ-tours', Math.min(tTotal/50,1));
-
+  // الصيانة
   const mTotal=allMaint.length;
-  document.getElementById('s-maint-count').textContent=mTotal;
-  document.getElementById('s-cams-bad-sub').textContent='إجمالي: '+mTotal;
+  const el_mc=document.getElementById('s-maint-count'); if(el_mc) el_mc.textContent=mTotal;
+  const el_ms=document.getElementById('s-cams-bad-sub'); if(el_ms) el_ms.textContent='إجمالي: '+mTotal;
   setCircle('circ-maint', Math.min(mTotal/30,1));
 
+  // المحطات
   const stTotal=allStations.length;
-  document.getElementById('s-stations').textContent=stTotal;
-  document.getElementById('s-stations-sub').textContent='حكومية: '+allStations.filter(s=>s.type==='حكومية').length;
+  const el_st=document.getElementById('s-stations'); if(el_st) el_st.textContent=stTotal;
+  const el_ss=document.getElementById('s-stations-sub'); if(el_ss) el_ss.textContent='حكومية: '+allStations.filter(s=>s.type==='حكومية').length;
   setCircle('circ-stations', Math.min(stTotal/20,1));
 
+  // غير مزارة
   const now=Date.now();
   const unvisited=allStations.filter(s=>{
     const last=null;
     return !last || (now-new Date(last.date).getTime())>30*864e5;
   }).length;
-  document.getElementById('s-unvisited').textContent=unvisited;
+  const el_uv=document.getElementById('s-unvisited'); if(el_uv) el_uv.textContent=unvisited;
   setCircle('circ-reports', stTotal ? unvisited/stTotal : 0);
 
   const badge=document.getElementById('unvisited-badge');
