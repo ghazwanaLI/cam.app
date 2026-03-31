@@ -2067,6 +2067,26 @@ function _navInv(sub){
   else if(typeof switchInvSub==='function') switchInvSub(sub);
 }
 let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
+
+// المحطات الافتراضية للوضع المحلي
+const DEFAULT_STATIONS=[
+  {id:1,name:'محطة اشور',district:'الشرقاط',type:'حكومية'},
+  {id:2,name:'محطة مكحول',district:'بيجي',type:'حكومية'},
+  {id:3,name:'محطة الشهيد بدر',district:'بيجي',type:'حكومية'},
+  {id:4,name:'محطة الحجاج',district:'بيجي',type:'حكومية'},
+  {id:5,name:'محطة فتح الفتوح',district:'تكريت',type:'حكومية'},
+  {id:6,name:'محطة تكريت القديمة',district:'تكريت',type:'حكومية'},
+  {id:7,name:'محطة تكريت الجديدة',district:'تكريت',type:'حكومية'},
+  {id:8,name:'محطة سامراء القديمة',district:'سامراء',type:'حكومية'},
+  {id:9,name:'محطة سامراء الجديدة',district:'سامراء',type:'حكومية'},
+  {id:10,name:'مركز توزيع سامراء',district:'سامراء',type:'حكومية'},
+  {id:11,name:'محطة الشهيدة أمية',district:'العلم',type:'حكومية'},
+  {id:12,name:'محطة الدور',district:'الدور',type:'حكومية'},
+  {id:13,name:'محطة الانوار',district:'الدور',type:'حكومية'},
+  {id:14,name:'محطة بلد',district:'بلد',type:'حكومية'},
+  {id:15,name:'محطة اريحا',district:'بلد',type:'حكومية'},
+  {id:16,name:'محطة الدجيل',district:'الدجيل',type:'حكومية'},
+];
 let allInventory=[];
 let sP_m=1,sP_c=1,PP=12;
 let UF={},DISTRICTS_LIST=[];
@@ -2134,11 +2154,13 @@ function lsApi(method,path,body){
     if(res==='logs')      return {logs:[]};
     if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
     const list=lsGetList(res);
-    return {[res]:list, tours:res==='tours'?list:undefined, maintenance:res==='maintenance'?list:undefined,
-      stations:res==='stations'?list:undefined, cameras:res==='cameras'?list:undefined,
-      coding:res==='coding'?list:undefined,
-      circulars:res==='circulars'?list:undefined, reads:[], delegates:res==='delegates'?list:undefined,
-      users:res==='users'?list:undefined};
+    // إذا المحطات فارغة استخدم الافتراضية
+    const finalList=(res==='stations'&&!list.length)?DEFAULT_STATIONS:list;
+    return {[res]:finalList, tours:res==='tours'?finalList:undefined, maintenance:res==='maintenance'?finalList:undefined,
+      stations:res==='stations'?finalList:undefined, cameras:res==='cameras'?finalList:undefined,
+      coding:res==='coding'?finalList:undefined,
+      circulars:res==='circulars'?finalList:undefined, reads:[], delegates:res==='delegates'?finalList:undefined,
+      users:res==='users'?finalList:undefined};
   }
   if(method==='POST'){
     if(res==='login') return {token:'local-token',user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
