@@ -541,7 +541,20 @@ function _navInv(sub){
 
       <div class="nav-sect">الكاميرات</div>
 
-      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span><span>المحطات</span></div>
+      <div class="nav-group" id="grp-stations">
+        <div class="nav-group-hdr" onclick="toggleNavGroup('grp-stations')">
+          <span class="ni">⛽</span><span>المحطات</span>
+          <span class="nav-arrow" id="arr-grp-stations">▸</span>
+        </div>
+        <div class="nav-group-body" id="body-grp-stations" style="display:none">
+          <div class="nav-sub-item nav-sub-act" id="nav-st-gov" onclick="goStationsTab('gov')">
+            <span>🏛️</span>المحطات الحكومية
+          </div>
+          <div class="nav-sub-item nav-sub-act" id="nav-st-priv" onclick="goStationsTab('priv')">
+            <span>🏪</span>المحطات الأهلية
+          </div>
+        </div>
+      </div>
 
       <div class="nav-group" id="grp-inv">
         <div class="nav-group-hdr" onclick="toggleNavGroup('grp-inv')" id="nav-inventory">
@@ -607,7 +620,7 @@ function _navInv(sub){
           </div>
 
           <!-- المحطات -->
-          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+          <div onclick="goStationsTab('gov')" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
             <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
               <svg width="90" height="90" style="transform:rotate(-90deg)">
                 <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
@@ -4309,6 +4322,26 @@ function toggleNavGroup(groupId){
   body.style.display=open?'flex':'none';
   if(arrow){arrow.className='nav-arrow'+(open?' open':'');}
   if(hdr){open?hdr.classList.add('open'):hdr.classList.remove('open');}
+}
+function goStationsTab(type){
+  // افتح المجموعة
+  const body=document.getElementById('body-grp-stations');
+  const arrow=document.getElementById('arr-grp-stations');
+  const hdr=document.querySelector('#grp-stations .nav-group-hdr');
+  if(body)body.style.display='flex';
+  if(arrow)arrow.className='nav-arrow open';
+  if(hdr)hdr.classList.add('open');
+  // فعّل العنصر الفرعي
+  document.querySelectorAll('.nav-sub-act').forEach(el=>el.classList.remove('active'));
+  document.getElementById('nav-st-'+type)?.classList.add('active');
+  // انتقل للتاب وسكرول للقسم
+  const navEl=document.querySelector('#grp-stations .nav-group-hdr');
+  goTab('stations', navEl);
+  setTimeout(()=>{
+    const section=document.getElementById(type==='gov'?'gov-section-body':'priv-section-body');
+    const header=section?.previousElementSibling;
+    if(header) header.scrollIntoView({behavior:'smooth',block:'start'});
+  },200);
 }
 function goMaintTab(type){
   const tabName = type==='gov'?'maint-gov':'maint-priv';
