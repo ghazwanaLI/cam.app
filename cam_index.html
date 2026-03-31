@@ -729,6 +729,13 @@ function _navInv(sub){
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
+      <div class="nav-dropdown">
+        <div class="nav-item" id="nav-maint-main" onclick="goTab('maint-gov',this)"><span class="ni">🔧</span><b>الصيانة</b></div>
+        <div class="nav-sub">
+          <div class="nav-sub-item" onclick="goMaintTab('maint-gov')">🏛️ صيانة محطة حكومية</div>
+          <div class="nav-sub-item" onclick="goMaintTab('maint-priv')">🏪 صيانة محطة أهلية</div>
+        </div>
+      </div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
@@ -943,6 +950,62 @@ function _navInv(sub){
       </div>
 
       </div><!-- /tab-field -->
+
+      <!-- MAINT GOV TAB -->
+      <div id="tab-maint-gov" style="display:none">
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-actions">
+              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-maint-gov" placeholder="بحث..." oninput="filterMaintType('gov')"></div>
+              <select class="fi btn-sm" id="f-maint-gov-district" onchange="filterMaintType('gov')" style="width:130px">
+                <option value="">كل القواطع</option>
+              </select>
+              <button class="btn btn-o btn-sm" onclick="printMaintTypeTable('gov')">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="exportMaintTypeCSV('gov')">📤 تصدير</button>
+              <button class="btn btn-o btn-sm" onclick="loadMaintType('gov')">🔄</button>
+            </div>
+            <div class="sec-title"><div class="sdot" style="background:#1d4ed8"></div>🏛️ صيانة المحطات الحكومية</div>
+          </div>
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+            <button class="btn btn-p btn-sm" id="btn-add-maint-gov" onclick="openMaintModalTyped('gov')" style="display:none">➕ إضافة صيانة حكومية</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
+              <tbody id="maint-gov-tb"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pg-maint-gov"></div>
+        </div>
+      </div>
+
+      <!-- MAINT PRIV TAB -->
+      <div id="tab-maint-priv" style="display:none">
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-actions">
+              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-maint-priv" placeholder="بحث..." oninput="filterMaintType('priv')"></div>
+              <select class="fi btn-sm" id="f-maint-priv-district" onchange="filterMaintType('priv')" style="width:130px">
+                <option value="">كل القواطع</option>
+              </select>
+              <button class="btn btn-o btn-sm" onclick="printMaintTypeTable('priv')">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="exportMaintTypeCSV('priv')">📤 تصدير</button>
+              <button class="btn btn-o btn-sm" onclick="loadMaintType('priv')">🔄</button>
+            </div>
+            <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 صيانة المحطات الأهلية</div>
+          </div>
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+            <button class="btn btn-p btn-sm" id="btn-add-maint-priv" onclick="openMaintModalTyped('priv')" style="display:none">➕ إضافة صيانة أهلية</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
+              <tbody id="maint-priv-tb"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pg-maint-priv"></div>
+        </div>
+      </div>
 
       <!-- CAMERAS TAB -->
       <div id="tab-cameras" style="display:none">
@@ -3093,7 +3156,7 @@ async function saveGenToList(){
 //  NAVIGATION
 // ══════════════════════════════════════════
 
-const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
+const ALL_TABS = ['dashboard','maint-gov','maint-priv','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
 
 function updateInvAddress(){
   const stId=document.getElementById('inv-station')?.value;
@@ -3550,6 +3613,8 @@ function goTab(name, el){
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
   if(name==='field')      { loadMaintenance(); }
+  if(name==='maint-gov')  { loadMaintType('gov'); }
+  if(name==='maint-priv') { loadMaintType('priv'); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
@@ -3621,7 +3686,7 @@ async function initApp(){
     if(camStats) camStats.style.display=isAdmin?'grid':'none';
     // التقارير مرئية للجميع لكن مصفّاة بالقاطع
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
-    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-coding','btn-add-inv'].forEach(id=>{
+    ['btn-add-tour','btn-add-maint','btn-add-cam','btn-add-st','btn-add-coding','btn-add-inv','btn-add-maint-gov','btn-add-maint-priv'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
     const circBtn=document.getElementById('btn-add-circ');
@@ -4010,7 +4075,101 @@ async function loadMaintenance(){
     const d=await api('GET','/api/maintenance');
     allMaint=d.maintenance||[];
     renderMaint();
+    renderMaintType('gov');
+    renderMaintType('priv');
   }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
+}
+
+// ── الصيانة المنفصلة (حكومية / أهلية) ──
+function goMaintTab(type){
+  const tabName = type==='gov'?'maint-gov':'maint-priv';
+  const navEl = document.getElementById('nav-maint-main');
+  goTab(tabName, navEl);
+  loadMaintType(type);
+}
+async function loadMaintType(type){
+  if(!allMaint.length){
+    try{const d=await api('GET','/api/maintenance'); allMaint=d.maintenance||[];}catch(e){}
+  }
+  renderMaintType(type);
+  // تحديث فلتر القواطع
+  const distSel=document.getElementById('f-maint-'+type+'-district');
+  if(distSel){
+    const cur=distSel.value;
+    const list=getMaintByType(type);
+    const dists=[...new Set(list.map(m=>m.district).filter(Boolean))];
+    distSel.innerHTML='<option value="">كل القواطع</option>'+dists.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(cur)distSel.value=cur;
+  }
+  const btn=document.getElementById('btn-add-maint-'+type);
+  if(btn)btn.style.display=can('edit')?'inline-block':'none';
+}
+function getMaintByType(type){
+  // حكومية: المحطات التي نوعها حكومية، أهلية: الباقي
+  const govIds=new Set(allStations.filter(s=>s.type==='حكومية').map(s=>s.id));
+  return allMaint.filter(m=>{
+    const isGov=govIds.has(m.station_id);
+    return type==='gov'?isGov:!isGov;
+  });
+}
+function renderMaintType(type){
+  const search=(document.getElementById('sq-maint-'+type)?.value||'').toLowerCase();
+  const distF=document.getElementById('f-maint-'+type+'-district')?.value||'';
+  let list=getMaintByType(type).filter(m=>{
+    if(CU?.role!=='admin'&&CU?.district&&m.district!==CU.district)return false;
+    if(distF&&m.district!==distF)return false;
+    if(search&&!JSON.stringify(m).toLowerCase().includes(search))return false;
+    return true;
+  }).sort((a,b)=>b.date>a.date?1:-1);
+  const tb=document.getElementById('maint-'+type+'-tb');
+  if(!tb)return;
+  const color=type==='gov'?'#1d4ed8':'#d97706';
+  tb.innerHTML=list.length?list.map((m,i)=>`<tr>
+    <td><span class="snum">${i+1}</span></td>
+    <td>${m.date||'—'}</td>
+    <td style="font-weight:700">${m.station_name||'—'}</td>
+    <td><span class="db">${m.district||'—'}</span></td>
+    <td>${m.device_type||'—'}</td>
+    <td style="text-align:center">${m.qty||0}</td>
+    <td>${m.reason||'—'}</td>
+    <td>${m.technician||'—'}</td>
+    <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
+    <td><button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})" title="عرض الملفات">📎</button></td>
+    <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
+  </tr>`).join(''):`<tr><td colspan="11" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>`;
+}
+function filterMaintType(type){renderMaintType(type);}
+function openMaintModalTyped(type){
+  openMaintModal(0, type);
+}
+function printMaintTypeTable(type){
+  const label=type==='gov'?'صيانة المحطات الحكومية':'صيانة المحطات الأهلية';
+  const list=getMaintByType(type).sort((a,b)=>b.date>a.date?1:-1);
+  const tbl='<table>'
+    +'<thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th></tr></thead>'
+    +'<tbody>'+list.map((m,i)=>`<tr><td>${i+1}</td><td>${m.date||'—'}</td><td style="font-weight:700">${m.station_name||'—'}</td><td>${m.district||'—'}</td><td>${m.device_type||'—'}</td><td>${m.qty||0}</td><td>${m.reason||'—'}</td><td>${m.technician||'—'}</td><td>${m.notes||'—'}</td></tr>`).join('')
+    +'</tbody></table>'
+    +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' سجل</div>';
+  _openPrintWindow(label, tbl);
+}
+function exportMaintTypeCSV(type){
+  const list=getMaintByType(type).sort((a,b)=>b.date>a.date?1:-1);
+  const label=type==='gov'?'صيانة_حكومية':'صيانة_أهلية';
+  const h=['التاريخ','المحطة','القاطع','نوع الجهاز','الكمية','السبب','الفني','ملاحظات'];
+  const rows=list.map(m=>[m.date,m.station_name,m.district,m.device_type,m.qty,m.reason,m.technician,m.notes]);
+  const _loadXLSX=()=>new Promise((res,rej)=>{if(window.XLSX){res();return;}const s=document.createElement('script');s.src='https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});
+  _loadXLSX().then(()=>{
+    const wb=XLSX.utils.book_new();
+    const ws=XLSX.utils.aoa_to_sheet([h,...rows]);
+    ws['!rightToLeft']=true;
+    XLSX.utils.book_append_sheet(wb,ws,'الصيانة');
+    const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([out],{type:'application/octet-stream'}));
+    a.download=label+'_'+new Date().toISOString().split('T')[0]+'.xlsx';
+    document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},1000);
+    toast('تم التصدير ✅');
+  });
 }
 function renderMaint(){
   const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
@@ -4043,8 +4202,15 @@ function renderMaint(){
   renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
 }
 function filterMaint(){sP_m=1;renderMaint();}
-function openMaintModal(id){
+function openMaintModal(id, stationType){
   const m=id?allMaint.find(x=>x.id===id)||{}:{};
+  // تحديد نوع المحطة من السجل الموجود أو البارامتر
+  let _stType=stationType;
+  if(!_stType && m.station_id){
+    const govIds=new Set(allStations.filter(s=>s.type==='حكومية').map(s=>s.id));
+    _stType=govIds.has(m.station_id)?'gov':'priv';
+  }
+  document.getElementById('ov-maint')._stationType=_stType||'';
   document.getElementById('ov-maint').classList.add('open');
   document.getElementById('maint-eid').value=id||'';
   document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
@@ -4103,7 +4269,11 @@ function filterMaintStations(){
   const d=document.getElementById('maint-district')?.value||'';
   const sel=document.getElementById('maint-station');
   if(!sel)return;
-  sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  const stType=document.getElementById('ov-maint')?._stationType||'';
+  let filtered=allStations.filter(s=>!d||s.district===d);
+  if(stType==='gov') filtered=filtered.filter(s=>s.type==='حكومية');
+  else if(stType==='priv') filtered=filtered.filter(s=>s.type!=='حكومية');
+  sel.innerHTML='<option value="">— اختر المحطة —</option>'+filtered.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 }
 function exportMaintCSV(){
   const loadXLSX=()=>new Promise((res,rej)=>{
