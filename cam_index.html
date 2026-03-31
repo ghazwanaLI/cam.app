@@ -53,67 +53,102 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 .sb-user{display:none!important;}
 .nbadge{background:#dc2626;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-right:4px;}
 
-/* TOP NAVBAR */
+/* ══ SIDEBAR LAYOUT ══ */
 .topbar{
-  position:fixed;top:0;right:0;left:0;z-index:200;
+  position:fixed;top:0;right:0;bottom:0;z-index:200;
   background:#ffffff;
-  border-bottom:2px solid #e2e8f0;
-  box-shadow:0 2px 12px rgba(0,0,0,.06);
+  border-left:2px solid #e2e8f0;
+  box-shadow:-4px 0 20px rgba(0,0,0,.07);
   display:flex!important;flex-direction:column;
-  width:100%;box-sizing:border-box;
-  -webkit-overflow-scrolling:touch;
+  width:230px;box-sizing:border-box;
+  overflow-y:auto;overflow-x:hidden;
 }
 .topbar-logo{
   display:flex!important;align-items:center;justify-content:space-between;
-  padding:8px 16px;border-bottom:1px solid rgba(0,0,0,.06);
-  flex-direction:row;width:100%;box-sizing:border-box;
+  padding:16px 14px 12px;border-bottom:1px solid #f1f5f9;
+  flex-direction:column;width:100%;box-sizing:border-box;gap:12px;
 }
-.tb-brand{display:flex!important;align-items:center;gap:10px;flex-direction:row;}
-.tb-ico{width:38px;height:38px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;}
-.tb-name{font-size:17px;font-weight:800;color:#1d4ed8;}
-.tb-ver{font-size:12px;color:#94a3b8;}
-.tb-user{display:flex!important;align-items:center;gap:8px;flex-direction:row;}
+.tb-brand{display:flex!important;align-items:center;gap:8px;flex-direction:row;width:100%;}
+.tb-ico{width:36px;height:36px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;}
+.tb-name{font-size:14px;font-weight:800;color:#1d4ed8;}
+.tb-ver{font-size:10px;color:#94a3b8;}
+.tb-user{display:flex!important;align-items:center;gap:8px;flex-direction:row;width:100%;
+  background:#f8fafc;border-radius:10px;padding:8px 10px;}
 .su-av{width:32px;height:32px;border-radius:8px;display:flex!important;align-items:center;
   justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
   background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe;}
-.su-name{font-size:14px;font-weight:700;color:#1e293b;}
-.su-role{font-size:12px;color:#64748b;}
-.su-district{font-size:12px;color:#1d4ed8;font-weight:600;}
-.tb-actions{display:flex!important;gap:6px;flex-direction:row;}
-.tb-btn{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;
+.su-name{font-size:12px;font-weight:700;color:#1e293b;}
+.su-role{font-size:10px;color:#64748b;}
+.su-district{font-size:10px;color:#1d4ed8;font-weight:600;}
+.tb-actions{display:flex!important;gap:6px;flex-direction:column;width:100%;padding:0 14px 12px;}
+.tb-btn{padding:7px 12px;border-radius:8px;border:1px solid #e2e8f0;
   background:#f8fafc;color:#475569;font-family:'Cairo',sans-serif;
-  font-size:13px;cursor:pointer;transition:all .2s;}
+  font-size:12px;cursor:pointer;transition:all .2s;width:100%;text-align:right;}
 .tb-btn:hover{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
 
-/* NAV TABS */
+/* ══ NAV ITEMS - VERTICAL ══ */
 .topbar-nav{
-  display:flex!important;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;
-  scrollbar-width:none;flex-direction:row;width:100%;box-sizing:border-box;
+  display:flex!important;align-items:stretch;gap:2px;padding:8px 10px;
+  flex-direction:column;width:100%;box-sizing:border-box;flex:1;
 }
-.topbar-nav::-webkit-scrollbar{display:none;}
 .nav-item{
-  display:flex;align-items:center;flex-direction:row;gap:5px;padding:9px 14px;
-  cursor:pointer;transition:all .18s;color:#64748b;
-  font-size:14px;font-weight:600;white-space:nowrap;position:relative;
-  border-bottom:3px solid transparent;flex-shrink:0;
+  display:flex;align-items:center;flex-direction:row;gap:8px;padding:10px 12px;
+  cursor:pointer;transition:all .2s ease;color:#374151;
+  font-size:13px;font-weight:600;white-space:nowrap;position:relative;
+  border-radius:10px;border-bottom:none;border-right:3px solid transparent;
+  user-select:none;
 }
 .nav-item.hidden{display:none!important;}
-.nav-item:hover{color:#1d4ed8;background:#f0f7ff;}
-.nav-item.active{color:#1d4ed8;font-weight:700;border-bottom:3px solid #1d4ed8;background:#eff6ff;}
-.ni{font-size:14px;}
-.nav-sect{font-size:13px;color:#cbd5e1;padding:0 4px;white-space:nowrap;}
-.nav-dropdown{position:relative;display:inline-flex;align-items:center;}
+.nav-item:hover{color:#1d4ed8;background:#eff6ff;transform:translateX(-2px);}
+.nav-item.active{color:#1d4ed8;font-weight:700;border-right:3px solid #1d4ed8;background:linear-gradient(135deg,#eff6ff,#dbeafe);}
+.ni{font-size:16px;flex-shrink:0;}
+.nav-sect{font-size:10px;color:#94a3b8;padding:10px 14px 4px;font-weight:800;text-transform:uppercase;letter-spacing:.8px;}
+
+/* مجموعات الطي */
+.nav-group{display:flex;flex-direction:column;margin-bottom:2px;}
+.nav-group-hdr{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  cursor:pointer;transition:all .2s ease;color:#374151;
+  font-size:13px;font-weight:700;border-radius:10px;
+  border-right:3px solid transparent;user-select:none;
+}
+.nav-group-hdr:hover{color:#1d4ed8;background:#eff6ff;transform:translateX(-2px);}
+.nav-group-hdr.open{color:#1d4ed8;background:linear-gradient(135deg,#eff6ff,#dbeafe);border-right:3px solid #1d4ed8;}
+.nav-arrow{margin-right:auto;font-size:11px;transition:transform .25s ease;color:#94a3b8;}
+.nav-arrow.open{transform:rotate(90deg);color:#1d4ed8;}
+.nav-group-body{
+  display:flex;flex-direction:column;gap:1px;
+  margin:2px 0 2px 8px;
+  animation:slideDown .2s ease;
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+
+/* عناصر داخل المجموعات */
+.nav-sub-act{
+  display:flex;align-items:center;gap:8px;padding:9px 14px;
+  font-size:12px;font-weight:600;color:#475569;cursor:pointer;
+  border-radius:8px;transition:all .2s;border-right:2px solid transparent;
+  user-select:none;
+}
+.nav-sub-act:hover{color:#1d4ed8;background:#eff6ff;border-right:2px solid #93c5fd;transform:translateX(-2px);}
+.nav-sub-act.active{color:#1d4ed8;font-weight:700;background:#dbeafe;border-right:2px solid #1d4ed8;}
+
+/* الـ dropdown القديم (للتوافق) */
+.nav-dropdown{position:relative;display:flex;flex-direction:column;}
 .nav-dropdown:hover .nav-sub{display:flex;}
-.nav-sub{display:none;position:absolute;top:100%;right:0;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;min-width:160px;overflow:hidden;}
-.nav-sub-item{padding:9px 16px;font-size:12px;font-weight:600;color:#334155;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;border-bottom:1px solid #f1f5f9;}
+.nav-sub{display:none;flex-direction:column;background:#f8fafc;border-radius:8px;
+  margin:2px 0 2px 12px;overflow:hidden;border:1px solid #e2e8f0;}
+.nav-sub-item{padding:8px 14px;font-size:12px;font-weight:600;color:#334155;cursor:pointer;
+  white-space:nowrap;display:flex;align-items:center;gap:6px;border-bottom:1px solid #f1f5f9;
+  transition:all .15s;}
 .nav-sub-item:last-child{border-bottom:none;}
 .nav-sub-item:hover{background:#eff6ff;color:#1d4ed8;}
-.nav-dropdown>.nav-item::after{content:'▾';font-size:9px;margin-right:2px;opacity:.6;}
+.nav-dropdown>.nav-item::after{content:'▾';font-size:9px;margin-right:auto;margin-left:4px;opacity:.6;}
 .hidden{display:none!important;}
 
-/* MAIN */
-.main{margin-right:0;margin-top:108px;display:flex;flex-direction:column;min-height:100vh;}
+/* ══ MAIN - offset for sidebar ══ */
+.main{margin-right:230px;margin-top:0;display:flex;flex-direction:column;min-height:100vh;}
 .header{display:none;}
 .h-title{font-size:16px;font-weight:800;color:#1d4ed8;}
 .h-right{display:flex;align-items:center;gap:10px;}
@@ -272,52 +307,51 @@ tr:hover td{background:rgba(30,58,95,.03);}
 .sb-overlay{display:none!important;}
 
 /* RESPONSIVE */
-/* ════════════════════════════════════
-   RESPONSIVE — tablet + phone + iPhone
-   ════════════════════════════════════ */
-
-/* ── Tablet landscape 768-1024 ── */
 @media(max-width:1024px){
   .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
   .content{padding:16px 14px 70px;}
-  .main{margin-top:108px;}
   #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
   #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
   #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
 }
 
-/* ── Tablet portrait / large phone 600-900 ── */
 @media(max-width:900px){
-  .main{margin-top:104px;}
+  .topbar{width:200px;}
+  .main{margin-right:200px;}
   .content{padding:12px 12px 75px;}
+  .tb-name{font-size:12px;}
+  .nav-item{font-size:12px;padding:9px 10px;}
+}
 
-  /* شريط علوي مضغوط */
-  .topbar-logo{padding:7px 12px;}
-  .tb-ver{display:none!important;}
-  .su-role{display:none!important;}
-  .tb-ico{width:32px!important;height:32px!important;font-size:17px!important;}
-  .su-av{width:30px!important;height:30px!important;font-size:12px!important;}
-  .tb-btn{padding:6px 10px;font-size:12px;}
-  .tb-name{font-size:14px;}
-
-  /* تبويبات: تمرير أفقي بدون scrollbar */
-  .topbar-nav{overflow-x:auto;flex-wrap:nowrap!important;
-    -webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 10px;}
-  .topbar-nav::-webkit-scrollbar{display:none;}
-  .nav-item{padding:9px 12px;font-size:12px;gap:4px;white-space:nowrap;}
-  .ni{font-size:14px;}
-
-  /* إحصائيات */
-  .stats-grid{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px;}
-  .sc{padding:14px 12px;}
-  .sc-val{font-size:28px;}
-  .sc-lbl{font-size:11px;}
-
-  /* جداول */
-  .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
-  .section{overflow:hidden;}
-  table{min-width:520px;font-size:12px;}
-  th{padding:9px 10px;font-size:11px;}
+@media(max-width:600px){
+  .topbar{
+    width:100%;height:auto;
+    position:fixed;bottom:0;top:auto;right:0;left:0;
+    flex-direction:row;border-left:none;border-top:2px solid #e2e8f0;
+    box-shadow:0 -2px 12px rgba(0,0,0,.07);overflow-x:auto;overflow-y:hidden;
+  }
+  .topbar-logo{display:none!important;}
+  .tb-actions{display:none!important;}
+  .topbar-nav{
+    flex-direction:row!important;padding:0 8px;
+    align-items:center;gap:0;overflow-x:auto;flex:1;
+  }
+  .nav-item{
+    flex-direction:column!important;padding:8px 10px;font-size:10px;gap:2px;
+    border-right:none!important;border-top:3px solid transparent;border-radius:0;
+    flex-shrink:0;
+  }
+  .nav-item.active{border-top:3px solid #1d4ed8;border-right:none!important;}
+  .nav-sect{display:none!important;}
+  .nav-dropdown{flex-direction:column;}
+  .nav-dropdown:hover .nav-sub{display:none;}
+  .nav-sub{display:none!important;}
+  .ni{font-size:18px;}
+  .main{margin-right:0;margin-top:0;padding-bottom:70px;}
+  .content{padding:12px 12px 80px;}
+  .stats-grid{grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px;}
+  table{min-width:480px;font-size:11px;}
+}
   td{padding:8px 10px;font-size:12px;}
 
   /* نماذج */
@@ -667,9 +701,15 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <!-- دوال التنقل الآمنة — مُعرَّفة في الـ head لضمان توفرها قبل أي نقرة -->
 <script>
 function _navInv(sub){
+  // افتح مجموعة الجرد في السايدبار
+  const body=document.getElementById('body-grp-inv');
+  const arrow=document.getElementById('arr-grp-inv');
+  const hdr=document.querySelector('#grp-inv .nav-group-hdr');
+  if(body)body.style.display='flex';
+  if(arrow)arrow.className='nav-arrow open';
+  if(hdr)hdr.classList.add('open');
   if(typeof goInventorySub==='function'){ goInventorySub(sub); return; }
   if(typeof switchInvSub==='function'){ switchInvSub(sub); return; }
-  // fallback: انتظر 500ms وحاول مجدداً
   setTimeout(function(){
     if(typeof goInventorySub==='function') goInventorySub(sub);
     else if(typeof switchInvSub==='function') switchInvSub(sub);
@@ -705,6 +745,7 @@ function _navInv(sub){
   <!-- TOP NAVBAR -->
   <div class="topbar" id="sidebar">
     <div class="topbar-logo">
+      <!-- الشعار -->
       <div class="tb-brand">
         <div class="tb-ico">📹</div>
         <div>
@@ -712,42 +753,76 @@ function _navInv(sub){
           <div class="tb-ver">V1.0.0 — شعبة تقنية المعلومات</div>
         </div>
       </div>
+      <!-- معلومات المستخدم -->
       <div class="tb-user">
         <div class="su-av" id="su-av">م</div>
-        <div>
+        <div style="flex:1;min-width:0">
           <div class="su-name" id="su-name">—</div>
           <div class="su-role" id="su-role">—</div>
           <div class="su-district" id="su-district"></div>
         </div>
-        <div class="tb-actions">
-
-          <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
-          <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
-        </div>
       </div>
     </div>
     <div class="topbar-nav">
-      <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
-      <div class="nav-sect">|</div>
-      <div class="nav-item" id="nav-maint-gov" onclick="goMaintTab('gov')"><span class="ni">🏛️</span>صيانة الحكومية</div>
-      <div class="nav-item" id="nav-maint-priv" onclick="goMaintTab('priv')"><span class="ni">🏪</span>صيانة الأهلية</div>
-      <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
-      <div class="nav-dropdown">
-        <div class="nav-item" id="nav-inventory" onclick="_navInv('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
-        <div class="nav-sub">
-          <div class="nav-sub-item" onclick="_navInv('inv-stations')">📋 جرد المحطات</div>
-          <div class="nav-sub-item" onclick="_navInv('inv-devices')">🎥 أجهزة التسجيل</div>
-          <div class="nav-sub-item" onclick="_navInv('inv-report')">📄 التقارير</div>
+
+      <div class="nav-item active" onclick="goTab('dashboard',this)" id="nav-dashboard">
+        <span class="ni">🏠</span><span>لوحة التحكم</span>
+      </div>
+
+      <div class="nav-sect">الصيانة</div>
+
+      <div class="nav-group" id="grp-maint">
+        <div class="nav-group-hdr" onclick="toggleNavGroup('grp-maint')" id="nav-maint-main">
+          <span class="ni">🔧</span><span>الصيانة</span>
+          <span class="nav-arrow" id="arr-grp-maint">▸</span>
+        </div>
+        <div class="nav-group-body" id="body-grp-maint" style="display:none">
+          <div class="nav-sub-item nav-sub-act" id="nav-maint-gov" onclick="goMaintTab('gov')">
+            <span>🏛️</span>صيانة المحطات الحكومية
+          </div>
+          <div class="nav-sub-item nav-sub-act" id="nav-maint-priv" onclick="goMaintTab('priv')">
+            <span>🏪</span>صيانة المحطات الأهلية
+          </div>
         </div>
       </div>
-      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
-      <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
-      <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
-      <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
-      <div class="nav-sect" id="admin-sect" style="display:none">|</div>
-      <div class="nav-item" id="nav-logs" class="nav-item hidden" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span>السجل</div>
+
+      <div class="nav-sect">الكاميرات</div>
+
+      <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span><span>المحطات</span></div>
+
+      <div class="nav-group" id="grp-inv">
+        <div class="nav-group-hdr" onclick="toggleNavGroup('grp-inv')" id="nav-inventory">
+          <span class="ni">📦</span><span>جرد الكاميرات</span>
+          <span class="nav-arrow" id="arr-grp-inv">▸</span>
+        </div>
+        <div class="nav-group-body" id="body-grp-inv" style="display:none">
+          <div class="nav-sub-item nav-sub-act" onclick="_navInv('inv-stations')">📋 جرد المحطات</div>
+          <div class="nav-sub-item nav-sub-act" onclick="_navInv('inv-devices')">🎥 أجهزة التسجيل</div>
+          <div class="nav-sub-item nav-sub-act" onclick="_navInv('inv-report')">📄 التقارير</div>
+        </div>
+      </div>
+
+      <div class="nav-sect">الإدارة</div>
+
+      <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><span>ترميز الأجهزة</span></div>
+      <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span><span>التعاميم</span><span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
+      <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span><span>المستخدمون</span></div>
+      <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span><span>التقارير</span></div>
+      <div class="nav-sect" id="admin-sect" style="display:none">النظام</div>
+      <div class="nav-item" id="nav-logs" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span><span>السجل</span></div>
+
     </div>
+
+    <!-- أزرار أسفل السايدبار -->
+    <div style="padding:12px 10px;border-top:1px solid #f1f5f9;display:flex;flex-direction:column;gap:6px;margin-top:auto">
+      <button class="tb-btn" onclick="openChangePw()" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid #e2e8f0;background:#f8fafc;color:#475569;cursor:pointer;font-family:Cairo,sans-serif;transition:all .2s;text-align:right">
+        <span style="font-size:15px">🔑</span><span>كلمة المرور</span>
+      </button>
+      <button class="tb-btn" onclick="doLogout()" style="display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:10px;font-size:12px;font-weight:700;border:1px solid #fee2e2;background:#fff5f5;color:#dc2626;cursor:pointer;font-family:Cairo,sans-serif;transition:all .2s;text-align:right">
+        <span style="font-size:15px">🚪</span><span>تسجيل الخروج</span>
+      </button>
+    </div>
+
   </div>
 
   <div class="main">
@@ -4440,10 +4515,31 @@ async function loadMaintenance(){
 }
 
 // ── الصيانة المنفصلة (حكومية / أهلية) ──
+function toggleNavGroup(groupId){
+  const body=document.getElementById('body-'+groupId);
+  const arrow=document.getElementById('arr-'+groupId);
+  const hdr=document.querySelector('#'+groupId+' .nav-group-hdr');
+  if(!body)return;
+  const open=body.style.display==='none'||body.style.display==='';
+  body.style.display=open?'flex':'none';
+  if(arrow){arrow.className='nav-arrow'+(open?' open':'');}
+  if(hdr){open?hdr.classList.add('open'):hdr.classList.remove('open');}
+}
 function goMaintTab(type){
   const tabName = type==='gov'?'maint-gov':'maint-priv';
   const navId   = type==='gov'?'nav-maint-gov':'nav-maint-priv';
-  goTab(tabName, document.getElementById(navId));
+  // افتح المجموعة
+  const body=document.getElementById('body-grp-maint');
+  const arrow=document.getElementById('arr-grp-maint');
+  const hdr=document.querySelector('#grp-maint .nav-group-hdr');
+  if(body)body.style.display='flex';
+  if(arrow)arrow.className='nav-arrow open';
+  if(hdr)hdr.classList.add('open');
+  // فعّل العنصر الفرعي
+  document.querySelectorAll('.nav-sub-act').forEach(el=>el.classList.remove('active'));
+  document.getElementById(navId)?.classList.add('active');
+  // انتقل للتاب
+  goTab(tabName, null);
 }
 async function loadMaintType(type){
   if(!allMaint.length){
