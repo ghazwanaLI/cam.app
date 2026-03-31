@@ -729,13 +729,8 @@ function _navInv(sub){
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
-      <div class="nav-dropdown">
-        <div class="nav-item" id="nav-maint-main" onclick="goMaintTab('gov')"><span class="ni">🔧</span><b>الصيانة</b></div>
-        <div class="nav-sub">
-          <div class="nav-sub-item" onclick="goMaintTab('gov')">🏛️ صيانة محطة حكومية</div>
-          <div class="nav-sub-item" onclick="goMaintTab('priv')">🏪 صيانة محطة أهلية</div>
-        </div>
-      </div>
+      <div class="nav-item" id="nav-maint-gov" onclick="goMaintTab('gov')"><span class="ni">🏛️</span>صيانة الحكومية</div>
+      <div class="nav-item" id="nav-maint-priv" onclick="goMaintTab('priv')"><span class="ni">🏪</span>صيانة الأهلية</div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
@@ -1461,6 +1456,373 @@ function _navInv(sub){
           </div>
         </div>
       </div>
+
+<div class="overlay" id="ov-maint" onclick="closeOv(event,'ov-maint')">
+  <div class="modal">
+    <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
+    <input type="hidden" id="maint-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="maint-district" onchange="filterMaintStations()">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">المحطة *</label>
+        <select class="fi" dir="rtl" id="maint-station"><option value="">— اختر المحطة —</option></select>
+      </div>
+      <!-- قائمة الأجهزة المتعددة -->
+      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
+          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
+        </div>
+        <div id="devices-list"></div>
+      </div>
+
+      <!-- نوع العطل العام -->
+      <div class="fg">
+        <label class="fl">نوع العطل العام</label>
+        <select class="fi" dir="rtl" id="maint-device">
+          <option value="عطل كلي">عطل كلي</option>
+          <option value="عطل جزئي">عطل جزئي</option>
+          <option value="كسر فيزيائي">كسر فيزيائي</option>
+          <option value="مشكلة برمجية">مشكلة برمجية</option>
+          <option value="انقطاع كابل">انقطاع كابل</option>
+          <option value="خلل في الطاقة">خلل في الطاقة</option>
+          <option value="صيانة دورية">صيانة دورية</option>
+          <option value="استبدال وقائي">استبدال وقائي</option>
+        </select>
+      </div>
+
+      <!-- سبب + فني -->
+      <div class="fg"><label class="fl">سبب الصيانة</label>
+        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
+      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="maint-qty" type="number" min="1" value="1" placeholder="1"></div>
+      <div class="fg"><label class="fl">الحالة بعد الصيانة</label><select class="fi" dir="rtl" id="maint-status-after"><option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option><option value="يعمل جزئياً">⚠️ يعمل جزئياً</option><option value="لا يزال معطلاً">❌ لا يزال معطلاً</option></select></div>
+      <div class="fg"><label class="fl">اسم الفني</label>
+        <input class="fi" id="maint-tech" type="text"></div>
+
+      <!-- الحالة بعد الصيانة -->
+      <div class="fg">
+        <label class="fl">الحالة بعد الصيانة</label>
+        <select class="fi" dir="rtl" id="m-status-after">
+          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
+          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
+          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
+          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
+        </select>
+      </div>
+
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
+
+      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
+            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
+            <span>🖨️ جودة طباعة عالية</span>
+          </label>
+        </div>
+
+        <!-- صور العطل — رفع دفعة واحدة -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل</div>
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s"
+            onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
+            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
+            <div style="font-size:28px">📸</div>
+            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
+            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
+          </label>
+          <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+
+        <!-- سجلات الاشتغال — 3 سجلات -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
+              <div class="up-box" id="ub-maint-rep">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep')">
+                <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل اشتغال المحطة</div>
+                <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
+              <div class="up-box" id="ub-maint-rep2">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep2')">
+                <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل اشتغال الصيانة</div>
+                <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
+              <div class="up-box" id="ub-maint-rep3">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep3')">
+                <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل إنجاز عمل</div>
+                <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- التكليف -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
+              <div class="up-box" id="ub-maint-tawkeef">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">وثيقة التكليف</div>
+                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
+              <div class="up-box" id="ub-maint-tawkeef2">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef2')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">تكليف إضافي</div>
+                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- جدول اقتراحات الصيانة -->
+      <div class="fg full" style="border:1.5px solid #1d4ed8;border-radius:12px;padding:0;overflow:hidden;margin-bottom:4px">
+        <div style="background:#1d4ed8;color:#fff;padding:8px 14px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          <span>📋 اقتراحات الصيانة الشائعة</span>
+          <button type="button" onclick="toggleSuggestions()" id="btn-toggle-sugg" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;font-family:Cairo,sans-serif">▼ إظهار</button>
+        </div>
+        <div id="sugg-panel" style="display:none;padding:10px">
+          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+            <button type="button" onclick="setSuggFilter('all')" class="sugg-filter-btn active" style="padding:3px 10px;border-radius:20px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">الكل</button>
+            <button type="button" onclick="setSuggFilter('camera')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">📷 كاميرات</button>
+            <button type="button" onclick="setSuggFilter('dvr')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🎥 تسجيل</button>
+            <button type="button" onclick="setSuggFilter('power')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">⚡ طاقة</button>
+            <button type="button" onclick="setSuggFilter('network')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🌐 شبكة</button>
+            <button type="button" onclick="setSuggFilter('periodic')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🔄 دورية</button>
+          </div>
+          <div id="sugg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:220px;overflow-y:auto"></div>
+        </div>
+      </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-maint')">إلغاء</button>
+      <button class="btn btn-o" id="btn-print-maint" onclick="printMaintDocs()" style="display:none">🖨️ طباعة المستندات</button>
+      <button class="btn btn-p" id="save-maint-btn" onclick="saveMaint()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- CAMERA MODAL -->
+<div class="overlay" id="ov-cam" onclick="closeOv(event,'ov-cam')">
+  <div class="modal">
+    <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
+    <input type="hidden" id="cam-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
+      <div class="fg"><label class="fl">المحطة</label>
+        <select class="fi" dir="rtl" id="cam-station"><option value="">— اختر المحطة —</option></select>
+      </div>
+      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
+      <div class="fg"><label class="fl">نوع الكاميرا</label>
+        <select class="fi" dir="rtl" id="cam-type">
+          <option value="داخلية">داخلية</option>
+          <option value="خارجية">خارجية</option>
+          <option value="PTZ">PTZ</option>
+          <option value="بُللت">بُللت</option>
+          <option value="돔">돔 Dome</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
+      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" dir="rtl" id="cam-status">
+          <option value="working">شغالة</option>
+          <option value="broken">معطلة</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
+    </div>
+
+      <!-- جدول اقتراحات الصيانة -->
+      <div class="fg full" style="border:1.5px solid #1d4ed8;border-radius:12px;padding:0;overflow:hidden;margin-bottom:4px">
+        <div style="background:#1d4ed8;color:#fff;padding:8px 14px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          <span>📋 اقتراحات الصيانة الشائعة</span>
+          <button type="button" onclick="toggleSuggestions()" id="btn-toggle-sugg" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;font-family:Cairo,sans-serif">▼ إظهار</button>
+        </div>
+        <div id="sugg-panel" style="display:none;padding:10px">
+          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+            <button type="button" onclick="setSuggFilter('all')" class="sugg-filter-btn active" style="padding:3px 10px;border-radius:20px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">الكل</button>
+            <button type="button" onclick="setSuggFilter('camera')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">📷 كاميرات</button>
+            <button type="button" onclick="setSuggFilter('dvr')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🎥 تسجيل</button>
+            <button type="button" onclick="setSuggFilter('power')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">⚡ طاقة</button>
+            <button type="button" onclick="setSuggFilter('network')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🌐 شبكة</button>
+            <button type="button" onclick="setSuggFilter('periodic')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🔄 دورية</button>
+          </div>
+          <div id="sugg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:220px;overflow-y:auto"></div>
+        </div>
+      </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
+      <button class="btn btn-p" id="save-cam-btn" onclick="saveCam()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- INVENTORY MODAL -->
+<div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
+  <div class="modal" style="width:860px;max-height:92vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
+      📦 <span id="inv-ttl">إضافة جرد محطة</span>
+    </div>
+    <input type="hidden" id="inv-eid">
+    <div style="padding:14px 16px">
+
+      <!-- معلومات المنفذ -->
+      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنفذ التوزيعي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المنفذ / البناية :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="width:100%;font-size:11px">
+                <option value="">— اختر المحطة —</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="inv-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
+            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات -->
+      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#f0fdf4">
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:38px">#</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:110px">نوع الكاميرا</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الداخلية</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">عدد الخارجية</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0">حجم العدسة</th>
+              <th style="padding:5px 8px;border:1px solid #bbf7d0;width:32px"></th>
+            </tr>
+          </thead>
+          <tbody id="cam-types-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جهاز التسجيل -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#eff6ff">
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:38px">#</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe">نوع جهاز التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:110px">طريقة الربط</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:85px">سعة الهارد (TB)</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:65px">عدد الهاردات</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:130px">فترة التسجيل</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;color:#94a3b8">1</td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32-ch" style="width:100%;font-size:11px;padding:3px 6px"></td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe">
+                <select class="fi" dir="rtl" id="inv-dvr-spec" style="width:100%;font-size:11px;padding:3px 6px">
+                  <option value="IP شبكي">IP شبكي</option>
+                  <option value="Coaxial">Coaxial</option>
+                </select>
+              </td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-size" type="text" placeholder="8" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-count" type="number" min="0" value="0" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
+              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-storage-days" type="text" placeholder="6 أشهر فما فوق" style="width:100%;font-size:11px;padding:3px 6px"></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
+    </div>
+
+      <!-- جدول اقتراحات الصيانة -->
+      <div class="fg full" style="border:1.5px solid #1d4ed8;border-radius:12px;padding:0;overflow:hidden;margin-bottom:4px">
+        <div style="background:#1d4ed8;color:#fff;padding:8px 14px;font-weight:800;font-size:13px;display:flex;justify-content:space-between;align-items:center">
+          <span>📋 اقتراحات الصيانة الشائعة</span>
+          <button type="button" onclick="toggleSuggestions()" id="btn-toggle-sugg" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px;font-family:Cairo,sans-serif">▼ إظهار</button>
+        </div>
+        <div id="sugg-panel" style="display:none;padding:10px">
+          <div style="display:flex;gap:8px;margin-bottom:8px;flex-wrap:wrap">
+            <button type="button" onclick="setSuggFilter('all')" class="sugg-filter-btn active" style="padding:3px 10px;border-radius:20px;border:1px solid #1d4ed8;background:#1d4ed8;color:#fff;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">الكل</button>
+            <button type="button" onclick="setSuggFilter('camera')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">📷 كاميرات</button>
+            <button type="button" onclick="setSuggFilter('dvr')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🎥 تسجيل</button>
+            <button type="button" onclick="setSuggFilter('power')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">⚡ طاقة</button>
+            <button type="button" onclick="setSuggFilter('network')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🌐 شبكة</button>
+            <button type="button" onclick="setSuggFilter('periodic')" class="sugg-filter-btn" style="padding:3px 10px;border-radius:20px;border:1px solid #e2e8f0;background:#fff;color:#374151;font-size:11px;cursor:pointer;font-family:Cairo,sans-serif">🔄 دورية</button>
+          </div>
+          <div id="sugg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px;max-height:220px;overflow-y:auto"></div>
+        </div>
+      </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
+      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
+    </div>
+  </div>
+</div>
+
 
 <!-- DISTRICT MODAL -->
 <div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
@@ -4080,9 +4442,8 @@ async function loadMaintenance(){
 // ── الصيانة المنفصلة (حكومية / أهلية) ──
 function goMaintTab(type){
   const tabName = type==='gov'?'maint-gov':'maint-priv';
-  const navEl = document.getElementById('nav-maint-main');
-  goTab(tabName, navEl);
-  loadMaintType(type);
+  const navId   = type==='gov'?'nav-maint-gov':'nav-maint-priv';
+  goTab(tabName, document.getElementById(navId));
 }
 async function loadMaintType(type){
   if(!allMaint.length){
@@ -4210,6 +4571,86 @@ function renderMaint(){
   renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
 }
 function filterMaint(){sP_m=1;renderMaint();}
+// ── اقتراحات الصيانة ──
+const MAINT_SUGGESTIONS = [
+  // كاميرات
+  {cat:'camera', device:'كاميرا IP', reason:'انقطاع الصورة', fault:'عطل جزئي', notes:'فحص الكابل والـ PoE'},
+  {cat:'camera', device:'كاميرا IP', reason:'صورة غير واضحة / ضبابية', fault:'كسر فيزيائي', notes:'تنظيف العدسة أو استبدالها'},
+  {cat:'camera', device:'كاميرا IP', reason:'لا تتصل بالشبكة', fault:'مشكلة برمجية', notes:'إعادة ضبط IP'},
+  {cat:'camera', device:'كاميرا IP', reason:'تالفة بسبب العوامل الجوية', fault:'كسر فيزيائي', notes:'استبدال الكاميرا'},
+  {cat:'camera', device:'كاميرا HDCVI', reason:'خلل في إرسال الإشارة', fault:'انقطاع كابل', notes:'فحص الكوكس'},
+  // تسجيل
+  {cat:'dvr', device:'NVR', reason:'توقف عن التسجيل', fault:'عطل كلي', notes:'فحص الهارد ديسك'},
+  {cat:'dvr', device:'NVR', reason:'هارد ممتلئ', fault:'صيانة دورية', notes:'حذف التسجيلات القديمة أو استبدال الهارد'},
+  {cat:'dvr', device:'DVR', reason:'لا يستجيب', fault:'مشكلة برمجية', notes:'إعادة تشغيل أو تحديث الفيرموير'},
+  {cat:'dvr', device:'هارد ديسك', reason:'تعطل الهارد', fault:'عطل كلي', notes:'استبدال الهارد'},
+  // طاقة
+  {cat:'power', device:'عاكسة UPS', reason:'انقطاع الكهرباء المتكرر', fault:'خلل في الطاقة', notes:'صيانة UPS أو البطارية'},
+  {cat:'power', device:'بطارية', reason:'عمر البطارية انتهى', fault:'استبدال وقائي', notes:'استبدال البطارية'},
+  {cat:'power', device:'مزود طاقة PoE', reason:'لا يوصل طاقة للكاميرات', fault:'عطل كلي', notes:'استبدال السويج'},
+  // شبكة
+  {cat:'network', device:'سويج شبكي', reason:'توقف الاتصال', fault:'عطل كلي', notes:'فحص الكابلات والـ VLAN'},
+  {cat:'network', device:'كابل شبكة', reason:'تلف الكابل', fault:'انقطاع كابل', notes:'استبدال الكابل'},
+  {cat:'network', device:'راوتر', reason:'ضعف الإشارة', fault:'عطل جزئي', notes:'إعادة ضبط الراوتر'},
+  // دورية
+  {cat:'periodic', device:'منظومة كاملة', reason:'صيانة دورية شهرية', fault:'صيانة دورية', notes:'فحص جميع الكاميرات والاتصالات'},
+  {cat:'periodic', device:'كاميرا IP', reason:'تنظيف دوري', fault:'صيانة دورية', notes:'تنظيف العدسة والهيكل'},
+  {cat:'periodic', device:'NVR', reason:'مراجعة إعدادات التسجيل', fault:'صيانة دورية', notes:'التحقق من جودة التسجيل ومساحة التخزين'},
+];
+let _suggFilter='all';
+function toggleSuggestions(){
+  const panel=document.getElementById('sugg-panel');
+  const btn=document.getElementById('btn-toggle-sugg');
+  if(!panel||!btn)return;
+  const open=panel.style.display==='none';
+  panel.style.display=open?'block':'none';
+  btn.textContent=open?'▲ إخفاء':'▼ إظهار';
+  if(open) renderSuggestions();
+}
+function setSuggFilter(cat){
+  _suggFilter=cat;
+  document.querySelectorAll('.sugg-filter-btn').forEach(b=>{
+    const isActive=b.getAttribute('onclick')?.includes("'"+cat+"'");
+    b.style.background=isActive?'#1d4ed8':'#fff';
+    b.style.color=isActive?'#fff':'#374151';
+    b.style.borderColor=isActive?'#1d4ed8':'#e2e8f0';
+  });
+  renderSuggestions();
+}
+function renderSuggestions(){
+  const grid=document.getElementById('sugg-grid');
+  if(!grid)return;
+  const list=_suggFilter==='all'?MAINT_SUGGESTIONS:MAINT_SUGGESTIONS.filter(s=>s.cat===_suggFilter);
+  const catIcon={camera:'📷',dvr:'🎥',power:'⚡',network:'🌐',periodic:'🔄'};
+  grid.innerHTML=list.map((s,i)=>`
+    <div onclick="applySuggestion(${i})" style="border:1px solid #e2e8f0;border-radius:8px;padding:8px 10px;cursor:pointer;background:#fff;transition:all .15s;font-size:11px"
+      onmouseover="this.style.borderColor='#1d4ed8';this.style.background='#eff6ff'"
+      onmouseout="this.style.borderColor='#e2e8f0';this.style.background='#fff'">
+      <div style="font-weight:700;color:#1d4ed8;margin-bottom:3px">${catIcon[s.cat]||'🔧'} ${s.device}</div>
+      <div style="color:#374151;margin-bottom:2px">السبب: ${s.reason}</div>
+      <div style="color:#dc2626;font-size:10px">النوع: ${s.fault}</div>
+    </div>`).join('');
+  // Store filtered list for index mapping
+  grid._filteredList = list;
+}
+function applySuggestion(idx){
+  const grid=document.getElementById('sugg-grid');
+  const list=grid?._filteredList||MAINT_SUGGESTIONS;
+  const s=list[idx]; if(!s)return;
+  const dev=document.getElementById('maint-device');
+  const reason=document.getElementById('maint-reason');
+  const notes=document.getElementById('maint-notes');
+  if(dev) dev.value=s.fault;
+  if(reason) reason.value=s.reason;
+  if(notes&&!notes.value) notes.value=s.notes;
+  // تلميع الاقتراح المختار
+  document.querySelectorAll('#sugg-grid > div').forEach((el,i)=>{
+    el.style.background=i===idx?'#dbeafe':'#fff';
+    el.style.borderColor=i===idx?'#1d4ed8':'#e2e8f0';
+  });
+  toast('✅ تم تطبيق الاقتراح');
+}
+
 function openMaintModal(id, stationType){
   const m=id?allMaint.find(x=>x.id===id)||{}:{};
   // تحديد نوع المحطة من السجل الموجود أو البارامتر
@@ -4221,6 +4662,12 @@ function openMaintModal(id, stationType){
   document.getElementById('ov-maint')._stationType=_stType||'';
   document.getElementById('ov-maint').classList.add('open');
   document.getElementById('maint-eid').value=id||'';
+  // إعادة ضبط الاقتراحات
+  const suggPanel=document.getElementById('sugg-panel');
+  const suggBtn=document.getElementById('btn-toggle-sugg');
+  if(suggPanel){suggPanel.style.display='none';}
+  if(suggBtn){suggBtn.textContent='▼ إظهار';}
+  _suggFilter='all';
   document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('maint-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
