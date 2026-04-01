@@ -860,11 +860,17 @@ function _navInv(sub){
         <div id="recent-maint-tb" style="display:none"></div>
 
         <!-- Footer -->
-        <div style="margin-top:8px;text-align:center;padding:20px;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);border-radius:var(--r)">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:6px">— إعداد وبرمجة —</div>
-          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 0 24px rgba(96,165,250,.6)">Ghazwan Ali Alqaissi</div>
-          <div style="width:40px;height:3px;background:linear-gradient(90deg,#bfdbfe,#60a5fa);border-radius:4px;margin:8px auto"></div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5)">شعبة تقنية المعلومات — V1.0.0</div>
+        <div style="margin-top:20px;display:flex;justify-content:center">
+          <div style="padding:24px 40px;text-align:center;position:relative">
+            <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin-bottom:8px">
+              <span style="width:7px;height:7px;background:#4ade80;border-radius:50%;display:inline-block;animation:pulse 2s infinite;box-shadow:0 0 8px #4ade80"></span>
+              <span style="font-size:11px;color:#94a3b8;letter-spacing:3px">إعداد وبرمجة</span>
+              <span style="width:7px;height:7px;background:#4ade80;border-radius:50%;display:inline-block;animation:pulse 2s infinite;box-shadow:0 0 8px #4ade80"></span>
+            </div>
+            <div style="font-size:22px;font-weight:900;color:#166534;letter-spacing:1px;text-shadow:0 0 20px rgba(74,222,128,.4);margin-bottom:8px">Ghazwan Ali</div>
+            <div style="width:60px;height:3px;background:linear-gradient(90deg,transparent,#4ade80,transparent);border-radius:4px;margin:0 auto 8px"></div>
+            <div style="font-size:11px;color:#94a3b8">شعبة تقنية المعلومات — V1.0.0</div>
+          </div>
         </div>
       </div>
 
@@ -7390,8 +7396,8 @@ window.addEventListener('afterprint',function(){
 </div>
 <style>
 @keyframes tickerScroll{
-  0%  {transform:translateX(100vw) translateY(-50%)}
-  100%{transform:translateX(-100%) translateY(-50%)}
+  0%  {transform:translateX(100%) translateY(-50%)}
+  100%{transform:translateX(-100vw) translateY(-50%)}
 }
 @keyframes blinkBadge{
   0%,100%{opacity:1}
