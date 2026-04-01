@@ -2,7 +2,7 @@
 """
 نظام إدارة كاميرات المراقبة
 """
-import json, os, hashlib, uuid, base64, io
+import json, os, hashlib, uuid, base64, io, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timedelta
@@ -12,8 +12,25 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 USE_DB = bool(DATABASE_URL)
 DB_FILE = "cam_db.json"
 
-def hash_pw(pw):
-    return hashlib.sha256(pw.encode()).hexdigest()
+def hash_pw(pw, salt=None):
+    """scrypt مع salt — أقوى من SHA256 العادي"""
+    if salt is None:
+        salt = os.urandom(16)
+    key = hashlib.scrypt(pw.encode(), salt=salt, n=16384, r=8, p=1)
+    return salt.hex() + ":" + key.hex()
+
+def verify_pw(pw, stored):
+    """يتحقق من كلمة المرور — يدعم كلا الصيغتين القديمة والجديدة"""
+    if ":" in stored:
+        try:
+            salt_hex, key_hex = stored.split(":", 1)
+            salt = bytes.fromhex(salt_hex)
+            key = hashlib.scrypt(pw.encode(), salt=salt, n=16384, r=8, p=1)
+            return key.hex() == key_hex
+        except Exception:
+            return False
+    # backward compat: كلمات مرور SHA256 قديمة
+    return hashlib.sha256(pw.encode()).hexdigest() == stored
 
 # ── PostgreSQL ──
 def get_conn():
@@ -28,6 +45,7 @@ def init_pg():
         "CREATE TABLE IF NOT EXISTS cam_store (key TEXT PRIMARY KEY, value TEXT)",
         "CREATE TABLE IF NOT EXISTS cam_files (key TEXT PRIMARY KEY, name TEXT, data TEXT, mime TEXT)",
         "CREATE TABLE IF NOT EXISTS cam_logs (id SERIAL PRIMARY KEY, user_name TEXT, user_fullname TEXT, action TEXT, details TEXT, ip TEXT, created_at TIMESTAMP DEFAULT NOW())",
+        "CREATE TABLE IF NOT EXISTS cam_sessions (token TEXT PRIMARY KEY, user_id INTEGER, expires_at TIMESTAMP)",
     ]: cur.execute(sql)
     conn.commit()
     cur.execute("SELECT value FROM cam_store WHERE key='data'")
@@ -76,16 +94,47 @@ def pg_get_logs(limit=100):
     cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
     rows=cur.fetchall(); cur.close(); conn.close()
     return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+def pg_save_session(token, user_id):
+    conn=get_conn(); cur=conn.cursor()
+    expires = datetime.now() + timedelta(hours=24)
+    cur.execute("INSERT INTO cam_sessions(token,user_id,expires_at) VALUES(%s,%s,%s) ON CONFLICT(token) DO UPDATE SET user_id=%s,expires_at=%s",
+        [token, user_id, expires, user_id, expires])
+    conn.commit(); cur.close(); conn.close()
+
+def pg_get_session(token):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("SELECT user_id FROM cam_sessions WHERE token=%s AND expires_at > NOW()",[token])
+    row=cur.fetchone(); cur.close(); conn.close()
+    return row[0] if row else None
+
+def pg_del_session(token):
+    conn=get_conn(); cur=conn.cursor()
+    cur.execute("DELETE FROM cam_sessions WHERE token=%s",[token])
+    conn.commit(); cur.close(); conn.close()
+
+def pg_clean_sessions():
+    """تنظيف السيشنات المنتهية — يُستدعى عند تسجيل الدخول"""
+    try:
+        conn=get_conn(); cur=conn.cursor()
+        cur.execute("DELETE FROM cam_sessions WHERE expires_at < NOW()")
+        conn.commit(); cur.close(); conn.close()
+    except: pass
+
 
 def load_db():
-    if USE_DB: return pg_load()
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE,"r",encoding="utf-8") as f: return json.load(f)
-    db=default_db(); save_db(db); return db
+    with _db_lock:
+        if USE_DB: return pg_load()
+        if os.path.exists(DB_FILE):
+            with open(DB_FILE,"r",encoding="utf-8") as f: return json.load(f)
+        db=default_db(); _save_db_unsafe(db); return db
 
-def save_db(db):
+def _save_db_unsafe(db):
     if USE_DB: pg_save(db); return
     with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
+
+def save_db(db):
+    with _db_lock:
+        _save_db_unsafe(db)
 
 def save_file(key,name,data,mime):
     if USE_DB: pg_save_file(key,name,data,mime); return
@@ -158,7 +207,30 @@ def default_db():
         "next_notif_id":1,
     }
 
-sessions = {}
+_sessions_mem = {}  # fallback إذا ما في DATABASE_URL
+_db_lock = threading.Lock()  # يمنع race condition عند القراءة/الكتابة
+
+def session_save(token, user_id):
+    if USE_DB:
+        pg_save_session(token, user_id)
+    else:
+        _sessions_mem[token] = {"uid": user_id, "exp": datetime.now() + timedelta(hours=24)}
+
+def session_get(token):
+    if USE_DB:
+        return pg_get_session(token)
+    entry = _sessions_mem.get(token)
+    if not entry: return None
+    if datetime.now() > entry["exp"]:
+        _sessions_mem.pop(token, None)
+        return None
+    return entry["uid"]
+
+def session_del(token):
+    if USE_DB:
+        pg_del_session(token)
+    else:
+        _sessions_mem.pop(token, None)
 
 def add_log_safe(user,action,details,ip=""):
     try: add_log(user,action,details,ip)
@@ -209,7 +281,7 @@ class Handler(BaseHTTPRequestHandler):
         return json.loads(self.rfile.read(l)) if l else {}
     def get_token(self): return self.headers.get("Authorization","").replace("Bearer ","").strip()
     def get_user(self):
-        uid=sessions.get(self.get_token())
+        uid=session_get(self.get_token())
         if not uid: return None
         return next((u for u in load_db()["users"] if u["id"]==uid),None)
     def require_auth(self):
@@ -231,17 +303,10 @@ class Handler(BaseHTTPRequestHandler):
         if p in ("","/"): 
             f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
             with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
-        if p=="/favicon.ico":
-            self.send_response(204); self.end_headers(); return
-        if p=="/api/me":
-            u2=self.get_user()
-            if u2: self.send_json({"ok":True,"user":{k:v for k,v in u2.items() if k!="password"}})
-            else:  self.send_json({"ok":False,"user":None})
-            return
         u=self.require_auth()
         if not u: return
         db=load_db()
-        if p=="/api/me": pass
+        if p=="/api/me": self.send_json({"ok":True,"user":{k:v for k,v in u.items() if k!="password"}})
         elif p=="/api/notifications":
             db=load_db()
             notifs=db.get("notifications",[])
@@ -258,15 +323,7 @@ class Handler(BaseHTTPRequestHandler):
             db=load_db()
             all_d=DISTRICTS+[d for d in db.get("custom_districts",[]) if d not in DISTRICTS]
             self.send_json({"ok":True,"districts":all_d})
-        elif p=="/api/districts_admin_placeholder":  # removed duplicate
-            name=body.get("name","").strip()
-            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
-            db=load_db()
-            if "custom_districts" not in db: db["custom_districts"]=[]
-            if name in DISTRICTS or name in db["custom_districts"]:
-                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
-            db["custom_districts"].append(name); save_db(db)
-            self.send_json({"ok":True})
+        # districts_admin handled in POST
 
         elif "/api/circulars/" in p and p.endswith("/reads"):
             cid=int(p.split("/")[3])
@@ -301,11 +358,6 @@ class Handler(BaseHTTPRequestHandler):
             if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
             qs=parse_qs(urlparse(self.path).query)
             self.send_json({"ok":True,"logs":get_logs(int(qs.get("limit",["100"])[0]))})
-        elif "/api/circulars/" in p and p.endswith("/reads"):
-            cid=int(p.split("/")[3])
-            reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
-            self.send_json({"ok":True,"reads":reads})
-
         elif p=="/api/circulars":
             circs=db.get("circulars",[])
             # Filter by district for non-admin
@@ -381,15 +433,16 @@ class Handler(BaseHTTPRequestHandler):
         p=urlparse(self.path).path.rstrip("/")
         if p=="/api/login":
             body=self.read_body(); db=load_db()
-            user=next((u for u in db["users"] if u["username"]==body.get("username") and u["password"]==hash_pw(body.get("password","")) and u.get("active",True)),None)
+            user=next((u for u in db["users"] if u["username"]==body.get("username") and verify_pw(body.get("password",""), u["password"]) and u.get("active",True)),None)
             if not user: self.send_json({"error":"اسم المستخدم أو كلمة المرور غير صحيحة"},401); return
-            token=str(uuid.uuid4()); sessions[token]=user["id"]
+            token=str(uuid.uuid4()); session_save(token, user["id"])
+            if USE_DB: pg_clean_sessions()
             add_log_safe(user,"تسجيل دخول",f"دخل: {user['fullname']}",self.ip())
             self.send_json({"ok":True,"token":token,"user":{k:v for k,v in user.items() if k!="password"}}); return
         if p=="/api/logout":
             u2=self.get_user()
             if u2: add_log_safe(u2,"تسجيل خروج",f"خرج: {u2['fullname']}",self.ip())
-            sessions.pop(self.get_token(),None); self.send_json({"ok":True}); return
+            session_del(self.get_token()); self.send_json({"ok":True}); return
         u=self.require_auth()
         if not u: return
         body=self.read_body(); db=load_db(); now=datetime.now().strftime("%Y-%m-%d %H:%M")
@@ -403,7 +456,7 @@ class Handler(BaseHTTPRequestHandler):
                 "station_name":station.get("name",""),"visit_type":body.get("visit_type",""),"notes":body.get("notes",""),
                 "technician":body.get("technician",u["fullname"]),"created_by":u["fullname"],"created_at":now,
             }
-            db["tours"].append(tour); save_db(db)
+            db["tours"].append(tour)
             add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
             add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','')} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
             save_db(db)
@@ -415,12 +468,11 @@ class Handler(BaseHTTPRequestHandler):
             station=next((s for s in db["stations"] if s["id"]==body.get("station_id")),{})
             maint={
                 "id":mid,"date":body.get("date",""),"district":body.get("district",u.get("district","")),"station_id":body.get("station_id"),
-                "station_name":station.get("name",""),"station_type":body.get("station_type",station.get("type","حكومية")),
-                "device_type":body.get("device_type",""),"qty":body.get("qty",1),
+                "station_name":station.get("name",""),"device_type":body.get("device_type",""),"qty":body.get("qty",1),
                 "reason":body.get("reason",""),"technician":body.get("technician",""),"notes":body.get("notes",""),
                 "created_by":u["fullname"],"created_at":now,
             }
-            db["maintenance"].append(maint); save_db(db)
+            db["maintenance"].append(maint)
             add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
             add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','')} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
             save_db(db)
@@ -451,20 +503,12 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/stations":
             sid=db["next_station_id"]; db["next_station_id"]+=1
             st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"districts":body.get("districts",[]),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
-            db["stations"].append(st); save_db(db)
+            db["stations"].append(st)
             add_notification(db, u, "إضافة محطة جديدة", f"المحطة: {st['name']} | القاطع: {st['district']}")
             save_db(db)
             self.send_json({"ok":True,"station":st})
 
-        elif p=="/api/districts_admin_placeholder":  # removed duplicate
-            name=body.get("name","").strip()
-            if not name: self.send_json({"error":"اسم القاطع مطلوب"},400); return
-            db=load_db()
-            if "custom_districts" not in db: db["custom_districts"]=[]
-            if name in DISTRICTS or name in db["custom_districts"]:
-                self.send_json({"error":"القاطع موجود مسبقاً"},400); return
-            db["custom_districts"].append(name); save_db(db)
-            self.send_json({"ok":True})
+        # districts_admin handled in POST
 
         elif p=="/api/notifications/read":
             db=load_db()
@@ -584,11 +628,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok":True,"user":{k:v for k,v in nu.items() if k!="password"}})
 
         elif p.startswith("/api/files/"):
+            if not self.can(u,"files"): self.send_json({"error":"لا صلاحية"},403); return
             key="/".join(p.split("/")[3:])
-            # أي مستخدم مسجل يستطيع رفع ملفات الصيانة
-            is_maint_file = key.startswith("maint_")
-            if not self.can(u,"files") and not is_maint_file:
-                self.send_json({"error":"لا صلاحية"},403); return
             try:
                 save_file(key,body.get("name",""),body.get("data",""),body.get("mime",""))
                 self.send_json({"ok":True})
@@ -616,7 +657,7 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
             mid=int(p.split("/")[-1]); idx=next((i for i,m in enumerate(db["maintenance"]) if m["id"]==mid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
-            for f in ["date","district","station_id","station_type","device_type","qty","reason","technician","notes"]:
+            for f in ["date","district","station_id","device_type","qty","reason","technician","notes"]:
                 if f in body: db["maintenance"][idx][f]=body[f]
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
