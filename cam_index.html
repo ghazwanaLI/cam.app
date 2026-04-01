@@ -500,6 +500,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
   #cam-stats-section{ grid-template-columns:1fr!important; }
 }
 
+/* tab animation */
+@keyframes tabFadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.tab-enter{animation:tabFadeIn .18s ease forwards!important;}
+
 </style>
 <!-- دوال التنقل الآمنة — مُعرَّفة في الـ head لضمان توفرها قبل أي نقرة -->
 <script>
@@ -689,7 +693,7 @@ function _navInv(sub){
     <div class="content"><div id="tabs-wrap">
 
       <!-- DASHBOARD -->
-      <div id="tab-dashboard">
+      <div id="tab-dashboard" style="display:block">
 
         <!-- ═══ البطاقات الرئيسية ═══ -->
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:20px;direction:rtl">
@@ -3662,6 +3666,10 @@ function setDvrRows(rows){
 }
 
 
+async function loadInventory(){
+  await loadInvStations();
+}
+
 async function loadInvStations(){
   // تحميل المحطات إذا لم تكن محملة
   if(!allStations.length) await loadStations();
@@ -4047,9 +4055,9 @@ function goTab(name, el){
   if(name==='st-gov')     { if(!allStations.length){loadStations().then(()=>renderStType('gov'));}else{renderStType('gov');} }
   if(name==='st-priv')    { if(!allStations.length){loadStations().then(()=>renderStType('priv'));}else{renderStType('priv');} }
   if(name==='cameras')    { loadCameras(); }
+  if(name==='inventory')  { loadInventory(); }
   if(name==='coding'){
     loadCoding(); populateGenStations(); loadLabelSizes();
-    // افتح مجموعة الجرد والترميز
     const bInv=document.getElementById('body-grp-inv');
     const aInv=document.getElementById('arr-grp-inv');
     const hInv=document.querySelector('#grp-inv .nav-group-hdr');
@@ -4062,6 +4070,7 @@ function goTab(name, el){
   if(name==='circulars')  { _openAdminGroup(); loadCirculars(); }
   if(name==='users')      { _openAdminGroup(); loadUsers(); }
   if(name==='logs')       { _openAdminGroup(); loadLogs(); }
+  if(name==='dashboard')  { updateDashboard(); }
 }
 function _openAdminGroup(){
   const body=document.getElementById('body-grp-admin');
@@ -4165,6 +4174,8 @@ async function initApp(){
   // مزامنة الملفات المعلقة
   if(SERVER_ONLINE) setTimeout(_syncPendingFiles, 2000);
   populateDistrictFilters();
+  // تفعيل التاب الافتراضي
+  goTab('dashboard', document.getElementById('nav-dashboard'));
 
   // إذا جاء من مسح QR مباشر
   if(window._scanCode){
@@ -4205,51 +4216,40 @@ function updateActivityTicker(){
   const today=new Date().toISOString().split('T')[0];
   const todayList=allMaint.filter(m=>m.date===today);
 
-  if(!todayList.length){
-    ticker.style.display='none';
-    return;
-  }
+  if(!todayList.length){ ticker.style.display='none'; return; }
 
-  // أظهر الشريط
   ticker.style.display='block';
 
-  // ابنِ نص التمرير
+  // بناء النص
   const content=document.getElementById('maint-ticker-content');
   if(content){
-    const items=todayList.map(m=>{
-      const st=m.station_name||'—';
-      const dev=m.device_type||'—';
-      const reason=m.reason||'—';
-      const tech=m.technician||'—';
-      return `🔧 ${st} — ${dev} — ${reason} (${tech})`;
-    });
-    content.textContent=items.join('     ●     ');
-    // ضبط سرعة التمرير حسب الطول
-    const dur=Math.max(20, items.join('').length * 0.15);
-    content.style.animation=`tickerScroll ${dur}s linear infinite`;
-  }
+    const items=todayList.map(m=>`🔧 ${m.station_name||'—'} — ${m.device_type||'—'} — ${m.reason||'—'} (${m.technician||'—'})`);
+    const fullText=items.join('          ●          ');
+    content.textContent=fullText;
 
-  // عرض أحدث فعالية في شريط العنوان
-  const latest=todayList[todayList.length-1];
-  const headline=document.getElementById('ticker-headline');
-  const headlineText=document.getElementById('ticker-headline-text');
-  if(headline && headlineText && latest){
-    headlineText.textContent=`جديد: ${latest.station_name||'—'} — ${latest.reason||'—'}`;
-    headline.style.display='flex';
-    // أخفِ العنوان بعد 8 ثوانٍ
-    clearTimeout(headline._hideTimer);
-    headline._hideTimer=setTimeout(()=>{headline.style.display='none';},8000);
+    // تمرير JS من اليسار → اليمين
+    clearInterval(window._tickerAnim);
+    const container=content.parentElement;
+    const speed=1.2; // px per frame
+    let pos=-content.offsetWidth;
+    content.style.transform='translateX('+pos+'px)';
+    window._tickerAnim=setInterval(()=>{
+      pos+=speed;
+      if(pos > (container.offsetWidth+20)) pos=-content.offsetWidth;
+      content.style.transform='translateX('+pos+'px)';
+    },16);
   }
 
   // ساعة حية
   const clock=document.getElementById('ticker-clock');
   if(clock){
     const tick=()=>{
-      const now=new Date();
-      clock.textContent=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+      clock.textContent=new Date().toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
     };
     tick();
-    if(!window._tickerClockInterval) window._tickerClockInterval=setInterval(tick,1000);
+    if(!window._tickerClockInterval){
+      window._tickerClockInterval=setInterval(tick,1000);
+    }
   }
 }
 function setCircle(id, pct){
@@ -7371,34 +7371,25 @@ window.addEventListener('afterprint',function(){
 
 
 <!-- شريط إخباري احترافي -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;direction:rtl;font-family:Arial,sans-serif;box-shadow:0 -3px 20px rgba(0,0,0,.35)">
-  <!-- شريط العنوان الرئيسي -->
-  <div id="ticker-headline" style="display:none;background:#cc0000;color:#fff;padding:6px 14px;font-size:13px;font-weight:900;text-align:center;letter-spacing:.5px;border-bottom:2px solid #ff4444;align-items:center;justify-content:center;gap:10px">
-    <span id="ticker-blink" style="display:inline-block;background:#fff;color:#cc0000;padding:1px 8px;border-radius:3px;font-size:11px;font-weight:900;animation:blinkBadge .8s step-start infinite">🔴 عاجل</span>
-    <span id="ticker-headline-text"></span>
-  </div>
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;font-family:Arial,sans-serif;box-shadow:0 -3px 20px rgba(0,0,0,.35)">
   <!-- شريط التمرير -->
-  <div style="background:linear-gradient(90deg,#0f172a 0%,#1e3a5f 100%);display:flex;align-items:center;height:36px">
-    <!-- بادج عاجل ثابت -->
-    <div style="background:#cc0000;color:#fff;font-weight:900;font-size:12px;padding:0 14px;height:100%;display:flex;align-items:center;white-space:nowrap;flex-shrink:0;border-left:3px solid #ff6666;gap:6px">
+  <div style="background:linear-gradient(90deg,#0f172a,#1e3a5f);display:flex;align-items:center;height:38px;direction:ltr">
+    <!-- بادج ثابت على اليسار -->
+    <div style="background:#cc0000;color:#fff;font-weight:900;font-size:12px;padding:0 14px;height:100%;display:flex;align-items:center;white-space:nowrap;flex-shrink:0;gap:6px;font-family:Arial">
       <span style="animation:blinkBadge .8s step-start infinite;font-size:10px">●</span>
       فعاليات اليوم
     </div>
-    <!-- نص متحرك -->
+    <!-- نص متحرك يسار → يمين -->
     <div style="overflow:hidden;flex:1;position:relative;height:100%">
-      <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;top:50%;transform:translateY(-50%);color:#fff;font-size:13px;font-weight:600;letter-spacing:.3px;animation:tickerScroll 80s linear infinite"></div>
+      <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;top:50%;left:0;color:#fff;font-size:13px;font-weight:600;letter-spacing:.3px"></div>
     </div>
-    <!-- الوقت -->
-    <div id="ticker-clock" style="color:rgba(255,255,255,.7);font-size:11px;padding:0 12px;white-space:nowrap;flex-shrink:0;border-right:1px solid rgba(255,255,255,.15)"></div>
-    <!-- زر الإغلاق -->
-    <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:none;border:none;color:rgba(255,255,255,.6);padding:0 12px;cursor:pointer;font-size:16px;height:100%;flex-shrink:0">✕</button>
+    <!-- الساعة -->
+    <div id="ticker-clock" style="color:rgba(255,255,255,.7);font-size:11px;padding:0 12px;white-space:nowrap;flex-shrink:0;border-left:1px solid rgba(255,255,255,.15);font-family:Arial"></div>
+    <!-- إغلاق -->
+    <button onclick="document.getElementById('maint-ticker-bar').style.display='none';clearInterval(window._tickerAnim)" style="background:none;border:none;color:rgba(255,255,255,.6);padding:0 12px;cursor:pointer;font-size:16px;height:100%;flex-shrink:0">✕</button>
   </div>
 </div>
 <style>
-@keyframes tickerScroll{
-  0%  {transform:translateX(100%) translateY(-50%)}
-  100%{transform:translateX(-100vw) translateY(-50%)}
-}
 @keyframes blinkBadge{
   0%,100%{opacity:1}
   50%{opacity:0}
