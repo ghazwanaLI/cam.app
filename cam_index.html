@@ -372,23 +372,23 @@ tr:hover td{background:rgba(30,58,95,.03);}
   }
   .ni{font-size:20px!important;}
 
-  /* مجموعات الطي — بسطها كعناصر عادية */
-  .nav-group{flex-direction:row!important;flex:1;}
+  /* مجموعات الطي — تصبح أزرار مستقلة في الشريط السفلي */
+  .nav-group{flex-direction:row!important;flex:1;display:flex!important;}
   .nav-group-hdr{
     flex-direction:column!important;
     align-items:center!important;
     justify-content:center!important;
-    padding:6px 12px!important;
+    padding:6px 10px!important;
     font-size:10px!important;
     border-radius:0!important;
     border-right:none!important;
     border-top:3px solid transparent!important;
-    flex:1;min-width:60px;
+    flex:1;min-width:55px;
+    display:flex!important;
   }
   .nav-group-hdr:hover{transform:none!important;}
-  .nav-group-hdr.open{border-top:3px solid #1d4ed8!important;}
+  .nav-group-hdr.open{border-top:3px solid #1d4ed8!important;background:#eff6ff!important;}
   .nav-arrow{display:none!important;}
-  /* إخفاء العناصر الفرعية في الهاتف */
   .nav-group-body{display:none!important;}
   .nav-sect{display:none!important;}
   .nav-sub-act{display:none!important;}
@@ -4165,16 +4165,57 @@ function startNotifPolling(){
   window._notifTimer=setInterval(poll,60000);
 }
 function updateActivityTicker(){
-  // شريط أخبار — عرض آخر عمليات الصيانة
   const ticker=document.getElementById('maint-ticker-bar');
   if(!ticker) return;
-  if(!allMaint.length){ticker.style.display='none';return;}
   const today=new Date().toISOString().split('T')[0];
   const todayList=allMaint.filter(m=>m.date===today);
-  if(!todayList.length){ticker.style.display='none';return;}
-  ticker.style.display='flex';
-  const marquee=document.getElementById('ticker-content');
-  if(marquee) marquee.textContent=todayList.map(m=>`🔧 ${m.station_name||'—'} — ${m.reason||'—'} (${m.technician||'—'})`).join('   |   ');
+
+  if(!todayList.length){
+    ticker.style.display='none';
+    return;
+  }
+
+  // أظهر الشريط
+  ticker.style.display='block';
+
+  // ابنِ نص التمرير
+  const content=document.getElementById('maint-ticker-content');
+  if(content){
+    const items=todayList.map(m=>{
+      const st=m.station_name||'—';
+      const dev=m.device_type||'—';
+      const reason=m.reason||'—';
+      const tech=m.technician||'—';
+      return `🔧 ${st} — ${dev} — ${reason} (${tech})`;
+    });
+    content.textContent=items.join('     ●     ');
+    // ضبط سرعة التمرير حسب الطول
+    const dur=Math.max(20, items.join('').length * 0.15);
+    content.style.animation=`tickerScroll ${dur}s linear infinite`;
+  }
+
+  // عرض أحدث فعالية في شريط العنوان
+  const latest=todayList[todayList.length-1];
+  const headline=document.getElementById('ticker-headline');
+  const headlineText=document.getElementById('ticker-headline-text');
+  if(headline && headlineText && latest){
+    headlineText.textContent=`جديد: ${latest.station_name||'—'} — ${latest.reason||'—'}`;
+    headline.style.display='flex';
+    // أخفِ العنوان بعد 8 ثوانٍ
+    clearTimeout(headline._hideTimer);
+    headline._hideTimer=setTimeout(()=>{headline.style.display='none';},8000);
+  }
+
+  // ساعة حية
+  const clock=document.getElementById('ticker-clock');
+  if(clock){
+    const tick=()=>{
+      const now=new Date();
+      clock.textContent=now.toLocaleTimeString('ar-IQ',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    };
+    tick();
+    if(!window._tickerClockInterval) window._tickerClockInterval=setInterval(tick,1000);
+  }
 }
 function setCircle(id, pct){
   const el=document.getElementById(id); if(!el) return;
@@ -4564,14 +4605,28 @@ async function loadMaintenance(){
     renderMaint();
     renderMaintType('gov');
     renderMaintType('priv');
+    if(CU?.role==='admin') updateActivityTicker();
   }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
 }
 
 // ── الصيانة المنفصلة (حكومية / أهلية) ──
 function toggleNavGroup(groupId){
+  // على الهاتف — انتقل مباشرة للتاب الأول بدل فتح dropdown
+  const isMobile=window.innerWidth<=768;
+  if(isMobile){
+    const mobileActions={
+      'grp-maint':()=>goMaintTab('gov'),
+      'grp-st-main':()=>goStTab('gov'),
+      'grp-st-gov':()=>goStTab('gov'),
+      'grp-st-priv':()=>goStTab('priv'),
+      'grp-inv':()=>_navInv('inv-stations'),
+      'grp-admin':()=>goTab('circulars',document.getElementById('nav-circulars')),
+    };
+    if(mobileActions[groupId]){mobileActions[groupId]();return;}
+  }
   const body=document.getElementById('body-'+groupId);
   const arrow=document.getElementById('arr-'+groupId);
-  const hdr=document.querySelector('#'+groupId+' .nav-group-hdr');
+  const hdr=document.querySelector('#'+groupId+' > .nav-group-hdr');
   if(!body)return;
   const open=body.style.display==='none'||body.style.display==='';
   body.style.display=open?'flex':'none';
@@ -5069,6 +5124,7 @@ async function saveMaint(){
     // حاول مزامنة الملفات المعلقة
     _syncPendingFiles();
     closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
+    if(CU?.role==='admin') updateActivityTicker();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
 function editMaint(id){openMaintModal(id);}
