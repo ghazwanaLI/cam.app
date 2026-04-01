@@ -645,11 +645,28 @@ function _navInv(sub){
 
       <div class="nav-sect">الإدارة</div>
 
-      <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span><span>التعاميم</span><span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
-      <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span><span>المستخدمون</span></div>
-      <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span><span>التقارير</span></div>
-      <div class="nav-sect" id="admin-sect" style="display:none">النظام</div>
-      <div class="nav-item" id="nav-logs" onclick="goTab('logs',this)" style="display:none"><span class="ni">📋</span><span>السجل</span></div>
+      <div class="nav-group" id="grp-admin">
+        <div class="nav-group-hdr" onclick="toggleNavGroup('grp-admin')">
+          <span class="ni">⚙️</span><span>الإدارة</span>
+          <span class="nav-arrow" id="arr-grp-admin">▸</span>
+        </div>
+        <div class="nav-group-body" id="body-grp-admin" style="display:none">
+          <div class="nav-sub-item nav-sub-act" onclick="goTab('circulars',document.getElementById('nav-circulars'))" id="nav-circulars">
+            <span>📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span>
+          </div>
+          <div class="nav-sub-item nav-sub-act" id="nav-users" onclick="goTab('users',document.getElementById('nav-users'))">
+            <span>🔐</span>المستخدمون
+          </div>
+          <div class="nav-sub-item nav-sub-act" id="nav-reports" onclick="goTab('reports',document.getElementById('nav-reports'))" style="display:none">
+            <span>📊</span>التقارير
+          </div>
+          <div class="nav-sub-item nav-sub-act" id="nav-logs" onclick="goTab('logs',document.getElementById('nav-logs'))" style="display:none">
+            <span>📋</span>السجل
+          </div>
+        </div>
+      </div>
+
+      <div class="nav-sect" id="admin-sect" style="display:none"></div>
 
     </div>
 
@@ -1402,15 +1419,20 @@ function _navInv(sub){
 
       <div id="tab-users" style="display:none">
         <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
-            <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
+          <!-- رأس الصفحة -->
+          <div style="background:linear-gradient(135deg,#1e1b4b,#1d4ed8);padding:22px 24px;border-radius:0">
+            <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+              <div>
+                <div style="color:#fff;font-size:20px;font-weight:900;margin-bottom:4px">🔐 إدارة المستخدمين</div>
+                <div style="color:rgba(255,255,255,.65);font-size:13px" id="users-summary">—</div>
+              </div>
+              <button onclick="openUserModal()" style="background:#fff;color:#1d4ed8;border:none;border-radius:10px;padding:10px 20px;cursor:pointer;font-size:13px;font-weight:800;font-family:Arial;box-shadow:0 4px 12px rgba(0,0,0,.15);transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">➕ إضافة مستخدم</button>
+            </div>
           </div>
-          <!-- Users Cards -->
-          <div style="padding:16px" id="users-cards">
+          <!-- بطاقات المستخدمين -->
+          <div style="padding:20px" id="users-cards">
             <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
           </div>
-          <!-- Users Table (hidden, for compat) -->
           <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
         </div>
       </div>
@@ -4000,11 +4022,19 @@ function goTab(name, el){
     if(aInv)aInv.className='nav-arrow open';
     if(hInv)hInv.classList.add('open');
   }
-  if(name==='reports')    { populateReportDistricts(); generateReport(); }
+  if(name==='reports')    { _openAdminGroup(); populateReportDistricts(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
-  if(name==='circulars')  { loadCirculars(); }
-  if(name==='users')      { loadUsers(); }
-  if(name==='logs')       { loadLogs(); }
+  if(name==='circulars')  { _openAdminGroup(); loadCirculars(); }
+  if(name==='users')      { _openAdminGroup(); loadUsers(); }
+  if(name==='logs')       { _openAdminGroup(); loadLogs(); }
+}
+function _openAdminGroup(){
+  const body=document.getElementById('body-grp-admin');
+  const arrow=document.getElementById('arr-grp-admin');
+  const hdr=document.querySelector('#grp-admin > .nav-group-hdr');
+  if(body)body.style.display='flex';
+  if(arrow)arrow.className='nav-arrow open';
+  if(hdr)hdr.classList.add('open');
 }
 
 function switchField(sub, el){
@@ -4115,6 +4145,37 @@ async function initApp(){
 //  DASHBOARD
 // ══════════════════════════════════════════
 
+function startNotifPolling(){
+  // تحديث الإشعارات كل 60 ثانية للمدير
+  if(window._notifTimer) clearInterval(window._notifTimer);
+  const poll=async()=>{
+    if(!SERVER_ONLINE||!TOKEN) return;
+    try{
+      const d=await fetch(API+'/api/notifications',{headers:{'Authorization':'Bearer '+TOKEN}});
+      if(!d.ok) return;
+      const j=await d.json();
+      const notifs=j.notifications||[];
+      const unread=notifs.filter(n=>!n.read).length;
+      // تحديث بادج الإشعارات إن وجد
+      const badge=document.getElementById('notif-badge');
+      if(badge){badge.textContent=unread;badge.style.display=unread?'':'none';}
+    }catch(e){}
+  };
+  poll();
+  window._notifTimer=setInterval(poll,60000);
+}
+function updateActivityTicker(){
+  // شريط أخبار — عرض آخر عمليات الصيانة
+  const ticker=document.getElementById('maint-ticker-bar');
+  if(!ticker) return;
+  if(!allMaint.length){ticker.style.display='none';return;}
+  const today=new Date().toISOString().split('T')[0];
+  const todayList=allMaint.filter(m=>m.date===today);
+  if(!todayList.length){ticker.style.display='none';return;}
+  ticker.style.display='flex';
+  const marquee=document.getElementById('ticker-content');
+  if(marquee) marquee.textContent=todayList.map(m=>`🔧 ${m.station_name||'—'} — ${m.reason||'—'} (${m.technician||'—'})`).join('   |   ');
+}
 function setCircle(id, pct){
   const el=document.getElementById(id); if(!el) return;
   el.style.strokeDashoffset = 239 - 239*Math.min(pct,1);
@@ -5562,42 +5623,91 @@ async function loadUsers(){
 function renderUsers(){
   const cards=document.getElementById('users-cards');
   if(!cards)return;
-  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
+
+  // تحديث الملخص
+  const sum=document.getElementById('users-summary');
+  if(sum){
+    const admins=allUsers.filter(u=>u.role==='admin').length;
+    const active=allUsers.filter(u=>u.active!==false).length;
+    sum.textContent=`${allUsers.length} مستخدم — ${admins} مدير — ${active} فعّال`;
+  }
+
+  if(!allUsers.length){
+    cards.innerHTML='<div style="text-align:center;padding:60px;color:var(--t3)">لا يوجد مستخدمون</div>';
+    return;
+  }
+
+  const roleColor={admin:'linear-gradient(135deg,#1e1b4b,#1d4ed8)',viewer:'linear-gradient(135deg,#0f766e,#0d9488)'};
+  const roleLabel={admin:'🔑 مدير النظام',viewer:'👤 مخول'};
+
   cards.innerHTML=`
-    <table width="100%" style="border-collapse:collapse;font-size:14px">
-      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
-      </tr></thead>
-      <tbody>${allUsers.map(u=>{
-        const perms=u.perms||{};
-        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
-          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
-            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
-              ${u.fullname||'—'}
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;direction:rtl">
+    ${allUsers.map(u=>{
+      const perms=u.perms||{};
+      const isAdmin=u.role==='admin';
+      const isActive=u.active!==false;
+      const initials=(u.fullname||'م').split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+      const permList=isAdmin?['عرض','تعديل','حذف','ملفات','تقارير']:
+        Object.entries({view:'عرض',edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
+          .filter(([k])=>perms[k]).map(([,v])=>v);
+      const districts=Array.isArray(u.districts)&&u.districts.length?u.districts:(u.district?[u.district]:[]);
+
+      return `
+      <div style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.06);border:1px solid #e2e8f0;transition:all .2s" onmouseover="this.style.transform='translateY(-3px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(0,0,0,.06)'">
+
+        <!-- رأس البطاقة -->
+        <div style="background:${roleColor[u.role]||'linear-gradient(135deg,#475569,#64748b)'};padding:16px 18px;position:relative;overflow:hidden">
+          <div style="position:absolute;top:-15px;left:-15px;width:80px;height:80px;background:rgba(255,255,255,.06);border-radius:50%"></div>
+          <div style="display:flex;align-items:center;gap:12px;position:relative">
+            <div style="width:46px;height:46px;border-radius:12px;background:rgba(255,255,255,.2);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0;border:2px solid rgba(255,255,255,.3)">${initials}</div>
+            <div style="flex:1;min-width:0">
+              <div style="color:#fff;font-weight:900;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.fullname||'—'}</div>
+              <div style="color:rgba(255,255,255,.7);font-size:12px;margin-top:2px">@${u.username||'—'}</div>
             </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
-          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
-          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
-          <td style="padding:10px 14px">${permBadges}</td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
-            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
-          </td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>`;
+            <span style="background:${isActive?'rgba(34,197,94,.25)':'rgba(239,68,68,.25)'};color:${isActive?'#86efac':'#fca5a5'};font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px;flex-shrink:0">${isActive?'● فعّال':'○ موقوف'}</span>
+          </div>
+        </div>
+
+        <!-- محتوى البطاقة -->
+        <div style="padding:14px 18px">
+
+          <!-- الدور -->
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px">
+            <span style="font-size:11px;color:#94a3b8;font-weight:600">الدور</span>
+            <span style="font-size:12px;font-weight:800;color:${isAdmin?'#1d4ed8':'#0f766e'}">${roleLabel[u.role]||u.role}</span>
+          </div>
+
+          <!-- القواطع -->
+          ${!isAdmin?`
+          <div style="margin-bottom:10px">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:5px">القواطع المخصصة</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${districts.length?districts.map(d=>`<span style="background:#f1f5f9;color:#374151;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px">${d}</span>`).join(''):'<span style="font-size:11px;color:#94a3b8">جميع القواطع</span>'}
+            </div>
+          </div>`:''}
+
+          <!-- الصلاحيات -->
+          <div style="margin-bottom:12px">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;margin-bottom:5px">الصلاحيات</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${permList.map(p=>`<span style="background:#eff6ff;color:#1d4ed8;font-size:10px;font-weight:700;padding:2px 8px;border-radius:6px">${p}</span>`).join('')||'<span style="font-size:11px;color:#94a3b8">لا صلاحيات</span>'}
+            </div>
+          </div>
+
+          <!-- أزرار الإجراءات -->
+          <div style="display:flex;gap:8px;border-top:1px solid #f1f5f9;padding-top:12px">
+            <button onclick="editUser(${u.id})"
+              style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:8px;padding:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:Arial;transition:all .15s"
+              onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">✏️ تعديل</button>
+            ${u.id!==CU?.id?`
+            <button onclick="delUser(${u.id})"
+              style="flex:1;background:#fff5f5;color:#dc2626;border:1px solid #fecaca;border-radius:8px;padding:7px;cursor:pointer;font-size:12px;font-weight:700;font-family:Arial;transition:all .15s"
+              onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff5f5'">🗑️ حذف</button>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 function openUserModal(id){
   const u=id?allUsers.find(x=>x.id===id)||{}:{};
