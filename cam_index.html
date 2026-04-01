@@ -691,58 +691,72 @@ function _navInv(sub){
       <!-- DASHBOARD -->
       <div id="tab-dashboard">
 
-        <!-- 4 Circular Stats -->
-        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
+        <!-- ═══ البطاقات الرئيسية ═══ -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:16px;margin-bottom:20px;direction:rtl">
 
-          <!-- الصيانة -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#fee2e2" stroke-width="8"/>
-                <circle id="circ-maint" cx="45" cy="45" r="38" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">🔧</div>
-              </div>
+          <!-- بطاقة الصيانة -->
+          <div onclick="goMaintTab('gov')" style="background:linear-gradient(135deg,#7f1d1d,#dc2626);border-radius:16px;padding:20px;cursor:pointer;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(220,38,38,.35);transition:all .2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(220,38,38,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(220,38,38,.35)'">
+            <div style="position:absolute;top:-18px;left:-18px;width:90px;height:90px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+            <div style="position:absolute;bottom:-20px;left:30px;width:60px;height:60px;background:rgba(255,255,255,.05);border-radius:50%"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;opacity:.85">إجمالي الصيانة</div>
+              <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🔧</div>
             </div>
-            <div style="font-size:26px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
-            <div style="font-size:12px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-cams-bad-sub">—</div>
+            <div style="font-size:42px;font-weight:900;line-height:1;margin-bottom:6px" id="s-maint-count">—</div>
+            <div style="font-size:12px;opacity:.75" id="s-cams-bad-sub">—</div>
+            <div style="margin-top:12px;height:3px;background:rgba(255,255,255,.2);border-radius:3px">
+              <div id="bar-maint" style="height:100%;background:#fff;border-radius:3px;width:0%;transition:width .8s ease"></div>
+            </div>
           </div>
 
-          <!-- المحطات -->
-          <div onclick="goStationsTab('gov')" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
-                <circle id="circ-stations" cx="45" cy="45" r="38" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">⛽</div>
-              </div>
+          <!-- بطاقة المحطات الحكومية -->
+          <div onclick="goStTab('gov')" style="background:linear-gradient(135deg,#0c4a6e,#0369a1);border-radius:16px;padding:20px;cursor:pointer;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(3,105,161,.35);transition:all .2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(3,105,161,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(3,105,161,.35)'">
+            <div style="position:absolute;top:-18px;left:-18px;width:90px;height:90px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;opacity:.85">المحطات الحكومية</div>
+              <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🏛️</div>
             </div>
-            <div style="font-size:26px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
-            <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-stations-sub">—</div>
+            <div style="font-size:42px;font-weight:900;line-height:1;margin-bottom:6px" id="s-stations">—</div>
+            <div style="font-size:12px;opacity:.75" id="s-stations-sub">—</div>
+            <div style="margin-top:12px;display:flex;gap:10px;font-size:11px;opacity:.8">
+              <span>✅ <span id="s-gov-ok">—</span></span>
+              <span>❌ <span id="s-gov-bad">—</span></span>
+            </div>
           </div>
 
-          <!-- التقارير -->
-          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
-              <svg width="90" height="90" style="transform:rotate(-90deg)">
-                <circle cx="45" cy="45" r="38" fill="none" stroke="#ede9fe" stroke-width="8"/>
-                <circle id="circ-reports" cx="45" cy="45" r="38" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:22px">📊</div>
-              </div>
+          <!-- بطاقة المحطات الأهلية -->
+          <div onclick="goStTab('priv')" style="background:linear-gradient(135deg,#78350f,#d97706);border-radius:16px;padding:20px;cursor:pointer;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(217,119,6,.35);transition:all .2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(217,119,6,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(217,119,6,.35)'">
+            <div style="position:absolute;top:-18px;left:-18px;width:90px;height:90px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;opacity:.85">المحطات الأهلية</div>
+              <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">🏪</div>
             </div>
-            <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
-            <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
+            <div style="font-size:42px;font-weight:900;line-height:1;margin-bottom:6px" id="s-stations-priv">—</div>
+            <div style="font-size:12px;opacity:.75" id="s-stations-priv-sub">—</div>
+            <div style="margin-top:12px;display:flex;gap:10px;font-size:11px;opacity:.8">
+              <span>✅ <span id="s-priv-ok">—</span></span>
+              <span>❌ <span id="s-priv-bad">—</span></span>
+            </div>
+          </div>
+
+          <!-- بطاقة التقارير -->
+          <div id="dash-reports-card" onclick="_openAdminGroup();goTab('reports',document.getElementById('nav-reports'))" style="background:linear-gradient(135deg,#312e81,#4f46e5);border-radius:16px;padding:20px;cursor:pointer;color:#fff;position:relative;overflow:hidden;box-shadow:0 6px 24px rgba(79,70,229,.35);transition:all .2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 12px 32px rgba(79,70,229,.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 6px 24px rgba(79,70,229,.35)'">
+            <div style="position:absolute;top:-18px;left:-18px;width:90px;height:90px;background:rgba(255,255,255,.07);border-radius:50%"></div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;opacity:.85">التقارير</div>
+              <div style="width:40px;height:40px;background:rgba(255,255,255,.15);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px">📊</div>
+            </div>
+            <div style="font-size:42px;font-weight:900;line-height:1;margin-bottom:6px" id="s-unvisited">—</div>
+            <div style="font-size:12px;opacity:.75">محطة لم تُزَر 30 يوم</div>
+            <div style="margin-top:12px;display:flex;gap:10px;font-size:11px;opacity:.8">
+              <span>📷 <span id="s-cams-ok">—</span> تعمل</span>
+              <span>❌ <span id="s-cams-bad">—</span> معطلة</span>
+            </div>
           </div>
 
         </div>
+        <!-- حفاظ على التوافق: عناصر مخفية للـ setCircle -->
+        <svg style="display:none"><circle id="circ-maint"/><circle id="circ-stations"/><circle id="circ-reports"/></svg>
 
         <!-- Widget -->
         <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px">
@@ -821,8 +835,23 @@ function _navInv(sub){
           </div>
 
           <!-- Delegates Table -->
-
-        </div>
+          <div class="section" style="grid-column:2">
+            <div class="sec-hdr" style="padding:10px 14px">
+              <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#7c3aed"></div>👷 المكلفون بالصيانة</div>
+            </div>
+            <div style="padding:8px 0;max-height:220px;overflow-y:auto">
+              <table style="width:100%;font-size:12px">
+                <thead><tr style="background:#f8fafc">
+                  <th style="padding:6px 12px;text-align:right;color:#64748b;font-weight:600">الاسم</th>
+                  <th style="padding:6px 12px;text-align:right;color:#64748b;font-weight:600">القاطع</th>
+                  <th style="padding:6px 12px;text-align:right;color:#64748b;font-weight:600">آخر نشاط</th>
+                </tr></thead>
+                <tbody id="dash-delegates-tb">
+                  <tr><td colspan="3" style="padding:20px;text-align:center;color:#94a3b8">جاري التحميل...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
         <!-- Users Quick Section - admin only -->
         <!-- Hidden elements kept for compatibility -->
@@ -4226,43 +4255,41 @@ function updateDashboard(){
   // الصيانة
   const mTotal=allMaint.length;
   const el_mc=document.getElementById('s-maint-count'); if(el_mc) el_mc.textContent=mTotal;
-  const el_ms=document.getElementById('s-cams-bad-sub'); if(el_ms) el_ms.textContent='إجمالي: '+mTotal;
+  const el_ms=document.getElementById('s-cams-bad-sub'); if(el_ms) el_ms.textContent='إجمالي عمليات الصيانة: '+mTotal;
   setCircle('circ-maint', Math.min(mTotal/30,1));
+  const barM=document.getElementById('bar-maint'); if(barM) barM.style.width=Math.min(mTotal/50*100,100)+'%';
 
-  // المحطات
-  const stTotal=allStations.length;
-  const el_st=document.getElementById('s-stations'); if(el_st) el_st.textContent=stTotal;
-  const el_ss=document.getElementById('s-stations-sub'); if(el_ss) el_ss.textContent='حكومية: '+allStations.filter(s=>s.type==='حكومية').length;
-  setCircle('circ-stations', Math.min(stTotal/20,1));
+  // المحطات الحكومية والأهلية
+  const govSts=allStations.filter(s=>s.type==='حكومية');
+  const privSts=allStations.filter(s=>s.type!=='حكومية');
+  const el_st=document.getElementById('s-stations'); if(el_st) el_st.textContent=govSts.length;
+  const el_ss=document.getElementById('s-stations-sub'); if(el_ss) el_ss.textContent='من إجمالي '+allStations.length+' محطة';
+  setCircle('circ-stations', Math.min(allStations.length/20,1));
+  let govOk=0,govBad=0; govSts.forEach(s=>{govOk+=(+s.cam_working||0);govBad+=(+s.cam_broken||0);});
+  const el_gok=document.getElementById('s-gov-ok'); if(el_gok) el_gok.textContent=govOk;
+  const el_gbad=document.getElementById('s-gov-bad'); if(el_gbad) el_gbad.textContent=govBad;
+  const el_sp=document.getElementById('s-stations-priv'); if(el_sp) el_sp.textContent=privSts.length;
+  const el_sps=document.getElementById('s-stations-priv-sub'); if(el_sps) el_sps.textContent='المحطات الأهلية';
+  let privOk=0,privBad=0; privSts.forEach(s=>{privOk+=(+s.cam_working||0);privBad+=(+s.cam_broken||0);});
+  const el_pok=document.getElementById('s-priv-ok'); if(el_pok) el_pok.textContent=privOk;
+  const el_pbad=document.getElementById('s-priv-bad'); if(el_pbad) el_pbad.textContent=privBad;
 
   // غير مزارة
   const now=Date.now();
-  const unvisited=allStations.filter(s=>{
-    const last=null;
-    return !last || (now-new Date(last.date).getTime())>30*864e5;
-  }).length;
+  const unvisited=allStations.filter(s=>{ const last=null; return !last||(now-new Date(last.date).getTime())>30*864e5; }).length;
   const el_uv=document.getElementById('s-unvisited'); if(el_uv) el_uv.textContent=unvisited;
-  setCircle('circ-reports', stTotal ? unvisited/stTotal : 0);
-
+  setCircle('circ-reports', allStations.length ? unvisited/allStations.length : 0);
   const badge=document.getElementById('unvisited-badge');
   if(badge){ badge.style.display=unvisited?'':'none'; badge.textContent=unvisited; }
 
-  // احصائيات الكاميرات من الجرد أو من المحطات
+  // إحصائيات الكاميرات
   let camOk=0,camBad=0;
-  if(allInventory&&allInventory.length){
-    allInventory.forEach(x=>{camOk+=(+x.cam_count||0);});
-    allStations.forEach(s=>{camBad+=(+s.cam_broken||0);});
-    camOk=Math.max(0,camOk-camBad);
-  } else {
-    allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
-  }
+  allStations.forEach(s=>{camOk+=(+s.cam_working||0); camBad+=(+s.cam_broken||0);});
   const el_ok=document.getElementById('s-cams-ok'); if(el_ok) el_ok.textContent=camOk;
   const el_bad=document.getElementById('s-cams-bad'); if(el_bad) el_bad.textContent=camBad;
   const total=camOk+camBad, pct=total?Math.round(camOk/total*100):0;
-  const bar=document.getElementById('cam-status-bar');
-  if(bar) bar.style.width=pct+'%';
-  const lbl=document.getElementById('cam-pct-lbl');
-  if(lbl) lbl.textContent=total?`${pct}% تعمل (${camOk} من ${total})`:'لا بيانات';
+  const bar=document.getElementById('cam-status-bar'); if(bar) bar.style.width=pct+'%';
+  const lbl=document.getElementById('cam-pct-lbl'); if(lbl) lbl.textContent=total?`${pct}% تعمل (${camOk} من ${total})`:'لا بيانات';
 
   // ── تحديث إجراءات صيانة اليوم ──
   const today = new Date().toISOString().split('T')[0];
@@ -4310,11 +4337,21 @@ function updateDashboard(){
   }
 
   const dtb=document.getElementById('dash-delegates-tb');
-  if(dtb) dtb.innerHTML=allDelegates.length?allDelegates.map(d=>`
-    <tr><td>${d.district||'—'}</td><td style="font-weight:700">${d.name||'—'}</td>
-    <td style="direction:ltr;text-align:right">${d.phone||'—'}</td>
-    <td><span class="badge b-ok">✅ مخول</span></td></tr>`).join('')
-    :'<tr><td colspan="4" style="text-align:center;color:var(--t3);padding:20px">لا يوجد مخولون</td></tr>';
+  if(dtb){
+    if(allDelegates.length){
+      // احسب آخر صيانة لكل مكلف
+      dtb.innerHTML=allDelegates.map(d=>{
+        const lastM=allMaint.filter(m=>m.technician===d.name).sort((a,b)=>b.date>a.date?1:-1)[0];
+        return `<tr style="border-bottom:1px solid #f1f5f9">
+          <td style="padding:7px 12px;font-weight:700">${d.name||'—'}</td>
+          <td style="padding:7px 12px"><span class="db" style="font-size:10px">${d.district||'—'}</span></td>
+          <td style="padding:7px 12px;font-size:11px;color:#64748b">${lastM?lastM.date:'—'}</td>
+        </tr>`;
+      }).join('');
+    } else {
+      dtb.innerHTML='<tr><td colspan="3" style="text-align:center;color:var(--t3);padding:20px;font-size:12px">لا يوجد مكلفون</td></tr>';
+    }
+  }
 
   // ── إحصائيات الحكومية والأهلية ──
   const govSt  = allStations.filter(s=>s.type==='حكومية');
@@ -4605,6 +4642,7 @@ async function loadMaintenance(){
     renderMaint();
     renderMaintType('gov');
     renderMaintType('priv');
+    updateDashboard();
     if(CU?.role==='admin') updateActivityTicker();
   }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
 }
@@ -7352,8 +7390,8 @@ window.addEventListener('afterprint',function(){
 </div>
 <style>
 @keyframes tickerScroll{
-  0%  {transform:translateX(-100%) translateY(-50%)}
-  100%{transform:translateX(100vw) translateY(-50%)}
+  0%  {transform:translateX(100vw) translateY(-50%)}
+  100%{transform:translateX(-100%) translateY(-50%)}
 }
 @keyframes blinkBadge{
   0%,100%{opacity:1}
