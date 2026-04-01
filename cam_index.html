@@ -401,6 +401,56 @@ tr:hover td{background:rgba(30,58,95,.03);}
   }
   .content{padding:12px 10px 72px!important;}
 
+  /* ══ واجهة المحطات — هاتف ══ */
+  #tab-st-gov > div, #tab-st-priv > div {
+    flex-direction:column!important;
+    height:auto!important;
+  }
+  /* سايدبار المحطات يصبح شريطاً أفقياً قابلاً للتمرير */
+  #tab-st-gov > div > div:first-child,
+  #tab-st-priv > div > div:first-child {
+    width:100%!important;
+    max-height:none!important;
+    border-left:none!important;
+    border-bottom:2px solid #e2e8f0!important;
+  }
+  /* رأس السايدبار أصغر */
+  #tab-st-gov > div > div:first-child > div:first-child,
+  #tab-st-priv > div > div:first-child > div:first-child {
+    padding:10px!important;
+  }
+  /* قائمة المحطات أفقية قابلة للتمرير */
+  #st-gov-list, #st-priv-list {
+    display:flex!important;
+    flex-direction:row!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    max-height:90px!important;
+    scrollbar-width:none;
+    -webkit-overflow-scrolling:touch;
+  }
+  #st-gov-list::-webkit-scrollbar, #st-priv-list::-webkit-scrollbar{display:none;}
+  /* كل بطاقة محطة في الهاتف */
+  #st-gov-list > div, #st-priv-list > div {
+    min-width:120px!important;
+    max-width:130px!important;
+    border-bottom:none!important;
+    border-left:1px solid #f1f5f9!important;
+    padding:8px 10px!important;
+    flex-shrink:0;
+  }
+  /* لوحة التفاصيل كاملة العرض */
+  #st-gov-detail, #st-priv-detail {
+    flex:none!important;
+    height:auto!important;
+    min-height:60vh;
+    padding:12px!important;
+  }
+  /* تصغير إحصائيات التفاصيل */
+  #st-gov-detail > div, #st-priv-detail > div {
+    padding:12px!important;
+  }
+
   /* جداول */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;}
   table{min-width:500px;font-size:11px;}
@@ -2301,8 +2351,10 @@ function showOfflineBanner(){
   if(document.getElementById('offline-banner')) return;
   const b=document.createElement('div');
   b.id='offline-banner';
-  b.style.cssText='position:fixed;bottom:40px;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:13px;font-weight:700;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px';
-  b.innerHTML='⚠️ وضع عمل بدون سيرفر — البيانات محفوظة محلياً <button onclick="showTopbarLogin()" style="border:none;background:#1d4ed8;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Arial,sans-serif;font-size:12px">🔑 إعادة الاتصال</button>';
+  b.style.cssText='position:fixed;bottom:68px;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:6px 10px;font-size:12px;font-weight:700;font-family:Arial,sans-serif;display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap';
+  b.innerHTML='⚠️ وضع عمل بدون سيرفر — البيانات محلية '
+    +'<button onclick="showTopbarLogin()" style="border:none;background:#1d4ed8;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Arial;font-size:12px">🔑 اتصال</button>'
+    +'<button onclick="_syncPendingFiles()" style="border:none;background:#16a34a;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Arial;font-size:12px">☁️ مزامنة الملفات</button>';
   document.body.appendChild(b);
 }
 
@@ -4036,7 +4088,7 @@ async function initApp(){
   try{
     await Promise.all([
       loadStations(),
-        loadMaintenance(),
+      loadMaintenance(),
       loadDelegates(),
       loadCirculars(),
     ]);
@@ -4045,6 +4097,8 @@ async function initApp(){
     console.error('initApp load error:',e);
   }
   updateDashboard();
+  // مزامنة الملفات المعلقة
+  if(SERVER_ONLINE) setTimeout(_syncPendingFiles, 2000);
   populateDistrictFilters();
 
   // إذا جاء من مسح QR مباشر
@@ -4412,6 +4466,30 @@ async function delStation(id){
 //  TOURS
 // ══════════════════════════════════════════
 
+async function _syncPendingFiles(){
+  if(!TOKEN) return;
+  const pending=LS.get('pending_file_sync');
+  if(!pending||!pending.length) return;
+  const stillPending=[];
+  for(const item of pending){
+    const fileData=LS.get('file_maint_'+item.mid+'_'+item.k);
+    if(!fileData){continue;} // محذوف، تجاهله
+    try{
+      const resp=await fetch(API+'/api/files/maint_'+item.mid+'_'+item.k,{
+        method:'POST',
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+        body:JSON.stringify(fileData)
+      });
+      if(resp.ok){
+        LS.del('file_maint_'+item.mid+'_'+item.k);
+        console.log('synced file:',item.k,'for maint:',item.mid);
+      } else { stillPending.push(item); }
+    }catch(e){ stillPending.push(item); }
+  }
+  LS.set('pending_file_sync', stillPending);
+  if(pending.length>stillPending.length)
+    toast('تم مزامنة '+(pending.length-stillPending.length)+' ملف مع السيرفر ✅');
+}
 async function loadMaintenance(){
   try{
     const d=await api('GET','/api/maintenance');
@@ -4893,25 +4971,34 @@ async function saveMaint(){
   try{
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
     const mid=id||r.id;
-    // رفع الملفات المرفقة — يحاول السيرفر أولاً، يحفظ في LS كـ backup
+    // رفع الملفات — دائماً يحاول السيرفر حتى لو offline flag
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     for(const k of fileKeys){
       if(UF[k]){
         const fileData={name:UF[k].name,data:UF[k].data,mime:UF[k].mime};
-        // دائماً احفظ في LS كـ backup
+        // احفظ في LS دائماً كـ backup
         LS.set('file_maint_'+mid+'_'+k, fileData);
-        if(SERVER_ONLINE){
-          try{
-            await fetch(API+'/api/files/maint_'+mid+'_'+k,{
-              method:'POST',
-              headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
-              body:JSON.stringify(fileData)
-            });
-          }catch(fe){ console.warn('server file upload failed, kept in LS:',k); }
+        // ارفع للسيرفر — حتى لو SERVER_ONLINE=false، حاول مباشرة
+        try{
+          const resp=await fetch(API+'/api/files/maint_'+mid+'_'+k,{
+            method:'POST',
+            headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+            body:JSON.stringify(fileData)
+          });
+          if(resp.ok) LS.del('file_maint_'+mid+'_'+k); // حذف LS إذا نجح السيرفر
+        }catch(fe){
+          // سيبقى في LS للمزامنة لاحقاً
+          console.warn('file kept in LS for sync:',k);
+          // سجّل للمزامنة
+          const pending=LS.get('pending_file_sync')||[];
+          pending.push({mid,k,ts:Date.now()});
+          LS.set('pending_file_sync', pending);
         }
         delete UF[k];
       }
     }
+    // حاول مزامنة الملفات المعلقة
+    _syncPendingFiles();
     closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
