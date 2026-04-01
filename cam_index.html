@@ -3987,8 +3987,8 @@ function goTab(name, el){
   if(name==='maint-gov')  { loadMaintType('gov'); }
   if(name==='maint-priv') { loadMaintType('priv'); }
   if(name==='stations')   { loadStations(); }
-  if(name==='st-gov')     { renderStType('gov'); }
-  if(name==='st-priv')    { renderStType('priv'); }
+  if(name==='st-gov')     { if(!allStations.length){loadStations().then(()=>renderStType('gov'));}else{renderStType('gov');} }
+  if(name==='st-priv')    { if(!allStations.length){loadStations().then(()=>renderStType('priv'));}else{renderStType('priv');} }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding'){
     loadCoding(); populateGenStations(); loadLabelSizes();
@@ -4258,14 +4258,20 @@ function updateDashboard(){
 async function loadStations(){
   try{
     const d=await api('GET','/api/stations');
-    allStations=d.stations||[];
+    // استخدم الافتراضية إذا السيرفر أرجع فارغاً
+    allStations=d.stations?.length ? d.stations : DEFAULT_STATIONS;
     renderStations(); populateDistrictFilters();
     renderStType('gov'); renderStType('priv');
-    updateDashboard(); // تحديث لوحة التحكم بعد تحميل المحطات
-    // أظهر زر الاستعادة إذا القائمة فارغة والمستخدم مدير
+    updateDashboard();
     const btn=document.getElementById('btn-restore-stations');
-    if(btn) btn.style.display=(allStations.length===0 && CU?.role==='admin')?'inline-block':'none';
-  }catch(e){toast('loadStations: '+e.message,'err');console.error('loadStations',e);}
+    if(btn) btn.style.display=(d.stations?.length===0 && CU?.role==='admin')?'inline-block':'none';
+  }catch(e){
+    // عند فشل الطلب — استخدم الافتراضية
+    if(!allStations.length) allStations=DEFAULT_STATIONS;
+    renderStations(); populateDistrictFilters();
+    renderStType('gov'); renderStType('priv');
+    console.error('loadStations',e);
+  }
 }
 
 async function restoreDefaultStations(){
@@ -4542,7 +4548,9 @@ function renderStType(type){
   const isGov=type==='gov';
   const accent=isGov?'#1d4ed8':'#d97706';
   const accentLight=isGov?'#eff6ff':'#fffbeb';
-  let list=allStations.filter(s=>{
+  // استخدم المحطات الافتراضية إذا allStations فارغة
+  const src=allStations.length?allStations:DEFAULT_STATIONS;
+  let list=src.filter(s=>{
     if(isGov?s.type!=='حكومية':s.type==='حكومية') return false;
     if(distF&&s.district!==distF) return false;
     if(search&&!(s.name||'').toLowerCase().includes(search)&&!s.district?.includes(search)) return false;
@@ -5762,7 +5770,9 @@ function generateMaintReport(){
 // ══════════════════════════════════════════
 
 function populateDistrictFilters(){
-  const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+  const FB=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+  const dlist=DISTRICTS_LIST.length?DISTRICTS_LIST:FB;
+  const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:dlist;
   ['f-tour-district','f-maint-district','f-maint-gov-district','f-maint-priv-district',
    'f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
     const sel=document.getElementById(id);
