@@ -717,7 +717,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="topbar-nav">
       <div class="nav-item active" onclick="goTab('dashboard',this)"><span class="ni">🏠</span>لوحة التحكم</div>
       <div class="nav-sect">|</div>
-      <div class="nav-item" onclick="goTab('field',this)" id="nav-field"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
+      <div class="nav-dropdown" id="nav-field-dropdown">
+        <div class="nav-item" id="nav-field" onclick="goTab('field',this)"><span class="ni">🚗</span><b>الجولات والصيانة</b><span class="nbadge" id="unvisited-badge" style="display:none">!</span></div>
+        <div class="nav-sub">
+          <div class="nav-sub-item" onclick="goTab('field',document.getElementById('nav-field'));switchField('tours',document.getElementById('sub-tours'))">🚗 الجولات الميدانية</div>
+          <div class="nav-sub-item" onclick="goTab('field',document.getElementById('nav-field'));switchField('maintenance',document.getElementById('sub-maint'))">🔧 الصيانة والأجهزة</div>
+        </div>
+      </div>
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
@@ -6714,7 +6720,7 @@ tryAutoLogin();</script>
 <div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
   <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
   <div style="overflow:hidden;flex:1;position:relative;height:20px">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 35s linear infinite"></div>
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 70s linear infinite"></div>
   </div>
   <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
