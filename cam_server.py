@@ -574,6 +574,7 @@ class Handler(BaseHTTPRequestHandler):
                 "cam_count":body.get("cam_count",0),"cam_spec":body.get("cam_spec",""),"cam_res":body.get("cam_res",""),
                 "cam_indoor":body.get("cam_indoor",0),"cam_outdoor":body.get("cam_outdoor",0),
                 "cam_rows":body.get("cam_rows",""),
+                "dvr_rows":body.get("dvr_rows",""),
                 "power_source":body.get("power_source",""),
                 "phone":body.get("phone",""),"coords":body.get("coords",""),
                 "poe_count":body.get("poe_count",0),"poe_spec":body.get("poe_spec",""),
@@ -661,7 +662,7 @@ class Handler(BaseHTTPRequestHandler):
             if idx is None: self.send_json({"error":"غير موجود"},404); return
             fields=["station_id","station_name","district","status",
                     "dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","storage_days",
-                    "cam_count","cam_spec","cam_res","cam_indoor","cam_outdoor","cam_rows",
+                    "cam_count","cam_spec","cam_res","cam_indoor","cam_outdoor","cam_rows","dvr_rows",
                     "power_source","phone","coords",
                     "poe_count","poe_spec","ups_count","ups_spec","notes"]
             for f in fields:
