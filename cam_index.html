@@ -182,6 +182,7 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* TABLE */
 .table-wrap{overflow-x:auto;}
+.table-wrap table{table-layout:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 thead tr{background:linear-gradient(135deg,#1e40af,#1d4ed8);}
 th{padding:12px 14px;text-align:right;color:#fff;font-weight:700;font-size:13px;white-space:nowrap;}
@@ -1315,7 +1316,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <table style="direction:rtl">
                   <thead><tr>
                     <th style="width:40px;text-align:right">#</th>
-                    <th style="text-align:right">اسم المحطة</th>
+                    <th style=text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
                     <th style="width:100px;text-align:right">القاطع</th>
                     <th style="width:80px;text-align:right">الحالة</th>
                     <th style="text-align:right;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
@@ -1389,7 +1390,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:#1e3a8a;color:#fff">
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:40px">#</th>
-                    <th style="padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right">اسم المحطة</th>
+                    <th style=padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:70px">الكاميرات</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:120px">نوع الجهاز</th>
@@ -1425,7 +1426,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
-                    <th style="padding:9px 12px;text-align:right">اسم البناية</th>
+                    <th style=padding:9px 12px;text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم البناية</th>
                     <th style="padding:9px 10px;text-align:right">المحطة</th>
                     <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
@@ -1462,7 +1463,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
-                    <th style="padding:9px 12px;text-align:right">اسم المحطة</th>
+                    <th style="padding:9px 12px;text-align:right;position:sticky;right:0;background:linear-gradient(135deg,#92400e,#d97706);z-index:2;min-width:120px">اسم المحطة</th>
                     <th style="padding:9px 10px;text-align:right">المحطة المرتبطة</th>
                     <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
@@ -5067,7 +5068,7 @@ function renderStations(){
         </colgroup>
         <thead><tr>
           <th style="text-align:right">#</th>
-          <th style="text-align:right">اسم المحطة</th>
+          <th style=text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
           <th style="text-align:right">الحالة</th>
           <th style="text-align:right;background:rgba(22,163,74,.15)">✅ تعمل</th>
           <th style="text-align:right;background:rgba(220,38,38,.15)">❌ معطلة</th>
@@ -7567,7 +7568,7 @@ async function updateActivityTicker(){
         +`</span>`;
     });
     tickerContent.innerHTML = items.join('<span style="margin:0 12px;color:rgba(255,255,255,.2)">◈</span>');
-    tickerBar.style.display = 'block';
+    tickerBar.style.display = 'flex';
 
     // تنبيه عاجل — أحدث إشعار غير مقروء urgent
     const unread = d.unread || 0;
@@ -7723,7 +7724,7 @@ function renderInvBuildings(){
   tb.innerHTML = list.length ? list.map((x,i)=>`
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
-      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px;position:sticky;right:0;background:${i%2?'#f8fafc':'#fff'};z-index:1;min-width:120px">${x.name||'—'}</td>
       <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#0891b2">${x.cam_count||0}</td>
@@ -7873,7 +7874,7 @@ function renderInvPrivate(){
   tb.innerHTML = list.length ? list.map((x,i)=>`
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
-      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px;position:sticky;right:0;background:${i%2?'#f8fafc':'#fff'};z-index:1;min-width:120px">${x.name||'—'}</td>
       <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#d97706">${x.cam_count||0}</td>
@@ -8866,12 +8867,12 @@ tryAutoLogin();</script>
 
 <!-- شريط إخباري لصيانة اليوم -->
 <!-- شريط الأخبار — ثابت في الأسفل -->
-<div id="ticker-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;font-family:'Cairo',sans-serif;direction:rtl;background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;box-shadow:0 -2px 20px rgba(0,0,0,.4);display:none;align-items:center;gap:10px" id="maint-ticker-bar">
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;font-family:'Cairo',sans-serif;direction:rtl;background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;box-shadow:0 -2px 20px rgba(0,0,0,.4);align-items:center;gap:10px">
   <span id="ticker-label" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
   <div style="overflow:hidden;flex:1;position:relative;height:20px">
     <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 40s linear infinite;display:flex;gap:0;align-items:center"></div>
   </div>
-  <button onclick="this.closest('#maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
 
 <!-- تنبيه عاجل — مستقل فوق الشريط -->
@@ -8882,6 +8883,14 @@ tryAutoLogin();</script>
   <button onclick="document.getElementById('urgent-alert').style.display='none'" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;flex-shrink:0">✕</button>
 </div>
 <style>
+
+/* Sticky column للهاتف */
+@media(max-width:768px){
+  .table-wrap td[style*="sticky"], .table-wrap th[style*="sticky"]{
+    position:sticky!important;
+    box-shadow:-2px 0 4px rgba(0,0,0,.1);
+  }
+}
 @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.85}}
 @keyframes shake{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes tickerScroll{
