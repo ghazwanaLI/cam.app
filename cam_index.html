@@ -47,79 +47,103 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* LAYOUT */
 #app{display:none;}
-.sidebar{display:none!important;}
-.sb-logo{display:none!important;}
-.sb-nav{display:none!important;}
-.sb-user{display:none!important;}
 .nbadge{background:#dc2626;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;margin-right:4px;}
 
-/* TOP NAVBAR */
+/* ══ SIDEBAR LAYOUT ══ */
+/* الشريط الجانبي */
 .topbar{
-  position:fixed;top:0;right:0;left:0;z-index:200;
-  background:#ffffff;
-  border-bottom:2px solid #e2e8f0;
-  box-shadow:0 2px 12px rgba(0,0,0,.06);
+  position:fixed;top:0;right:0;bottom:0;z-index:200;
+  width:var(--sw,255px);
+  background:#fff;
+  border-left:1.5px solid #e2e8f0;
+  box-shadow:-3px 0 18px rgba(0,0,0,.07);
   display:flex!important;flex-direction:column;
-  width:100%;box-sizing:border-box;
-  -webkit-overflow-scrolling:touch;
+  overflow-y:auto;overflow-x:hidden;
+  scrollbar-width:thin;scrollbar-color:#e2e8f0 transparent;
+  transition:transform .28s cubic-bezier(.4,0,.2,1);
 }
+.topbar::-webkit-scrollbar{width:4px;}
+.topbar::-webkit-scrollbar-thumb{background:#e2e8f0;border-radius:4px;}
+
+/* لوغو وبيانات المستخدم */
 .topbar-logo{
-  display:flex!important;align-items:center;justify-content:space-between;
-  padding:8px 16px;border-bottom:1px solid rgba(0,0,0,.06);
-  flex-direction:row;width:100%;box-sizing:border-box;
+  display:flex!important;flex-direction:column;
+  padding:18px 16px 12px;
+  border-bottom:1.5px solid #f1f5f9;
+  flex-shrink:0;
 }
-.tb-brand{display:flex!important;align-items:center;gap:10px;flex-direction:row;}
-.tb-ico{width:38px;height:38px;background:#eff6ff;border:1.5px solid #bfdbfe;border-radius:10px;
-  display:flex;align-items:center;justify-content:center;font-size:20px;}
-.tb-name{font-size:17px;font-weight:800;color:#1d4ed8;}
-.tb-ver{font-size:12px;color:#94a3b8;}
-.tb-user{display:flex!important;align-items:center;gap:8px;flex-direction:row;}
-.su-av{width:32px;height:32px;border-radius:8px;display:flex!important;align-items:center;
-  justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;
-  background:#eff6ff;color:#1d4ed8;border:1.5px solid #bfdbfe;}
-.su-name{font-size:14px;font-weight:700;color:#1e293b;}
-.su-role{font-size:12px;color:#64748b;}
-.su-district{font-size:12px;color:#1d4ed8;font-weight:600;}
-.tb-actions{display:flex!important;gap:6px;flex-direction:row;}
-.tb-btn{padding:7px 14px;border-radius:8px;border:1px solid #e2e8f0;
+.tb-brand{display:flex!important;align-items:center;gap:10px;margin-bottom:14px;}
+.tb-ico{width:40px;height:40px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:11px;
+  display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;
+  box-shadow:0 4px 12px rgba(29,78,216,.3);}
+.tb-name{font-size:14px;font-weight:800;color:#1d4ed8;line-height:1.3;}
+.tb-ver{font-size:10px;color:#94a3b8;margin-top:1px;}
+.tb-user{display:flex!important;align-items:center;gap:9px;background:#f8fafc;
+  border-radius:10px;padding:9px 10px;border:1px solid #f1f5f9;}
+.su-av{width:34px;height:34px;border-radius:9px;display:flex!important;align-items:center;
+  justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;
+  background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1d4ed8;border:1.5px solid #bfdbfe;}
+.su-name{font-size:13px;font-weight:700;color:#1e293b;}
+.su-role{font-size:11px;color:#64748b;}
+.su-district{font-size:11px;color:#1d4ed8;font-weight:600;}
+.tb-actions{display:flex!important;gap:5px;margin-top:10px;padding:0 2px;}
+.tb-btn{flex:1;padding:7px 6px;border-radius:8px;border:1px solid #e2e8f0;
   background:#f8fafc;color:#475569;font-family:'Cairo',sans-serif;
-  font-size:13px;cursor:pointer;transition:all .2s;}
+  font-size:11px;cursor:pointer;transition:all .2s;text-align:center;}
 .tb-btn:hover{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
 
-/* NAV TABS */
+/* قائمة التنقل */
 .topbar-nav{
-  display:flex!important;align-items:center;gap:2px;padding:0 12px;overflow-x:auto;
-  scrollbar-width:none;flex-direction:row;width:100%;box-sizing:border-box;
+  display:flex!important;flex-direction:column;
+  padding:10px 10px;gap:2px;flex:1;
 }
-.topbar-nav::-webkit-scrollbar{display:none;}
+.nav-sect{font-size:10px;font-weight:700;color:#94a3b8;letter-spacing:.8px;
+  padding:10px 8px 4px;text-transform:uppercase;}
 .nav-item{
-  display:flex;align-items:center;flex-direction:row;gap:5px;padding:9px 14px;
-  cursor:pointer;transition:all .18s;color:#64748b;
-  font-size:14px;font-weight:600;white-space:nowrap;position:relative;
-  border-bottom:3px solid transparent;flex-shrink:0;
+  display:flex;align-items:center;flex-direction:row;gap:9px;
+  padding:10px 12px;border-radius:10px;
+  cursor:pointer;transition:all .18s;color:#475569;
+  font-size:13px;font-weight:600;white-space:nowrap;
+  border-bottom:none;flex-shrink:0;
 }
 .nav-item.hidden{display:none!important;}
-.nav-item:hover{color:#1d4ed8;background:#f0f7ff;}
-.nav-item.active{color:#1d4ed8;font-weight:700;border-bottom:3px solid #1d4ed8;background:#eff6ff;}
-.ni{font-size:14px;}
-.nav-sect{font-size:13px;color:#cbd5e1;padding:0 4px;white-space:nowrap;}
-.nav-dropdown{position:relative;display:inline-flex;align-items:center;}
+.nav-item:hover{color:#1d4ed8;background:#eff6ff;}
+.nav-item.active{color:#1d4ed8;font-weight:700;background:#eff6ff;
+  box-shadow:inset 3px 0 0 #1d4ed8;}
+.ni{font-size:16px;flex-shrink:0;}
+
+/* Dropdown في الـ sidebar */
+.nav-dropdown{position:relative;display:flex;flex-direction:column;}
+.nav-dropdown>.nav-item::after{content:'▾';font-size:9px;margin-right:auto;margin-left:4px;opacity:.5;transition:transform .2s;}
+.nav-dropdown.open>.nav-item::after{transform:rotate(180deg);}
 .nav-dropdown:hover .nav-sub{display:flex;}
-.nav-sub{display:none;position:absolute;top:100%;right:0;flex-direction:column;background:#fff;border:1px solid #e2e8f0;border-radius:0 0 10px 10px;box-shadow:0 8px 24px rgba(0,0,0,.12);z-index:9999;min-width:160px;overflow:hidden;}
-.nav-sub-item{padding:9px 16px;font-size:12px;font-weight:600;color:#334155;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:6px;border-bottom:1px solid #f1f5f9;}
+.nav-sub{display:none;flex-direction:column;background:#f8fafc;
+  border-radius:8px;margin:2px 0 2px 8px;overflow:hidden;border:1px solid #f1f5f9;}
+.nav-sub-item{padding:8px 14px;font-size:12px;font-weight:600;color:#475569;
+  cursor:pointer;display:flex;align-items:center;gap:7px;
+  border-bottom:1px solid #f1f5f9;transition:all .15s;}
 .nav-sub-item:last-child{border-bottom:none;}
 .nav-sub-item:hover{background:#eff6ff;color:#1d4ed8;}
-.nav-dropdown>.nav-item::after{content:'▾';font-size:9px;margin-right:2px;opacity:.6;}
 .hidden{display:none!important;}
 
-/* MAIN */
-.main{margin-right:0;margin-top:108px;display:flex;flex-direction:column;min-height:100vh;}
+/* MAIN CONTENT */
+.main{margin-right:var(--sw,255px);margin-top:0;display:flex;flex-direction:column;min-height:100vh;}
 .header{display:none;}
 .h-title{font-size:16px;font-weight:800;color:#1d4ed8;}
 .h-right{display:flex;align-items:center;gap:10px;}
+
+/* شريط علوي للموبايل فقط */
+.mob-topbar{display:none;position:fixed;top:0;right:0;left:0;z-index:199;
+  background:#fff;border-bottom:1.5px solid #e2e8f0;padding:8px 14px;
+  align-items:center;gap:10px;box-shadow:0 2px 8px rgba(0,0,0,.06);}
+.hamburger{width:36px;height:36px;background:#f1f5f9;border:none;border-radius:9px;
+  cursor:pointer;display:flex!important;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;}
+.mob-title{font-size:14px;font-weight:800;color:#1d4ed8;flex:1;}
+.sb-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:199;backdrop-filter:blur(2px);}
 .odot{width:8px;height:8px;border-radius:50%;background:var(--a3);animation:pulse 2s infinite;box-shadow:0 0 6px var(--a3);}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.8)}}
-.content{padding:22px 24px;flex:1;}
+.content{padding:22px 24px 22px;flex:1;}
 
 /* STATS */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
@@ -279,8 +303,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 /* ── Tablet landscape 768-1024 ── */
 @media(max-width:1024px){
   .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
-  .content{padding:16px 14px 70px;}
-  .main{margin-top:108px;}
+  .content{padding:16px 14px 22px;}
   #tab-dashboard .stats-grid-new{grid-template-columns:1fr 1fr!important;}
   #tab-dashboard .map-widget-grid{grid-template-columns:1fr!important;}
   #tab-dashboard .bottom-grid{grid-template-columns:1fr!important;}
@@ -288,8 +311,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* ── Tablet portrait / large phone 600-900 ── */
 @media(max-width:900px){
-  .main{margin-top:104px;}
-  .content{padding:12px 12px 75px;}
+  
+  .content{padding:12px 12px 22px;}
 
   /* شريط علوي مضغوط */
   .topbar-logo{padding:7px 12px;}
@@ -350,8 +373,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* ── iPhone / Android صغير 320-600 ── */
 @media(max-width:600px){
-  .main{margin-top:100px;}
-  .content{padding:8px 8px 80px;}
+  
+  .content{padding:8px 8px 22px;}
 
   /* شريط علوي - أصغر */
   .topbar-logo{padding:6px 10px;}
@@ -407,8 +430,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* ── iPhone SE / صغير جداً ≤380 ── */
 @media(max-width:380px){
-  .main{margin-top:96px;}
-  .content{padding:6px 6px 75px;}
+  
+  .content{padding:6px 6px 22px;}
   .stats-grid{grid-template-columns:1fr 1fr;gap:6px;}
   .sc{padding:8px;}
   .sc-val{font-size:20px;}
@@ -423,7 +446,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* ── iOS safe area (notch/home indicator) ── */
 @supports(padding:env(safe-area-inset-bottom)){
-  .content{padding-bottom:calc(80px + env(safe-area-inset-bottom));}
   #maint-ticker-bar{padding-bottom:calc(7px + env(safe-area-inset-bottom))!important;}
 }
 
@@ -444,8 +466,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* هاتف 480px */
 @media(max-width:480px){
-  .main{margin-top:96px!important;}
-  .content{padding:6px 6px 78px!important;}
+  .main{margin-top:52px!important;}
+  .content{padding:6px 6px 22px!important;}
   .tb-name{font-size:11px!important;}
   .su-name,.su-district,.tb-ver,.su-role{display:none!important;}
   .tb-ico{width:26px!important;height:26px!important;font-size:14px!important;}
@@ -499,8 +521,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
 /* لوحي صغير / هاتف كبير 600-768 */
 @media(max-width:768px){
   /* شريط التنقل أفقي مع تمرير */
-  .topbar{position:fixed;top:0;left:0;right:0;z-index:1000;}
-  .main{margin-top:110px!important;}
+  .mob-topbar{display:flex!important;}
+  .main{margin-right:0!important;margin-top:52px!important;}
+  .topbar{transform:translateX(100%);box-shadow:none;}
+  .topbar.sb-open{transform:translateX(0);box-shadow:-4px 0 24px rgba(0,0,0,.18);}
+  .sb-overlay.sb-open{display:block!important;}
 
   /* ألواح الإحصاء: 2 في كل صف */
   .stats-grid{grid-template-columns:repeat(2,1fr)!important;gap:8px!important;}
@@ -533,8 +558,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 /* هاتف عادي 480-600 */
 @media(max-width:480px){
-  .main{margin-top:96px!important;}
-  .content{padding:6px 6px 78px!important;}
+  .main{margin-top:52px!important;}
+  .content{padding:6px 6px 22px!important;}
 
   /* شريط علوي مضغوط جداً */
   .tb-name{font-size:11px!important;}
@@ -690,7 +715,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- APP -->
 <div id="app" style="display:block">
-  <!-- TOP NAVBAR -->
+  <!-- MOBILE TOP BAR -->
+  <div class="mob-topbar" id="mob-topbar">
+    <button class="hamburger" onclick="toggleSidebar()">☰</button>
+    <span class="mob-title">📹 نظام كاميرات المراقبة</span>
+    <div class="su-av" id="mob-av" style="width:30px;height:30px;font-size:12px">م</div>
+  </div>
+  <!-- SIDEBAR -->
   <div class="topbar" id="sidebar">
     <div class="topbar-logo">
       <div class="tb-brand">
@@ -2447,7 +2478,18 @@ function openLB(src){
   }
   document.getElementById('lb').classList.add('open');
 }
-function toggleSidebar(){}
+function toggleSidebar(){
+  const sb = document.getElementById('sidebar');
+  const ov = document.getElementById('sb-overlay');
+  const isOpen = sb.classList.contains('sb-open');
+  if(isOpen){
+    sb.classList.remove('sb-open');
+    ov.classList.remove('sb-open');
+  } else {
+    sb.classList.add('sb-open');
+    ov.classList.add('sb-open');
+  }
+}
 
 // ── AUTH ──
 async function doLogin(){
@@ -3860,6 +3902,8 @@ function goTab(name, el){
   });
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
+  // إغلاق الـ sidebar في الموبايل
+  if(window.innerWidth <= 768){ const sb=document.getElementById('sidebar'),ov=document.getElementById('sb-overlay'); sb.classList.remove('sb-open'); ov.classList.remove('sb-open'); }
   if(name==='field')      { loadTours(); loadMaintenance(); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
@@ -6720,7 +6764,7 @@ tryAutoLogin();</script>
 <div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
   <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
   <div style="overflow:hidden;flex:1;position:relative;height:20px">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 70s linear infinite"></div>
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite"></div>
   </div>
   <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
