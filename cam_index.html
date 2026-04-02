@@ -8264,10 +8264,12 @@ tryAutoLogin();</script>
 </div>
 <style>
 @media print{
-  body > *:not(#inv-print-overlay){display:none!important}
-  #inv-print-overlay{position:static!important;background:none!important;padding:0!important;overflow:visible!important}
-  #inv-print-overlay > div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
+  body > *{display:none!important}
+  #inv-print-overlay{display:block!important;position:static!important;background:none!important;padding:0!important;overflow:visible!important}
+  #inv-print-overlay > div{display:block!important;padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important;background:#fff!important}
   #inv-print-overlay > div > div:first-child{display:none!important}
+  #inv-print-content{display:block!important}
+  #inv-print-content *{display:revert}
   @page{margin:6mm;size:A4 landscape}
 }
 </style>
