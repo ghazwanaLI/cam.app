@@ -344,15 +344,7 @@ class Handler(BaseHTTPRequestHandler):
                 u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
                 if u_dists: items=[x for x in items if x.get("district") in u_dists]
             self.send_json({"ok":True,"items":items})
-        elif p=="/api/handover":
-            if "handover" not in db: db["handover"]=[]
-            if "next_handover_id" not in db: db["next_handover_id"]=1
-            hid=db["next_handover_id"]; db["next_handover_id"]+=1
-            item={**body,"id":hid,"created_by":u.get("fullname",""),"created_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
-            db["handover"].append(item); save_db(db)
-            op="تسليم مواد" if body.get("op_type")=="deliver" else "استلام مواد"
-            add_log_safe(u,op,f"{body.get('person','')} — {body.get('district','')}",self.ip())
-            self.send_json({"ok":True,"item":item})
+
         elif p=="/api/inv_buildings":
             if "inv_buildings" not in db: db["inv_buildings"]=[]
             if "next_inv_building_id" not in db: db["next_inv_building_id"]=1
@@ -633,6 +625,15 @@ class Handler(BaseHTTPRequestHandler):
                 save_file(key,body.get("name",""),body.get("data",""),body.get("mime",""))
                 self.send_json({"ok":True})
             except Exception as e: self.send_json({"error":str(e)},500)
+        elif p=="/api/handover":
+            if "handover" not in db: db["handover"]=[]
+            if "next_handover_id" not in db: db["next_handover_id"]=1
+            hid=db["next_handover_id"]; db["next_handover_id"]+=1
+            item={**body,"id":hid,"created_by":u.get("fullname",""),"created_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+            db["handover"].append(item); save_db(db)
+            op="تسليم مواد" if body.get("op_type")=="deliver" else "استلام مواد"
+            add_log_safe(u,op,f"{body.get('person','')} — {body.get('district','')}",self.ip())
+            self.send_json({"ok":True,"item":item})
         else: self.send_json({"error":"غير موجود"},404)
 
     def do_PUT(self):
