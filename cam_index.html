@@ -7090,7 +7090,9 @@ let allInvBuildings = [];
 async function loadInvBuildings(){
   try{
     const d = await api('GET','/api/inv_buildings');
-    allInvBuildings = d.items || d.inv_buildings || [];
+    allInvBuildings = d.items || [];
+    // احفظ نسخة في localStorage كـ fallback
+    localStorage.setItem('cam_inv_buildings', JSON.stringify(allInvBuildings));
   }catch(e){ allInvBuildings = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]'); }
   renderInvBuildings();
   // تحديث فلتر القاطع
@@ -7177,10 +7179,16 @@ async function saveInvBuilding(){
   };
   try{
     // حفظ في localStorage (يمكن ربطه بـ API لاحقاً)
-    const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
-    if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
-    else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
-    localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
+    try{
+      if(id) await api('PUT','/api/inv_buildings/'+id, body);
+      else    await api('POST','/api/inv_buildings', body);
+    }catch(e){
+      // offline fallback
+      const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+      if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
+      else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
+      localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
+    }
     closeModal('ov-inv-building');
     toast('تم الحفظ ✅');
     await loadInvBuildings();
@@ -7205,7 +7213,8 @@ let allInvPrivate = [];
 async function loadInvPrivate(){
   try{
     const d = await api('GET','/api/inv_private');
-    allInvPrivate = d.items || d.inv_private || [];
+    allInvPrivate = d.items || [];
+    localStorage.setItem('cam_inv_private', JSON.stringify(allInvPrivate));
   }catch(e){ allInvPrivate = JSON.parse(localStorage.getItem('cam_inv_private')||'[]'); }
   renderInvPrivate();
   const sel = document.getElementById('f-invp-district');
@@ -7292,10 +7301,15 @@ async function saveInvPrivate(){
     updated_at: new Date().toISOString().split('T')[0]
   };
   try{
-    const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
-    if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
-    else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
-    localStorage.setItem('cam_inv_private', JSON.stringify(list));
+    try{
+      if(id) await api('PUT','/api/inv_private/'+id, body);
+      else    await api('POST','/api/inv_private', body);
+    }catch(e){
+      const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+      if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
+      else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
+      localStorage.setItem('cam_inv_private', JSON.stringify(list));
+    }
     closeModal('ov-inv-private');
     toast('تم الحفظ ✅');
     await loadInvPrivate();
@@ -7452,8 +7466,19 @@ function _initInvBForm(x){
   _invbCamCount=0; _invbDvrCount=0;
   document.getElementById('invb-cam-body').innerHTML='';
   document.getElementById('invb-dvr-body').innerHTML='';
-  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
-  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
+  // cam_rows قد تكون string (من DB) أو array (من localStorage parsed)
+  let cams=[];
+  try{
+    const cr=x.cam_rows;
+    if(Array.isArray(cr)) cams=cr;
+    else if(cr) cams=JSON.parse(cr);
+  }catch(e){cams=[];}
+  let dvrs=[];
+  try{
+    const dr=x.dvr_rows;
+    if(Array.isArray(dr)) dvrs=dr;
+    else if(dr) dvrs=JSON.parse(dr);
+  }catch(e){dvrs=[];}
   if(cams.length) cams.forEach(r=>addInvBCamRow(r)); else addInvBCamRow();
   if(dvrs.length) dvrs.forEach(r=>addInvBDvrRow(r)); else addInvBDvrRow();
   const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
@@ -7470,218 +7495,6 @@ function _initInvPForm(x){
   if(dvrs.length) dvrs.forEach(r=>addInvPDvrRow(r)); else addInvPDvrRow();
   const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
   document.querySelectorAll('.invp-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
-}
-
-// ══ طباعة جرد البناية/المحطة الأهلية ══
-function printInvDetail(x, type){
-  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
-  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
-  const totalIn=cams.reduce((a,r)=>a+(+r.indoor||0),0);
-  const totalOut=cams.reduce((a,r)=>a+(+r.outdoor||0),0);
-  const total=totalIn+totalOut;
-  const now=new Date();
-  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
-  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
-  const dayStr=days[now.getDay()];
-  const pwList=['كهرباء وطني','مولد','UPS','طاقة شمسية'];
-  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
-  const pwHtml='<table style="border-collapse:collapse;border:none"><tr>'+pwList.map(p=>
-    `<td style="border:none;padding:1px 5px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">
-    <span style="width:12px;height:12px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900">${pwSaved.some(s=>s===p)?'&#10003;':''}</span>
-    <span style="font-size:9px;white-space:nowrap">${p}</span></span></td>`).join('')+'</tr></table>';
-
-  let camRows='';
-  for(let i=0;i<Math.max(cams.length,4);i++){
-    const r=cams[i]||{};
-    camRows+=`<tr style="height:18px">
-      <td style="text-align:center;border:1px solid #444;font-weight:800">${i+1}</td>
-      <td style="text-align:center;border:1px solid #444">${r.type||''}</td>
-      <td style="text-align:center;border:1px solid #444;font-weight:900;color:#166534">${r.indoor||''}</td>
-      <td style="text-align:center;border:1px solid #444;font-weight:900;color:#1d4ed8">${r.outdoor||''}</td>
-      <td style="text-align:center;border:1px solid #444">${r.lens&&r.lens!=='—'?r.lens:''}</td>
-      <td style="border:1px solid #444"></td></tr>`;
-  }
-  camRows+=`<tr style="background:#e5e7eb">
-    <td colspan="2" style="text-align:center;font-weight:800;border:1px solid #888">المجموع الكلي</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#166534">${totalIn}</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#1d4ed8">${totalOut}</td>
-    <td style="border:1px solid #888"></td>
-    <td style="text-align:center;font-weight:900;border:1px solid #888;color:#166534">الإجمالي: ${total} كاميرا</td></tr>`;
-
-  let dvrRows='';
-  for(let i=0;i<Math.max(dvrs.length,3);i++){
-    const r=dvrs[i]||{};
-    dvrRows+=`<tr style="height:18px">
-      <td style="text-align:center;border:1px solid #444;font-weight:800">${i+1}</td>
-      <td style="text-align:right;font-weight:700;border:1px solid #444;padding:2px 6px">${r.model||''}</td>
-      <td style="text-align:center;border:1px solid #444">${r.conn||''}</td>
-      <td style="text-align:center;font-weight:700;border:1px solid #444;color:#1d4ed8">${r.hdd_size||''}</td>
-      <td style="text-align:center;font-weight:700;border:1px solid #444;color:#7c3aed">${r.hdd_count||''}</td>
-      <td style="text-align:center;border:1px solid #444">${r.storage||''}</td>
-      <td style="padding:2px 4px;border:1px solid #444">${i===0?pwHtml:''}</td>
-      <td style="border:1px solid #444"></td></tr>`;
-  }
-
-  const typeLabel=type==='building'?'🏢 البنايات الحكومية':'🏪 المحطات الأهلية';
-  const ownerRow=type==='private'&&x.owner?`<tr><td style="padding:2px 6px;font-weight:700;background:#f8fafc;border:1px solid #aaa">صاحب المحطة :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">${x.owner||''}</td></tr>`:'';
-
-  const w=window.open('','_blank','width=900,height=700');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
-  <style>
-    *{margin:0;padding:0;box-sizing:border-box}
-    body{font-family:Arial,sans-serif;padding:10px;font-size:11px;direction:rtl}
-    .form-page{padding:14px;border:1px solid #999}
-    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:10px}
-    .co-name{font-size:15px;font-weight:900;text-align:center}
-    .co-sub{font-size:12px;font-weight:700;text-align:center;color:#333}
-    .sh{background:#222;color:#fff;font-weight:800;font-size:10px;padding:3px 8px;margin:6px 0 2px}
-    table{width:100%;border-collapse:collapse}
-    td,th{border:1px solid #aaa;padding:3px 6px;font-size:10px;vertical-align:middle}
-    th{background:#d5d5d5;font-weight:800;text-align:center}
-    .sig{display:flex;justify-content:space-between;margin-top:16px;gap:20px}
-    .sig-box{flex:1;text-align:center;border:1px solid #aaa;padding:6px}
-    .sig-line{border-bottom:1px solid #333;margin:22px 10px 4px}
-    .no-print{margin-bottom:10px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:7mm;size:A4}}
-  </style></head><body>
-  <div class="no-print">
-    <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
-    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
-  </div>
-  <div class="form-page">
-    <div class="hdr">
-      <div>
-        <div class="co-name">شركة توزيع المنتجات النفطية</div>
-        <div class="co-sub">فرع صلاح الدين</div>
-        <div class="co-sub">شعبة تقنية المعلومات — ${typeLabel}</div>
-      </div>
-      <div style="text-align:right">
-        <div style="font-size:11px;margin-bottom:3px">اليوم: ${dayStr} / التاريخ: ${dateStr}</div>
-        <div style="font-size:11px">استمارة جرد كاميرات المراقبة</div>
-      </div>
-    </div>
-    <table style="margin-bottom:8px">
-      <tr>
-        <td style="font-weight:700;background:#f5f5f5;width:100px">${type==='building'?'اسم البناية':'اسم المحطة'} :</td>
-        <td colspan="2" style="font-weight:700">${x.name||'—'}</td>
-        <td style="font-weight:700;background:#f5f5f5;width:80px">القاطع :</td>
-        <td colspan="2">${x.district||'—'}</td>
-      </tr>
-      ${ownerRow}
-      <tr>
-        <td style="font-weight:700;background:#f5f5f5">اسم الدائرة :</td>
-        <td colspan="5">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-      </tr>
-    </table>
-    <div class="sh">📷 جدول الكاميرات</div>
-    <table>
-      <thead><tr>
-        <th style="width:36px">التسلسل</th><th style="width:80px">نوع الكاميرا</th>
-        <th style="width:75px">عدد الداخلية</th><th style="width:75px">عدد الخارجية</th>
-        <th style="width:90px">حجم عدسة الكاميرا</th><th>الملاحظات</th>
-      </tr></thead>
-      <tbody>${camRows}</tbody>
-    </table>
-    <div class="sh" style="margin-top:8px">🎥 جدول أجهزة التسجيل الفيديوي</div>
-    <table>
-      <thead><tr>
-        <th style="width:36px">التسلسل</th><th>نوع جهاز التسجيل</th>
-        <th style="width:75px">طريقة الربط</th><th style="width:65px">سعة الهارد</th>
-        <th style="width:55px">عدد الهاردات</th><th style="width:100px">فترة التسجيل</th>
-        <th style="width:160px">مصدر الطاقة الكهربائية</th><th>الملاحظات</th>
-      </tr></thead>
-      <tbody>${dvrRows}</tbody>
-    </table>
-    ${x.notes?`<div style="margin-top:8px;border:1px solid #aaa;padding:6px"><b>ملاحظات:</b> ${x.notes}</div>`:''}
-    <div class="sig">
-      <div class="sig-box"><div class="sig-line"></div><div style="font-size:10px;font-weight:700">مسؤول وحدة الكاميرات</div></div>
-      <div class="sig-box"><div class="sig-line"></div><div style="font-size:10px;font-weight:700">مدير الفرع</div></div>
-    </div>
-    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:#666;border-top:1px solid #ddd;padding-top:4px">
-      <span>نظام إدارة كاميرات المراقبة — OPDC</span>
-      <span>شركة توزيع المنتجات النفطية / فرع صلاح الدين</span>
-      <span>${dateStr}</span>
-    </div>
-  </div></body></html>`);
-  w.document.close();
-}
-
-
-// ══ حساب إجمالي الكاميرات تلقائياً ══
-function calcInvBTotal(){
-  let ti=0,to=0;
-  for(let i=1;i<=5;i++){
-    ti+=+document.getElementById('invb-c'+i+'i')?.value||0;
-    to+=+document.getElementById('invb-c'+i+'o')?.value||0;
-  }
-  const e1=document.getElementById('invb-ti'); if(e1)e1.textContent=ti;
-  const e2=document.getElementById('invb-to'); if(e2)e2.textContent=to;
-  const e3=document.getElementById('invb-ta'); if(e3)e3.textContent=ti+to;
-}
-function calcInvPTotal(){
-  let ti=0,to=0;
-  for(let i=1;i<=5;i++){
-    ti+=+document.getElementById('invp-c'+i+'i')?.value||0;
-    to+=+document.getElementById('invp-c'+i+'o')?.value||0;
-  }
-  const e1=document.getElementById('invp-ti'); if(e1)e1.textContent=ti;
-  const e2=document.getElementById('invp-to'); if(e2)e2.textContent=to;
-  const e3=document.getElementById('invp-ta'); if(e3)e3.textContent=ti+to;
-}
-
-// ══ قراءة بيانات الفورم ══
-function _readInvForm(prefix){
-  const cams=[];
-  const labels=['2.8 mm','4 mm','6 mm','2.8mm-5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
-  for(let i=1;i<=5;i++){
-    cams.push({
-      label:labels[i-1],
-      indoor:+document.getElementById(prefix+'-c'+i+'i')?.value||0,
-      outdoor:+document.getElementById(prefix+'-c'+i+'o')?.value||0,
-      lens:document.getElementById(prefix+'-c'+i+'l')?.value||'',
-      note:document.getElementById(prefix+'-c'+i+'n')?.value||''
-    });
-  }
-  const dvrs=[];
-  for(let i=1;i<=4;i++){
-    dvrs.push({
-      model:document.getElementById(prefix+'-d'+i+'m')?.value||'',
-      conn:document.getElementById(prefix+'-d'+i+'c')?.value||'',
-      hdd_size:document.getElementById(prefix+'-d'+i+'h')?.value||'',
-      hdd_count:+document.getElementById(prefix+'-d'+i+'n')?.value||0,
-      storage:document.getElementById(prefix+'-d'+i+'s')?.value||'',
-      note:document.getElementById(prefix+'-d'+i+'t')?.value||''
-    });
-  }
-  const totalIn=cams.reduce((a,r)=>a+r.indoor,0);
-  const totalOut=cams.reduce((a,r)=>a+r.outdoor,0);
-  const pw=[...document.querySelectorAll('.'+prefix+'-pw-cb:checked')].map(c=>c.value).join(' + ')||'';
-  return {cams,dvrs,totalIn,totalOut,total:totalIn+totalOut,power_source:pw};
-}
-
-// ══ ملء الفورم عند التعديل ══
-function _fillInvForm(prefix, x){
-  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
-  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
-  for(let i=1;i<=5;i++){
-    const r=cams[i-1]||{};
-    const ei=document.getElementById(prefix+'-c'+i+'i'); if(ei)ei.value=r.indoor||0;
-    const eo=document.getElementById(prefix+'-c'+i+'o'); if(eo)eo.value=r.outdoor||0;
-    const el=document.getElementById(prefix+'-c'+i+'l'); if(el&&r.lens)el.value=r.lens;
-    const en=document.getElementById(prefix+'-c'+i+'n'); if(en)en.value=r.note||'';
-  }
-  for(let i=1;i<=4;i++){
-    const r=dvrs[i-1]||{};
-    const em=document.getElementById(prefix+'-d'+i+'m'); if(em)em.value=r.model||'';
-    const ec=document.getElementById(prefix+'-d'+i+'c'); if(ec)ec.value=r.conn||'IP شبكي';
-    const eh=document.getElementById(prefix+'-d'+i+'h'); if(eh)eh.value=r.hdd_size||'';
-    const en=document.getElementById(prefix+'-d'+i+'n'); if(en)en.value=r.hdd_count||0;
-    const es=document.getElementById(prefix+'-d'+i+'s'); if(es)es.value=r.storage||'';
-    const et=document.getElementById(prefix+'-d'+i+'t'); if(et)et.value=r.note||'';
-  }
-  const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
-  document.querySelectorAll('.'+prefix+'-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
-  if(prefix==='invb') calcInvBTotal(); else calcInvPTotal();
 }
 
 // ══ طباعة مطابقة للورقة ══
@@ -7832,6 +7645,62 @@ function printInvDetail(x, type){
     </div>
   </div></body></html>`);
   w.document.close();
+}
+
+
+function _readInvForm(prefix){
+  const cams=[];
+  const labels=['2.8 mm','4 mm','6 mm','2.8mm-5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
+  for(let i=1;i<=5;i++){
+    cams.push({
+      label:labels[i-1],
+      indoor: parseInt(document.getElementById(prefix+'-c'+i+'i')?.value)||0,
+      outdoor: parseInt(document.getElementById(prefix+'-c'+i+'o')?.value)||0,
+      lens: document.getElementById(prefix+'-c'+i+'l')?.value||'',
+      note: document.getElementById(prefix+'-c'+i+'n')?.value||''
+    });
+  }
+  const dvrs=[];
+  for(let i=1;i<=4;i++){
+    dvrs.push({
+      model: document.getElementById(prefix+'-d'+i+'m')?.value||'',
+      conn:  document.getElementById(prefix+'-d'+i+'c')?.value||'IP شبكي',
+      hdd_size: document.getElementById(prefix+'-d'+i+'h')?.value||'',
+      hdd_count: parseInt(document.getElementById(prefix+'-d'+i+'n')?.value)||0,
+      storage: document.getElementById(prefix+'-d'+i+'s')?.value||'',
+      note: document.getElementById(prefix+'-d'+i+'t')?.value||''
+    });
+  }
+  const totalIn  = cams.reduce((a,r)=>a+r.indoor,0);
+  const totalOut = cams.reduce((a,r)=>a+r.outdoor,0);
+  const pw = [...document.querySelectorAll('.'+prefix+'-pw-cb:checked')].map(c=>c.value).join(' + ')||'';
+  return {cams, dvrs, totalIn, totalOut, total:totalIn+totalOut, power_source:pw};
+}
+
+function _fillInvForm(prefix, x){
+  let cams=[];
+  try{ const cr=x.cam_rows; cams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]); }catch(e){cams=[];}
+  let dvrs=[];
+  try{ const dr=x.dvr_rows; dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]); }catch(e){dvrs=[];}
+  for(let i=1;i<=5;i++){
+    const r=cams[i-1]||{};
+    const ei=document.getElementById(prefix+'-c'+i+'i'); if(ei)ei.value=r.indoor||0;
+    const eo=document.getElementById(prefix+'-c'+i+'o'); if(eo)eo.value=r.outdoor||0;
+    const el=document.getElementById(prefix+'-c'+i+'l'); if(el&&r.lens)el.value=r.lens;
+    const en=document.getElementById(prefix+'-c'+i+'n'); if(en)en.value=r.note||'';
+  }
+  for(let i=1;i<=4;i++){
+    const r=dvrs[i-1]||{};
+    const em=document.getElementById(prefix+'-d'+i+'m'); if(em)em.value=r.model||'';
+    const ec=document.getElementById(prefix+'-d'+i+'c'); if(ec&&r.conn)ec.value=r.conn;
+    const eh=document.getElementById(prefix+'-d'+i+'h'); if(eh)eh.value=r.hdd_size||'';
+    const en2=document.getElementById(prefix+'-d'+i+'n'); if(en2)en2.value=r.hdd_count||0;
+    const es=document.getElementById(prefix+'-d'+i+'s'); if(es&&r.storage)es.value=r.storage;
+    const et=document.getElementById(prefix+'-d'+i+'t'); if(et)et.value=r.note||'';
+  }
+  const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
+  document.querySelectorAll('.'+prefix+'-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
+  if(prefix==='invb') calcInvBTotal(); else calcInvPTotal();
 }
 
 tryAutoLogin();</script>
