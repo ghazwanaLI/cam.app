@@ -7548,7 +7548,7 @@ async function updateActivityTicker(){
   try{
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
-    const tickerBar = document.getElementById('maint-ticker-bar');
+    const tickerBar = document.getElementById('ticker-wrap');
     const tickerContent = document.getElementById('maint-ticker-content');
     if(!tickerBar || !tickerContent) return;
 
@@ -7567,7 +7567,7 @@ async function updateActivityTicker(){
         +`</span>`;
     });
     tickerContent.innerHTML = items.join('<span style="margin:0 12px;color:rgba(255,255,255,.2)">◈</span>');
-    tickerBar.style.display = 'flex';
+    tickerBar.style.display = 'block';
 
     // تنبيه عاجل — أحدث إشعار غير مقروء urgent
     const unread = d.unread || 0;
@@ -7589,7 +7589,7 @@ function showUrgentAlert(n){
   alertText.textContent = `${getActionIcon(n.action)} ${n.user} — ${n.action}: ${n.details}`;
   alertDiv.style.background = `linear-gradient(90deg,${color}cc,${color},${color}cc)`;
   alertDiv.style.display = 'flex';
-  bar.style.display = 'flex';
+  bar.style.display = 'block';
   // إخفاء بعد 20 ثانية
   clearTimeout(window._urgentTimer);
   window._urgentTimer = setTimeout(()=>{ alertDiv.style.display='none'; }, 20000);
@@ -8855,18 +8855,23 @@ tryAutoLogin();</script>
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 20px rgba(0,0,0,.4);align-items:center;gap:10px;transition:background .5s">
-  <!-- تنبيه عاجل -->
-  <div id="urgent-alert" style="display:none;position:absolute;inset:0;background:linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d);z-index:1;align-items:center;justify-content:center;gap:10px;padding:0 12px;animation:urgentPulse 1s ease-in-out infinite">
-    <span style="font-size:16px;animation:shake .3s ease-in-out infinite">🚨</span>
-    <span id="urgent-text" style="font-weight:900;font-size:12px;color:#fff;letter-spacing:.3px"></span>
-    <span style="font-size:16px;animation:shake .3s ease-in-out infinite">🚨</span>
+<!-- الشريط الإخباري الكامل -->
+<div id="ticker-wrap" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;font-family:'Cairo',sans-serif;direction:rtl">
+  <!-- تنبيه عاجل — فوق الشريط -->
+  <div id="urgent-alert" style="display:none;background:linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d);color:#fff;padding:6px 14px;align-items:center;justify-content:center;gap:10px;animation:urgentPulse .8s ease-in-out infinite;border-bottom:1px solid rgba(255,255,255,.15)">
+    <span style="font-size:16px;animation:shake .25s ease-in-out infinite;flex-shrink:0">🚨</span>
+    <span id="urgent-text" style="font-weight:900;font-size:12px;letter-spacing:.3px;flex:1;text-align:center"></span>
+    <span style="font-size:16px;animation:shake .25s ease-in-out infinite;flex-shrink:0">🚨</span>
+    <button onclick="document.getElementById('urgent-alert').style.display='none'" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:5px;padding:1px 8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;flex-shrink:0">✕</button>
   </div>
-  <span id="ticker-label" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0;position:relative;z-index:2">📡 فعاليات المخولين</span>
-  <div style="overflow:hidden;flex:1;position:relative;height:20px;z-index:2">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite;display:flex;gap:0;align-items:center"></div>
+  <!-- شريط الأخبار الرئيسي -->
+  <div id="maint-ticker-bar" style="background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;box-shadow:0 -2px 20px rgba(0,0,0,.4);display:flex;align-items:center;gap:10px">
+    <span id="ticker-label" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
+    <div style="overflow:hidden;flex:1;position:relative;height:20px">
+      <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 40s linear infinite;display:flex;gap:0;align-items:center"></div>
+    </div>
+    <button onclick="document.getElementById('ticker-wrap').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
   </div>
-  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px;z-index:2;position:relative">✕</button>
 </div>
 <style>
 @keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.85}}
