@@ -4763,6 +4763,9 @@ async function initApp(){
     if(navField) navField.style.display=showField?'':'none';
     const mbnField=document.getElementById('mbn-field');
     if(mbnField) mbnField.style.display=showField?'':'none';
+    // استلام وتسليم — مدير فقط
+    const navHandover=document.getElementById('nav-handover');
+    if(navHandover) navHandover.style.display=isAdmin?'':'none';
     // إخفاء بطاقات الداشبورد
     ['dash-field-card','dash-maint-card'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=showField?'':'none';
