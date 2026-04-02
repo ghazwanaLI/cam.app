@@ -85,19 +85,20 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
   box-shadow:0 4px 12px rgba(29,78,216,.3);}
 .tb-name{font-size:14px;font-weight:800;color:#1d4ed8;line-height:1.3;}
 .tb-ver{font-size:10px;color:#94a3b8;margin-top:1px;}
-.tb-user{display:flex!important;align-items:center;gap:9px;background:#f8fafc;
-  border-radius:10px;padding:9px 10px;border:1px solid #f1f5f9;}
-.su-av{width:34px;height:34px;border-radius:9px;display:flex!important;align-items:center;
-  justify-content:center;font-size:14px;font-weight:800;flex-shrink:0;
-  background:linear-gradient(135deg,#eff6ff,#dbeafe);color:#1d4ed8;border:1.5px solid #bfdbfe;}
-.su-name{font-size:13px;font-weight:700;color:#1e293b;}
-.su-role{font-size:11px;color:#64748b;}
-.su-district{font-size:11px;color:#1d4ed8;font-weight:600;}
-.tb-actions{display:flex!important;gap:5px;margin-top:10px;padding:0 2px;}
-.tb-btn{flex:1;padding:7px 6px;border-radius:8px;border:1px solid #e2e8f0;
-  background:#f8fafc;color:#475569;font-family:'Cairo',sans-serif;
-  font-size:11px;cursor:pointer;transition:all .2s;text-align:center;}
-.tb-btn:hover{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
+.tb-user{overflow:hidden;border-radius:14px;background:linear-gradient(135deg,#0f172a,#1e3a5f);}
+.su-user-header{display:flex;align-items:center;gap:10px;padding:12px 14px;}
+.su-av{width:40px;height:40px;border-radius:50%;display:flex!important;align-items:center;
+  justify-content:center;font-size:16px;font-weight:900;flex-shrink:0;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:2px solid rgba(255,255,255,.2);}
+.su-name{font-size:13px;font-weight:800;color:#fff;}
+.su-role{font-size:10px;color:rgba(255,255,255,.55);margin-top:1px;}
+.su-district{font-size:10px;color:#60a5fa;font-weight:600;}
+.tb-actions{display:flex!important;gap:0;border-top:1px solid rgba(255,255,255,.08);}
+.tb-btn{flex:1;padding:9px 6px;border:none;border-left:1px solid rgba(255,255,255,.08);
+  background:transparent;color:rgba(255,255,255,.65);font-family:'Cairo',sans-serif;
+  font-size:11px;cursor:pointer;transition:all .2s;text-align:center;display:flex;align-items:center;justify-content:center;gap:4px;}
+.tb-btn:first-child{border-left:none;}
+.tb-btn:hover{background:rgba(255,255,255,.08);color:#fff;}
 
 /* قائمة التنقل */
 .topbar-nav{
@@ -900,16 +901,17 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
       <div class="tb-user">
-        <div class="su-av" id="su-av">م</div>
-        <div>
-          <div class="su-name" id="su-name">—</div>
-          <div class="su-role" id="su-role">—</div>
-          <div class="su-district" id="su-district"></div>
+        <div class="su-user-header">
+          <div class="su-av" id="su-av">م</div>
+          <div style="flex:1;min-width:0">
+            <div class="su-name" id="su-name">—</div>
+            <div class="su-role" id="su-role"></div>
+            <div class="su-district" id="su-district"></div>
+          </div>
         </div>
         <div class="tb-actions">
-
-          <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
-          <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
+          <button class="tb-btn" onclick="openChangePw()">🔑 كلمة المرور</button>
+          <button class="tb-btn" onclick="doLogout()" style="color:#fca5a5">🚪 خروج</button>
         </div>
       </div>
     </div>
