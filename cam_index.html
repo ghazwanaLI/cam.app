@@ -8659,6 +8659,7 @@ function renderHandover(){
       <td style="padding:7px 8px;${B};text-align:center;font-weight:800;color:#1d4ed8">${totalQty}</td>
       <td style="padding:7px 8px;${B};font-size:11px">${x.notes||''}</td>
       <td style="padding:7px 8px;${B};text-align:center">
+        ${can('edit')?`<button onclick="openHandoverModal('${x.op_type}',${x.id})" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">✏️</button>`:''}
         <button onclick="printHandover(${x.id})" title="طباعة" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">📄</button>
         ${can('del')?`<button onclick="delHandover(${x.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">🗑️</button>`:''}
       </td>
