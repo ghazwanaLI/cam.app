@@ -4101,11 +4101,12 @@ function printInvSingle(id){
     var inVal=parseInt(r.indoor)||0;
     var outVal=parseInt(r.outdoor)||0;
     camRows+='<tr style="height:18px">'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:13px;color:'+(inVal?'#166534':'#999')+'">'+(inVal||'')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#999')+'">'+(outVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:800;font-size:10px">'+(i+1)+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-size:10px;font-weight:700">'+(r.type||'IP')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:13px;color:'+(inVal?'#166534':'#ccc')+'">'+(inVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:13px;color:'+(outVal?'#1d4ed8':'#ccc')+'">'+(outVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens&&r.lens!=='—'?r.lens:'')+'</td>'+
-      '<td style="border:1px solid #444;font-size:10px">'+(r.note||'')+'</td></tr>';
+      '<td style="border:1px solid #444;font-size:10px;padding:2px 4px">'+(r.note||'')+'</td></tr>';
   });
   if(!filledCams.length){
     camRows='<tr><td colspan="6" style="text-align:center;border:1px solid #ddd;color:#999;padding:6px;font-size:10px">لا توجد بيانات</td></tr>';
@@ -4188,7 +4189,11 @@ function printInvSingle(id){
 
   '<div class="sh">&#128247; جدول الكاميرات</div>'+
   '<table><colgroup><col style="width:38px"><col style="width:90px"><col style="width:80px"><col style="width:80px"><col style="width:90px"><col></colgroup>'+
-  '<thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>عدد كاميرات الداخلية</th><th>عدد كاميرات الخارجية</th><th>حجم العدسة</th><th>الملاحظات</th></tr></thead>'+
+  '<thead><tr>'+
+  '<th style="width:34px">التسلسل</th><th style="width:70px">نوع الكاميرا</th>'+
+  '<th style="width:90px">عدد كاميرات الداخلية</th><th style="width:90px">عدد كاميرات الخارجية</th>'+
+  '<th style="width:85px">حجم العدسة</th><th>الملاحظات</th>'+
+  '</tr></thead>'+
   '<tbody>'+camRows+'</tbody>'+
   '<tfoot><tr>'+
     '<td colspan="2" style="text-align:center;font-weight:800;background:#ccc;border:1px solid #888">المجموع الكلي</td>'+
@@ -7773,8 +7778,8 @@ function printInvDetail(x, type){
     <table>
       <colgroup><col style="width:32px"><col style="width:120px"><col><col><col><col></colgroup>
       <thead><tr>
-        <th>التسلسل</th><th>نوع الكاميرا</th>
-        <th>عدد كاميرات الداخلية</th><th>عدد كاميرات الخارجية</th>
+        <th style="width:32px">التسلسل</th><th style="width:68px">نوع الكاميرا</th>
+        <th style="width:90px">عدد كاميرات الداخلية</th><th style="width:90px">عدد كاميرات الخارجية</th>
         <th>حجم عدسة الكاميرا</th><th>الملاحظات</th>
       </tr></thead>
       <tbody>${camRows}</tbody>
@@ -7992,6 +7997,29 @@ function updateInvpAddress(){
   if(cell) cell.textContent='محافظة صلاح الدين'+(dist?' — قضاء '+dist+' — مركز القضاء':'');
 }
 
+
+function openInvPrintWindow(){
+  const content = document.getElementById('inv-print-content')?.innerHTML||'';
+  if(!content){ toast('لا يوجد محتوى للطباعة','err'); return; }
+  const w = window.open('','_blank','width=1000,height=750');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head>
+    <meta charset="UTF-8">
+    <style>
+      *{margin:0;padding:0;box-sizing:border-box}
+      body{font-family:Arial,sans-serif;padding:10px;direction:rtl;background:#fff}
+      .no-print{margin-bottom:10px;display:flex;gap:8px;padding:8px;background:#f8fafc;border-radius:6px}
+      @media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}
+    </style>
+  </head><body>
+    <div class="no-print">
+      <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+      <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">✕ إغلاق</button>
+    </div>
+    ${content}
+  </body></html>`);
+  w.document.close();
+}
+
 tryAutoLogin();</script>
 
 
@@ -8014,7 +8042,7 @@ tryAutoLogin();</script>
 <div id="inv-print-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99999;overflow-y:auto;padding:20px">
   <div style="background:#fff;max-width:980px;margin:0 auto;padding:14px;border-radius:10px;box-shadow:0 20px 60px rgba(0,0,0,.4)">
     <div style="display:flex;gap:8px;margin-bottom:12px;align-items:center">
-      <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+      <button onclick="openInvPrintWindow()" style="background:#166534;color:#fff;border:none;padding:8px 24px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
       <button onclick="document.getElementById('inv-print-overlay').style.display='none'" style="padding:8px 16px;border:1px solid #aaa;border-radius:6px;cursor:pointer;font-size:13px">✕ إغلاق</button>
       <span style="font-size:11px;color:#64748b;margin-right:8px">معاينة قبل الطباعة</span>
     </div>
