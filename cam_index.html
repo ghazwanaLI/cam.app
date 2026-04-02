@@ -708,6 +708,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="lf"><label class="ll">كلمة المرور</label>
       <input class="li" id="li-p" type="password" placeholder="أدخل كلمة المرور" onkeydown="if(event.key==='Enter')doLogin()"></div>
     <button class="lbtn" id="lbtn" onclick="doLogin()">دخول ←</button>
+
     <button onclick="doGuestLogin()" style="width:100%;padding:11px;background:transparent;color:#64748b;border:1.5px solid #e2e8f0;border-radius:10px;font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;cursor:pointer;margin-top:8px;transition:all .2s" onmouseover="this.style.borderColor='#94a3b8';this.style.color='#475569'" onmouseout="this.style.borderColor='#e2e8f0';this.style.color='#64748b'">👁️ دخول كضيف</button>
     <div class="lhint">إعداد وبرمجة: Ghazwan Ali Alqaissi</div>
   </div>
@@ -2396,10 +2397,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <th style="padding:6px;border:1px solid #bfdbfe;text-align:center">الملاحظات</th>
           </tr></thead>
           <tbody>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">1</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1m" class="fi" placeholder="NVR 32-ch 16-HDD..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d1c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1h" class="fi" placeholder="8TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d1n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d1s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2m" class="fi" placeholder="NVR 16-ch 4-HDD..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d2c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2h" class="fi" placeholder="4TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d2n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d2s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">3</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d3c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d3n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d3s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d4c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d4n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d4s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">1</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1m" class="fi" placeholder="NVR 32-ch 16-HDD..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d1c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1h" class="fi" placeholder="8TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d1n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d1s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d1t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2m" class="fi" placeholder="NVR 16-ch 4-HDD..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d2c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2h" class="fi" placeholder="4TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d2n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d2s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d2t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">3</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d3c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d3n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d3s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d3t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d4c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invb-d4n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invb-d4s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invb-d4t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
           </tbody>
         </table>
         <div style="background:#eff6ff;border-top:1px solid #bfdbfe;padding:7px 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -2497,10 +2498,10 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <th style="padding:6px;border:1px solid #fde68a;text-align:center">الملاحظات</th>
           </tr></thead>
           <tbody>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">1</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1m" class="fi" placeholder="NVR 32-ch..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d1c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1h" class="fi" placeholder="8TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d1n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d1s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d2c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d2n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d2s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">3</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d3c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d3n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d3s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
-            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d4c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d4n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d4s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">1</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1m" class="fi" placeholder="NVR 32-ch..." style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d1c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1h" class="fi" placeholder="8TB" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d1n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d1s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d1t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d2c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d2n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d2s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d2t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">3</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d3c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d3n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d3s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d3t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
+            <tr><td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4</td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4m" class="fi" style="width:100%;font-size:11px;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d4c" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option>IP شبكي</option><option>Coaxial</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4h" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="number" id="invp-d4n" min="0" value="0" class="fi" style="width:100%;font-size:11px;text-align:center;padding:4px"></td><td style="border:1px solid #ddd;padding:2px 4px"><select id="invp-d4s" class="fi" dir="rtl" style="width:100%;font-size:11px;padding:4px"><option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option></select></td><td style="border:1px solid #ddd;padding:2px 4px"><input type="text" id="invp-d4t" class="fi" style="width:100%;font-size:11px;padding:4px"></td></tr>
           </tbody>
         </table>
         <div style="background:#fffbeb;border-top:1px solid #fde68a;padding:7px 12px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
@@ -2818,7 +2819,6 @@ async function tryAutoLogin(){
   await initApp();
   showOfflineBanner();
 }
-
 function showMiniLogin(errMsg){
   let ov=document.getElementById('mini-login-ov');
   if(!ov){
@@ -3871,7 +3871,7 @@ function reindexCamRows(){
 function addDvrRow(data={}){
   const tb=document.getElementById('inv-dvr-body');if(!tb)return;
   const idx=tb.rows.length+1;
-  const storOpts=['—','7 أيام','14 يوم','30 يوم','60 يوم','90 يوم','أكثر من 90 يوم']
+  const storOpts=['—','90 يوم فما فوق','6 أشهر فما فوق']
     .map(o=>`<option value="${o==='—'?'':o}"${(data.storage||'')===(o==='—'?'':o)?' selected':''}>${o}</option>`).join('');
   const tr=document.createElement('tr');
   tr.innerHTML=`
@@ -4077,26 +4077,26 @@ function printInvSingle(id){
   // إذا cam_indoor وcam_outdoor صفر لكن cam_count موجود، اعرض الإجمالي في indoor
   if(total>0 && camIn===0 && camOut===0){ camIn=total; }
 
-  // صفوف ثابتة 5 أنواع مطابقة للورقة
-  var camLabels=['2.8 mm','4 mm','6 mm','2.8mm - 5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
+  // طباعة الصفوف المملوءة فقط
   var camRows='';
-  for(var i=0;i<5;i++){
-    var r=cams[i]||{indoor:0,outdoor:0,lens:'',note:''};
-    var lbl=r.label||camLabels[i];
-    var inVal=r.indoor||0;
-    var outVal=r.outdoor||0;
+  var filledCams=cams.filter(function(r){ return (r.indoor||0)>0 || (r.outdoor||0)>0 || r.lens || r.note; });
+  filledCams.forEach(function(r,i){
+    var inVal=parseInt(r.indoor)||0;
+    var outVal=parseInt(r.outdoor)||0;
     camRows+='<tr style="height:18px">'+
       '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.type||'IP')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:12px;color:'+(inVal?'#166534':'#ccc')+'">'+(inVal||'')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#ccc')+'">'+(outVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:12px;color:'+(inVal?'#166534':'#999')+'">'+(inVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#999')+'">'+(outVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens&&r.lens!=='—'?r.lens:'')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens||'')+'</td>'+
       '<td style="border:1px solid #444;font-size:10px">'+(r.note||'')+'</td></tr>';
+  });
+  if(!filledCams.length){
+    camRows='<tr><td colspan="6" style="text-align:center;border:1px solid #ddd;color:#999;padding:6px;font-size:10px">لا توجد بيانات</td></tr>';
   }
 
   // مصدر الطاقة
-  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية','بطاريات'];
+  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
   var pwSaved=(x.power_source||x.power||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
   var pwHtml='<table style="border-collapse:collapse;border:none"><tr>';
   pwList.forEach(function(p){
@@ -4166,17 +4166,19 @@ function printInvSingle(id){
     try{ var dr=x.dvr_rows; dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]); }catch(e){}
     if(!dvrs.length) dvrs=[{model:dvr,conn:conn,hdd_size:x.hdd_size||'',hdd_count:hddCount,storage:storage}];
     var dvrBody='<tbody>';
-    for(var d=0;d<Math.max(dvrs.length,4);d++){
-      var dr=dvrs[d]||{};
-      var hs=dr.hdd_size?dr.hdd_size+' TB':'—';
+    var filledDvrs=dvrs.filter(function(r){ return r.model||r.hdd_size||r.storage; });
+    if(!filledDvrs.length && dvr) filledDvrs=[{model:dvr,conn:conn,hdd_size:x.hdd_size||'',hdd_count:hddCount,storage:storage}];
+    for(var d=0;d<filledDvrs.length;d++){
+      var dr=filledDvrs[d]||{};
+      var hs=dr.hdd_size?dr.hdd_size:'—';
       dvrBody+='<tr style="height:18px">'+
         '<td style="text-align:center;font-weight:800;border:1px solid #444">'+(d+1)+'</td>'+
-        '<td style="text-align:right;font-weight:700;border:1px solid #444;font-size:10px">'+(dr.model||'')+'</td>'+
+        '<td style="text-align:right;font-weight:700;border:1px solid #444;font-size:10px;direction:rtl">'+(dr.model||'')+'</td>'+
         '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(dr.conn||'')+'</td>'+
         '<td style="text-align:center;font-weight:700;color:#1d4ed8;border:1px solid #444;font-size:10px">'+hs+'</td>'+
         '<td style="text-align:center;font-weight:700;color:#7c3aed;border:1px solid #444;font-size:10px">'+(dr.hdd_count||'')+'</td>'+
         '<td style="text-align:center;font-weight:700;color:#166534;border:1px solid #444;font-size:10px">'+(dr.storage||'')+'</td>'+
-        '<td style="padding:3px 5px;border:1px solid #444">'+(d===0?pwHtml:'')+'</td>'+
+        '<td style="padding:3px 5px;border:1px solid #444">'+(d<=1?pwHtml:'')+'</td>'+
         '<td style="border:1px solid #444;font-size:10px">'+(d===0?notes:'')+'</td>'+
       '</tr>';
     }
@@ -4305,6 +4307,7 @@ async function initApp(){
     if(av) av.textContent = (CU.fullname||'م')[0];
     if(nm) nm.textContent = CU.fullname||'';
     if(rl) rl.textContent = CU.role==='admin' ? '🔑 مدير النظام' : 'مستخدم';
+
     if(dt) dt.textContent = CU.district||'';
     // تشغيل الإشعارات للمدير
     if(CU.role==='admin') startNotifPolling();
@@ -7235,20 +7238,7 @@ function openInvBuildingForm(id){
   ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
   filterInvBuildingStations();
   if(x.station_id) setTimeout(()=>{const ss=document.getElementById('invb-station');if(ss)ss.value=x.station_id;},80);
-  // ── DEBUG TOAST ──
-  if(id){
-    let dbgCams=[];
-    try{
-      const cr=x.cam_rows;
-      dbgCams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);
-    }catch(e){}
-    const dbgTxt='ID:'+String(x.id||'?')+
-      ' | cam_rows:'+(x.cam_rows?'✅':'❌')+
-      ' | cam[0].indoor='+(dbgCams[0]?.indoor??'N/A')+
-      ' | cam[1].indoor='+(dbgCams[1]?.indoor??'N/A');
-    toast(dbgTxt, dbgCams.length?'ok':'err');
-    console.log('openInvBuildingForm DEBUG:', JSON.stringify(x).substring(0,500));
-  }
+
   _fillInvForm('invb', x);
   document.getElementById('ov-inv-building').classList.add('open');
 }
@@ -7377,11 +7367,13 @@ function filterInvPrivate(){ renderInvPrivate(); }
 
 function openInvPrivateForm(id){
   let x = null;
-  try{
-    const lsP=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
-    x=lsP.find(r=>String(r.id)===String(id))||null;
-  }catch(e){}
-  if(!x && id) x=allInvPrivate.find(r=>String(r.id)===String(id))||null;
+  if(id){
+    try{
+      const lsP=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+      x=lsP.find(r=>String(r.id)===String(id))||null;
+    }catch(e){}
+    if(!x) x=allInvPrivate.find(r=>String(r.id)===String(id))||null;
+  }
   x = x || {};
   document.getElementById('invp-eid').value = id||'';
   document.getElementById('invp-ttl').textContent = id ? 'تعديل جرد محطة أهلية' : 'إضافة جرد محطة أهلية';
@@ -7500,7 +7492,7 @@ function addInvBDvrRow(data={}){
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invb-dh-${i}" value="${data.hdd_size||''}" placeholder="8TB..." style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invb-dn-${i}" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
     <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invb-ds-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">
-      <option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+      <option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option>
     </select></td>
     <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invb-dvr-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
   if(data.storage) tr.querySelector(`#invb-ds-${i}`).value=data.storage;
@@ -7567,7 +7559,7 @@ function addInvPDvrRow(data={}){
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invp-dh-${i}" value="${data.hdd_size||''}" placeholder="4TB..." style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invp-dn-${i}" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
     <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invp-ds-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">
-      <option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+      <option value="">—</option><option value="90 يوم فما فوق">90 يوم فما فوق</option><option value="6 أشهر فما فوق">6 أشهر فما فوق</option>
     </select></td>
     <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invp-dvr-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
   if(data.storage) tr.querySelector(`#invp-ds-${i}`).value=data.storage;
@@ -7809,6 +7801,27 @@ function _readInvForm(prefix){
   const totalOut = cams.reduce((a,r)=>a+r.outdoor,0);
   const pw = [...document.querySelectorAll('.'+prefix+'-pw-cb:checked')].map(c=>c.value).join(' + ')||'';
   return {cams, dvrs, totalIn, totalOut, total:totalIn+totalOut, power_source:pw};
+}
+
+function calcInvBTotal(){
+  let ti=0,to=0;
+  for(let i=1;i<=5;i++){
+    ti+=parseInt(document.getElementById('invb-c'+i+'i')?.value)||0;
+    to+=parseInt(document.getElementById('invb-c'+i+'o')?.value)||0;
+  }
+  const e1=document.getElementById('invb-ti'); if(e1)e1.textContent=ti;
+  const e2=document.getElementById('invb-to'); if(e2)e2.textContent=to;
+  const e3=document.getElementById('invb-ta'); if(e3)e3.textContent=ti+to;
+}
+function calcInvPTotal(){
+  let ti=0,to=0;
+  for(let i=1;i<=5;i++){
+    ti+=parseInt(document.getElementById('invp-c'+i+'i')?.value)||0;
+    to+=parseInt(document.getElementById('invp-c'+i+'o')?.value)||0;
+  }
+  const e1=document.getElementById('invp-ti'); if(e1)e1.textContent=ti;
+  const e2=document.getElementById('invp-to'); if(e2)e2.textContent=to;
+  const e3=document.getElementById('invp-ta'); if(e3)e3.textContent=ti+to;
 }
 
 function _fillInvForm(prefix, x){
