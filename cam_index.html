@@ -4,40 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>نظام إدارة الكاميرات V2</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-:root { --sidebar-w: 260px; --p1: #1d4ed8; --bg: #f1f5f9; --text: #0f172a; --card: #ffffff; --border: #e2e8f0; }
-* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
-body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; overflow-x: hidden; }
-
-/* Sidebar */
-.sidebar { width: var(--sidebar-w); background: #0f172a; color: #fff; height: 100vh; position: fixed; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; box-shadow: -2px 0 10px rgba(0,0,0,0.1); }
-.sb-logo { padding: 25px 20px; text-align: center; font-weight: 800; font-size: 20px; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.05); }
-.sb-nav { flex: 1; overflow-y: auto; padding: 15px 0; }
-.nav-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; color: #94a3b8; font-weight: 600; font-size: 14px; }
-.nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.08); color: #fff; }
-.nav-item.active { border-right: 4px solid var(--p1); background: rgba(29,78,216,0.1); }
-.nav-group-header { display: flex; justify-content: space-between; width: 100%; align-items: center; }
-.nav-sub { background: #1e293b; display: none; padding: 5px 0; }
-.nav-group.open .nav-sub { display: block; }
-.nav-group.open .arrow { transform: rotate(180deg); }
-.nav-sub-item { padding: 10px 45px; font-size: 13px; color: #64748b; cursor: pointer; transition: 0.2s; }
-.nav-sub-item:hover { color: #fff; }
-
-/* Content Area */
-.main-content { margin-right: var(--sidebar-w); flex: 1; padding: 30px; width: calc(100% - var(--sidebar-w)); }
-.dashboard-title { margin-bottom: 25px; font-weight: 800; font-size: 22px; color: var(--p1); }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px; }
-.stat-card { background: var(--card); border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-right: 6px solid #ddd; transition: 0.3s; }
-.stat-card.gov { border-color: #1d4ed8; }
-.stat-card.priv { border-color: #d97706; }
-.stat-card.maint { border-color: #dc2626; }
-.stat-card.rep { border-color: #7c3aed; }
-.card-val { font-size: 32px; font-weight: 900; margin: 5px 0; }
-.card-lbl { font-size: 14px; font-weight: 700; color: #64748b; }
-.tab-content { display: none; animation: fadeIn 0.4s ease; }
-.tab-content.active { display: block; }
-@keyframes fadeIn { from {opacity: 0; transform: translateY(10px);} to {opacity: 1; transform: translateY(0);} }
+    :root { --sidebar-w: 260px; --p1: #1d4ed8; --bg: #f1f5f9; --text: #0f172a; --card: #ffffff; }
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; min-height: 100vh; }
+    .sidebar { width: var(--sidebar-w); background: #0f172a; color: #fff; height: 100vh; position: fixed; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; }
+    .sb-logo { padding: 25px 20px; text-align: center; font-weight: 800; font-size: 20px; background: #1e293b; border-bottom: 1px solid rgba(255,255,255,0.05); }
+    .sb-nav { flex: 1; overflow-y: auto; padding: 15px 0; }
+    .nav-item { padding: 12px 20px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.3s; color: #94a3b8; font-size: 14px; }
+    .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.08); color: #fff; }
+    .nav-item.active { border-right: 4px solid var(--p1); }
+    .nav-sub { background: #1e293b; display: none; }
+    .nav-group.open .nav-sub { display: block; }
+    .nav-sub-item { padding: 10px 45px; font-size: 13px; color: #64748b; cursor: pointer; }
+    .main-content { margin-right: var(--sidebar-w); flex: 1; padding: 30px; width: calc(100% - var(--sidebar-w)); }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+    .stat-card { background: var(--card); border-radius: 16px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-right: 6px solid #ddd; }
+    .stat-card.gov { border-color: #1d4ed8; }
+    .stat-card.priv { border-color: #d97706; }
+    .card-val { font-size: 32px; font-weight: 900; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; margin-top: 20px; }
+    th, td { padding: 12px; text-align: right; border-bottom: 1px solid #eee; }
+    th { background: #f8fafc; color: #64748b; }
 </style>
 </head>
 <body>
@@ -46,77 +37,56 @@ body { background: var(--bg); color: var(--text); display: flex; min-height: 100
     <div class="sb-nav">
         <div class="nav-item active" onclick="showTab('dashboard', this)"><span>🏠</span> لوحة التحكم</div>
         <div class="nav-group" id="gr-st">
-            <div class="nav-item nav-group-header" onclick="toggleGroup('gr-st')"><div><span>⛽</span> المحطات</div><span class="arrow">▾</span></div>
+            <div class="nav-item" onclick="toggleGroup('gr-st')"><span>⛽</span> المحطات ▾</div>
             <div class="nav-sub">
-                <div class="nav-sub-item" onclick="showTab('st-gov', this)">🏛️ محطة حكومية</div>
+                <div class="nav-sub-item" onclick="showTab('st-gov', this)">🏛️ محطات حكومية</div>
                 <div class="nav-sub-item" onclick="showTab('st-priv', this)">🏪 محطات أهلية</div>
-                <div class="nav-sub-item" onclick="alert('فتح نافذة الإضافة')">➕ إضافة محطة</div>
             </div>
         </div>
-        <div class="nav-group" id="gr-maint">
-            <div class="nav-item nav-group-header" onclick="toggleGroup('gr-maint')"><div><span>🔧</span> الصيانة</div><span class="arrow">▾</span></div>
-            <div class="nav-sub">
-                <div class="nav-sub-item" onclick="showTab('maint-gov', this)">🏛️ صيانة حكومية</div>
-                <div class="nav-sub-item" onclick="showTab('maint-priv', this)">🏪 صيانة أهلية</div>
-            </div>
-        </div>
-        <div class="nav-group" id="gr-inv">
-            <div class="nav-item nav-group-header" onclick="toggleGroup('gr-inv')"><div><span>📦</span> جرد الكاميرات</div><span class="arrow">▾</span></div>
-            <div class="nav-sub">
-                <div class="nav-sub-item" onclick="showTab('inv-gov', this)">🏛️ جرد حكومي</div>
-                <div class="nav-sub-item" onclick="showTab('inv-priv', this)">🏪 جرد أهلي</div>
-            </div>
-        </div>
-        <div class="nav-group" id="gr-code">
-            <div class="nav-item nav-group-header" onclick="toggleGroup('gr-code')"><div><span>🏷️</span> الترميز</div><span class="arrow">▾</span></div>
-            <div class="nav-sub">
-                <div class="nav-sub-item" onclick="showTab('code-gov', this)">🏛️ ترميز حكومي</div>
-                <div class="nav-sub-item" onclick="showTab('code-priv', this)">🏪 ترميز أهلي</div>
-                <div class="nav-sub-item" onclick="showTab('code-fact', this)">🏭 ترميز معامل</div>
-            </div>
-        </div>
-        <div class="nav-item" onclick="showTab('circulars', this)"><span>📢</span> التعاميم</div>
-        <div class="nav-item" onclick="showTab('users', this)"><span>🔐</span> المستخدمون</div>
         <div class="nav-item" onclick="showTab('reports', this)"><span>📊</span> التقارير</div>
-        <div class="nav-item" onclick="showTab('logs', this)"><span>📋</span> السجل</div>
     </div>
 </div>
 
 <div class="main-content">
     <div id="tab-dashboard" class="tab-content active">
-        <h2 class="dashboard-title">لوحة التحكم</h2>
+        <h2 style="margin-bottom:20px">لوحة التحكم</h2>
         <div class="stats-grid">
-            <div class="stat-card gov"><div class="card-lbl">المحطات الحكومية</div><div class="card-val" id="s-gov-count">0</div><div id="s-gov-m" style="font-size:12px;color:#94a3b8">الصيانات: 0</div></div>
-            <div class="stat-card priv"><div class="card-lbl">المحطات الأهلية</div><div class="card-val" id="s-priv-count">0</div><div id="s-priv-m" style="font-size:12px;color:#94a3b8">الصيانات: 0</div></div>
-            <div class="stat-card maint"><div class="card-lbl">إجمالي الصيانات</div><div class="card-val" id="s-total-m">0</div></div>
-            <div class="stat-card rep"><div class="card-lbl">التقارير</div><div class="card-val" id="s-total-r">0</div></div>
+            <div class="stat-card gov"><div style="font-weight:700">المحطات الحكومية</div><div class="card-val" id="s-gov-count">0</div><div id="s-gov-m" style="font-size:12px;color:#94a3b8">الصيانات: 0</div></div>
+            <div class="stat-card priv"><div style="font-weight:700">المحطات الأهلية</div><div class="card-val" id="s-priv-count">0</div><div id="s-priv-m" style="font-size:12px;color:#94a3b8">الصيانات: 0</div></div>
+            <div class="stat-card" style="border-color:#dc2626"><div style="font-weight:700">إجمالي الصيانات</div><div class="card-val" id="s-total-m">0</div></div>
         </div>
     </div>
-    <div id="tab-st-gov" class="tab-content"><h2 class="dashboard-title">المحطات الحكومية</h2><div id="gov-list">جاري التحميل...</div></div>
+    <div id="tab-st-gov" class="tab-content">
+        <h2>قائمة المحطات الحكومية</h2>
+        <table id="gov-table"><thead><tr><th>اسم المحطة</th><th>القاطع</th><th>النوع</th></tr></thead><tbody id="gov-list-body"></tbody></table>
+    </div>
 </div>
 
 <script>
-let TOKEN = localStorage.getItem('cam_token') || '';
-async function fetchStats() {
-    try {
-        const r = await fetch('/api/stats_v2', { headers: {'Authorization': 'Bearer '+TOKEN} });
-        const d = await r.json();
-        document.getElementById('s-gov-count').textContent = d.gov.count;
-        document.getElementById('s-gov-m').textContent = "الصيانات: " + d.gov.maint;
-        document.getElementById('s-priv-count').textContent = d.priv.count;
-        document.getElementById('s-priv-m').textContent = "الصيانات: " + d.priv.maint;
-        document.getElementById('s-total-m').textContent = d.total_maint;
-        document.getElementById('s-total-r').textContent = d.total_reports;
-    } catch(e) { console.error(e); }
-}
-function toggleGroup(id) { document.querySelectorAll('.nav-group').forEach(g => { if(g.id===id) g.classList.toggle('open'); else g.classList.remove('open'); }); }
-function showTab(id, el) {
-    document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-    document.getElementById('tab-'+id).classList.add('active');
-    document.querySelectorAll('.nav-item, .nav-sub-item').forEach(i => i.classList.remove('active'));
-    el.classList.add('active');
-}
-window.onload = fetchStats;
+    async function loadData() {
+        try {
+            const resStats = await fetch('/api/stats_v2');
+            const d = await resStats.json();
+            document.getElementById('s-gov-count').textContent = d.gov.count;
+            document.getElementById('s-gov-m').textContent = "الصيانات: " + d.gov.maint;
+            document.getElementById('s-priv-count').textContent = d.priv.count;
+            document.getElementById('s-priv-m').textContent = "الصيانات: " + d.priv.maint;
+            document.getElementById('s-total-m').textContent = d.total_maint;
+
+            const resSts = await fetch('/api/stations');
+            const sts = await resSts.json();
+            const govList = sts.stations.filter(s => s.type === 'حكومية');
+            document.getElementById('gov-list-body').innerHTML = govList.map(s => `<tr><td>${s.name}</td><td>${s.district}</td><td>${s.type}</td></tr>`).join('');
+        } catch(e) { console.error(e); }
+    }
+    function toggleGroup(id) { document.getElementById(id).classList.toggle('open'); }
+    function showTab(id, el) {
+        document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+        document.getElementById('tab-'+id).classList.add('active');
+        document.querySelectorAll('.nav-item, .nav-sub-item').forEach(i => i.classList.remove('active'));
+        if(el) el.classList.add('active');
+    }
+    window.onload = loadData;
 </script>
 </body>
 </html>
