@@ -300,6 +300,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
    RESPONSIVE — tablet + phone + iPhone
    ════════════════════════════════════ */
 
+/* ── Scrollbar عريض ── */
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#f1f5f9;border-radius:4px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+::-webkit-scrollbar-thumb:hover{background:#94a3b8}
+/* ── نبضة المستخدم الحالي ── */
+@keyframes userPulse{0%,100%{box-shadow:0 0 0 0 rgba(34,197,94,.4)}50%{box-shadow:0 0 0 6px rgba(34,197,94,0)}}
+.user-online-pulse{animation:userPulse 2s infinite}
 /* ── Tablet landscape 768-1024 ── */
 @media(max-width:1024px){
   .stats-grid{grid-template-columns:repeat(2,1fr);gap:12px;}
@@ -1538,9 +1546,15 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px">إدارة المستخدمين</div>
                 <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">التحكم في الوصول والصلاحيات</div>
               </div>
-              <button onclick="openUserModal()" style="background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
-                <span style="font-size:16px">＋</span> إضافة مستخدم
-              </button>
+              <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+                <div style="position:relative">
+                  <input id="user-search" type="text" placeholder="🔍 بحث عن مستخدم..." oninput="renderUsers()" style="background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:9px 14px 9px 36px;border-radius:10px;font-family:Cairo,sans-serif;font-size:12px;width:200px;outline:none" onfocus="this.style.background='rgba(255,255,255,.2)'" onblur="this.style.background='rgba(255,255,255,.12)'">
+                  <span style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:14px;pointer-events:none">🔍</span>
+                </div>
+                <button onclick="openUserModal()" style="background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 18px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;white-space:nowrap;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                  <span>＋</span> إضافة
+                </button>
+              </div>
             </div>
             <!-- Stats bar -->
             <div id="users-stats" style="position:relative;display:flex;gap:16px;margin-top:18px;flex-wrap:wrap"></div>
@@ -2166,46 +2180,65 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
       <!-- الصلاحيات -->
       <div id="u-perms" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
-        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">الصلاحيات</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:16px">✏️</span>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700;color:#1e293b">تعديل</div>
-                <div style="font-size:10px;color:#94a3b8">إضافة وتعديل السجلات</div>
-              </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px">الصلاحيات</div>
+          <button type="button" onclick="toggleAllPerms()" style="font-size:10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700">تحديد الكل</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">✏️</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعديل</div><div style="font-size:9px;color:#94a3b8">إضافة وتعديل</div></div>
               <div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div>
             </div>
           </div>
-          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:16px">🗑️</span>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700;color:#1e293b">حذف</div>
-                <div style="font-size:10px;color:#94a3b8">حذف السجلات</div>
-              </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🗑️</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">حذف</div><div style="font-size:9px;color:#94a3b8">حذف السجلات</div></div>
               <div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div>
             </div>
           </div>
-          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:16px">📎</span>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700;color:#1e293b">ملفات</div>
-                <div style="font-size:10px;color:#94a3b8">رفع الصور والمستندات</div>
-              </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📎</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">ملفات</div><div style="font-size:9px;color:#94a3b8">رفع الصور</div></div>
               <div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div>
             </div>
           </div>
-          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
-            <div style="display:flex;align-items:center;gap:8px">
-              <span style="font-size:16px">📊</span>
-              <div style="flex:1">
-                <div style="font-size:12px;font-weight:700;color:#1e293b">تقارير</div>
-                <div style="font-size:10px;color:#94a3b8">عرض التقارير والجرد</div>
-              </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📊</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تقارير</div><div style="font-size:9px;color:#94a3b8">عرض التقارير</div></div>
               <div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📦</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جرد</div><div style="font-size:9px;color:#94a3b8">جرد الكاميرات</div></div>
+              <div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🚗</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جولات</div><div style="font-size:9px;color:#94a3b8">إدارة الجولات</div></div>
+              <div class="tog" id="p-tours" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🔧</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">صيانة</div><div style="font-size:9px;color:#94a3b8">طلبات الصيانة</div></div>
+              <div class="tog" id="p-maint" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📢</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعاميم</div><div style="font-size:9px;color:#94a3b8">إرسال التعاميم</div></div>
+              <div class="tog" id="p-circulars" onclick="this.classList.toggle('on')"></div>
             </div>
           </div>
         </div>
@@ -5479,10 +5512,16 @@ function renderUsers(){
   }
 
   const ROLE_COLORS={admin:'linear-gradient(135deg,#7c3aed,#9333ea)',viewer:'linear-gradient(135deg,#0891b2,#06b6d4)'};
-  const PERM_INFO={edit:{icon:'✏️',label:'تعديل',color:'#1d4ed8'},del:{icon:'🗑️',label:'حذف',color:'#dc2626'},files:{icon:'📎',label:'ملفات',color:'#d97706'},reports:{icon:'📊',label:'تقارير',color:'#16a34a'}};
+  const PERM_INFO={edit:{icon:'✏️',label:'تعديل'},del:{icon:'🗑️',label:'حذف'},files:{icon:'📎',label:'ملفات'},reports:{icon:'📊',label:'تقارير'},inventory:{icon:'📦',label:'جرد'},tours:{icon:'🚗',label:'جولات'},maint:{icon:'🔧',label:'صيانة'},circulars:{icon:'📢',label:'تعاميم'}};
 
-  cards.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">'+
-  allUsers.map(u=>{
+  const q=(document.getElementById('user-search')?.value||'').toLowerCase();
+  const filtered=allUsers.filter(u=>!q||u.fullname?.toLowerCase().includes(q)||u.username?.toLowerCase().includes(q)||u.district?.toLowerCase().includes(q));
+  if(!filtered.length){
+    cards.innerHTML='<div style="text-align:center;padding:40px;color:#94a3b8"><div style="font-size:36px;margin-bottom:8px">🔍</div><div style="font-size:14px;font-weight:600">لا يوجد نتائج</div></div>';
+    return;
+  }
+  cards.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px">'+
+  filtered.map(u=>{
     const isAdmin=u.role==='admin';
     const isActive=u.active!==false;
     const perms=u.perms||{};
@@ -5492,48 +5531,37 @@ function renderUsers(){
     const permList=isAdmin?Object.keys(PERM_INFO):Object.keys(PERM_INFO).filter(k=>perms[k]);
     const districts=Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
 
-    return `<div style="background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid #f1f5f9;overflow:hidden;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(0,0,0,.07)'">
+    const isMe = u.id===CU?.id;
+    return `<div style="background:#fff;border-radius:14px;box-shadow:0 1px 8px rgba(0,0,0,.07);border:${isMe?'2px solid #22c55e':'1px solid #f1f5f9'};overflow:hidden;transition:transform .18s,box-shadow .18s;position:relative" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.11)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 8px rgba(0,0,0,.07)'">
+      ${isMe?'<div style="position:absolute;top:8px;left:8px;z-index:2;background:#22c55e;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;display:flex;align-items:center;gap:3px"><span class=\"user-online-pulse\" style=\"display:inline-block;width:6px;height:6px;background:#fff;border-radius:50%\"></span>أنت</div>':''}
       <!-- Card Header -->
-      <div style="background:${grad};padding:20px;position:relative">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;font-family:Cairo,sans-serif">${initial}</div>
-            <div>
-              <div style="font-size:15px;font-weight:800;color:#fff">${u.fullname||'—'}</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.75);font-family:monospace">@${u.username||'—'}</div>
-            </div>
+      <div style="background:${grad};padding:14px 14px 10px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;font-family:Cairo,sans-serif;flex-shrink:0">${initial}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.fullname||'—'}</div>
+            <div style="font-size:10px;color:rgba(255,255,255,.7);font-family:monospace">@${u.username||'—'}</div>
           </div>
-          <div style="background:${isActive?'rgba(0,255,100,.2)':'rgba(255,0,0,.2)'};border:1px solid ${isActive?'rgba(0,255,100,.4)':'rgba(255,0,0,.4)'};color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">${isActive?'● فعّال':'○ موقوف'}</div>
+          <div style="background:${isActive?'rgba(0,255,100,.25)':'rgba(255,0,0,.25)'};border:1px solid ${isActive?'rgba(0,255,100,.5)':'rgba(255,0,0,.5)'};color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:12px;white-space:nowrap">${isActive?'● نشط':'○ موقوف'}</div>
         </div>
-        <!-- Role badge -->
-        <div style="margin-top:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff">
-          ${isAdmin?'🔑 مدير النظام':'👤 مخول قاطع'}
+        <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:#fff">
+          ${isAdmin?'🔑 مدير':'👤 مخول'}
         </div>
       </div>
       <!-- Card Body -->
-      <div style="padding:14px 16px">
-        <!-- القواطع -->
-        <div style="margin-bottom:12px">
-          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">القواطع</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${isAdmin?'<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px">كل القواطع</span>':
-              districts.length?districts.map(d=>`<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px">${d}</span>`).join(''):
-              '<span style="color:#94a3b8;font-size:11px">غير محدد</span>'}
-          </div>
+      <div style="padding:10px 12px">
+        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;min-height:20px">
+          ${isAdmin?'<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px">كل القواطع</span>':
+            districts.length?districts.map(d=>`<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px">${d}</span>`).join(''):
+            '<span style="color:#94a3b8;font-size:10px">لا قواطع محددة</span>'}
         </div>
-        <!-- الصلاحيات -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">الصلاحيات</div>
-          <div style="display:flex;flex-wrap:wrap;gap:4px">
-            ${permList.length?permList.map(k=>`<span style="background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:3px;color:#334155">${PERM_INFO[k].icon} ${PERM_INFO[k].label}</span>`).join(''):
-              '<span style="color:#94a3b8;font-size:11px">قراءة فقط</span>'}
-          </div>
+        <div style="display:flex;flex-wrap:wrap;gap:3px;min-height:20px">
+          ${permList.length?permList.map(k=>`<span style="background:#f8fafc;border:1px solid #e2e8f0;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;color:#334155">${PERM_INFO[k].icon}${PERM_INFO[k].label}</span>`).join(''):
+            '<span style="color:#94a3b8;font-size:10px">قراءة فقط</span>'}
         </div>
-        <!-- Actions -->
-        <div style="display:flex;gap:8px;border-top:1px solid #f1f5f9;padding-top:12px">
-          <button onclick="editUser(${u.id})" style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:8px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;transition:all .15s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">✏️ تعديل</button>
-          ${u.id!==CU?.id?`<button onclick="delUser(${u.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;transition:all .15s" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff1f2'">🗑️</button>`:''}
-          ${u.id===CU?.id?`<span style="flex:1;text-align:center;padding:8px;font-size:11px;color:#94a3b8">حسابك الحالي</span>`:''}
+        <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #f1f5f9">
+          <button onclick="editUser(${u.id})" style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:6px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700">✏️ تعديل</button>
+          ${u.id!==CU?.id?`<button onclick="delUser(${u.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:6px 10px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700">🗑️</button>`:'<span style="padding:6px;font-size:10px;color:#94a3b8;display:flex;align-items:center">حسابي</span>'}
         </div>
       </div>
     </div>`;
@@ -5558,7 +5586,7 @@ function openUserModal(id){
       </label>`).join('');
   }
   const perms=u.perms||{};
-  ['edit','del','files','reports'].forEach(p=>{
+  ['edit','del','files','reports','inventory','tours','maint','circulars'].forEach(p=>{
     const el=document.getElementById('p-'+p);
     if(el) el.classList.toggle('on', perms[p]===true);
   });
@@ -5586,10 +5614,14 @@ async function saveUser(){
   if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
   if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
   const perms={
-    edit:  document.getElementById('p-edit')?.classList.contains('on'),
-    del:   document.getElementById('p-del')?.classList.contains('on'),
-    files: document.getElementById('p-files')?.classList.contains('on'),
-    reports:document.getElementById('p-reports')?.classList.contains('on'),
+    edit:      document.getElementById('p-edit')?.classList.contains('on'),
+    del:       document.getElementById('p-del')?.classList.contains('on'),
+    files:     document.getElementById('p-files')?.classList.contains('on'),
+    reports:   document.getElementById('p-reports')?.classList.contains('on'),
+    inventory: document.getElementById('p-inventory')?.classList.contains('on'),
+    tours:     document.getElementById('p-tours')?.classList.contains('on'),
+    maint:     document.getElementById('p-maint')?.classList.contains('on'),
+    circulars: document.getElementById('p-circulars')?.classList.contains('on'),
     };
   const body={fullname:fn,username:un,role,district,districts,perms};
   if(pw) body.password=pw;
@@ -8204,6 +8236,13 @@ function exportInvExcel(id){
   a.click();
   URL.revokeObjectURL(url);
   toast('تم تصدير Excel ✅');
+}
+
+
+function toggleAllPerms(){
+  const perms=['edit','del','files','reports','inventory','tours','maint','circulars'];
+  const allOn=perms.every(p=>document.getElementById('p-'+p)?.classList.contains('on'));
+  perms.forEach(p=>{ const el=document.getElementById('p-'+p); if(el) el.classList.toggle('on',!allOn); });
 }
 
 tryAutoLogin();</script>
