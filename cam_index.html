@@ -1891,11 +1891,49 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <th style="padding:5px 8px;border:1px solid #bbf7d0;width:32px"></th>
             </tr>
           </thead>
-          <tbody id="cam-types-body"></tbody>
+          <tbody id="cam-types-body">
+            <tr id="cam-row-1">
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">1</td>
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2.8 mm</td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-sel" value="2.8 mm" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="text-align:center;border:1px solid #ddd"><input type="hidden" class="cam-type-sel" value="IP"></td>
+            </tr>
+            <tr id="cam-row-2">
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2</td>
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4 mm</td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-sel" value="4 mm" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="text-align:center;border:1px solid #ddd"><input type="hidden" class="cam-type-sel" value="IP"></td>
+            </tr>
+            <tr id="cam-row-3">
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">3</td>
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">6 mm</td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-sel" value="6 mm" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="text-align:center;border:1px solid #ddd"><input type="hidden" class="cam-type-sel" value="IP"></td>
+            </tr>
+            <tr id="cam-row-4">
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">4</td>
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">2.8mm-5mm مزدوج</td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-sel" value="2.8mm-5mm" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="text-align:center;border:1px solid #ddd"><input type="hidden" class="cam-type-sel" value="IP"></td>
+            </tr>
+            <tr id="cam-row-5">
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700">5</td>
+              <td style="text-align:center;border:1px solid #ddd;background:#f9fafb;font-weight:700;font-size:10px">كاميرات خاصة لعمل الكاميرا</td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="0" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-sel" value="" style="width:100%;font-size:11px;text-align:center;padding:3px"></td>
+              <td style="text-align:center;border:1px solid #ddd"><input type="hidden" class="cam-type-sel" value="IP"></td>
+            </tr>
+          </tbody>
         </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
       </div>
 
       <!-- جهاز التسجيل -->
@@ -3863,18 +3901,27 @@ function addCamRow(data={}){
   tb.appendChild(tr);
 }
 function getCamRows(){
-  return [...document.querySelectorAll('#cam-types-body tr')].map(r=>({
-    type:r.querySelector('.cam-type-sel')?.value||'',
-    indoor:parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
-    outdoor:parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
-    lens:r.querySelector('.cam-lens-sel')?.value||''
+  const labels=['2.8 mm','4 mm','6 mm','2.8mm-5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
+  return [...document.querySelectorAll('#cam-types-body tr')].map((r,idx)=>({
+    type: r.querySelector('.cam-type-sel')?.value||'IP',
+    label: labels[idx]||'',
+    indoor: parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
+    outdoor: parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
+    lens: r.querySelector('.cam-lens-sel')?.value||''
   }));
 }
 function setCamRows(rows){
-  const tb=document.getElementById('cam-types-body');if(!tb)return;
-  tb.innerHTML='';
-  if(!rows||!rows.length){addCamRow();return;}
-  rows.forEach(r=>addCamRow(r));
+  const trs=document.querySelectorAll('#cam-types-body tr');
+  if(!rows||!rows.length) return;
+  // ملء الصفوف الثابتة بالبيانات
+  rows.forEach((r,i)=>{
+    if(i<trs.length){
+      const tr=trs[i];
+      const inp=tr.querySelector('.cam-indoor-inp'); if(inp)inp.value=r.indoor||0;
+      const outp=tr.querySelector('.cam-outdoor-inp'); if(outp)outp.value=r.outdoor||0;
+      const lens=tr.querySelector('.cam-lens-sel'); if(lens&&r.lens)lens.value=r.lens;
+    }
+  });
 }
 
 let allInventory=[];
@@ -4021,23 +4068,25 @@ function printInvSingle(id){
   // إذا cam_indoor وcam_outdoor صفر لكن cam_count موجود، اعرض الإجمالي في indoor
   if(total>0 && camIn===0 && camOut===0){ camIn=total; }
 
+  // صفوف ثابتة 5 أنواع مطابقة للورقة
+  var camLabels=['2.8 mm','4 mm','6 mm','2.8mm - 5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
   var camRows='';
-  for(var i=0;i<cams.length;i++){
-    var r=cams[i];
-    camRows+='<tr>'+
+  for(var i=0;i<5;i++){
+    var r=cams[i]||{indoor:0,outdoor:0,lens:'',note:''};
+    var lbl=r.label||camLabels[i];
+    var inVal=r.indoor||0;
+    var outVal=r.outdoor||0;
+    camRows+='<tr style="height:18px">'+
       '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.type||x.cam_spec||'—')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#166534">'+(r.indoor||x.cam_indoor||x.cam_count||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:900;font-size:13px;color:#1d4ed8">'+(r.outdoor||x.cam_outdoor||0)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444">'+(r.lens&&r.lens!=='—'?r.lens:(x.cam_res||'—'))+'</td>'+
-      '<td style="border:1px solid #444"></td></tr>';
-  }
-  for(var j=cams.length;j<5;j++){
-    camRows+='<tr style="height:16px"><td style="text-align:center;border:1px solid #444">'+(j+1)+'</td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td><td style="border:1px solid #444"></td></tr>';
+      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+lbl+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:12px;color:'+(inVal?'#166534':'#ccc')+'">'+(inVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#ccc')+'">'+(outVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens&&r.lens!=='—'?r.lens:'')+'</td>'+
+      '<td style="border:1px solid #444;font-size:10px">'+(r.note||'')+'</td></tr>';
   }
 
   // مصدر الطاقة
-  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
+  var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية','بطاريات'];
   var pwSaved=(x.power_source||x.power||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
   var pwHtml='<table style="border-collapse:collapse;border:none"><tr>';
   pwList.forEach(function(p){
@@ -4055,8 +4104,8 @@ function printInvSingle(id){
 
   var stName=x.station_name||x.station||'—';
   var district=x.district||'';
-  var phone=x.phone||'';
-  var coords=x.coords||'';
+  var phone=x.phone||'—';
+  var coords=x.coords||'—';
   var dvr=x.dvr_model||x.dvr||'—';
   var conn=x.dvr_spec||x.conn||'IP شبكي';
   var hddSize=x.hdd_size?x.hdd_size+' TB':'—';
@@ -4082,8 +4131,8 @@ function printInvSingle(id){
       '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم المنفذ / البناية :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">'+stName+'</td></tr>'+
       '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">العنوان الكامل :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:600">'+address+'</td></tr>'+
       '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">اسم الدائرة :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa">'+phone+'</td><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700;color:#dc2626">أمني رقابي</td></tr>'+
-      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa">'+coords+'</td></tr>'+
+      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">البريد / الهاتف :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">'+phone+'</td><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">نوع النشاط :</td><td colspan="2" style="padding:2px 6px;border:1px solid #aaa;font-weight:700;color:#dc2626">أمني رقابي</td></tr>'+
+      '<tr><td style="padding:2px 6px;font-weight:700;border:1px solid #aaa;background:#f5f5f5">الإحداثيات :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">'+coords+'</td></tr>'+
     '</table>'+
   '</div>'+
 
@@ -4108,7 +4157,7 @@ function printInvSingle(id){
     '<td style="text-align:center;border:1px solid #444">'+conn+'</td>'+
     '<td style="text-align:center;font-weight:700;color:#1d4ed8;border:1px solid #444">'+hddSize+'</td>'+
     '<td style="text-align:center;font-weight:700;color:#7c3aed;border:1px solid #444">'+hddCount+'</td>'+
-    '<td style="text-align:center;border:1px solid #444">'+storage+'</td>'+
+    '<td style="text-align:center;font-weight:700;color:#166534;border:1px solid #444">'+storage+'</td>'+
     '<td style="padding:3px 5px;border:1px solid #444">'+pwHtml+'</td>'+
     '<td style="border:1px solid #444">'+notes+'</td>'+
   '</tr>'+empDvr+'</tbody></table>'+
