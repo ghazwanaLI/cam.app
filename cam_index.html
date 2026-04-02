@@ -7138,7 +7138,16 @@ function renderInvBuildings(){
 function filterInvBuildings(){ renderInvBuildings(); }
 
 function openInvBuildingForm(id){
-  const x = id ? allInvBuildings.find(r=>r.id===id)||{} : {};
+  // == بدل === لتجنب مشكلة string vs number
+  let x = id ? (allInvBuildings.find(r=>r.id==id) || null) : null;
+  // fallback: ابحث في localStorage مباشرة
+  if(!x && id){
+    try{
+      const ls=JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+      x=ls.find(r=>r.id==id)||null;
+    }catch(e){}
+  }
+  x = x || {};
   document.getElementById('invb-eid').value = id||'';
   document.getElementById('invb-ttl').textContent = id ? 'تعديل جرد بناية' : 'إضافة جرد بناية حكومية';
   document.getElementById('invb-name').value = x.name||'';
@@ -7199,8 +7208,12 @@ function editInvBuilding(id){ openInvBuildingForm(id); }
 
 async function delInvBuilding(id){
   if(!confirm('حذف هذا الجرد؟')) return;
-  const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]').filter(x=>x.id!==id);
-  localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
+  try{
+    await api('DELETE','/api/inv_buildings/'+id);
+  }catch(e){
+    const list=JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]').filter(x=>x.id!=id);
+    localStorage.setItem('cam_inv_buildings',JSON.stringify(list));
+  }
   toast('تم الحذف');
   await loadInvBuildings();
 }
@@ -7259,7 +7272,14 @@ function renderInvPrivate(){
 function filterInvPrivate(){ renderInvPrivate(); }
 
 function openInvPrivateForm(id){
-  const x = id ? allInvPrivate.find(r=>r.id===id)||{} : {};
+  let x = id ? (allInvPrivate.find(r=>r.id==id) || null) : null;
+  if(!x && id){
+    try{
+      const ls=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+      x=ls.find(r=>r.id==id)||null;
+    }catch(e){}
+  }
+  x = x || {};
   document.getElementById('invp-eid').value = id||'';
   document.getElementById('invp-ttl').textContent = id ? 'تعديل جرد محطة أهلية' : 'إضافة جرد محطة أهلية';
   document.getElementById('invp-name').value = x.name||'';
@@ -7320,8 +7340,12 @@ function editInvPrivate(id){ openInvPrivateForm(id); }
 
 async function delInvPrivate(id){
   if(!confirm('حذف هذا الجرد؟')) return;
-  const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]').filter(x=>x.id!==id);
-  localStorage.setItem('cam_inv_private', JSON.stringify(list));
+  try{
+    await api('DELETE','/api/inv_private/'+id);
+  }catch(e){
+    const list=JSON.parse(localStorage.getItem('cam_inv_private')||'[]').filter(x=>x.id!=id);
+    localStorage.setItem('cam_inv_private',JSON.stringify(list));
+  }
   toast('تم الحذف');
   await loadInvPrivate();
 }
@@ -7679,9 +7703,19 @@ function _readInvForm(prefix){
 
 function _fillInvForm(prefix, x){
   let cams=[];
-  try{ const cr=x.cam_rows; cams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]); }catch(e){cams=[];}
+  try{
+    const cr=x.cam_rows;
+    if(Array.isArray(cr)) cams=cr;
+    else if(typeof cr==='string' && cr.startsWith('[')) cams=JSON.parse(cr);
+    else if(cr) cams=JSON.parse(JSON.stringify(cr));
+  }catch(e){ console.error('cam_rows parse error:',e,x.cam_rows); cams=[]; }
   let dvrs=[];
-  try{ const dr=x.dvr_rows; dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]); }catch(e){dvrs=[];}
+  try{
+    const dr=x.dvr_rows;
+    if(Array.isArray(dr)) dvrs=dr;
+    else if(typeof dr==='string' && dr.startsWith('[')) dvrs=JSON.parse(dr);
+    else if(dr) dvrs=JSON.parse(JSON.stringify(dr));
+  }catch(e){ console.error('dvr_rows parse error:',e,x.dvr_rows); dvrs=[]; }
   for(let i=1;i<=5;i++){
     const r=cams[i-1]||{};
     const ei=document.getElementById(prefix+'-c'+i+'i'); if(ei)ei.value=r.indoor||0;
