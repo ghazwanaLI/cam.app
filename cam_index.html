@@ -5536,8 +5536,8 @@ function renderUsers(){
       <!-- أفاتار + اسم -->
       <div style="background:${grad};padding:12px;text-align:center;position:relative">
         ${isMe?`<div style="position:absolute;top:6px;left:6px;background:#22c55e;color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:10px;display:flex;align-items:center;gap:2px"><span class="user-online-pulse" style="display:inline-block;width:5px;height:5px;background:#fff;border-radius:50%"></span>أنت</div>`:''}
+        <div style="font-size:12px;font-weight:900;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-bottom:8px;text-shadow:0 1px 4px rgba(0,0,0,.3)">${u.fullname||'—'}</div>
         <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;font-family:Cairo,sans-serif;margin:0 auto 6px">${initial}</div>
-        <div style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.fullname||'—'}</div>
         <div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:2px">${isAdmin?'🔑 مدير':'👤 مخول'}</div>
       </div>
       <!-- معلومات مضغوطة -->
