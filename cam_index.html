@@ -8003,21 +8003,11 @@ function openInvPrintWindow(){
   const content = document.getElementById('inv-print-content')?.innerHTML||'';
   if(!content){ toast('لا يوجد محتوى للطباعة','err'); return; }
   const w = window.open('','_blank','width=1000,height=750');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head>
-    <meta charset="UTF-8">
-    <style>
-      *{margin:0;padding:0;box-sizing:border-box}
-      body{font-family:Arial,sans-serif;padding:10px;direction:rtl;background:#fff}
-      .no-print{margin-bottom:10px;display:flex;gap:8px;padding:8px;background:#f8fafc;border-radius:6px}
-      @media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}
-    </style>
-  </head><body>
-    <div class="no-print">
-      <button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
-      <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">✕ إغلاق</button>
-    </div>
-    ${content}
-  </body></html>`);
+  if(!w){ toast('السماح بالنوافذ المنبثقة مطلوب','err'); return; }
+  const css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:10px;direction:rtl;background:#fff}.no-print{margin-bottom:10px;display:flex;gap:8px;padding:8px;background:#f8fafc;border-radius:6px}@media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}';
+  const btns='<div class="no-print"><button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">طباعة</button> <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">اغلاق</button></div>';
+  w.document.open();
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'+btns+content+'</body></html>');
   w.document.close();
 }
 
