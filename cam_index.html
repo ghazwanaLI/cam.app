@@ -7088,12 +7088,19 @@ function onInvpStationChange(){
 let allInvBuildings = [];
 
 async function loadInvBuildings(){
+  // دائماً ابدأ بـ localStorage أولاً
+  const lsData = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+  allInvBuildings = lsData;
   try{
     const d = await api('GET','/api/inv_buildings');
-    allInvBuildings = d.items || [];
-    // احفظ نسخة في localStorage كـ fallback
-    localStorage.setItem('cam_inv_buildings', JSON.stringify(allInvBuildings));
-  }catch(e){ allInvBuildings = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]'); }
+    const apiData = d.items || [];
+    if(apiData.length >= lsData.length){
+      // API عنده بيانات أكثر أو مساوية — استخدمها
+      allInvBuildings = apiData;
+      localStorage.setItem('cam_inv_buildings', JSON.stringify(allInvBuildings));
+    }
+    // إذا API أقل (بيانات offline موجودة) — ابق على localStorage
+  }catch(e){ /* offline - use lsData already set */ }
   renderInvBuildings();
   // تحديث فلتر القاطع
   const sel = document.getElementById('f-invb-district');
@@ -7139,14 +7146,13 @@ function filterInvBuildings(){ renderInvBuildings(); }
 
 function openInvBuildingForm(id){
   // == بدل === لتجنب مشكلة string vs number
-  let x = id ? (allInvBuildings.find(r=>r.id==id) || null) : null;
-  // fallback: ابحث في localStorage مباشرة
-  if(!x && id){
-    try{
-      const ls=JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
-      x=ls.find(r=>r.id==id)||null;
-    }catch(e){}
-  }
+  // دائماً ابحث في localStorage أولاً (أموثق)
+  let x = null;
+  try{
+    const lsB=JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+    x=lsB.find(r=>String(r.id)===String(id))||null;
+  }catch(e){}
+  if(!x && id) x=allInvBuildings.find(r=>String(r.id)===String(id))||null;
   x = x || {};
   document.getElementById('invb-eid').value = id||'';
   document.getElementById('invb-ttl').textContent = id ? 'تعديل جرد بناية' : 'إضافة جرد بناية حكومية';
@@ -7158,6 +7164,20 @@ function openInvBuildingForm(id){
   ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
   filterInvBuildingStations();
   if(x.station_id) setTimeout(()=>{const ss=document.getElementById('invb-station');if(ss)ss.value=x.station_id;},80);
+  // ── DEBUG TOAST ──
+  if(id){
+    let dbgCams=[];
+    try{
+      const cr=x.cam_rows;
+      dbgCams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);
+    }catch(e){}
+    const dbgTxt='ID:'+String(x.id||'?')+
+      ' | cam_rows:'+(x.cam_rows?'✅':'❌')+
+      ' | cam[0].indoor='+(dbgCams[0]?.indoor??'N/A')+
+      ' | cam[1].indoor='+(dbgCams[1]?.indoor??'N/A');
+    toast(dbgTxt, dbgCams.length?'ok':'err');
+    console.log('openInvBuildingForm DEBUG:', JSON.stringify(x).substring(0,500));
+  }
   _fillInvForm('invb', x);
   document.getElementById('ov-inv-building').classList.add('open');
 }
@@ -7188,16 +7208,24 @@ async function saveInvBuilding(){
   };
   try{
     // حفظ في localStorage (يمكن ربطه بـ API لاحقاً)
+    // دائماً احفظ في localStorage أولاً
+    const lsListB = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+    let savedId = id;
+    if(id){
+      const idx=lsListB.findIndex(x=>x.id==id);
+      if(idx>-1) lsListB[idx]={...lsListB[idx],...body};
+      else lsListB.push({...body,id:id});
+    } else {
+      const nid=(lsListB.reduce((m,x)=>Math.max(m,x.id||0),0))+1;
+      savedId=nid;
+      lsListB.push({...body,id:nid});
+    }
+    localStorage.setItem('cam_inv_buildings', JSON.stringify(lsListB));
+    // ثم حاول ترسل للـ API
     try{
       if(id) await api('PUT','/api/inv_buildings/'+id, body);
-      else    await api('POST','/api/inv_buildings', body);
-    }catch(e){
-      // offline fallback
-      const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
-      if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
-      else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
-      localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
-    }
+      else    await api('POST','/api/inv_buildings', {...body,id:savedId});
+    }catch(e){ /* offline — already in localStorage */ }
     closeModal('ov-inv-building');
     toast('تم الحفظ ✅');
     await loadInvBuildings();
@@ -7224,11 +7252,16 @@ async function delInvBuilding(id){
 let allInvPrivate = [];
 
 async function loadInvPrivate(){
+  const lsData = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+  allInvPrivate = lsData;
   try{
     const d = await api('GET','/api/inv_private');
-    allInvPrivate = d.items || [];
-    localStorage.setItem('cam_inv_private', JSON.stringify(allInvPrivate));
-  }catch(e){ allInvPrivate = JSON.parse(localStorage.getItem('cam_inv_private')||'[]'); }
+    const apiData = d.items || [];
+    if(apiData.length >= lsData.length){
+      allInvPrivate = apiData;
+      localStorage.setItem('cam_inv_private', JSON.stringify(allInvPrivate));
+    }
+  }catch(e){ /* offline */ }
   renderInvPrivate();
   const sel = document.getElementById('f-invp-district');
   if(sel){
@@ -7272,13 +7305,12 @@ function renderInvPrivate(){
 function filterInvPrivate(){ renderInvPrivate(); }
 
 function openInvPrivateForm(id){
-  let x = id ? (allInvPrivate.find(r=>r.id==id) || null) : null;
-  if(!x && id){
-    try{
-      const ls=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
-      x=ls.find(r=>r.id==id)||null;
-    }catch(e){}
-  }
+  let x = null;
+  try{
+    const lsP=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+    x=lsP.find(r=>String(r.id)===String(id))||null;
+  }catch(e){}
+  if(!x && id) x=allInvPrivate.find(r=>String(r.id)===String(id))||null;
   x = x || {};
   document.getElementById('invp-eid').value = id||'';
   document.getElementById('invp-ttl').textContent = id ? 'تعديل جرد محطة أهلية' : 'إضافة جرد محطة أهلية';
@@ -7321,15 +7353,22 @@ async function saveInvPrivate(){
     updated_at: new Date().toISOString().split('T')[0]
   };
   try{
+    const lsListP = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+    let savedIdP = id;
+    if(id){
+      const idx=lsListP.findIndex(x=>x.id==id);
+      if(idx>-1) lsListP[idx]={...lsListP[idx],...body};
+      else lsListP.push({...body,id:id});
+    } else {
+      const nid=(lsListP.reduce((m,x)=>Math.max(m,x.id||0),0))+1;
+      savedIdP=nid;
+      lsListP.push({...body,id:nid});
+    }
+    localStorage.setItem('cam_inv_private', JSON.stringify(lsListP));
     try{
       if(id) await api('PUT','/api/inv_private/'+id, body);
-      else    await api('POST','/api/inv_private', body);
-    }catch(e){
-      const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
-      if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
-      else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
-      localStorage.setItem('cam_inv_private', JSON.stringify(list));
-    }
+      else    await api('POST','/api/inv_private', {...body,id:savedIdP});
+    }catch(e){ /* offline */ }
     closeModal('ov-inv-private');
     toast('تم الحفظ ✅');
     await loadInvPrivate();
