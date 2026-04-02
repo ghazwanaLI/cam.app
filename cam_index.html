@@ -3101,7 +3101,7 @@ async function doTopbarLogin(){
 }
 
 function toast(msg,type='ok'){const el=document.getElementById('toast');el.textContent=msg;el.className=`toast show ${type}`;setTimeout(()=>el.classList.remove('show'),3500);}
-function closeModal(id){const el=document.getElementById(id);if(el)el.classList.remove('open');}
+function closeModal(id){const el=document.getElementById(id);if(el){el.classList.remove('open');el.style.display='';}}
 function closeOv(e,id){if(e.target.id===id)closeModal(id);}
 function openLB(src){
   const c=document.getElementById('lb-content');
