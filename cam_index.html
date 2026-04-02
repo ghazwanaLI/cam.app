@@ -1883,11 +1883,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <table style="width:100%;border-collapse:collapse;font-size:11px">
           <thead>
             <tr style="background:#e5e7eb">
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:34px;color:#111;text-align:center">#</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع الكاميرا</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">IP / Analog</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
               <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
               <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
               <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
             </tr>
           </thead>
@@ -3842,14 +3843,9 @@ const LENS_OPTS=['—','2.8 mm','4 mm','6 mm','8 mm','12 mm','2.8 mm - 5 مزد�
 function addCamRow(data={}){
   const tb=document.getElementById('cam-types-body');if(!tb)return;
   const idx=tb.rows.length+1;
-  const CAM_LABELS=['2.8 mm','4 mm','6 mm','2.8mm-5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
-  const labelOpts=CAM_LABELS.map(l=>`<option value="${l}"${(data.label||data.lens||'')===(l)?' selected':''}>${l}</option>`).join('');
   const tr=document.createElement('tr');
   tr.innerHTML=`
     <td style="padding:3px 6px;border:1px solid #ddd;text-align:center;font-size:11px;color:#888;background:#f9fafb;font-weight:700">${idx}</td>
-    <td style="padding:2px 4px;border:1px solid #ddd">
-      <select class="fi cam-label-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">${labelOpts}</select>
-    </td>
     <td style="padding:2px 4px;border:1px solid #ddd">
       <select class="fi cam-type-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">
         <option value="IP"${(data.type||'IP')==='IP'?' selected':''}>IP</option>
@@ -3858,6 +3854,8 @@ function addCamRow(data={}){
     </td>
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-indoor-inp" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px;text-align:center"></td>
     <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi cam-outdoor-inp" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-lens-inp" value="${data.lens||''}" placeholder="2.8mm..." style="width:100%;font-size:11px;padding:3px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi cam-note-inp" value="${data.note||''}" style="width:100%;font-size:11px;padding:3px"></td>
     <td style="padding:2px 4px;border:1px solid #ddd;text-align:center">
       <button type="button" onclick="this.closest('tr').remove();reindexCamRows()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
     </td>`;
@@ -3901,10 +3899,11 @@ function reindexDvrRows(){
 }
 function getCamRows(){
   return [...document.querySelectorAll('#cam-types-body tr')].map(r=>({
-    label:   r.querySelector('.cam-label-sel')?.value||'',
     type:    r.querySelector('.cam-type-sel')?.value||'IP',
     indoor:  parseInt(r.querySelector('.cam-indoor-inp')?.value)||0,
-    outdoor: parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0
+    outdoor: parseInt(r.querySelector('.cam-outdoor-inp')?.value)||0,
+    lens:    r.querySelector('.cam-lens-inp')?.value||'',
+    note:    r.querySelector('.cam-note-inp')?.value||''
   }));
 }
 function setCamRows(rows){
@@ -4088,11 +4087,11 @@ function printInvSingle(id){
     var outVal=r.outdoor||0;
     camRows+='<tr style="height:18px">'+
       '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+lbl+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.type||'IP')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:12px;color:'+(inVal?'#166534':'#ccc')+'">'+(inVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#ccc')+'">'+(outVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens&&r.lens!=='—'?r.lens:'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens||'')+'</td>'+
       '<td style="border:1px solid #444;font-size:10px">'+(r.note||'')+'</td></tr>';
   }
 
