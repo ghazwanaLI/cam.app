@@ -7709,7 +7709,7 @@ function openInvBuildingForm(id){
   document.getElementById('invb-phone').value=x.phone||'';
   document.getElementById('invb-coords').value=x.coords||'';
   const dsB=document.getElementById('invb-district');
-  if(dsB){ dsB.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join(''); }
+  if(dsB){ dsB.innerHTML='<option value="">— اختر القاطع —</option>'+dl.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join(''); }
   updateInvbAddress();
   // جداول الكاميرات والـ DVR
   let camRowsB=[],dvrRowsB=[];
@@ -7859,7 +7859,7 @@ function openInvPrivateForm(id){
   document.getElementById('invp-phone').value=x.phone||'';
   document.getElementById('invp-coords').value=x.coords||'';
   const dsP=document.getElementById('invp-district');
-  if(dsP){ dsP.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join(''); }
+  if(dsP){ dsP.innerHTML='<option value="">— اختر القاطع —</option>'+dl.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join(''); }
   updateInvpAddress();
   let camRowsP=[],dvrRowsP=[];
   try{const cr=x.cam_rows;camRowsP=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);}catch(e){}
@@ -8692,7 +8692,11 @@ function updateHandoverStats(){
 }
 
 function openHandoverModal(opType, id){
-  const x = id ? allHandover.find(r=>r.id===id)||{} : {};
+  try{
+  // تأكد المودال موجود
+  const ov = document.getElementById('ov-handover');
+  if(!ov){ alert('المودال غير موجود - أعد تحميل الصفحة'); return; }
+  const x = id ? (allHandover||[]).find(r=>r.id===id)||{} : {};
   document.getElementById('hov-eid').value = id||'';
   document.getElementById('hov-op-type').value = opType||x.op_type||'deliver';
   const isDeliver = (opType||x.op_type||'deliver')==='deliver';
@@ -8705,13 +8709,16 @@ function openHandoverModal(opType, id){
   document.getElementById('hov-person').value = x.person||'';
   document.getElementById('hov-notes').value = x.notes||'';
   const ds=document.getElementById('hov-district');
-  ds.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  const dl=DISTRICTS_LIST&&DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+  ds.innerHTML='<option value="">— اختر القاطع —</option>'+dl.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
   const tb=document.getElementById('hov-items-body');
   tb.innerHTML='';
   const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
   if(items.length) items.forEach(r=>addHovItemRow(r));
   else addHovItemRow();
-  document.getElementById('ov-handover').classList.add('open');
+  const ovH=document.getElementById('ov-handover');
+  if(ovH){ ovH.classList.add('open'); ovH.style.display='flex'; }
+  }catch(err){ toast('خطأ: '+err.message,'err'); console.error(err); }
 }
 
 function addHovItem(){ addHovItemRow(); }
