@@ -1207,7 +1207,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <tr style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
                     <th style="padding:9px 12px;text-align:right">اسم البناية</th>
-                    <th style="padding:9px 10px;text-align:center;width:100px">القاطع</th>
+                    <th style="padding:9px 10px;text-align:right">المحطة</th>
+                    <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
                     <th style="padding:9px 10px;text-align:center;width:120px">نوع الجهاز</th>
                     <th style="padding:9px 10px;text-align:center;width:100px">فترة التسجيل</th>
@@ -1243,7 +1244,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <tr style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
                     <th style="padding:9px 12px;text-align:right">اسم المحطة</th>
-                    <th style="padding:9px 10px;text-align:center;width:100px">القاطع</th>
+                    <th style="padding:9px 10px;text-align:right">المحطة المرتبطة</th>
+                    <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
                     <th style="padding:9px 10px;text-align:center;width:120px">نوع الجهاز</th>
                     <th style="padding:9px 10px;text-align:center;width:100px">فترة التسجيل</th>
@@ -2328,48 +2330,103 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
-<!-- MODAL: جرد البنايات الحكومية -->
+<!-- MODAL: جرد البنايات الحكومية (فورم كامل) -->
 <div class="overlay" id="ov-inv-building" onclick="closeOv(event,'ov-inv-building')">
-  <div class="modal" style="width:680px;max-height:92vh;overflow-y:auto">
-    <div class="m-title">🏢 <span id="invb-ttl">إضافة جرد بناية حكومية</span></div>
+  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
+      🏢 <span id="invb-ttl">إضافة جرد بناية حكومية</span>
+    </div>
     <input type="hidden" id="invb-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم البناية / المنشأة *</label>
-        <input class="fi" id="invb-name" type="text" placeholder="مثال: مبنى المديرية..."></div>
-      <div class="fg"><label class="fl">القاطع *</label>
-        <select class="fi" dir="rtl" id="invb-district"><option value="">— اختر —</option></select></div>
-      <div class="fg"><label class="fl">نوع البناية</label>
-        <select class="fi" dir="rtl" id="invb-type">
-          <option value="مديرية">مديرية</option>
-          <option value="دائرة حكومية">دائرة حكومية</option>
-          <option value="مستودع">مستودع</option>
-          <option value="مركز توزيع">مركز توزيع</option>
-          <option value="أخرى">أخرى</option>
-        </select></div>
-      <div class="fg"><label class="fl">عدد الكاميرات</label>
-        <input class="fi" id="invb-cam-count" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">تعمل</label>
-        <input class="fi" id="invb-cam-ok" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">معطلة</label>
-        <input class="fi" id="invb-cam-bad" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">نوع جهاز التسجيل</label>
-        <input class="fi" id="invb-dvr" type="text" placeholder="NVR / DVR..."></div>
-      <div class="fg"><label class="fl">سعة الهارد</label>
-        <input class="fi" id="invb-hdd" type="text" placeholder="2TB / 4TB..."></div>
-      <div class="fg"><label class="fl">فترة التسجيل</label>
-        <select class="fi" dir="rtl" id="invb-storage">
-          <option value="">— اختر —</option>
-          <option>7 أيام</option><option>14 يوم</option><option>30 يوم</option>
-          <option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
-        </select></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" dir="rtl" id="invb-status">
-          <option value="مكتمل">✅ مكتمل</option>
-          <option value="جزئي">⚠️ جزئي</option>
-          <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
-        </select></div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="invb-notes" rows="2" style="resize:vertical;text-align:right"></textarea></div>
+    <div style="padding:14px 16px">
+
+      <!-- معلومات البناية -->
+      <div style="border:1.5px solid #0891b2;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#0891b2;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات البناية / المنشأة</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f0fdff;border:1px solid #a5f3fc;width:110px">اسم البناية *</td>
+            <td colspan="3" style="padding:4px 6px;border:1px solid #a5f3fc">
+              <input class="fi" id="invb-name" type="text" placeholder="اسم البناية / المنشأة..." style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f0fdff;border:1px solid #a5f3fc">القاطع *</td>
+            <td style="padding:4px 6px;border:1px solid #a5f3fc;width:160px">
+              <select class="fi" dir="rtl" id="invb-district" onchange="filterInvBuildingStations()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
+            </td>
+            <td style="padding:5px 8px;font-weight:700;background:#f0fdff;border:1px solid #a5f3fc;width:110px">المحطة / البناية</td>
+            <td style="padding:4px 6px;border:1px solid #a5f3fc">
+              <select class="fi" dir="rtl" id="invb-station" style="width:100%;font-size:11px"><option value="">— اختر —</option></select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f0fdff;border:1px solid #a5f3fc">نوع البناية</td>
+            <td style="padding:4px 6px;border:1px solid #a5f3fc">
+              <select class="fi" dir="rtl" id="invb-type" style="width:100%;font-size:11px">
+                <option>مديرية</option><option>دائرة حكومية</option>
+                <option>مستودع</option><option>مركز توزيع</option><option>أخرى</option>
+              </select>
+            </td>
+            <td style="padding:5px 8px;font-weight:700;background:#f0fdff;border:1px solid #a5f3fc">الحالة</td>
+            <td style="padding:4px 6px;border:1px solid #a5f3fc">
+              <select class="fi" dir="rtl" id="invb-status" style="width:100%;font-size:11px">
+                <option value="مكتمل">✅ مكتمل</option>
+                <option value="جزئي">⚠️ جزئي</option>
+                <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات -->
+      <div style="border:1.5px solid #16a34a;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#f0fdf4">
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:36px">#</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">نوع الكاميرا</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:85px">عدد الداخلية</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:85px">عدد الخارجية</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0">حجم العدسة</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:30px"></th>
+          </tr></thead>
+          <tbody id="invb-cam-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addInvBCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جدول DVR/NVR -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#eff6ff">
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:36px">#</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe">نوع الجهاز</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:90px">طريقة الربط</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:80px">سعة الهارد</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:60px">عدد الهاردات</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:120px">فترة التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #bfdbfe;width:30px"></th>
+          </tr></thead>
+          <tbody id="invb-dvr-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button type="button" onclick="addInvBDvrRow()" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز</button>
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة:</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invb-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invb-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invb-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invb-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invb-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv-building')">إلغاء</button>
@@ -2378,44 +2435,106 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 </div>
 
-<!-- MODAL: جرد المحطات الأهلية -->
+<!-- MODAL: جرد المحطات الأهلية (فورم كامل) -->
 <div class="overlay" id="ov-inv-private" onclick="closeOv(event,'ov-inv-private')">
-  <div class="modal" style="width:680px;max-height:92vh;overflow-y:auto">
-    <div class="m-title">🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span></div>
+  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
+      🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span>
+    </div>
     <input type="hidden" id="invp-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم المحطة *</label>
-        <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..."></div>
-      <div class="fg"><label class="fl">القاطع *</label>
-        <select class="fi" dir="rtl" id="invp-district"><option value="">— اختر —</option></select></div>
-      <div class="fg"><label class="fl">اسم صاحب المحطة</label>
-        <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..."></div>
-      <div class="fg"><label class="fl">رقم الهاتف</label>
-        <input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx"></div>
-      <div class="fg"><label class="fl">عدد الكاميرات</label>
-        <input class="fi" id="invp-cam-count" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">تعمل</label>
-        <input class="fi" id="invp-cam-ok" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">معطلة</label>
-        <input class="fi" id="invp-cam-bad" type="number" min="0" value="0"></div>
-      <div class="fg"><label class="fl">نوع جهاز التسجيل</label>
-        <input class="fi" id="invp-dvr" type="text" placeholder="NVR / DVR..."></div>
-      <div class="fg"><label class="fl">سعة الهارد</label>
-        <input class="fi" id="invp-hdd" type="text" placeholder="2TB / 4TB..."></div>
-      <div class="fg"><label class="fl">فترة التسجيل</label>
-        <select class="fi" dir="rtl" id="invp-storage">
-          <option value="">— اختر —</option>
-          <option>7 أيام</option><option>14 يوم</option><option>30 يوم</option>
-          <option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
-        </select></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" dir="rtl" id="invp-status">
-          <option value="مكتمل">✅ مكتمل</option>
-          <option value="جزئي">⚠️ جزئي</option>
-          <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
-        </select></div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;text-align:right"></textarea></div>
+    <div style="padding:14px 16px">
+
+      <!-- معلومات المحطة -->
+      <div style="border:1.5px solid #d97706;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#d97706;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المحطة الأهلية</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a;width:110px">اسم المحطة *</td>
+            <td colspan="3" style="padding:4px 6px;border:1px solid #fde68a">
+              <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..." style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a">القاطع *</td>
+            <td style="padding:4px 6px;border:1px solid #fde68a;width:160px">
+              <select class="fi" dir="rtl" id="invp-district" onchange="filterInvPrivateStations()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
+            </td>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a;width:110px">المحطة</td>
+            <td style="padding:4px 6px;border:1px solid #fde68a">
+              <select class="fi" dir="rtl" id="invp-station" onchange="onInvpStationChange()" style="width:100%;font-size:11px"><option value="">— اختر —</option></select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a">صاحب المحطة</td>
+            <td style="padding:4px 6px;border:1px solid #fde68a">
+              <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..." style="width:100%;font-size:11px">
+            </td>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a">رقم الهاتف</td>
+            <td style="padding:4px 6px;border:1px solid #fde68a">
+              <input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#fffbeb;border:1px solid #fde68a">الحالة</td>
+            <td colspan="3" style="padding:4px 6px;border:1px solid #fde68a">
+              <select class="fi" dir="rtl" id="invp-status" style="width:200px;font-size:11px">
+                <option value="مكتمل">✅ مكتمل</option>
+                <option value="جزئي">⚠️ جزئي</option>
+                <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
+              </select>
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات -->
+      <div style="border:1.5px solid #16a34a;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#f0fdf4">
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:36px">#</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:90px">نوع الكاميرا</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:85px">عدد الداخلية</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:85px">عدد الخارجية</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0">حجم العدسة</th>
+            <th style="padding:5px 8px;border:1px solid #bbf7d0;width:30px"></th>
+          </tr></thead>
+          <tbody id="invp-cam-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addInvPCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جدول DVR/NVR -->
+      <div style="border:1.5px solid #d97706;border-radius:8px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#d97706;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#fffbeb">
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:36px">#</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a">نوع الجهاز</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:90px">طريقة الربط</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:80px">سعة الهارد</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:60px">عدد الهاردات</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:120px">فترة التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #fde68a;width:30px"></th>
+          </tr></thead>
+          <tbody id="invp-dvr-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#fffbeb;border-top:1px solid #fde68a;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <button type="button" onclick="addInvPDvrRow()" class="btn btn-o btn-sm" style="color:#d97706;border-color:rgba(217,119,6,.4);font-size:11px">➕ إضافة جهاز</button>
+          <span style="font-size:11px;font-weight:700;color:#d97706">⚡ مصدر الطاقة:</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invp-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invp-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invp-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invp-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-inv-private')">إلغاء</button>
@@ -6946,6 +7065,36 @@ function toggleExtraDelegate(){
 }
 
 
+// ── تصفية محطات البنايات الحكومية حسب القاطع ──
+function filterInvBuildingStations(){
+  const dist = document.getElementById('invb-district')?.value||'';
+  const sel  = document.getElementById('invb-station');
+  if(!sel) return;
+  const list = allStations.filter(s => s.type==='حكومية' && (!dist || s.district===dist));
+  sel.innerHTML = '<option value="">— اختر المحطة —</option>' +
+    list.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
+}
+
+// ── تصفية المحطات الأهلية حسب القاطع ──
+function filterInvPrivateStations(){
+  const dist = document.getElementById('invp-district')?.value||'';
+  const sel  = document.getElementById('invp-station');
+  if(!sel) return;
+  const list = allStations.filter(s => s.type!=='حكومية' && (!dist || s.district===dist));
+  sel.innerHTML = '<option value="">— اختر المحطة —</option>' +
+    list.map(s=>`<option value="${s.id}" data-name="${s.name}">${s.name}</option>`).join('');
+}
+
+// ── عند اختيار محطة أهلية: أملأ الاسم تلقائياً ──
+function onInvpStationChange(){
+  const sel = document.getElementById('invp-station');
+  const opt = sel?.options[sel.selectedIndex];
+  if(opt && opt.value){
+    const nameField = document.getElementById('invp-name');
+    if(nameField && !nameField.value) nameField.value = opt.dataset.name||'';
+  }
+}
+
 // ══════════════════════════════════════════
 //  جرد البنايات الحكومية
 // ══════════════════════════════════════════
@@ -6984,11 +7133,13 @@ function renderInvBuildings(){
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
       <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#0891b2">${x.cam_count||0}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
       <td style="padding:5px 6px;text-align:center;${B}">
+        <button class="btn btn-o btn-sm" onclick="printInvDetail(allInvBuildings.find(r=>r.id===${x.id})||{},'building')" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -7003,17 +7154,13 @@ function openInvBuildingForm(id){
   document.getElementById('invb-ttl').textContent = id ? 'تعديل جرد بناية' : 'إضافة جرد بناية حكومية';
   document.getElementById('invb-name').value = x.name||'';
   document.getElementById('invb-type').value = x.type||'مديرية';
-  document.getElementById('invb-cam-count').value = x.cam_count||0;
-  document.getElementById('invb-cam-ok').value = x.cam_ok||0;
-  document.getElementById('invb-cam-bad').value = x.cam_bad||0;
-  document.getElementById('invb-dvr').value = x.dvr||'';
-  document.getElementById('invb-hdd').value = x.hdd||'';
-  document.getElementById('invb-storage').value = x.storage||'';
   document.getElementById('invb-status').value = x.status||'مكتمل';
   document.getElementById('invb-notes').value = x.notes||'';
-  // تحميل القواطع
   const ds = document.getElementById('invb-district');
   ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  filterInvBuildingStations();
+  if(x.station_id) setTimeout(()=>{const ss=document.getElementById('invb-station');if(ss)ss.value=x.station_id;},80);
+  _initInvBForm(x);
   document.getElementById('ov-inv-building').classList.add('open');
 }
 
@@ -7023,15 +7170,20 @@ async function saveInvBuilding(){
   const district = document.getElementById('invb-district').value;
   if(!name){ toast('أدخل اسم البناية','err'); return; }
   if(!district){ toast('اختر القاطع','err'); return; }
+  const stSel = document.getElementById('invb-station');
+  const stOpt = stSel?.options[stSel.selectedIndex];
+  const camRows = getInvBCamRows();
+  const dvrRows = getInvBDvrRows();
+  const totalCams = camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0);
   const body = {
     name, district,
+    station_id: parseInt(stSel?.value)||null,
+    station_name: stOpt?.value?stOpt.text:'',
     type: document.getElementById('invb-type').value,
-    cam_count: parseInt(document.getElementById('invb-cam-count').value)||0,
-    cam_ok: parseInt(document.getElementById('invb-cam-ok').value)||0,
-    cam_bad: parseInt(document.getElementById('invb-cam-bad').value)||0,
-    dvr: document.getElementById('invb-dvr').value,
-    hdd: document.getElementById('invb-hdd').value,
-    storage: document.getElementById('invb-storage').value,
+    cam_count: totalCams,
+    cam_rows: JSON.stringify(camRows),
+    dvr_rows: JSON.stringify(dvrRows),
+    power_source: [...document.querySelectorAll('.invb-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
     status: document.getElementById('invb-status').value,
     notes: document.getElementById('invb-notes').value,
     inv_type: 'building',
@@ -7097,11 +7249,13 @@ function renderInvPrivate(){
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
       <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#d97706">${x.cam_count||0}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
       <td style="padding:5px 6px;text-align:center;${B}">
+        <button class="btn btn-o btn-sm" onclick="printInvDetail(allInvPrivate.find(r=>r.id===${x.id})||{},'private')" style="padding:3px 6px;font-size:10px;color:#d97706">📄</button>
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -7117,16 +7271,13 @@ function openInvPrivateForm(id){
   document.getElementById('invp-name').value = x.name||'';
   document.getElementById('invp-owner').value = x.owner||'';
   document.getElementById('invp-phone').value = x.phone||'';
-  document.getElementById('invp-cam-count').value = x.cam_count||0;
-  document.getElementById('invp-cam-ok').value = x.cam_ok||0;
-  document.getElementById('invp-cam-bad').value = x.cam_bad||0;
-  document.getElementById('invp-dvr').value = x.dvr||'';
-  document.getElementById('invp-hdd').value = x.hdd||'';
-  document.getElementById('invp-storage').value = x.storage||'';
   document.getElementById('invp-status').value = x.status||'مكتمل';
   document.getElementById('invp-notes').value = x.notes||'';
   const ds = document.getElementById('invp-district');
   ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  filterInvPrivateStations();
+  if(x.station_id) setTimeout(()=>{const ss=document.getElementById('invp-station');if(ss)ss.value=x.station_id;},80);
+  _initInvPForm(x);
   document.getElementById('ov-inv-private').classList.add('open');
 }
 
@@ -7136,16 +7287,21 @@ async function saveInvPrivate(){
   const district = document.getElementById('invp-district').value;
   if(!name){ toast('أدخل اسم المحطة','err'); return; }
   if(!district){ toast('اختر القاطع','err'); return; }
+  const stSelP = document.getElementById('invp-station');
+  const stOptP = stSelP?.options[stSelP.selectedIndex];
+  const camRowsP = getInvPCamRows();
+  const dvrRowsP = getInvPDvrRows();
+  const totalCamsP = camRowsP.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0);
   const body = {
     name, district,
+    station_id: parseInt(stSelP?.value)||null,
+    station_name: stOptP?.value?stOptP.text:'',
     owner: document.getElementById('invp-owner').value,
     phone: document.getElementById('invp-phone').value,
-    cam_count: parseInt(document.getElementById('invp-cam-count').value)||0,
-    cam_ok: parseInt(document.getElementById('invp-cam-ok').value)||0,
-    cam_bad: parseInt(document.getElementById('invp-cam-bad').value)||0,
-    dvr: document.getElementById('invp-dvr').value,
-    hdd: document.getElementById('invp-hdd').value,
-    storage: document.getElementById('invp-storage').value,
+    cam_count: totalCamsP,
+    cam_rows: JSON.stringify(camRowsP),
+    dvr_rows: JSON.stringify(dvrRowsP),
+    power_source: [...document.querySelectorAll('.invp-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
     status: document.getElementById('invp-status').value,
     notes: document.getElementById('invp-notes').value,
     inv_type: 'private',
@@ -7171,6 +7327,300 @@ async function delInvPrivate(id){
   localStorage.setItem('cam_inv_private', JSON.stringify(list));
   toast('تم الحذف');
   await loadInvPrivate();
+}
+
+
+// ══════════════════════════════════════════
+//  جداول الكاميرات و DVR — البنايات
+// ══════════════════════════════════════════
+let _invbCamCount=0, _invbDvrCount=0;
+
+function addInvBCamRow(data={}){
+  _invbCamCount++;
+  const i=_invbCamCount;
+  const tb=document.getElementById('invb-cam-body');
+  if(!tb)return;
+  const TYPES=['IP','Analog','HDCVI','AHD'];
+  const typeOpts=TYPES.map(t=>`<option value="${t}"${(data.type||'')==t?' selected':''}>{t}</option>`).join('');
+  const lensOpts=`<option value="—">—</option><option value="2.8 mm">2.8 mm</option><option value="4 mm">4 mm</option><option value="6 mm">6 mm</option><option value="8 mm">8 mm</option><option value="12 mm">12 mm</option><option value="2.8mm-5mm مزدوج">2.8mm-5mm مزدوج</option><option value="زاوية 180°">زاوية 180°</option><option value="أخرى">أخرى</option>`.replace(`value="${data.lens||'—'}"`,`value="${data.lens||'—'}" selected`);
+  const tr=document.createElement('tr');
+  tr.id=`invb-cam-${i}`;
+  tr.innerHTML=`
+    <td style="text-align:center;border:1px solid #ddd;color:#888;font-size:11px">${i}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invb-ct-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">${typeOpts}</select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invb-ci-${i}" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invb-co-${i}" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invb-cl-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">${lensOpts}</select></td>
+    <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invb-cam-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
+  tb.appendChild(tr);
+}
+
+function addInvBDvrRow(data={}){
+  _invbDvrCount++;
+  const i=_invbDvrCount;
+  const tb=document.getElementById('invb-dvr-body');
+  if(!tb)return;
+  const tr=document.createElement('tr');
+  tr.id=`invb-dvr-${i}`;
+  tr.innerHTML=`
+    <td style="text-align:center;border:1px solid #ddd;color:#888;font-size:11px">${i}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invb-dm-${i}" value="${data.model||''}" placeholder="NVR 32-ch 16-HDD..." style="width:100%;font-size:11px;padding:3px 5px"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invb-dc-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px"><option${(data.conn||'')==='IP شبكي'?' selected':''}>IP شبكي</option><option${(data.conn||'')==='Coaxial'?' selected':''}>Coaxial</option></select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invb-dh-${i}" value="${data.hdd_size||''}" placeholder="8TB..." style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invb-dn-${i}" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invb-ds-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">
+      <option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+    </select></td>
+    <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invb-dvr-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
+  if(data.storage) tr.querySelector(`#invb-ds-${i}`).value=data.storage;
+  tb.appendChild(tr);
+}
+
+function getInvBCamRows(){
+  return [...document.querySelectorAll('[id^="invb-cam-"]')].map(r=>{
+    const i=r.id.split('-')[2];
+    return{type:document.getElementById('invb-ct-'+i)?.value||'',
+      indoor:+document.getElementById('invb-ci-'+i)?.value||0,
+      outdoor:+document.getElementById('invb-co-'+i)?.value||0,
+      lens:document.getElementById('invb-cl-'+i)?.value||'—'};
+  }).filter(r=>r.type);
+}
+
+function getInvBDvrRows(){
+  return [...document.querySelectorAll('[id^="invb-dvr-"]')].map(r=>{
+    const i=r.id.split('-')[2];
+    return{model:document.getElementById('invb-dm-'+i)?.value||'',
+      conn:document.getElementById('invb-dc-'+i)?.value||'',
+      hdd_size:document.getElementById('invb-dh-'+i)?.value||'',
+      hdd_count:+document.getElementById('invb-dn-'+i)?.value||0,
+      storage:document.getElementById('invb-ds-'+i)?.value||''};
+  }).filter(r=>r.model);
+}
+
+// ══════════════════════════════════════════
+//  جداول الكاميرات و DVR — الأهلية
+// ══════════════════════════════════════════
+let _invpCamCount=0, _invpDvrCount=0;
+
+function addInvPCamRow(data={}){
+  _invpCamCount++;
+  const i=_invpCamCount;
+  const tb=document.getElementById('invp-cam-body');
+  if(!tb)return;
+  const TYPES=['IP','Analog','HDCVI','AHD'];
+  const typeOpts=TYPES.map(t=>`<option value="${t}"${(data.type||'')==t?' selected':''}>{t}</option>`).join('');
+  const lensOpts=`<option value="—">—</option><option value="2.8 mm">2.8 mm</option><option value="4 mm">4 mm</option><option value="6 mm">6 mm</option><option value="8 mm">8 mm</option><option value="12 mm">12 mm</option><option value="2.8mm-5mm مزدوج">2.8mm-5mm مزدوج</option><option value="زاوية 180°">زاوية 180°</option><option value="أخرى">أخرى</option>`.replace(`value="${data.lens||'—'}"`,`value="${data.lens||'—'}" selected`);
+  const tr=document.createElement('tr');
+  tr.id=`invp-cam-${i}`;
+  tr.innerHTML=`
+    <td style="text-align:center;border:1px solid #ddd;color:#888;font-size:11px">${i}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invp-ct-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">${typeOpts}</select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invp-ci-${i}" min="0" value="${data.indoor||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invp-co-${i}" min="0" value="${data.outdoor||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invp-cl-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">${lensOpts}</select></td>
+    <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invp-cam-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
+  tb.appendChild(tr);
+}
+
+function addInvPDvrRow(data={}){
+  _invpDvrCount++;
+  const i=_invpDvrCount;
+  const tb=document.getElementById('invp-dvr-body');
+  if(!tb)return;
+  const tr=document.createElement('tr');
+  tr.id=`invp-dvr-${i}`;
+  tr.innerHTML=`
+    <td style="text-align:center;border:1px solid #ddd;color:#888;font-size:11px">${i}</td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invp-dm-${i}" value="${data.model||''}" placeholder="NVR 16-ch..." style="width:100%;font-size:11px;padding:3px 5px"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invp-dc-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px"><option>IP شبكي</option><option>Coaxial</option></select></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="text" class="fi" id="invp-dh-${i}" value="${data.hdd_size||''}" placeholder="4TB..." style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><input type="number" class="fi" id="invp-dn-${i}" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 5px;text-align:center"></td>
+    <td style="padding:2px 4px;border:1px solid #ddd"><select class="fi" id="invp-ds-${i}" dir="rtl" style="width:100%;font-size:11px;padding:3px 5px">
+      <option value="">—</option><option>7 أيام</option><option>14 يوم</option><option>30 يوم</option><option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+    </select></td>
+    <td style="text-align:center;border:1px solid #ddd"><button type="button" onclick="document.getElementById('invp-dvr-${i}').remove()" style="background:#fee2e2;border:none;border-radius:6px;width:24px;height:24px;cursor:pointer;color:#dc2626;font-size:13px">✕</button></td>`;
+  if(data.storage) tr.querySelector(`#invp-ds-${i}`).value=data.storage;
+  tb.appendChild(tr);
+}
+
+function getInvPCamRows(){
+  return [...document.querySelectorAll('[id^="invp-cam-"]')].map(r=>{
+    const i=r.id.split('-')[2];
+    return{type:document.getElementById('invp-ct-'+i)?.value||'',
+      indoor:+document.getElementById('invp-ci-'+i)?.value||0,
+      outdoor:+document.getElementById('invp-co-'+i)?.value||0,
+      lens:document.getElementById('invp-cl-'+i)?.value||'—'};
+  }).filter(r=>r.type);
+}
+
+function getInvPDvrRows(){
+  return [...document.querySelectorAll('[id^="invp-dvr-"]')].map(r=>{
+    const i=r.id.split('-')[2];
+    return{model:document.getElementById('invp-dm-'+i)?.value||'',
+      conn:document.getElementById('invp-dc-'+i)?.value||'',
+      hdd_size:document.getElementById('invp-dh-'+i)?.value||'',
+      hdd_count:+document.getElementById('invp-dn-'+i)?.value||0,
+      storage:document.getElementById('invp-ds-'+i)?.value||''};
+  }).filter(r=>r.model);
+}
+
+// ══ تحديث openInvBuildingForm ══
+function _initInvBForm(x){
+  _invbCamCount=0; _invbDvrCount=0;
+  document.getElementById('invb-cam-body').innerHTML='';
+  document.getElementById('invb-dvr-body').innerHTML='';
+  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
+  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
+  if(cams.length) cams.forEach(r=>addInvBCamRow(r)); else addInvBCamRow();
+  if(dvrs.length) dvrs.forEach(r=>addInvBDvrRow(r)); else addInvBDvrRow();
+  const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
+  document.querySelectorAll('.invb-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
+}
+
+function _initInvPForm(x){
+  _invpCamCount=0; _invpDvrCount=0;
+  document.getElementById('invp-cam-body').innerHTML='';
+  document.getElementById('invp-dvr-body').innerHTML='';
+  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
+  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
+  if(cams.length) cams.forEach(r=>addInvPCamRow(r)); else addInvPCamRow();
+  if(dvrs.length) dvrs.forEach(r=>addInvPDvrRow(r)); else addInvPDvrRow();
+  const pwVals=(x.power_source||'').split('+').map(s=>s.trim());
+  document.querySelectorAll('.invp-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
+}
+
+// ══ طباعة جرد البناية/المحطة الأهلية ══
+function printInvDetail(x, type){
+  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
+  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
+  const totalIn=cams.reduce((a,r)=>a+(+r.indoor||0),0);
+  const totalOut=cams.reduce((a,r)=>a+(+r.outdoor||0),0);
+  const total=totalIn+totalOut;
+  const now=new Date();
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
+  const dayStr=days[now.getDay()];
+  const pwList=['كهرباء وطني','مولد','UPS','طاقة شمسية'];
+  const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
+  const pwHtml='<table style="border-collapse:collapse;border:none"><tr>'+pwList.map(p=>
+    `<td style="border:none;padding:1px 5px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">
+    <span style="width:12px;height:12px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:900">${pwSaved.some(s=>s===p)?'&#10003;':''}</span>
+    <span style="font-size:9px;white-space:nowrap">${p}</span></span></td>`).join('')+'</tr></table>';
+
+  let camRows='';
+  for(let i=0;i<Math.max(cams.length,4);i++){
+    const r=cams[i]||{};
+    camRows+=`<tr style="height:18px">
+      <td style="text-align:center;border:1px solid #444;font-weight:800">${i+1}</td>
+      <td style="text-align:center;border:1px solid #444">${r.type||''}</td>
+      <td style="text-align:center;border:1px solid #444;font-weight:900;color:#166534">${r.indoor||''}</td>
+      <td style="text-align:center;border:1px solid #444;font-weight:900;color:#1d4ed8">${r.outdoor||''}</td>
+      <td style="text-align:center;border:1px solid #444">${r.lens&&r.lens!=='—'?r.lens:''}</td>
+      <td style="border:1px solid #444"></td></tr>`;
+  }
+  camRows+=`<tr style="background:#e5e7eb">
+    <td colspan="2" style="text-align:center;font-weight:800;border:1px solid #888">المجموع الكلي</td>
+    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#166534">${totalIn}</td>
+    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#1d4ed8">${totalOut}</td>
+    <td style="border:1px solid #888"></td>
+    <td style="text-align:center;font-weight:900;border:1px solid #888;color:#166534">الإجمالي: ${total} كاميرا</td></tr>`;
+
+  let dvrRows='';
+  for(let i=0;i<Math.max(dvrs.length,3);i++){
+    const r=dvrs[i]||{};
+    dvrRows+=`<tr style="height:18px">
+      <td style="text-align:center;border:1px solid #444;font-weight:800">${i+1}</td>
+      <td style="text-align:right;font-weight:700;border:1px solid #444;padding:2px 6px">${r.model||''}</td>
+      <td style="text-align:center;border:1px solid #444">${r.conn||''}</td>
+      <td style="text-align:center;font-weight:700;border:1px solid #444;color:#1d4ed8">${r.hdd_size||''}</td>
+      <td style="text-align:center;font-weight:700;border:1px solid #444;color:#7c3aed">${r.hdd_count||''}</td>
+      <td style="text-align:center;border:1px solid #444">${r.storage||''}</td>
+      <td style="padding:2px 4px;border:1px solid #444">${i===0?pwHtml:''}</td>
+      <td style="border:1px solid #444"></td></tr>`;
+  }
+
+  const typeLabel=type==='building'?'🏢 البنايات الحكومية':'🏪 المحطات الأهلية';
+  const ownerRow=type==='private'&&x.owner?`<tr><td style="padding:2px 6px;font-weight:700;background:#f8fafc;border:1px solid #aaa">صاحب المحطة :</td><td colspan="5" style="padding:2px 6px;border:1px solid #aaa;font-weight:700">${x.owner||''}</td></tr>`:'';
+
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:Arial,sans-serif;padding:10px;font-size:11px;direction:rtl}
+    .form-page{padding:14px;border:1px solid #999}
+    .hdr{display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid #333;padding-bottom:8px;margin-bottom:10px}
+    .co-name{font-size:15px;font-weight:900;text-align:center}
+    .co-sub{font-size:12px;font-weight:700;text-align:center;color:#333}
+    .sh{background:#222;color:#fff;font-weight:800;font-size:10px;padding:3px 8px;margin:6px 0 2px}
+    table{width:100%;border-collapse:collapse}
+    td,th{border:1px solid #aaa;padding:3px 6px;font-size:10px;vertical-align:middle}
+    th{background:#d5d5d5;font-weight:800;text-align:center}
+    .sig{display:flex;justify-content:space-between;margin-top:16px;gap:20px}
+    .sig-box{flex:1;text-align:center;border:1px solid #aaa;padding:6px}
+    .sig-line{border-bottom:1px solid #333;margin:22px 10px 4px}
+    .no-print{margin-bottom:10px;display:flex;gap:8px}
+    @media print{.no-print{display:none!important}@page{margin:7mm;size:A4}}
+  </style></head><body>
+  <div class="no-print">
+    <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
+    <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer">✕ إغلاق</button>
+  </div>
+  <div class="form-page">
+    <div class="hdr">
+      <div>
+        <div class="co-name">شركة توزيع المنتجات النفطية</div>
+        <div class="co-sub">فرع صلاح الدين</div>
+        <div class="co-sub">شعبة تقنية المعلومات — ${typeLabel}</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:11px;margin-bottom:3px">اليوم: ${dayStr} / التاريخ: ${dateStr}</div>
+        <div style="font-size:11px">استمارة جرد كاميرات المراقبة</div>
+      </div>
+    </div>
+    <table style="margin-bottom:8px">
+      <tr>
+        <td style="font-weight:700;background:#f5f5f5;width:100px">${type==='building'?'اسم البناية':'اسم المحطة'} :</td>
+        <td colspan="2" style="font-weight:700">${x.name||'—'}</td>
+        <td style="font-weight:700;background:#f5f5f5;width:80px">القاطع :</td>
+        <td colspan="2">${x.district||'—'}</td>
+      </tr>
+      ${ownerRow}
+      <tr>
+        <td style="font-weight:700;background:#f5f5f5">اسم الدائرة :</td>
+        <td colspan="5">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+      </tr>
+    </table>
+    <div class="sh">📷 جدول الكاميرات</div>
+    <table>
+      <thead><tr>
+        <th style="width:36px">التسلسل</th><th style="width:80px">نوع الكاميرا</th>
+        <th style="width:75px">عدد الداخلية</th><th style="width:75px">عدد الخارجية</th>
+        <th style="width:90px">حجم عدسة الكاميرا</th><th>الملاحظات</th>
+      </tr></thead>
+      <tbody>${camRows}</tbody>
+    </table>
+    <div class="sh" style="margin-top:8px">🎥 جدول أجهزة التسجيل الفيديوي</div>
+    <table>
+      <thead><tr>
+        <th style="width:36px">التسلسل</th><th>نوع جهاز التسجيل</th>
+        <th style="width:75px">طريقة الربط</th><th style="width:65px">سعة الهارد</th>
+        <th style="width:55px">عدد الهاردات</th><th style="width:100px">فترة التسجيل</th>
+        <th style="width:160px">مصدر الطاقة الكهربائية</th><th>الملاحظات</th>
+      </tr></thead>
+      <tbody>${dvrRows}</tbody>
+    </table>
+    ${x.notes?`<div style="margin-top:8px;border:1px solid #aaa;padding:6px"><b>ملاحظات:</b> ${x.notes}</div>`:''}
+    <div class="sig">
+      <div class="sig-box"><div class="sig-line"></div><div style="font-size:10px;font-weight:700">مسؤول وحدة الكاميرات</div></div>
+      <div class="sig-box"><div class="sig-line"></div><div style="font-size:10px;font-weight:700">مدير الفرع</div></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;margin-top:6px;font-size:9px;color:#666;border-top:1px solid #ddd;padding-top:4px">
+      <span>نظام إدارة كاميرات المراقبة — OPDC</span>
+      <span>شركة توزيع المنتجات النفطية / فرع صلاح الدين</span>
+      <span>${dateStr}</span>
+    </div>
+  </div></body></html>`);
+  w.document.close();
 }
 
 tryAutoLogin();</script>
