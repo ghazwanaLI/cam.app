@@ -7739,7 +7739,7 @@ function printInvDetail(x, type){
     .sig-box{flex:1;border:1px solid #aaa;padding:5px;text-align:center}
     .sig-line{border-bottom:1px solid #333;margin:20px 8px 4px}
     .no-print{margin-bottom:8px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:5mm;size:A4}}
+    @media print{.no-print{display:none!important}@page{margin:5mm;size:A4 landscape}}
   </style></head><body>
   <div class="no-print">
     <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-size:12px;font-weight:700">🖨️ طباعة</button>
@@ -8004,7 +8004,7 @@ function openInvPrintWindow(){
   if(!content){ toast('لا يوجد محتوى للطباعة','err'); return; }
   const w = window.open('','_blank','width=1000,height=750');
   if(!w){ toast('السماح بالنوافذ المنبثقة مطلوب','err'); return; }
-  const css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:10px;direction:rtl;background:#fff}.no-print{margin-bottom:10px;display:flex;gap:8px;padding:8px;background:#f8fafc;border-radius:6px}@media print{.no-print{display:none!important}@page{margin:6mm;size:A4}}';
+  const css='*{margin:0;padding:0;box-sizing:border-box}body{font-family:Arial,sans-serif;padding:10px;direction:rtl;background:#fff}.no-print{margin-bottom:10px;display:flex;gap:8px;padding:8px;background:#f8fafc;border-radius:6px}@media print{.no-print{display:none!important}@page{margin:6mm;size:A4 landscape}}';
   const btns='<div class="no-print"><button onclick="window.print()" style="background:#166534;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">طباعة</button> <button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-size:13px">اغلاق</button></div>';
   w.document.open();
   w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'+css+'</style></head><body>'+btns+content+'</body></html>');
