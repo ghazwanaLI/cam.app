@@ -230,9 +230,14 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_GET(self):
         p=urlparse(self.path).path.rstrip("/")
+        # ── الصفحة الرئيسية + ملفات static (بدون authentication) ──
         if p in ("","/"): 
             f=os.path.join(os.path.dirname(os.path.abspath(__file__)),"cam_index.html")
             with open(f,"r",encoding="utf-8") as fh: self.send_html(fh.read()); return
+        if p=="/favicon.ico":
+            self.send_response(204); self.end_headers(); return
+        if p.endswith(".html") or p.endswith(".js") or p.endswith(".css"):
+            self.send_response(404); self.end_headers(); return
         u=self.require_auth()
         if not u: return
         db=load_db()
