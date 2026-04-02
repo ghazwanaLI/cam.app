@@ -5532,36 +5532,24 @@ function renderUsers(){
     const districts=Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
 
     const isMe = u.id===CU?.id;
-    return `<div style="background:#fff;border-radius:14px;box-shadow:0 1px 8px rgba(0,0,0,.07);border:${isMe?'2px solid #22c55e':'1px solid #f1f5f9'};overflow:hidden;transition:transform .18s,box-shadow .18s;position:relative" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 6px 20px rgba(0,0,0,.11)'" onmouseout="this.style.transform='';this.style.boxShadow='0 1px 8px rgba(0,0,0,.07)'">
-      ${isMe?'<div style="position:absolute;top:8px;left:8px;z-index:2;background:#22c55e;color:#fff;font-size:9px;font-weight:800;padding:2px 7px;border-radius:20px;display:flex;align-items:center;gap:3px"><span class=\"user-online-pulse\" style=\"display:inline-block;width:6px;height:6px;background:#fff;border-radius:50%\"></span>أنت</div>':''}
-      <!-- Card Header -->
-      <div style="background:${grad};padding:14px 14px 10px">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.25);border:1.5px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;font-family:Cairo,sans-serif;flex-shrink:0">${initial}</div>
-          <div style="flex:1;min-width:0">
-            <div style="font-size:13px;font-weight:800;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${u.fullname||'—'}</div>
-            <div style="font-size:10px;color:rgba(255,255,255,.7);font-family:monospace">@${u.username||'—'}</div>
-          </div>
-          <div style="background:${isActive?'rgba(0,255,100,.25)':'rgba(255,0,0,.25)'};border:1px solid ${isActive?'rgba(0,255,100,.5)':'rgba(255,0,0,.5)'};color:#fff;font-size:9px;font-weight:700;padding:2px 6px;border-radius:12px;white-space:nowrap">${isActive?'● نشط':'○ موقوف'}</div>
-        </div>
-        <div style="margin-top:8px;display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);border-radius:6px;padding:2px 8px;font-size:10px;font-weight:700;color:#fff">
-          ${isAdmin?'🔑 مدير':'👤 مخول'}
-        </div>
+    return `<div style="background:#fff;border-radius:12px;box-shadow:0 1px 6px rgba(0,0,0,.08);border:${isMe?'2px solid #22c55e':'1px solid #f1f5f9'};overflow:hidden;transition:transform .15s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform=''">
+      <!-- أفاتار + اسم -->
+      <div style="background:${grad};padding:12px;text-align:center;position:relative">
+        ${isMe?`<div style="position:absolute;top:6px;left:6px;background:#22c55e;color:#fff;font-size:8px;font-weight:800;padding:1px 6px;border-radius:10px;display:flex;align-items:center;gap:2px"><span class="user-online-pulse" style="display:inline-block;width:5px;height:5px;background:#fff;border-radius:50%"></span>أنت</div>`:''}
+        <div style="width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;font-family:Cairo,sans-serif;margin:0 auto 6px">${initial}</div>
+        <div style="font-size:12px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.fullname||'—'}</div>
+        <div style="font-size:9px;color:rgba(255,255,255,.7);margin-top:2px">${isAdmin?'🔑 مدير':'👤 مخول'}</div>
       </div>
-      <!-- Card Body -->
-      <div style="padding:10px 12px">
-        <div style="display:flex;flex-wrap:wrap;gap:3px;margin-bottom:8px;min-height:20px">
-          ${isAdmin?'<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10px;font-weight:700;padding:1px 6px;border-radius:5px">كل القواطع</span>':
-            districts.length?districts.map(d=>`<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px">${d}</span>`).join(''):
-            '<span style="color:#94a3b8;font-size:10px">لا قواطع محددة</span>'}
+      <!-- معلومات مضغوطة -->
+      <div style="padding:8px 10px">
+        <div style="font-size:9px;color:#94a3b8;font-family:monospace;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@${u.username||''}</div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:9px;font-weight:700;color:${isActive?'#16a34a':'#dc2626'}">${isActive?'● نشط':'○ موقوف'}</span>
+          <span style="font-size:9px;color:#64748b">${isAdmin?'كل القواطع':districts.length?districts[0]+(districts.length>1?' +'+(districts.length-1):''):'—'}</span>
         </div>
-        <div style="display:flex;flex-wrap:wrap;gap:3px;min-height:20px">
-          ${permList.length?permList.map(k=>`<span style="background:#f8fafc;border:1px solid #e2e8f0;font-size:10px;font-weight:600;padding:1px 6px;border-radius:5px;color:#334155">${PERM_INFO[k].icon}${PERM_INFO[k].label}</span>`).join(''):
-            '<span style="color:#94a3b8;font-size:10px">قراءة فقط</span>'}
-        </div>
-        <div style="display:flex;gap:6px;margin-top:10px;padding-top:8px;border-top:1px solid #f1f5f9">
-          <button onclick="editUser(${u.id})" style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:6px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700">✏️ تعديل</button>
-          ${u.id!==CU?.id?`<button onclick="delUser(${u.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:6px 10px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700">🗑️</button>`:'<span style="padding:6px;font-size:10px;color:#94a3b8;display:flex;align-items:center">حسابي</span>'}
+        <div style="display:flex;gap:4px">
+          <button onclick="editUser(${u.id})" style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:5px 4px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:10px;font-weight:700">✏️</button>
+          ${u.id!==CU?.id?`<button onclick="delUser(${u.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:5px 8px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:10px;font-weight:700">🗑️</button>`:''}
         </div>
       </div>
     </div>`;
