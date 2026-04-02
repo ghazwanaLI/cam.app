@@ -1187,35 +1187,75 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
         </div>
 
-        <!-- محتوى: جرد البنايات الحكومية -->
+        <!-- ══ جرد البنايات الحكومية ══ -->
         <div id="inv-sub-inv-buildings" class="inv-sub-content" style="display:none">
           <div class="section">
             <div class="sec-hdr">
-              <div class="sec-title"><div class="sdot" style="background:#0891b2"></div>🏢 جرد البنايات الحكومية</div>
+              <div class="sec-title"><div class="sdot" style="background:#0891b2;box-shadow:0 0 8px rgba(8,145,178,.4)"></div>🏢 جرد البنايات الحكومية</div>
               <div class="sec-actions">
-                <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
-                <button class="btn btn-p btn-sm" id="btn-add-inv-buildings" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
+                <select class="fi btn-sm" id="f-invb-district" onchange="filterInvBuildings()" style="width:130px">
+                  <option value="">كل القواطع</option>
+                </select>
+                <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-invb" placeholder="بحث..." oninput="filterInvBuildings()" style="width:130px"></div>
+                <button class="btn btn-o btn-sm" onclick="loadInvBuildings()">🔄</button>
+                <button class="btn btn-p btn-sm" id="btn-add-inv-buildings" onclick="openInvBuildingForm()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">➕ إضافة جرد جديد</button>
               </div>
             </div>
-            <div style="padding:30px;text-align:center;color:var(--t3);font-size:13px">
-              🏢 سيتم إضافة جرد البنايات الحكومية قريباً
+            <div class="table-wrap">
+              <table style="direction:rtl;width:100%;border-collapse:collapse">
+                <thead>
+                  <tr style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff">
+                    <th style="padding:9px 10px;text-align:center;width:40px">#</th>
+                    <th style="padding:9px 12px;text-align:right">اسم البناية</th>
+                    <th style="padding:9px 10px;text-align:center;width:100px">القاطع</th>
+                    <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
+                    <th style="padding:9px 10px;text-align:center;width:120px">نوع الجهاز</th>
+                    <th style="padding:9px 10px;text-align:center;width:100px">فترة التسجيل</th>
+                    <th style="padding:9px 10px;text-align:center;width:90px">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="invb-list-body">
+                  <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات</td></tr>
+                </tbody>
+              </table>
             </div>
+            <div class="pagination" id="pg-invb"></div>
           </div>
         </div>
 
-        <!-- محتوى: جرد المحطات الأهلية -->
+        <!-- ══ جرد المحطات الأهلية ══ -->
         <div id="inv-sub-inv-private" class="inv-sub-content" style="display:none">
           <div class="section">
             <div class="sec-hdr">
-              <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 جرد المحطات الأهلية</div>
+              <div class="sec-title"><div class="sdot" style="background:#d97706;box-shadow:0 0 8px rgba(217,119,6,.4)"></div>🏪 جرد المحطات الأهلية</div>
               <div class="sec-actions">
-                <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
-                <button class="btn btn-p btn-sm" id="btn-add-inv-private" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
+                <select class="fi btn-sm" id="f-invp-district" onchange="filterInvPrivate()" style="width:130px">
+                  <option value="">كل القواطع</option>
+                </select>
+                <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-invp" placeholder="بحث..." oninput="filterInvPrivate()" style="width:130px"></div>
+                <button class="btn btn-o btn-sm" onclick="loadInvPrivate()">🔄</button>
+                <button class="btn btn-p btn-sm" id="btn-add-inv-private" onclick="openInvPrivateForm()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة جرد جديد</button>
               </div>
             </div>
-            <div style="padding:30px;text-align:center;color:var(--t3);font-size:13px">
-              🏪 سيتم إضافة جرد المحطات الأهلية قريباً
+            <div class="table-wrap">
+              <table style="direction:rtl;width:100%;border-collapse:collapse">
+                <thead>
+                  <tr style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff">
+                    <th style="padding:9px 10px;text-align:center;width:40px">#</th>
+                    <th style="padding:9px 12px;text-align:right">اسم المحطة</th>
+                    <th style="padding:9px 10px;text-align:center;width:100px">القاطع</th>
+                    <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
+                    <th style="padding:9px 10px;text-align:center;width:120px">نوع الجهاز</th>
+                    <th style="padding:9px 10px;text-align:center;width:100px">فترة التسجيل</th>
+                    <th style="padding:9px 10px;text-align:center;width:90px">إجراءات</th>
+                  </tr>
+                </thead>
+                <tbody id="invp-list-body">
+                  <tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات</td></tr>
+                </tbody>
+              </table>
             </div>
+            <div class="pagination" id="pg-invp"></div>
           </div>
         </div>
 
@@ -2284,6 +2324,102 @@ tr:hover td{background:rgba(30,58,95,.03);}
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
       <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: جرد البنايات الحكومية -->
+<div class="overlay" id="ov-inv-building" onclick="closeOv(event,'ov-inv-building')">
+  <div class="modal" style="width:680px;max-height:92vh;overflow-y:auto">
+    <div class="m-title">🏢 <span id="invb-ttl">إضافة جرد بناية حكومية</span></div>
+    <input type="hidden" id="invb-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">اسم البناية / المنشأة *</label>
+        <input class="fi" id="invb-name" type="text" placeholder="مثال: مبنى المديرية..."></div>
+      <div class="fg"><label class="fl">القاطع *</label>
+        <select class="fi" dir="rtl" id="invb-district"><option value="">— اختر —</option></select></div>
+      <div class="fg"><label class="fl">نوع البناية</label>
+        <select class="fi" dir="rtl" id="invb-type">
+          <option value="مديرية">مديرية</option>
+          <option value="دائرة حكومية">دائرة حكومية</option>
+          <option value="مستودع">مستودع</option>
+          <option value="مركز توزيع">مركز توزيع</option>
+          <option value="أخرى">أخرى</option>
+        </select></div>
+      <div class="fg"><label class="fl">عدد الكاميرات</label>
+        <input class="fi" id="invb-cam-count" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">تعمل</label>
+        <input class="fi" id="invb-cam-ok" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">معطلة</label>
+        <input class="fi" id="invb-cam-bad" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">نوع جهاز التسجيل</label>
+        <input class="fi" id="invb-dvr" type="text" placeholder="NVR / DVR..."></div>
+      <div class="fg"><label class="fl">سعة الهارد</label>
+        <input class="fi" id="invb-hdd" type="text" placeholder="2TB / 4TB..."></div>
+      <div class="fg"><label class="fl">فترة التسجيل</label>
+        <select class="fi" dir="rtl" id="invb-storage">
+          <option value="">— اختر —</option>
+          <option>7 أيام</option><option>14 يوم</option><option>30 يوم</option>
+          <option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+        </select></div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" dir="rtl" id="invb-status">
+          <option value="مكتمل">✅ مكتمل</option>
+          <option value="جزئي">⚠️ جزئي</option>
+          <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
+        </select></div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invb-notes" rows="2" style="resize:vertical;text-align:right"></textarea></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv-building')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveInvBuilding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: جرد المحطات الأهلية -->
+<div class="overlay" id="ov-inv-private" onclick="closeOv(event,'ov-inv-private')">
+  <div class="modal" style="width:680px;max-height:92vh;overflow-y:auto">
+    <div class="m-title">🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span></div>
+    <input type="hidden" id="invp-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">اسم المحطة *</label>
+        <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..."></div>
+      <div class="fg"><label class="fl">القاطع *</label>
+        <select class="fi" dir="rtl" id="invp-district"><option value="">— اختر —</option></select></div>
+      <div class="fg"><label class="fl">اسم صاحب المحطة</label>
+        <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..."></div>
+      <div class="fg"><label class="fl">رقم الهاتف</label>
+        <input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx"></div>
+      <div class="fg"><label class="fl">عدد الكاميرات</label>
+        <input class="fi" id="invp-cam-count" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">تعمل</label>
+        <input class="fi" id="invp-cam-ok" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">معطلة</label>
+        <input class="fi" id="invp-cam-bad" type="number" min="0" value="0"></div>
+      <div class="fg"><label class="fl">نوع جهاز التسجيل</label>
+        <input class="fi" id="invp-dvr" type="text" placeholder="NVR / DVR..."></div>
+      <div class="fg"><label class="fl">سعة الهارد</label>
+        <input class="fi" id="invp-hdd" type="text" placeholder="2TB / 4TB..."></div>
+      <div class="fg"><label class="fl">فترة التسجيل</label>
+        <select class="fi" dir="rtl" id="invp-storage">
+          <option value="">— اختر —</option>
+          <option>7 أيام</option><option>14 يوم</option><option>30 يوم</option>
+          <option>60 يوم</option><option>90 يوم</option><option>أكثر من 90 يوم</option>
+        </select></div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" dir="rtl" id="invp-status">
+          <option value="مكتمل">✅ مكتمل</option>
+          <option value="جزئي">⚠️ جزئي</option>
+          <option value="يحتاج صيانة">🔧 يحتاج صيانة</option>
+        </select></div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;text-align:right"></textarea></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv-private')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveInvPrivate()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">💾 حفظ</button>
     </div>
   </div>
 </div>
@@ -3914,6 +4050,8 @@ function switchInvSub(sub){
   if(ct) ct.style.display='';
   if(tb){tb.style.borderBottomColor='#1d4ed8';tb.style.color='#1d4ed8';tb.style.background='#fff';tb.style.fontWeight='700';}
   if(sub==='inv-gov'||sub==='inv-stations') loadInvStations();
+  if(sub==='inv-buildings') loadInvBuildings();
+  if(sub==='inv-private') loadInvPrivate();
 }
 
 function goTab(name, el){
@@ -6805,6 +6943,234 @@ async function saveDelegate(){
 function toggleExtraDelegate(){
   const extra=document.getElementById('extra-delegate-row');
   if(extra) extra.style.display=extra.style.display==='none'?'':'none';
+}
+
+
+// ══════════════════════════════════════════
+//  جرد البنايات الحكومية
+// ══════════════════════════════════════════
+let allInvBuildings = [];
+
+async function loadInvBuildings(){
+  try{
+    const d = await api('GET','/api/inv_buildings');
+    allInvBuildings = d.items || d.inv_buildings || [];
+  }catch(e){ allInvBuildings = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]'); }
+  renderInvBuildings();
+  // تحديث فلتر القاطع
+  const sel = document.getElementById('f-invb-district');
+  if(sel){
+    const dists = [...new Set(allInvBuildings.map(x=>x.district).filter(Boolean))];
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">كل القواطع</option>' + dists.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(cur) sel.value = cur;
+  }
+  const addBtn = document.getElementById('btn-add-inv-buildings');
+  if(addBtn) addBtn.style.display = can('edit') ? 'inline-flex' : 'none';
+}
+
+function renderInvBuildings(){
+  const search = (document.getElementById('sq-invb')?.value||'').toLowerCase();
+  const distF  = document.getElementById('f-invb-district')?.value||'';
+  const list = allInvBuildings.filter(x=>{
+    if(distF && x.district !== distF) return false;
+    if(search && !JSON.stringify(x).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tb = document.getElementById('invb-list-body');
+  if(!tb) return;
+  const B = 'border:1px solid #e2e8f0';
+  tb.innerHTML = list.length ? list.map((x,i)=>`
+    <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#0891b2">${x.cam_count||0}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
+      <td style="padding:5px 6px;text-align:center;${B}">
+        ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
+      </td>
+    </tr>`).join('')
+  : '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات — اضغط "إضافة جرد جديد"</td></tr>';
+}
+function filterInvBuildings(){ renderInvBuildings(); }
+
+function openInvBuildingForm(id){
+  const x = id ? allInvBuildings.find(r=>r.id===id)||{} : {};
+  document.getElementById('invb-eid').value = id||'';
+  document.getElementById('invb-ttl').textContent = id ? 'تعديل جرد بناية' : 'إضافة جرد بناية حكومية';
+  document.getElementById('invb-name').value = x.name||'';
+  document.getElementById('invb-type').value = x.type||'مديرية';
+  document.getElementById('invb-cam-count').value = x.cam_count||0;
+  document.getElementById('invb-cam-ok').value = x.cam_ok||0;
+  document.getElementById('invb-cam-bad').value = x.cam_bad||0;
+  document.getElementById('invb-dvr').value = x.dvr||'';
+  document.getElementById('invb-hdd').value = x.hdd||'';
+  document.getElementById('invb-storage').value = x.storage||'';
+  document.getElementById('invb-status').value = x.status||'مكتمل';
+  document.getElementById('invb-notes').value = x.notes||'';
+  // تحميل القواطع
+  const ds = document.getElementById('invb-district');
+  ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  document.getElementById('ov-inv-building').classList.add('open');
+}
+
+async function saveInvBuilding(){
+  const id = parseInt(document.getElementById('invb-eid').value)||0;
+  const name = document.getElementById('invb-name').value.trim();
+  const district = document.getElementById('invb-district').value;
+  if(!name){ toast('أدخل اسم البناية','err'); return; }
+  if(!district){ toast('اختر القاطع','err'); return; }
+  const body = {
+    name, district,
+    type: document.getElementById('invb-type').value,
+    cam_count: parseInt(document.getElementById('invb-cam-count').value)||0,
+    cam_ok: parseInt(document.getElementById('invb-cam-ok').value)||0,
+    cam_bad: parseInt(document.getElementById('invb-cam-bad').value)||0,
+    dvr: document.getElementById('invb-dvr').value,
+    hdd: document.getElementById('invb-hdd').value,
+    storage: document.getElementById('invb-storage').value,
+    status: document.getElementById('invb-status').value,
+    notes: document.getElementById('invb-notes').value,
+    inv_type: 'building',
+    created_by: CU?.fullname||'',
+    updated_at: new Date().toISOString().split('T')[0]
+  };
+  try{
+    // حفظ في localStorage (يمكن ربطه بـ API لاحقاً)
+    const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');
+    if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
+    else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
+    localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
+    closeModal('ov-inv-building');
+    toast('تم الحفظ ✅');
+    await loadInvBuildings();
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
+}
+
+function editInvBuilding(id){ openInvBuildingForm(id); }
+
+async function delInvBuilding(id){
+  if(!confirm('حذف هذا الجرد؟')) return;
+  const list = JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]').filter(x=>x.id!==id);
+  localStorage.setItem('cam_inv_buildings', JSON.stringify(list));
+  toast('تم الحذف');
+  await loadInvBuildings();
+}
+
+// ══════════════════════════════════════════
+//  جرد المحطات الأهلية
+// ══════════════════════════════════════════
+let allInvPrivate = [];
+
+async function loadInvPrivate(){
+  try{
+    const d = await api('GET','/api/inv_private');
+    allInvPrivate = d.items || d.inv_private || [];
+  }catch(e){ allInvPrivate = JSON.parse(localStorage.getItem('cam_inv_private')||'[]'); }
+  renderInvPrivate();
+  const sel = document.getElementById('f-invp-district');
+  if(sel){
+    const dists = [...new Set(allInvPrivate.map(x=>x.district).filter(Boolean))];
+    const cur = sel.value;
+    sel.innerHTML = '<option value="">كل القواطع</option>' + dists.map(d=>`<option value="${d}">${d}</option>`).join('');
+    if(cur) sel.value = cur;
+  }
+  const addBtn = document.getElementById('btn-add-inv-private');
+  if(addBtn) addBtn.style.display = can('edit') ? 'inline-flex' : 'none';
+}
+
+function renderInvPrivate(){
+  const search = (document.getElementById('sq-invp')?.value||'').toLowerCase();
+  const distF  = document.getElementById('f-invp-district')?.value||'';
+  const list = allInvPrivate.filter(x=>{
+    if(distF && x.district !== distF) return false;
+    if(search && !JSON.stringify(x).toLowerCase().includes(search)) return false;
+    return true;
+  });
+  const tb = document.getElementById('invp-list-body');
+  if(!tb) return;
+  const B = 'border:1px solid #e2e8f0';
+  tb.innerHTML = list.length ? list.map((x,i)=>`
+    <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#d97706">${x.cam_count||0}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
+      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
+      <td style="padding:5px 6px;text-align:center;${B}">
+        ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
+        ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
+      </td>
+    </tr>`).join('')
+  : '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات — اضغط "إضافة جرد جديد"</td></tr>';
+}
+function filterInvPrivate(){ renderInvPrivate(); }
+
+function openInvPrivateForm(id){
+  const x = id ? allInvPrivate.find(r=>r.id===id)||{} : {};
+  document.getElementById('invp-eid').value = id||'';
+  document.getElementById('invp-ttl').textContent = id ? 'تعديل جرد محطة أهلية' : 'إضافة جرد محطة أهلية';
+  document.getElementById('invp-name').value = x.name||'';
+  document.getElementById('invp-owner').value = x.owner||'';
+  document.getElementById('invp-phone').value = x.phone||'';
+  document.getElementById('invp-cam-count').value = x.cam_count||0;
+  document.getElementById('invp-cam-ok').value = x.cam_ok||0;
+  document.getElementById('invp-cam-bad').value = x.cam_bad||0;
+  document.getElementById('invp-dvr').value = x.dvr||'';
+  document.getElementById('invp-hdd').value = x.hdd||'';
+  document.getElementById('invp-storage').value = x.storage||'';
+  document.getElementById('invp-status').value = x.status||'مكتمل';
+  document.getElementById('invp-notes').value = x.notes||'';
+  const ds = document.getElementById('invp-district');
+  ds.innerHTML = '<option value="">— اختر القاطع —</option>' + DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  document.getElementById('ov-inv-private').classList.add('open');
+}
+
+async function saveInvPrivate(){
+  const id = parseInt(document.getElementById('invp-eid').value)||0;
+  const name = document.getElementById('invp-name').value.trim();
+  const district = document.getElementById('invp-district').value;
+  if(!name){ toast('أدخل اسم المحطة','err'); return; }
+  if(!district){ toast('اختر القاطع','err'); return; }
+  const body = {
+    name, district,
+    owner: document.getElementById('invp-owner').value,
+    phone: document.getElementById('invp-phone').value,
+    cam_count: parseInt(document.getElementById('invp-cam-count').value)||0,
+    cam_ok: parseInt(document.getElementById('invp-cam-ok').value)||0,
+    cam_bad: parseInt(document.getElementById('invp-cam-bad').value)||0,
+    dvr: document.getElementById('invp-dvr').value,
+    hdd: document.getElementById('invp-hdd').value,
+    storage: document.getElementById('invp-storage').value,
+    status: document.getElementById('invp-status').value,
+    notes: document.getElementById('invp-notes').value,
+    inv_type: 'private',
+    created_by: CU?.fullname||'',
+    updated_at: new Date().toISOString().split('T')[0]
+  };
+  try{
+    const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]');
+    if(id){ const idx=list.findIndex(x=>x.id===id); if(idx>-1) list[idx]={...list[idx],...body}; }
+    else { const nid=(list.reduce((m,x)=>Math.max(m,x.id||0),0))+1; list.push({...body,id:nid}); }
+    localStorage.setItem('cam_inv_private', JSON.stringify(list));
+    closeModal('ov-inv-private');
+    toast('تم الحفظ ✅');
+    await loadInvPrivate();
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
+}
+
+function editInvPrivate(id){ openInvPrivateForm(id); }
+
+async function delInvPrivate(id){
+  if(!confirm('حذف هذا الجرد؟')) return;
+  const list = JSON.parse(localStorage.getItem('cam_inv_private')||'[]').filter(x=>x.id!==id);
+  localStorage.setItem('cam_inv_private', JSON.stringify(list));
+  toast('تم الحذف');
+  await loadInvPrivate();
 }
 
 tryAutoLogin();</script>
