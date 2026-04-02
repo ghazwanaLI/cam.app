@@ -7365,7 +7365,7 @@ function showStationDetail(sid){
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-weight:700;font-size:14px">🚗 الجولات الميدانية (${tours.length})</div>
-        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');goTab('field',document.querySelector('[onclick*=\"field\"]'));setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
+        <button class="btn btn-p btn-sm" onclick="openTourFromStation('${sid}','${(s.district||'')}')">➕ إضافة جولة</button>
       </div>
       ${tours.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead><tr style="background:var(--bg2)">
@@ -8860,6 +8860,23 @@ function exportHandoverExcel(){
   a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='استلام_وتسليم.csv'; a.click();
   toast('تم التصدير ✅');
+}
+
+
+function openTourFromStation(sid, district){
+  closeModal('ov-station-detail');
+  goTab('field', document.querySelector('[onclick*="field"]'));
+  setTimeout(function(){
+    openTourModal(0);
+    setTimeout(function(){
+      const ds=document.getElementById('tour-district');
+      if(ds){ ds.value=district; filterTourStations(); }
+      setTimeout(function(){
+        const ss=document.getElementById('tour-station');
+        if(ss) ss.value=sid;
+      },100);
+    },50);
+  },300);
 }
 
 tryAutoLogin();</script>
