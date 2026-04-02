@@ -155,7 +155,7 @@ def default_db():
         
         "custom_districts":[],
         "notifications":[],
-        "inv_buildings":[],"next_inv_building_id":1,
+        "inv_buildings":[],"next_inv_building_id":1,"handover":[],"next_handover_id":1,
         "inv_private":[],"next_inv_private_id":1,
         "next_notif_id":1,
     }
@@ -326,6 +326,12 @@ class Handler(BaseHTTPRequestHandler):
             if code_q: logs=[l for l in logs if l.get("code")==code_q]
             self.send_json({"ok":True,"logs":list(reversed(logs[-100:]))})
 
+        elif p=="/api/handover":
+            items=db.get("handover",[])
+            if u["role"]!="admin" and u.get("district"):
+                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                if u_dists: items=[x for x in items if x.get("district") in u_dists]
+            self.send_json({"ok":True,"items":items})
         elif p=="/api/inv_buildings":
             items=db.get("inv_buildings",[])
             if u["role"]!="admin" and u.get("district"):
@@ -338,6 +344,15 @@ class Handler(BaseHTTPRequestHandler):
                 u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
                 if u_dists: items=[x for x in items if x.get("district") in u_dists]
             self.send_json({"ok":True,"items":items})
+        elif p=="/api/handover":
+            if "handover" not in db: db["handover"]=[]
+            if "next_handover_id" not in db: db["next_handover_id"]=1
+            hid=db["next_handover_id"]; db["next_handover_id"]+=1
+            item={**body,"id":hid,"created_by":u.get("fullname",""),"created_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+            db["handover"].append(item); save_db(db)
+            op="تسليم مواد" if body.get("op_type")=="deliver" else "استلام مواد"
+            add_log_safe(u,op,f"{body.get('person','')} — {body.get('district','')}",self.ip())
+            self.send_json({"ok":True,"item":item})
         elif p=="/api/inv_buildings":
             if "inv_buildings" not in db: db["inv_buildings"]=[]
             if "next_inv_building_id" not in db: db["next_inv_building_id"]=1
@@ -675,7 +690,11 @@ class Handler(BaseHTTPRequestHandler):
             db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
             save_db(db); self.send_json({"ok":True})
 
-        if p.startswith("/api/inv_buildings/"):
+        if p.startswith("/api/handover/"):
+            hid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("handover",[])) if x["id"]==hid),None)
+            if idx is not None: db["handover"][idx]={**db["handover"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+            save_db(db); self.send_json({"ok":True})
+        elif p.startswith("/api/inv_buildings/"):
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inv_buildings",[])) if x["id"]==iid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
             db["inv_buildings"][idx]={**db["inv_buildings"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
@@ -768,7 +787,11 @@ class Handler(BaseHTTPRequestHandler):
             db["inventory"]=[x for x in db.get("inventory",[]) if x["id"]!=iid]; save_db(db)
             self.send_json({"ok":True})
 
-        if p.startswith("/api/inv_buildings/"):
+        if p.startswith("/api/handover/"):
+            hid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("handover",[])) if x["id"]==hid),None)
+            if idx is not None: db["handover"][idx]={**db["handover"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+            save_db(db); self.send_json({"ok":True})
+        elif p.startswith("/api/inv_buildings/"):
             iid=int(p.split("/")[-1])
             db["inv_buildings"]=[x for x in db.get("inv_buildings",[]) if x["id"]!=iid]; save_db(db)
             self.send_json({"ok":True})
