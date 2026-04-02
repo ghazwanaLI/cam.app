@@ -4439,15 +4439,20 @@ async function saveTour(){
     technician:document.getElementById('tour-tech').value, notes:document.getElementById('tour-notes').value};
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
+    await _pendingUploads;
     const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
-    const tid=id||r.id;
+    const tid=id||r.tour?.id||r.id;
+    let uploadCount=0;
     for(const fk of ['tour_img','tour_rep','tour_doc']){
       if(UF[fk]){
         await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
+        uploadCount++;
         delete UF[fk];
       }
     }
-    closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
+    closeModal('ov-tour');
+    toast('تم الحفظ ✅'+(uploadCount?' مع '+uploadCount+' ملف':''));
+    await loadTours(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
 function editTour(id){openTourModal(id);}
@@ -4551,14 +4556,23 @@ async function saveMaint(){
     status_after:document.getElementById('maint-status-after')?.value||''};
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
+    // انتظر اكتمال ضغط الصور قبل الحفظ
+    await _pendingUploads;
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||r.id;
+    const mid=id||r.maintenance?.id||r.id;
     // رفع الملفات المرفقة
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
+    let uploadCount=0;
     for(const k of fileKeys){
-      if(UF[k]){ await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime}); delete UF[k]; }
+      if(UF[k]){
+        await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime});
+        uploadCount++;
+        delete UF[k];
+      }
     }
-    closeModal('ov-maint'); toast('تم الحفظ ✅'); await loadMaintenance(); updateDashboard();
+    closeModal('ov-maint');
+    toast('تم الحفظ ✅'+(uploadCount?' مع '+uploadCount+' ملف':''));
+    await loadMaintenance(); updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
 function editMaint(id){openMaintModal(id);}
@@ -6114,50 +6128,56 @@ function getOthers(){
     }).filter(x=>x.type||x.num||x.serial);
 }
 
-// رفع ملفات متعددة دفعة واحدة
+// تتبع عمليات ضغط الصور الجارية
+let _pendingUploads = Promise.resolve();
+
 function doMultiUpload(event, prefix){
   const files=Array.from(event.target.files);
   if(!files.length) return;
-  const preview=document.getElementById(prefix.replace('_','_').split('_')[0]+'-'+prefix.split('_')[1]+'-preview')
-    ||document.getElementById(prefix+'-preview')
-    ||document.getElementById('maint-img-preview');
-  if(preview) preview.innerHTML='';
-  files.forEach((file,idx)=>{
-    const key=prefix+(idx>0?'_'+(idx+1):'');
-    // ضغط الصور في الرفع الجماعي
+  const preview=document.getElementById('maint-img-preview');
+  if(preview) preview.innerHTML='<div style="font-size:11px;color:var(--t3);padding:4px">جاري المعالجة...</div>';
+
+  _pendingUploads = Promise.all(files.map(function(file,idx){
+    const key=prefix+(idx>0?(idx+1):'');
     const hiQ2=document.getElementById('upload-quality')?.checked;
-    compressImage(file,hiQ2?1920:1280,hiQ2?1920:1280,hiQ2?0.95:0.82).then(function(compressed){
-      const data=compressed.data; const mime=compressed.mime;
-      UF[key]={name:file.name,data,mime};
-      const kb=Math.round(data.length*0.75/1024);
-      // عرض مصغّر
-      if(preview&&file.type.startsWith('image/')){
-        const thumb=document.createElement('div');
-        thumb.style.cssText='position:relative;width:70px;height:70px';
-        const img=document.createElement('img');
-        img.src=e.target.result;
-        img.style.cssText='width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)';
-        const rm=document.createElement('button');
-        rm.textContent='✕'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1';
-        rm.onclick=function(){delete UF[key];thumb.remove();};
-        thumb.appendChild(img); thumb.appendChild(rm);
-        if(preview) preview.appendChild(thumb);
-      } else if(preview){
-        const lbl=document.createElement('div');
-        lbl.style.cssText='background:var(--bg2);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px';
-        lbl.innerHTML='📄 '+file.name.substring(0,20);
-        const rm=document.createElement('button');
-        rm.textContent='✕'; rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px';
-        rm.onclick=function(){delete UF[key];lbl.remove();};
-        lbl.appendChild(rm); preview.appendChild(lbl);
-      }
-    }).catch(function(){
-      const r=new FileReader();
-      r.onload=function(e){ UF[key]={name:file.name,data:e.target.result.split(',')[1],mime:file.type}; };
-      r.readAsDataURL(file);
-    });
-  });
-  toast('تم تحميل '+files.length+' ملف');
+    return compressImage(file,hiQ2?1920:1280,hiQ2?1920:1280,hiQ2?0.95:0.82)
+      .then(function(compressed){
+        const data=compressed.data; const mime=compressed.mime;
+        UF[key]={name:file.name,data,mime};
+        const kb=Math.round(data.length*0.75/1024);
+        if(preview){
+          if(idx===0) preview.innerHTML='';
+          if(file.type.startsWith('image/')){
+            const thumb=document.createElement('div');
+            thumb.style.cssText='position:relative;width:70px;height:70px';
+            const img=document.createElement('img');
+            img.src='data:'+mime+';base64,'+data;
+            img.style.cssText='width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)';
+            const rm=document.createElement('button');
+            rm.textContent='\u00d7'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1';
+            rm.onclick=function(){delete UF[key];thumb.remove();};
+            thumb.appendChild(img); thumb.appendChild(rm);
+            preview.appendChild(thumb);
+          } else {
+            const lbl=document.createElement('div');
+            lbl.style.cssText='background:var(--bg2);border-radius:8px;padding:6px 10px;font-size:11px;color:var(--t2);display:flex;align-items:center;gap:6px';
+            lbl.textContent='\ud83d\udcc4 '+file.name.substring(0,20)+' ('+kb+'KB)';
+            const rm=document.createElement('button');
+            rm.textContent='\u00d7'; rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px';
+            rm.onclick=function(){delete UF[key];lbl.remove();};
+            lbl.appendChild(rm); preview.appendChild(lbl);
+          }
+        }
+      })
+      .catch(function(e){
+        return new Promise(function(res){
+          const r=new FileReader();
+          r.onload=function(ev){ UF[key]={name:file.name,data:ev.target.result.split(',')[1],mime:file.type}; res(); };
+          r.readAsDataURL(file);
+        });
+      });
+  }));
+  _pendingUploads.then(function(){ toast('جاهز — '+files.length+' ملف'); });
 }
 
 // إظهار/إخفاء حقل الحالة بحسب نوع المحطة
@@ -6514,7 +6534,7 @@ function showStationDetail(sid){
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-weight:700;font-size:14px">🚗 الجولات الميدانية (${tours.length})</div>
-        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');showTab('tours');setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
+        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');goTab('field',document.querySelector('[onclick*=\"field\"]'));setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
       </div>
       ${tours.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead><tr style="background:var(--bg2)">
@@ -6541,7 +6561,7 @@ function showStationDetail(sid){
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-weight:700;font-size:14px">🔧 الصيانة الميدانية (${maints.length})</div>
-        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');showTab('maintenance');setTimeout(()=>{openMaintModal(0);setTimeout(()=>{const ds=document.getElementById('maint-district');if(ds){ds.value='${s.district||''}';filterMaintStations();setTimeout(()=>{const ss=document.getElementById('maint-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة صيانة</button>
+        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(()=>{openMaintModal(0);setTimeout(()=>{const ds=document.getElementById('maint-district');if(ds){ds.value='${s.district||''}';filterMaintStations();setTimeout(()=>{const ss=document.getElementById('maint-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة صيانة</button>
       </div>
       ${maints.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead><tr style="background:var(--bg2)">
