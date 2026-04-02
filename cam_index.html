@@ -7532,9 +7532,19 @@ function startNotifPolling(){
   _activityTimer = setInterval(updateActivityTicker, 30000);
 }
 
+// أيقونات الأنشطة
+const ACTION_ICONS = {
+  'جولة':'🚗','صيانة':'🔧','محطة':'⛽','إضافة':'➕','تعديل':'✏️','حذف':'🗑️',
+  'جرد':'📋','مستخدم':'👤','تسليم':'📦','استلام':'📥','تعاميم':'📢','كاميرا':'📷'
+};
+function getActionIcon(action){
+  for(const[k,v] of Object.entries(ACTION_ICONS)) if(action.includes(k)) return v;
+  return '📌';
+}
+
 async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
-  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
+  if(!SERVER_ONLINE) return;
   try{
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
@@ -7542,31 +7552,47 @@ async function updateActivityTicker(){
     const tickerContent = document.getElementById('maint-ticker-content');
     if(!tickerBar || !tickerContent) return;
 
-    // فلترة: جولات وصيانة فقط
-    const relevant = list.filter(n =>
-      n.action.includes('جولة') || n.action.includes('صيانة')
-    );
+    if(!list.length){ tickerBar.style.display='none'; return; }
 
-    if(!relevant.length){ tickerBar.style.display='none'; return; }
-
-    // بناء نص الشريط
-    const items = relevant.slice(0,20).map(n=>{
-      const icon = n.action.includes('جولة')?'🚗':'🔧';
-      return `${icon} ${n.user}: ${n.action} — ${n.details} [${n.time}]`;
+    // بناء صفوف الشريط مع ألوان المستخدمين
+    const items = list.slice(0,30).map(n=>{
+      const icon = getActionIcon(n.action);
+      const color = n.color || '#60a5fa';
+      const urgMark = n.urgent ? '🚨 ' : '';
+      return `<span style="margin-left:24px;display:inline-flex;align-items:center;gap:5px">`
+        +`<span style="background:${color};color:#fff;font-size:9px;font-weight:800;padding:1px 7px;border-radius:10px">${n.user}</span>`
+        +`<span style="color:rgba(255,255,255,.7)">${urgMark}${icon} ${n.action}</span>`
+        +`<span style="color:rgba(255,255,255,.5);font-size:10px">— ${n.details}</span>`
+        +`<span style="color:rgba(255,255,255,.3);font-size:9px">[${n.time.slice(11)}]</span>`
+        +`</span>`;
     });
-    tickerContent.textContent = items.join('   ◈   ');
+    tickerContent.innerHTML = items.join('<span style="margin:0 12px;color:rgba(255,255,255,.2)">◈</span>');
     tickerBar.style.display = 'flex';
 
-    // تنبيه إذا جاءت فعالية جديدة
+    // تنبيه عاجل — أحدث إشعار غير مقروء urgent
     const unread = d.unread || 0;
-    if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
-      toast('📡 فعالية جديدة من مخوّل');
+    const urgentNotif = list.find(n=>!n.read && n.urgent);
+    if(urgentNotif && unread > _lastNotifCount && _lastNotifCount >= 0){
+      showUrgentAlert(urgentNotif);
     }
     _lastNotifCount = unread;
-
-    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
+}
+
+function showUrgentAlert(n){
+  const alertDiv = document.getElementById('urgent-alert');
+  const alertText = document.getElementById('urgent-text');
+  const bar = document.getElementById('maint-ticker-bar');
+  if(!alertDiv || !alertText || !bar) return;
+  const color = n.color || '#dc2626';
+  alertText.textContent = `${getActionIcon(n.action)} ${n.user} — ${n.action}: ${n.details}`;
+  alertDiv.style.background = `linear-gradient(90deg,${color}cc,${color},${color}cc)`;
+  alertDiv.style.display = 'flex';
+  bar.style.display = 'flex';
+  // إخفاء بعد 20 ثانية
+  clearTimeout(window._urgentTimer);
+  window._urgentTimer = setTimeout(()=>{ alertDiv.style.display='none'; }, 20000);
 }
 
 // دوال وهمية للتوافق
@@ -8829,14 +8855,22 @@ tryAutoLogin();</script>
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
-  <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
-  <div style="overflow:hidden;flex:1;position:relative;height:20px">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 200s linear infinite"></div>
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 20px rgba(0,0,0,.4);align-items:center;gap:10px;transition:background .5s">
+  <!-- تنبيه عاجل -->
+  <div id="urgent-alert" style="display:none;position:absolute;inset:0;background:linear-gradient(90deg,#7f1d1d,#dc2626,#7f1d1d);z-index:1;align-items:center;justify-content:center;gap:10px;padding:0 12px;animation:urgentPulse 1s ease-in-out infinite">
+    <span style="font-size:16px;animation:shake .3s ease-in-out infinite">🚨</span>
+    <span id="urgent-text" style="font-weight:900;font-size:12px;color:#fff;letter-spacing:.3px"></span>
+    <span style="font-size:16px;animation:shake .3s ease-in-out infinite">🚨</span>
   </div>
-  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
+  <span id="ticker-label" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0;position:relative;z-index:2">📡 فعاليات المخولين</span>
+  <div style="overflow:hidden;flex:1;position:relative;height:20px;z-index:2">
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite;display:flex;gap:0;align-items:center"></div>
+  </div>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px;z-index:2;position:relative">✕</button>
 </div>
 <style>
+@keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.85}}
+@keyframes shake{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes tickerScroll{
   0%{transform:translateX(-100%)}
   100%{transform:translateX(100%)}
