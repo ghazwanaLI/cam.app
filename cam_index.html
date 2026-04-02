@@ -4064,6 +4064,7 @@ async function delInv(id){
 }
 
 function printInvSingle(id){
+  try{
   // ابحث في allInventory وأيضاً في localStorage كـ fallback
   let x=allInventory.find(i=>String(i.id)===String(id));
   if(!x){
@@ -4072,7 +4073,7 @@ function printInvSingle(id){
       x=ls.find(i=>String(i.id)===String(id));
     }catch(e){}
   }
-  if(!x){ toast('لم يتم العثور على البيانات','err'); return; }
+  if(!x){ toast('البيانات غير موجودة — id:'+id+' allInv:'+allInventory.length,'err'); return; }
 
   const now=new Date();
   const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
@@ -4101,8 +4102,7 @@ function printInvSingle(id){
     var outVal=parseInt(r.outdoor)||0;
     camRows+='<tr style="height:18px">'+
       '<td style="text-align:center;border:1px solid #444;font-weight:800">'+(i+1)+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.type||'IP')+'</td>'+
-      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:12px;color:'+(inVal?'#166534':'#999')+'">'+(inVal||'')+'</td>'+
+      '<td style="text-align:center;border:1px solid #444;font-weight:'+(inVal?'900':'400')+';font-size:13px;color:'+(inVal?'#166534':'#999')+'">'+(inVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-weight:'+(outVal?'900':'400')+';font-size:12px;color:'+(outVal?'#1d4ed8':'#999')+'">'+(outVal||'')+'</td>'+
       '<td style="text-align:center;border:1px solid #444;font-size:10px">'+(r.lens&&r.lens!=='—'?r.lens:'')+'</td>'+
       '<td style="border:1px solid #444;font-size:10px">'+(r.note||'')+'</td></tr>';
@@ -4188,7 +4188,7 @@ function printInvSingle(id){
 
   '<div class="sh">&#128247; جدول الكاميرات</div>'+
   '<table><colgroup><col style="width:38px"><col style="width:90px"><col style="width:80px"><col style="width:80px"><col style="width:90px"><col></colgroup>'+
-  '<thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>IP/Analog</th><th>عدد الداخلية</th><th>عدد الخارجية</th><th>الملاحظات</th></tr></thead>'+
+  '<thead><tr><th>التسلسل</th><th>نوع الكاميرا</th><th>عدد كاميرات الداخلية</th><th>عدد كاميرات الخارجية</th><th>حجم العدسة</th><th>الملاحظات</th></tr></thead>'+
   '<tbody>'+camRows+'</tbody>'+
   '<tfoot><tr>'+
     '<td colspan="2" style="text-align:center;font-weight:800;background:#ccc;border:1px solid #888">المجموع الكلي</td>'+
@@ -4225,6 +4225,10 @@ function printInvSingle(id){
   document.getElementById('inv-print-content').innerHTML=html;
   document.getElementById('inv-print-overlay').style.display='block';
   document.getElementById('inv-print-overlay').scrollTop=0;
+  }catch(err){
+    toast('خطأ في الطباعة: '+err.message,'err');
+    console.error('printInvSingle error:',err);
+  }
 }
 
 
@@ -7226,7 +7230,7 @@ function renderInvBuildings(){
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
       <td style="padding:5px 6px;text-align:center;${B}">
-        <button class="btn btn-o btn-sm" onclick="printInvDetail(allInvBuildings.find(r=>r.id===${x.id})||{},'building')" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
+        <button class="btn btn-o btn-sm" onclick="printInvDetail((()=>{try{const ls=JSON.parse(localStorage.getItem('cam_inv_buildings')||'[]');return ls.find(r=>String(r.id)===String(${x.id}))||allInvBuildings.find(r=>r.id===${x.id})||{};}catch(e){return{};}})(),'building')" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvBuilding(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -7376,7 +7380,7 @@ function renderInvPrivate(){
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage||'—'}</td>
       <td style="padding:5px 6px;text-align:center;${B}">
-        <button class="btn btn-o btn-sm" onclick="printInvDetail(allInvPrivate.find(r=>r.id===${x.id})||{},'private')" style="padding:3px 6px;font-size:10px;color:#d97706">📄</button>
+        <button class="btn btn-o btn-sm" onclick="printInvDetail((()=>{try{const ls=JSON.parse(localStorage.getItem('cam_inv_private')||'[]');return ls.find(r=>String(r.id)===String(${x.id}))||allInvPrivate.find(r=>r.id===${x.id})||{};}catch(e){return{};}})(),'private')" style="padding:3px 6px;font-size:10px;color:#d97706">📄</button>
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="editInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInvPrivate(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -7646,48 +7650,55 @@ function _initInvPForm(x){
 
 // ══ طباعة مطابقة للورقة ══
 function printInvDetail(x, type){
-  const cams=x.cam_rows?JSON.parse(x.cam_rows||'[]'):[];
-  const dvrs=x.dvr_rows?JSON.parse(x.dvr_rows||'[]'):[];
-  const camLabels=['2.8 mm','4 mm','6 mm','2.8mm - 5mm مزدوج','كاميرات خاصة لعمل الكاميرا'];
+  // قراءة البيانات — يدعم string وarray
+  let cams=[],dvrs=[];
+  try{const cr=x.cam_rows; cams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);}catch(e){}
+  try{const dr=x.dvr_rows; dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
+
+  const filledCams=cams.filter(r=>(r.indoor||0)>0||(r.outdoor||0)>0||r.lens||r.note);
+  const filledDvrs=dvrs.filter(r=>r.model||r.hdd_size||r.storage);
   const totalIn=cams.reduce((a,r)=>a+(+r.indoor||0),0);
   const totalOut=cams.reduce((a,r)=>a+(+r.outdoor||0),0);
   const total=totalIn+totalOut;
+
   const now=new Date();
-  const dateStr=x.date||now.toLocaleDateString('ar-IQ',{year:'numeric',month:'2-digit',day:'2-digit'});
+  const dateStr=now.toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
   const days=['الأحد','الإثنين','الثلاثاء','الأربعاء','الخميس','الجمعة','السبت'];
   const dayStr=days[now.getDay()];
-  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية','بطاريات'];
+  const pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
   const pwSaved=(x.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
   const pwHtml='<table style="border-collapse:collapse"><tr>'+pwList.map(p=>
-    `<td style="border:none;padding:1px 4px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">
-    <span style="width:11px;height:11px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900">${pwSaved.includes(p)?'&#10003;':''}</span>
+    `<td style="border:none;padding:1px 5px 1px 2px"><span style="display:inline-flex;align-items:center;gap:3px">
+    <span style="width:12px;height:12px;border:1.5px solid #333;display:inline-flex;align-items:center;justify-content:center;font-size:9px;font-weight:900">${pwSaved.includes(p)?'&#10003;':''}</span>
     <span style="font-size:8px;white-space:nowrap">${p}</span></span></td>`).join('')+'</tr></table>';
 
-  // بناء صفوف الكاميرات
+  // صفوف الكاميرات المملوءة فقط
   let camRows='';
-  for(let i=0;i<5;i++){
-    const r=cams[i]||{indoor:0,outdoor:0,lens:'',note:''};
-    const lbl=camLabels[i];
-    camRows+=`<tr style="height:20px">
-      <td style="text-align:center;border:1px solid #444;font-weight:800;font-size:10px">${i+1}</td>
-      <td style="border:1px solid #444;padding:2px 6px;font-size:10px">${lbl}</td>
-      <td style="text-align:center;border:1px solid #444;font-weight:${r.indoor?'900':'400'};color:${r.indoor?'#166534':'#999'};font-size:11px">${r.indoor||''}</td>
-      <td style="text-align:center;border:1px solid #444;font-weight:${r.outdoor?'900':'400'};color:${r.outdoor?'#1d4ed8':'#999'};font-size:11px">${r.outdoor||''}</td>
-      <td style="text-align:center;border:1px solid #444;font-size:10px">${r.lens||''}</td>
-      <td style="border:1px solid #444;font-size:10px;padding:2px 4px">${r.note||''}</td>
+  if(filledCams.length){
+    filledCams.forEach((r,i)=>{
+      const iv=+r.indoor||0, ov=+r.outdoor||0;
+      camRows+=`<tr style="height:20px">
+        <td style="text-align:center;border:1px solid #444;font-weight:800;font-size:10px">${i+1}</td>
+        <td style="text-align:center;border:1px solid #444;font-weight:700;font-size:10px">${r.type||'IP'}</td>
+        <td style="text-align:center;border:1px solid #444;font-weight:${iv?'900':'400'};font-size:12px;color:${iv?'#166534':'#ccc'}">${iv||''}</td>
+        <td style="text-align:center;border:1px solid #444;font-weight:${ov?'900':'400'};font-size:12px;color:${ov?'#1d4ed8':'#ccc'}">${ov||''}</td>
+        <td style="text-align:center;border:1px solid #444;font-size:10px">${r.lens||''}</td>
+        <td style="border:1px solid #444;font-size:10px;padding:2px 4px">${r.note||''}</td>
+      </tr>`;
+    });
+    camRows+=`<tr style="background:#d5d5d5">
+      <td colspan="2" style="text-align:center;font-weight:900;border:1px solid #888;font-size:11px">المجموع الكلي</td>
+      <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#166534">${totalIn||''}</td>
+      <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#1d4ed8">${totalOut||''}</td>
+      <td colspan="2" style="text-align:center;font-weight:700;border:1px solid #888;color:#166534">الإجمالي: ${total} كاميرا</td>
     </tr>`;
+  } else {
+    camRows='<tr><td colspan="6" style="text-align:center;padding:8px;color:#999">لا توجد بيانات</td></tr>';
   }
-  camRows+=`<tr style="background:#d5d5d5;height:22px">
-    <td colspan="2" style="text-align:center;font-weight:900;border:1px solid #888;font-size:11px">المجموع الكلي</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#166534">${totalIn||''}</td>
-    <td style="text-align:center;font-weight:900;font-size:13px;border:1px solid #888;color:#1d4ed8">${totalOut||''}</td>
-    <td colspan="2" style="text-align:center;font-weight:900;border:1px solid #888;font-size:11px;color:#166534">الإجمالي الكلي للكاميرات: ${total}</td>
-  </tr>`;
 
-  // بناء صفوف DVR
+  // صفوف DVR المملوءة فقط
   let dvrRows='';
-  for(let i=0;i<4;i++){
-    const r=dvrs[i]||{model:'',conn:'',hdd_size:'',hdd_count:0,storage:'',note:''};
+  filledDvrs.forEach((r,i)=>{
     dvrRows+=`<tr style="height:20px">
       <td style="text-align:center;border:1px solid #444;font-weight:800;font-size:10px">${i+1}</td>
       <td style="border:1px solid #444;padding:2px 6px;font-weight:700;font-size:10px">${r.model||''}</td>
@@ -7695,10 +7706,10 @@ function printInvDetail(x, type){
       <td style="text-align:center;border:1px solid #444;font-weight:700;font-size:10px;color:#1d4ed8">${r.hdd_size||''}</td>
       <td style="text-align:center;border:1px solid #444;font-weight:700;font-size:10px;color:#7c3aed">${r.hdd_count||''}</td>
       <td style="text-align:center;border:1px solid #444;font-size:10px">${r.storage||''}</td>
-      <td style="padding:2px 4px;border:1px solid #444">${i===0?pwHtml:(r.note||'')}</td>
-      <td style="border:1px solid #444;font-size:10px;padding:2px 4px">${i>0?r.note||'':''}</td>
+      <td style="padding:2px 4px;border:1px solid #444">${i<=1?pwHtml:''}</td>
     </tr>`;
-  }
+  });
+  if(!dvrRows) dvrRows='<tr><td colspan="7" style="text-align:center;padding:8px;color:#999">لا توجد بيانات</td></tr>';
 
   const typeLabel=type==='building'?'البنايات الحكومية':'المحطات الأهلية';
   const entityLabel=type==='building'?'اسم البناية / المنشأة :':'اسم المحطة :';
