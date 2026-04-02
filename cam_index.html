@@ -1529,16 +1529,26 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div id="tab-users" style="display:none">
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
-            <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
+        <div class="section" style="padding:0;overflow:hidden">
+          <!-- Header -->
+          <div style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 50%,#1d4ed8 100%);padding:28px 28px 20px;position:relative;overflow:hidden">
+            <div style="position:absolute;inset:0;background:url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 80"><circle cx="40" cy="40" r="35" fill="none" stroke="rgba(255,255,255,0.04)" stroke-width="1"/><circle cx="40" cy="40" r="25" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="1"/></svg>') repeat;opacity:.5"></div>
+            <div style="position:relative;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px">
+              <div>
+                <div style="font-size:22px;font-weight:900;color:#fff;letter-spacing:-.3px">إدارة المستخدمين</div>
+                <div style="font-size:12px;color:rgba(255,255,255,.6);margin-top:4px">التحكم في الوصول والصلاحيات</div>
+              </div>
+              <button onclick="openUserModal()" style="background:rgba(255,255,255,.15);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.2);color:#fff;padding:10px 20px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;display:flex;align-items:center;gap:8px;transition:all .2s" onmouseover="this.style.background='rgba(255,255,255,.25)'" onmouseout="this.style.background='rgba(255,255,255,.15)'">
+                <span style="font-size:16px">＋</span> إضافة مستخدم
+              </button>
+            </div>
+            <!-- Stats bar -->
+            <div id="users-stats" style="position:relative;display:flex;gap:16px;margin-top:18px;flex-wrap:wrap"></div>
           </div>
-          <!-- Users Cards -->
-          <div style="padding:16px" id="users-cards">
-            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
+          <!-- Cards Grid -->
+          <div style="padding:20px" id="users-cards">
+            <div style="text-align:center;padding:40px;color:var(--t3)">جاري التحميل...</div>
           </div>
-          <!-- Users Table (hidden, for compat) -->
           <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
         </div>
       </div>
@@ -2107,36 +2117,104 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- USER MODAL -->
 <div class="overlay" id="ov-user" onclick="closeOv(event,'ov-user')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔐 مستخدم</div>
-    <input type="hidden" id="u-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">الاسم الكامل *</label><input class="fi" id="u-fn" type="text"></div>
-      <div class="fg"><label class="fl">اسم المستخدم *</label><input class="fi" id="u-un" type="text"></div>
-      <div class="fg"><label class="fl">كلمة المرور</label><input class="fi" id="u-pw" type="password"></div>
-      <div class="fg"><label class="fl">الدور</label>
-        <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()">
-          <option value="viewer">مخول قاطع</option>
-          <option value="admin">مدير النظام</option>
-        </select>
-      </div>
-      <div class="fg full" id="u-district-row">
-        <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span></label>
-        <div id="u-districts-wrap" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:10px;max-height:140px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px">
-          <!-- تُملأ ديناميكياً -->
+  <div class="modal" style="width:520px;padding:0;overflow:hidden;border-radius:20px">
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f,#1d4ed8);padding:24px 24px 20px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+      <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="position:relative;display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:20px">🔐</div>
+        <div>
+          <div id="u-ttl" style="font-size:17px;font-weight:900;color:#fff">إضافة مستخدم</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55)">تحديد الصلاحيات والوصول</div>
         </div>
+      </div>
+    </div>
+    <input type="hidden" id="u-eid">
+    <!-- Modal Body -->
+    <div style="padding:20px;max-height:70vh;overflow-y:auto">
+      <!-- معلومات الحساب -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">معلومات الحساب</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">الاسم الكامل *</label>
+            <input class="fi" id="u-fn" type="text" placeholder="أدخل الاسم" style="width:100%;font-size:13px">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">اسم الدخول *</label>
+            <input class="fi" id="u-un" type="text" placeholder="username" style="width:100%;font-size:13px;direction:ltr;text-align:left">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">كلمة المرور</label>
+            <input class="fi" id="u-pw" type="password" placeholder="اتركها فارغة للإبقاء" style="width:100%;font-size:13px">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">نوع الحساب</label>
+            <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()" style="width:100%;font-size:13px">
+              <option value="viewer">👤 مخول قاطع</option>
+              <option value="admin">🔑 مدير النظام</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- القواطع -->
+      <div id="u-district-row" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">القواطع المخصصة</div>
+        <div id="u-districts-wrap" style="display:flex;flex-wrap:wrap;gap:6px;max-height:130px;overflow-y:auto"></div>
         <input type="hidden" id="u-district" value="">
       </div>
+      <!-- الصلاحيات -->
+      <div id="u-perms" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">الصلاحيات</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">✏️</span>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:#1e293b">تعديل</div>
+                <div style="font-size:10px;color:#94a3b8">إضافة وتعديل السجلات</div>
+              </div>
+              <div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">🗑️</span>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:#1e293b">حذف</div>
+                <div style="font-size:10px;color:#94a3b8">حذف السجلات</div>
+              </div>
+              <div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">📎</span>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:#1e293b">ملفات</div>
+                <div style="font-size:10px;color:#94a3b8">رفع الصور والمستندات</div>
+              </div>
+              <div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:10px;border:1.5px solid #e2e8f0;background:#fff;padding:10px 12px">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span style="font-size:16px">📊</span>
+              <div style="flex:1">
+                <div style="font-size:12px;font-weight:700;color:#1e293b">تقارير</div>
+                <div style="font-size:10px;color:#94a3b8">عرض التقارير والجرد</div>
+              </div>
+              <div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div id="u-perms" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تعديل</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">حذف</div><div style="font-size:11px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">ملفات</div><div style="font-size:11px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تقارير</div><div style="font-size:11px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-user')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveUser()">💾 حفظ</button>
+    <!-- Footer -->
+    <div style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-start;flex-direction:row-reverse">
+      <button onclick="saveUser()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:11px 28px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px">💾 حفظ</button>
+      <button onclick="closeModal('ov-user')" style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;padding:11px 20px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:600">إلغاء</button>
     </div>
   </div>
 </div>
@@ -5379,42 +5457,87 @@ async function loadUsers(){
 function renderUsers(){
   const cards=document.getElementById('users-cards');
   if(!cards)return;
-  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
-  cards.innerHTML=`
-    <table width="100%" style="border-collapse:collapse;font-size:14px">
-      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
-      </tr></thead>
-      <tbody>${allUsers.map(u=>{
-        const perms=u.perms||{};
-        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
-          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
-            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
-              ${u.fullname||'—'}
+
+  // تحديث الإحصاء
+  const stats=document.getElementById('users-stats');
+  if(stats){
+    const admins=allUsers.filter(u=>u.role==='admin').length;
+    const active=allUsers.filter(u=>u.active!==false).length;
+    stats.innerHTML=[
+      {icon:'👥',val:allUsers.length,lbl:'إجمالي المستخدمين'},
+      {icon:'🔑',val:admins,lbl:'مدراء النظام'},
+      {icon:'✅',val:active,lbl:'حسابات فعّالة'},
+    ].map(s=>`<div style="background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);border-radius:10px;padding:8px 16px;display:flex;align-items:center;gap:10px">
+      <span style="font-size:18px">${s.icon}</span>
+      <div><div style="font-size:18px;font-weight:900;color:#fff;line-height:1">${s.val}</div><div style="font-size:10px;color:rgba(255,255,255,.6)">${s.lbl}</div></div>
+    </div>`).join('');
+  }
+
+  if(!allUsers.length){
+    cards.innerHTML='<div style="text-align:center;padding:60px 20px"><div style="font-size:48px;margin-bottom:12px">👤</div><div style="font-size:16px;font-weight:700;color:var(--t2)">لا يوجد مستخدمون</div></div>';
+    return;
+  }
+
+  const ROLE_COLORS={admin:'linear-gradient(135deg,#7c3aed,#9333ea)',viewer:'linear-gradient(135deg,#0891b2,#06b6d4)'};
+  const PERM_INFO={edit:{icon:'✏️',label:'تعديل',color:'#1d4ed8'},del:{icon:'🗑️',label:'حذف',color:'#dc2626'},files:{icon:'📎',label:'ملفات',color:'#d97706'},reports:{icon:'📊',label:'تقارير',color:'#16a34a'}};
+
+  cards.innerHTML='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px">'+
+  allUsers.map(u=>{
+    const isAdmin=u.role==='admin';
+    const isActive=u.active!==false;
+    const perms=u.perms||{};
+    const initial=(u.fullname||'م')[0];
+    const gradients=['linear-gradient(135deg,#1d4ed8,#3b82f6)','linear-gradient(135deg,#7c3aed,#a855f7)','linear-gradient(135deg,#0891b2,#22d3ee)','linear-gradient(135deg,#16a34a,#4ade80)','linear-gradient(135deg,#d97706,#fbbf24)','linear-gradient(135deg,#dc2626,#f87171)'];
+    const grad=gradients[u.id%gradients.length]||gradients[0];
+    const permList=isAdmin?Object.keys(PERM_INFO):Object.keys(PERM_INFO).filter(k=>perms[k]);
+    const districts=Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
+
+    return `<div style="background:#fff;border-radius:16px;box-shadow:0 2px 12px rgba(0,0,0,.07);border:1px solid #f1f5f9;overflow:hidden;transition:transform .2s,box-shadow .2s" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.12)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 12px rgba(0,0,0,.07)'">
+      <!-- Card Header -->
+      <div style="background:${grad};padding:20px;position:relative">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="display:flex;align-items:center;gap:12px">
+            <div style="width:48px;height:48px;border-radius:12px;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:20px;font-family:Cairo,sans-serif">${initial}</div>
+            <div>
+              <div style="font-size:15px;font-weight:800;color:#fff">${u.fullname||'—'}</div>
+              <div style="font-size:11px;color:rgba(255,255,255,.75);font-family:monospace">@${u.username||'—'}</div>
             </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
-          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
-          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
-          <td style="padding:10px 14px">${permBadges}</td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
-            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
-          </td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>`;
+          </div>
+          <div style="background:${isActive?'rgba(0,255,100,.2)':'rgba(255,0,0,.2)'};border:1px solid ${isActive?'rgba(0,255,100,.4)':'rgba(255,0,0,.4)'};color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:20px">${isActive?'● فعّال':'○ موقوف'}</div>
+        </div>
+        <!-- Role badge -->
+        <div style="margin-top:12px;display:inline-flex;align-items:center;gap:5px;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;color:#fff">
+          ${isAdmin?'🔑 مدير النظام':'👤 مخول قاطع'}
+        </div>
+      </div>
+      <!-- Card Body -->
+      <div style="padding:14px 16px">
+        <!-- القواطع -->
+        <div style="margin-bottom:12px">
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">القواطع</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${isAdmin?'<span style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:11px;font-weight:700;padding:2px 8px;border-radius:6px">كل القواطع</span>':
+              districts.length?districts.map(d=>`<span style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;font-size:11px;font-weight:600;padding:2px 8px;border-radius:6px">${d}</span>`).join(''):
+              '<span style="color:#94a3b8;font-size:11px">غير محدد</span>'}
+          </div>
+        </div>
+        <!-- الصلاحيات -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px">الصلاحيات</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            ${permList.length?permList.map(k=>`<span style="background:#f8fafc;border:1px solid #e2e8f0;font-size:11px;font-weight:600;padding:3px 8px;border-radius:6px;display:flex;align-items:center;gap:3px;color:#334155">${PERM_INFO[k].icon} ${PERM_INFO[k].label}</span>`).join(''):
+              '<span style="color:#94a3b8;font-size:11px">قراءة فقط</span>'}
+          </div>
+        </div>
+        <!-- Actions -->
+        <div style="display:flex;gap:8px;border-top:1px solid #f1f5f9;padding-top:12px">
+          <button onclick="editUser(${u.id})" style="flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:8px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;transition:all .15s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">✏️ تعديل</button>
+          ${u.id!==CU?.id?`<button onclick="delUser(${u.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;transition:all .15s" onmouseover="this.style.background='#fee2e2'" onmouseout="this.style.background='#fff1f2'">🗑️</button>`:''}
+          ${u.id===CU?.id?`<span style="flex:1;text-align:center;padding:8px;font-size:11px;color:#94a3b8">حسابك الحالي</span>`:''}
+        </div>
+      </div>
+    </div>`;
+  }).join('')+'</div>';
 }
 function openUserModal(id){
   const u=id?allUsers.find(x=>x.id===id)||{}:{};
@@ -5440,6 +5563,7 @@ function openUserModal(id){
     if(el) el.classList.toggle('on', perms[p]===true);
   });
   toggleUserPerms();
+  const ttl=document.getElementById('u-ttl');if(ttl)ttl.textContent=id?'تعديل مستخدم':'إضافة مستخدم';
   document.getElementById('ov-user').classList.add('open');
 }
 function toggleUserPerms(){
