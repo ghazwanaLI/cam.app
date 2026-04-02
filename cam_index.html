@@ -5371,19 +5371,16 @@ function compressImage(file, maxW, maxH, quality){
 }
 
 async function doUpload(event, key){
+  const p = (async()=>{
   try{
     const file=event.target.files[0]; if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
-    // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
     const quality=hiQ?0.95:0.82;
     const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
     UF[key]={ name:finalName, data, mime:'image/jpeg' };
-    // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
     const stat=document.getElementById('us-'+key);
     if(stat) stat.textContent=file.name+' ('+kb+'KB)';
@@ -5393,6 +5390,8 @@ async function doUpload(event, key){
     toast('خطأ في رفع الملف: '+e.message,'err');
     console.error('doUpload error:',e);
   }
+  })();
+  _pendingUploads = Promise.all([_pendingUploads, p]);
 }
 function rmFile(key, e){
   e?.stopPropagation();
