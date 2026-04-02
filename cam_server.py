@@ -5,7 +5,7 @@
 import json, os, hashlib, uuid, base64, io
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timedelta
 
 PORT = int(os.environ.get("PORT", 8082))
 DATABASE_URL = os.environ.get("DATABASE_URL", "")
@@ -166,10 +166,20 @@ def add_log_safe(user,action,details,ip=""):
     try: add_log(user,action,details,ip)
     except: pass
 
-def add_notification(db, user, action, details):
-    """إضافة إشعار للمدير"""
+# ألوان لكل مستخدم
+USER_COLORS = ["#3b82f6","#16a34a","#d97706","#7c3aed","#0891b2","#dc2626","#059669","#d946ef","#f97316","#0ea5e9"]
+
+def get_user_color(username):
+    h = sum(ord(c) for c in (username or ""))
+    return USER_COLORS[h % len(USER_COLORS)]
+
+def add_notification(db, user, action, details, urgent=False):
+    """إضافة إشعار للمدير مع لون المستخدم وحذف بعد 24 ساعة"""
     try:
-        if user.get("role") == "admin": return  # المدير لا يُخبر نفسه
+        if user.get("role") == "admin": return
+        # حذف الإشعارات القديمة (أكثر من 24 ساعة)
+        cutoff = (datetime.now() - timedelta(hours=24)).strftime("%Y-%m-%d %H:%M")
+        db["notifications"] = [n for n in db.get("notifications",[]) if n.get("time","") >= cutoff]
         nid = db.get("next_notif_id", 1)
         db["next_notif_id"] = nid + 1
         notif = {
@@ -180,11 +190,12 @@ def add_notification(db, user, action, details):
             "details": details,
             "time": datetime.now().strftime("%Y-%m-%d %H:%M"),
             "read": False,
+            "urgent": urgent,
+            "color": get_user_color(user.get("username","")),
         }
         if "notifications" not in db: db["notifications"] = []
         db["notifications"].insert(0, notif)
-        # احتفظ بآخر 100 إشعار فقط
-        db["notifications"] = db["notifications"][:100]
+        db["notifications"] = db["notifications"][:200]
     except: pass
 
 
@@ -438,7 +449,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["tours"].append(tour); save_db(db)
             add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
-            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','')} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
+            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','', urgent=True)} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
             save_db(db)
             self.send_json({"ok":True,"tour":tour})
 
@@ -454,7 +465,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["maintenance"].append(maint); save_db(db)
             add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
-            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','')} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
+            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','', urgent=True)} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
             save_db(db)
             self.send_json({"ok":True,"maintenance":maint})
 
@@ -484,7 +495,7 @@ class Handler(BaseHTTPRequestHandler):
             sid=db["next_station_id"]; db["next_station_id"]+=1
             st={"id":sid,"name":body.get("name",""),"district":body.get("district",""),"districts":body.get("districts",[]),"type":body.get("type","حكومية"),"cam_working":body.get("cam_working",0),"cam_broken":body.get("cam_broken",0),"main_cam_count":body.get("main_cam_count",0),"main_cam_type":body.get("main_cam_type",""),"main_hdd_count":body.get("main_hdd_count",0),"main_hdd_size":body.get("main_hdd_size",""),"main_record_days":body.get("main_record_days",""),"sanda_cam_count":body.get("sanda_cam_count",0),"sanda_cam_type":body.get("sanda_cam_type",""),"sanda_hdd_count":body.get("sanda_hdd_count",0),"sanda_hdd_size":body.get("sanda_hdd_size",""),"sanda_record_days":body.get("sanda_record_days",""),"sanda_notes":body.get("sanda_notes","")}
             db["stations"].append(st); save_db(db)
-            add_notification(db, u, "إضافة محطة جديدة", f"المحطة: {st['name']} | القاطع: {st['district']}")
+            add_notification(db, u, "إضافة محطة جديدة", f"المحطة: {st['name']} | القاطع: {st['district']}", urgent=True)
             save_db(db)
             self.send_json({"ok":True,"station":st})
 
@@ -651,7 +662,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["tours"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—')} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
+            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—', urgent=True)} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
 
         elif p.startswith("/api/maintenance/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
@@ -662,7 +673,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["maintenance"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—')}"); save_db(db); self.send_json({"ok":True})
+            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—', urgent=True)}"); save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/cameras/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
