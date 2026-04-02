@@ -758,11 +758,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="nav-sect">|</div>
       <div class="nav-item" onclick="goTab('stations',this)"><span class="ni">⛽</span>المحطات</div>
       <div class="nav-dropdown">
-        <div class="nav-item" id="nav-inventory" onclick="_navInv('inv-stations')"><span class="ni">📦</span><b>جرد الكاميرات</b></div>
+        <div class="nav-item" id="nav-inventory" onclick="_navInv('inv-gov')"><span class="ni">📋</span><b>جرد المحطات</b></div>
         <div class="nav-sub">
-          <div class="nav-sub-item" onclick="_navInv('inv-stations')">📋 جرد المحطات</div>
-          <div class="nav-sub-item" onclick="_navInv('inv-devices')">🎥 أجهزة التسجيل</div>
-          <div class="nav-sub-item" onclick="_navInv('inv-report')">📄 التقارير</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-gov')">🏛️ جرد المحطات الحكومية</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-buildings')">🏢 جرد البنايات الحكومية</div>
+          <div class="nav-sub-item" onclick="_navInv('inv-private')">🏪 جرد المحطات الأهلية</div>
         </div>
       </div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
@@ -1143,13 +1143,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div id="tab-inventory" style="display:none">
         <!-- تبويبات فرعية -->
         <div style="display:flex;gap:0;border-bottom:2px solid #e2e8f0;margin-bottom:0;background:#f8fafc">
-          <div class="inv-sub-tab active" id="isub-inv-stations" onclick="switchInvSub('inv-stations')" style="padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid #1d4ed8;color:#1d4ed8;background:#fff">📋 جرد المحطات</div>
-          <div class="inv-sub-tab" id="isub-inv-devices" onclick="switchInvSub('inv-devices')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">🎥 أجهزة التسجيل</div>
-          <div class="inv-sub-tab" id="isub-inv-report" onclick="switchInvSub('inv-report')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">📄 التقارير</div>
+          <div class="inv-sub-tab active" id="isub-inv-gov" onclick="switchInvSub('inv-gov')" style="padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer;border-bottom:3px solid #1d4ed8;color:#1d4ed8;background:#fff">🏛️ جرد المحطات الحكومية</div>
+          <div class="inv-sub-tab" id="isub-inv-buildings" onclick="switchInvSub('inv-buildings')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">🏢 جرد البنايات الحكومية</div>
+          <div class="inv-sub-tab" id="isub-inv-private" onclick="switchInvSub('inv-private')" style="padding:10px 18px;font-size:12px;font-weight:600;cursor:pointer;color:#64748b;border-bottom:3px solid transparent">🏪 جرد المحطات الأهلية</div>
         </div>
 
-        <!-- محتوى: جرد المحطات -->
-        <div id="inv-sub-inv-stations" class="inv-sub-content">
+        <!-- محتوى: جرد المحطات الحكومية -->
+        <div id="inv-sub-inv-gov" class="inv-sub-content">
           <div class="section">
             <div class="sec-hdr">
               <div class="sec-title"><div class="sdot" style="background:#1d4ed8;box-shadow:0 0 8px rgba(29,78,216,.4)"></div>📋 جرد المحطات</div>
@@ -1187,7 +1187,39 @@ tr:hover td{background:rgba(30,58,95,.03);}
           </div>
         </div>
 
-        <!-- محتوى: أجهزة التسجيل -->
+        <!-- محتوى: جرد البنايات الحكومية -->
+        <div id="inv-sub-inv-buildings" class="inv-sub-content" style="display:none">
+          <div class="section">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot" style="background:#0891b2"></div>🏢 جرد البنايات الحكومية</div>
+              <div class="sec-actions">
+                <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
+                <button class="btn btn-p btn-sm" id="btn-add-inv-buildings" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
+              </div>
+            </div>
+            <div style="padding:30px;text-align:center;color:var(--t3);font-size:13px">
+              🏢 سيتم إضافة جرد البنايات الحكومية قريباً
+            </div>
+          </div>
+        </div>
+
+        <!-- محتوى: جرد المحطات الأهلية -->
+        <div id="inv-sub-inv-private" class="inv-sub-content" style="display:none">
+          <div class="section">
+            <div class="sec-hdr">
+              <div class="sec-title"><div class="sdot" style="background:#d97706"></div>🏪 جرد المحطات الأهلية</div>
+              <div class="sec-actions">
+                <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
+                <button class="btn btn-p btn-sm" id="btn-add-inv-private" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
+              </div>
+            </div>
+            <div style="padding:30px;text-align:center;color:var(--t3);font-size:13px">
+              🏪 سيتم إضافة جرد المحطات الأهلية قريباً
+            </div>
+          </div>
+        </div>
+
+        <!-- محتوى: أجهزة التسجيل (محتفظ به للتوافق) -->
         <div id="inv-sub-inv-devices" class="inv-sub-content" style="display:none">
           <div class="section">
             <div class="sec-hdr">
@@ -3881,8 +3913,7 @@ function switchInvSub(sub){
   const tb=document.getElementById('isub-'+sub);
   if(ct) ct.style.display='';
   if(tb){tb.style.borderBottomColor='#1d4ed8';tb.style.color='#1d4ed8';tb.style.background='#fff';tb.style.fontWeight='700';}
-  // تحميل البيانات عند فتح جرد المحطات
-  if(sub==='inv-stations') loadInvStations();
+  if(sub==='inv-gov'||sub==='inv-stations') loadInvStations();
 }
 
 function goTab(name, el){
