@@ -2854,6 +2854,27 @@ tr:hover td{background:rgba(30,58,95,.03);}
   </div>
 
 
+<!-- CHANGE PW MODAL -->
+<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
+  <div class="modal modal-sm">
+    <div class="m-title">🔑 تغيير كلمة المرور</div>
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
+      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
+      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
+      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+      </div><!-- /tabs-wrap -->
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
 <!-- HANDOVER MODAL -->
 <div class="overlay" id="ov-handover" onclick="closeOv(event,'ov-handover')">
   <div class="modal" style="width:580px;padding:0;overflow:hidden;border-radius:20px">
@@ -2907,27 +2928,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
     </div>
   </div>
 </div>
-
-<!-- CHANGE PW MODAL -->
-<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔑 تغيير كلمة المرور</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
-      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
-      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
-      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-      </div><!-- /tabs-wrap -->
-    </div><!-- /content -->
-  </div><!-- /main -->
-</div><!-- /app -->
 <!-- LIGHTBOX -->
 <div class="overlay" id="lb" onclick="if(event.target===this)document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
   <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:1">
