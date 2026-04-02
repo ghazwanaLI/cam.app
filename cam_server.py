@@ -201,6 +201,7 @@ def add_notification(db, user, action, details, urgent=False):
 
 
 class Handler(BaseHTTPRequestHandler):
+    timeout = 120  # 2 دقيقة للملفات الكبيرة
     def log_message(self,f,*a): pass
     def send_json(self,data,status=200):
         body=json.dumps(data,ensure_ascii=False).encode("utf-8")
@@ -219,7 +220,18 @@ class Handler(BaseHTTPRequestHandler):
         self.end_headers(); self.wfile.write(body)
     def read_body(self):
         l=int(self.headers.get("Content-Length",0))
-        return json.loads(self.rfile.read(l)) if l else {}
+        if l > 20*1024*1024:  # 20MB max
+            self.send_json({"error":"حجم الملف كبير جداً — الحد 20MB"},413); return {}
+        if l==0: return {}
+        data = b""
+        remaining = l
+        while remaining > 0:
+            chunk = self.rfile.read(min(65536, remaining))
+            if not chunk: break
+            data += chunk
+            remaining -= len(chunk)
+        try: return json.loads(data)
+        except: return {}
     def get_token(self): return self.headers.get("Authorization","").replace("Bearer ","").strip()
     def get_user(self):
         uid=sessions.get(self.get_token())
