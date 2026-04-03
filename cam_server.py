@@ -2,7 +2,7 @@
 """
 نظام إدارة كاميرات المراقبة
 """
-import json, os, hashlib, uuid, base64, io, threading
+import json, os, hashlib, uuid, base64, io, threading, copy
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
@@ -17,20 +17,17 @@ def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
 # ── PostgreSQL Connection Pool ──
-_pg_pool = []
+_pg_pool      = []
 _pg_pool_lock = threading.Lock()
-_PG_POOL_MAX = 5
+_PG_POOL_MAX  = 5
 
 def get_conn():
     import pg8000, urllib.parse
     with _pg_pool_lock:
         while _pg_pool:
             conn = _pg_pool.pop()
-            try:
-                conn.run("SELECT 1")  # تأكد الاتصال لا يزال حياً
-                return conn
-            except Exception:
-                pass  # اتصال ميت، أنشئ جديد
+            try: conn.run("SELECT 1"); return conn
+            except: pass
     r = urllib.parse.urlparse(DATABASE_URL)
     return pg8000.connect(host=r.hostname, port=r.port or 5432,
         database=r.path.lstrip("/"), user=r.username, password=r.password, ssl_context=True)
@@ -119,15 +116,43 @@ def pg_get_logs(limit=100):
         return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
     finally: release_conn(conn)
 
+# ── كاش قاعدة البيانات في الذاكرة ──
+_db_cache = None
+_db_lock  = threading.RLock()
+
 def load_db():
-    if USE_DB: return pg_load()
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE,"r",encoding="utf-8") as f: return json.load(f)
-    db=default_db(); save_db(db); return db
+    global _db_cache
+    with _db_lock:
+        if _db_cache is None:
+            if USE_DB:
+                _db_cache = pg_load()
+            elif os.path.exists(DB_FILE):
+                with open(DB_FILE,"r",encoding="utf-8") as f:
+                    _db_cache = json.load(f)
+            else:
+                _db_cache = default_db()
+                _bg_write(_db_cache)
+        # نُرجع نسخة عميقة لتجنب تعارض الـ threads
+        return copy.deepcopy(_db_cache)
 
 def save_db(db):
-    if USE_DB: pg_save(db); return
-    with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
+    global _db_cache
+    with _db_lock:
+        _db_cache = db
+    # كتابة PostgreSQL في background لعدم تأخير الرد
+    _bg_write(db)
+
+def _bg_write(db):
+    if USE_DB:
+        snapshot = copy.deepcopy(db)
+        threading.Thread(target=_pg_write_safe, args=(snapshot,), daemon=True).start()
+    else:
+        with open(DB_FILE,"w",encoding="utf-8") as f:
+            json.dump(db, f, ensure_ascii=False, indent=2)
+
+def _pg_write_safe(db):
+    try: pg_save(db)
+    except Exception as e: print(f"[DB write error] {e}")
 
 def save_file(key,name,data,mime):
     if USE_DB: pg_save_file(key,name,data,mime); return
