@@ -838,6 +838,24 @@ tr:hover td{background:rgba(30,58,95,.03);}
   .content{ padding:8px 8px 0!important; }
 }
 
+/* ── Bottom Nav Toggle ── */
+#bn-items-wrap{
+  overflow:hidden;
+  transition:max-height .3s cubic-bezier(.4,0,.2,1), opacity .25s;
+  max-height:80px;
+  opacity:1;
+}
+#bn-items-wrap.hidden{
+  max-height:0;
+  opacity:0;
+}
+#app-bottom-nav.nav-collapsed{
+  padding-bottom:0!important;
+}
+#app-bottom-nav{
+  position:relative;
+}
+
 /* ── Drawer items ── */
 .drw-item{
   display:flex;align-items:center;gap:12px;
@@ -892,6 +910,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
   <!-- ══ BOTTOM NAVIGATION للموبايل ══ -->
   <div id="app-bottom-nav">
+    <!-- زر الإخفاء/الإظهار -->
+    <div id="bn-toggle-btn" onclick="toggleBottomNavBar()" style="position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:44px;height:22px;background:rgba(255,255,255,.97);border:1px solid rgba(0,0,0,.08);border-bottom:none;border-radius:12px 12px 0 0;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 -2px 8px rgba(0,0,0,.06);">
+      <span id="bn-toggle-icon" style="font-size:11px;color:#94a3b8;line-height:1;transition:transform .3s">▼</span>
+    </div>
+    <div id="bn-items-wrap">
     <div class="bn-wrap">
       <div class="bn-item active" id="bn-dashboard" onclick="bnGo('dashboard','لوحة التحكم',this)">
         <div class="bn-ico-wrap">🏠</div>
@@ -914,6 +937,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <span class="bn-lbl">المزيد</span>
       </div>
     </div>
+    </div><!-- /bn-items-wrap -->
   </div>
 
   <!-- ══ DRAWER SIDEBAR للموبايل ══ -->
@@ -7434,6 +7458,26 @@ function exportHandoverCSV(){
   const csv='\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
   const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
   a.download='استلام_وتسليم.csv';a.click();toast('تم التصدير ✅');
+}
+
+let _bnHidden = false;
+function toggleBottomNavBar(){
+  _bnHidden = !_bnHidden;
+  const wrap = document.getElementById('bn-items-wrap');
+  const icon = document.getElementById('bn-toggle-icon');
+  const nav  = document.getElementById('app-bottom-nav');
+  const main = document.querySelector('.main');
+  if(_bnHidden){
+    wrap.classList.add('hidden');
+    if(icon) icon.style.transform = 'rotate(180deg)';
+    if(nav)  nav.style.paddingBottom = '0';
+    if(main) main.style.paddingBottom = '30px';
+  } else {
+    wrap.classList.remove('hidden');
+    if(icon) icon.style.transform = 'rotate(0deg)';
+    if(nav)  nav.style.paddingBottom = '';
+    if(main) main.style.paddingBottom = '';
+  }
 }
 
 const PAGE_TITLES = {
