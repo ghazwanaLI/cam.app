@@ -2,8 +2,9 @@
 """
 نظام إدارة كاميرات المراقبة
 """
-import json, os, hashlib, uuid, base64, io
+import json, os, hashlib, uuid, base64, io, threading
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timedelta, timedelta
 
@@ -15,12 +16,32 @@ DB_FILE = "cam_db.json"
 def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
-# ── PostgreSQL ──
+# ── PostgreSQL Connection Pool ──
+_pg_pool = []
+_pg_pool_lock = threading.Lock()
+_PG_POOL_MAX = 5
+
 def get_conn():
     import pg8000, urllib.parse
+    with _pg_pool_lock:
+        while _pg_pool:
+            conn = _pg_pool.pop()
+            try:
+                conn.run("SELECT 1")  # تأكد الاتصال لا يزال حياً
+                return conn
+            except Exception:
+                pass  # اتصال ميت، أنشئ جديد
     r = urllib.parse.urlparse(DATABASE_URL)
-    return pg8000.connect(host=r.hostname,port=r.port or 5432,
-        database=r.path.lstrip("/"),user=r.username,password=r.password,ssl_context=True)
+    return pg8000.connect(host=r.hostname, port=r.port or 5432,
+        database=r.path.lstrip("/"), user=r.username, password=r.password, ssl_context=True)
+
+def release_conn(conn):
+    with _pg_pool_lock:
+        if len(_pg_pool) < _PG_POOL_MAX:
+            _pg_pool.append(conn)
+        else:
+            try: conn.close()
+            except: pass
 
 def init_pg():
     conn=get_conn(); cur=conn.cursor()
@@ -34,48 +55,69 @@ def init_pg():
     if not cur.fetchone():
         cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[json.dumps(default_db(),ensure_ascii=False)])
         conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_conn(conn)
 
 def pg_load():
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT value FROM cam_store WHERE key='data'")
-    row=cur.fetchone(); cur.close(); conn.close()
-    return json.loads(row[0])
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("SELECT value FROM cam_store WHERE key='data'")
+        row=cur.fetchone(); cur.close()
+        return json.loads(row[0])
+    finally: release_conn(conn)
 
 def pg_save(db):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_save_file(key,name,data,mime):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("INSERT INTO cam_files(key,name,data,mime) VALUES(%s,%s,%s,%s) ON CONFLICT(key) DO UPDATE SET name=%s,data=%s,mime=%s",[key,name,data,mime,name,data,mime])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("INSERT INTO cam_files(key,name,data,mime) VALUES(%s,%s,%s,%s) ON CONFLICT(key) DO UPDATE SET name=%s,data=%s,mime=%s",[key,name,data,mime,name,data,mime])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_load_file(key):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
-    row=cur.fetchone(); cur.close(); conn.close()
-    return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
+        row=cur.fetchone(); cur.close()
+        return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+    finally: release_conn(conn)
 
 def pg_del_file(key):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_add_log(user,action,details,ip=""):
     try:
-        conn=get_conn(); cur=conn.cursor()
-        cur.execute("INSERT INTO cam_logs(user_name,user_fullname,action,details,ip) VALUES(%s,%s,%s,%s,%s)",
-            [user.get("username",""),user.get("fullname",""),action,details,ip])
-        conn.commit(); cur.close(); conn.close()
+        conn=get_conn()
+        try:
+            cur=conn.cursor()
+            cur.execute("INSERT INTO cam_logs(user_name,user_fullname,action,details,ip) VALUES(%s,%s,%s,%s,%s)",
+                [user.get("username",""),user.get("fullname",""),action,details,ip])
+            conn.commit(); cur.close()
+        finally: release_conn(conn)
     except: pass
 
 def pg_get_logs(limit=100):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
-    rows=cur.fetchall(); cur.close(); conn.close()
-    return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
+        rows=cur.fetchall(); cur.close()
+        return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+    finally: release_conn(conn)
 
 def load_db():
     if USE_DB: return pg_load()
@@ -833,11 +875,14 @@ class Handler(BaseHTTPRequestHandler):
             key="/".join(p.split("/")[3:]); del_file(key); self.send_json({"ok":True})
         else: self.send_json({"error":"غير موجود"},404)
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 if __name__=="__main__":
     if USE_DB:
         print("⏳ تهيئة قاعدة البيانات...")
         init_pg()
-    server=HTTPServer(("0.0.0.0",PORT),Handler)
+    server=ThreadedHTTPServer(("0.0.0.0",PORT),Handler)
     print(f"\n  📹  نظام إدارة كاميرات المراقبة")
     print(f"  ✅  السيرفر يعمل على المنفذ {PORT}")
     print(f"  🌐  http://localhost:{PORT}\n")
