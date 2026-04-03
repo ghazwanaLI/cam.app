@@ -663,6 +663,192 @@ tr:hover td{background:rgba(30,58,95,.03);}
 @media(max-width:900px){
   #cam-stats-section{ grid-template-columns:1fr!important; }
 }
+
+/* ══════════════════════════════════════════
+   MOBILE APP REDESIGN
+   ══════════════════════════════════════════ */
+
+/* ── Bottom Navigation ── */
+#app-bottom-nav{
+  display:none;
+  position:fixed;bottom:0;left:0;right:0;z-index:500;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(0,0,0,.07);
+  padding:0 4px max(10px,env(safe-area-inset-bottom)) 4px;
+  box-shadow:0 -4px 30px rgba(0,0,0,.08);
+}
+#app-bottom-nav .bn-wrap{
+  display:flex;align-items:center;justify-content:space-around;
+  padding:6px 0 2px;
+}
+.bn-item{
+  display:flex;flex-direction:column;align-items:center;
+  gap:2px;padding:6px 8px;cursor:pointer;flex:1;
+  border-radius:14px;transition:all .2s;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;min-width:0;
+}
+.bn-item.active .bn-ico-wrap{
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  box-shadow:0 4px 14px rgba(29,78,216,.35);
+  transform:translateY(-4px) scale(1.08);
+}
+.bn-item.active .bn-lbl{ color:#1d4ed8; font-weight:800; }
+.bn-ico-wrap{
+  width:46px;height:46px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;transition:all .25s cubic-bezier(.34,1.56,.64,1);
+  background:transparent;
+}
+.bn-lbl{
+  font-size:9px;font-weight:700;color:#94a3b8;
+  font-family:'Cairo',sans-serif;white-space:nowrap;
+  transition:color .2s;overflow:hidden;text-overflow:ellipsis;
+  max-width:52px;text-align:center;
+}
+.bn-badge{
+  position:absolute;top:2px;right:6px;
+  background:#dc2626;color:#fff;border-radius:10px;
+  font-size:9px;font-weight:800;padding:1px 5px;
+  border:2px solid #fff;
+}
+
+/* ── App Header للموبايل ── */
+#app-header{
+  display:none;
+  position:fixed;top:0;left:0;right:0;z-index:400;
+  background:rgba(255,255,255,.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(0,0,0,.06);
+  box-shadow:0 2px 20px rgba(0,0,0,.06);
+  padding:env(safe-area-inset-top) 0 0;
+}
+#app-header .hdr-inner{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 16px 10px;
+}
+#app-header .hdr-logo{
+  width:36px;height:36px;border-radius:10px;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+  box-shadow:0 3px 10px rgba(29,78,216,.3);
+}
+#app-header .hdr-title{
+  flex:1;min-width:0;
+}
+#app-header .hdr-title .ht-main{
+  font-size:14px;font-weight:800;color:#1d4ed8;
+  line-height:1.2;
+}
+#app-header .hdr-title .ht-sub{
+  font-size:10px;color:#94a3b8;font-weight:500;
+}
+#app-header .hdr-av{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,#1d4ed8,#3b82f6);
+  color:#fff;display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:15px;flex-shrink:0;
+  border:2px solid rgba(29,78,216,.2);cursor:pointer;
+}
+#app-header .hdr-menu{
+  width:36px;height:36px;border-radius:10px;
+  background:#f1f5f9;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:18px;flex-shrink:0;
+}
+
+/* ── Drawer Sidebar للموبايل ── */
+#mob-sidebar-drawer{
+  display:none;
+  position:fixed;top:0;right:0;bottom:0;z-index:600;
+  width:280px;background:#fff;
+  box-shadow:-4px 0 30px rgba(0,0,0,.15);
+  transform:translateX(100%);
+  transition:transform .3s cubic-bezier(.4,0,.2,1);
+  overflow-y:auto;
+}
+#mob-sidebar-drawer.open{ transform:translateX(0); }
+#mob-drawer-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:599;
+  background:rgba(0,0,0,.4);
+  backdrop-filter:blur(2px);
+}
+
+@media(max-width:768px){
+  /* إخفاء topbar الأصلي */
+  .topbar{ display:none!important; }
+  /* إظهار header و bottom nav الجديدين */
+  #app-header{ display:block!important; }
+  #app-bottom-nav{ display:block!important; }
+  /* ضبط المحتوى */
+  .main{
+    margin-top:0!important;
+    margin-right:0!important;
+    padding-top:calc(57px + env(safe-area-inset-top))!important;
+    padding-bottom:calc(74px + env(safe-area-inset-bottom))!important;
+  }
+  .content{ padding:10px 10px 0!important; }
+  /* إخفاء hamburger القديم */
+  .hamburger,.sb-overlay{ display:none!important; }
+  /* Modals من الأسفل */
+  .overlay{ align-items:flex-end!important; }
+  .modal{
+    border-radius:24px 24px 0 0!important;
+    max-height:90vh!important;width:100%!important;
+    max-width:100%!important;padding-bottom:12px!important;
+    animation:slideUpModal .3s cubic-bezier(.34,1.2,.64,1)!important;
+  }
+  @keyframes slideUpModal{
+    from{transform:translateY(100%);opacity:0}
+    to{transform:translateY(0);opacity:1}
+  }
+  .modal::before{
+    content:'';display:block;width:36px;height:4px;
+    background:#d1d5db;border-radius:3px;margin:10px auto -2px;
+  }
+  .m-footer{
+    position:sticky!important;bottom:0!important;
+    background:#fff!important;z-index:10!important;
+    padding:10px 16px 16px!important;
+    border-top:1px solid #f1f5f9!important;
+    flex-direction:row-reverse!important;gap:8px!important;
+  }
+  .m-footer .btn{ flex:1!important;min-height:46px!important; }
+  /* إحصائيات */
+  .stats-grid{
+    grid-template-columns:repeat(2,1fr)!important;
+    gap:10px!important;margin-bottom:14px!important;
+  }
+  .sc{ padding:14px 12px!important;border-radius:16px!important; }
+  .sc-val{ font-size:26px!important; }
+  /* جداول */
+  .table-wrap{ overflow-x:auto;-webkit-overflow-scrolling:touch; }
+  table{ min-width:480px;font-size:12px; }
+  /* فورم */
+  .fgrid{ grid-template-columns:1fr!important; }
+}
+
+@media(max-width:480px){
+  .stats-grid{ gap:8px!important; }
+  .sc-val{ font-size:22px!important; }
+  .sc-lbl{ font-size:10px!important; }
+  .content{ padding:8px 8px 0!important; }
+}
+
+/* ── Drawer items ── */
+.drw-item{
+  display:flex;align-items:center;gap:12px;
+  padding:12px 14px;border-radius:12px;cursor:pointer;
+  font-family:'Cairo',sans-serif;font-size:14px;font-weight:600;
+  color:#334155;transition:all .15s;margin-bottom:2px;
+}
+.drw-item:hover,.drw-item:active{
+  background:#eff6ff;color:#1d4ed8;
+}
+.drw-item span{ font-size:20px;width:28px;text-align:center; }
 </style>
 </head>
 <body>
@@ -690,7 +876,84 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 <!-- APP -->
 <div id="app" style="display:block">
-  <!-- TOP NAVBAR -->
+
+  <!-- ══ APP HEADER للموبايل ══ -->
+  <div id="app-header">
+    <div class="hdr-inner">
+      <div class="hdr-logo">📹</div>
+      <div class="hdr-title">
+        <div class="ht-main" id="hdr-page-title">لوحة التحكم</div>
+        <div class="ht-sub">نظام كاميرات المراقبة</div>
+      </div>
+      <button class="hdr-menu" onclick="openMobDrawer()" title="القائمة">☰</button>
+      <div class="hdr-av" id="hdr-av" onclick="openChangePw()">م</div>
+    </div>
+  </div>
+
+  <!-- ══ BOTTOM NAVIGATION للموبايل ══ -->
+  <div id="app-bottom-nav">
+    <div class="bn-wrap">
+      <div class="bn-item active" id="bn-dashboard" onclick="bnGo('dashboard','لوحة التحكم',this)">
+        <div class="bn-ico-wrap">🏠</div>
+        <span class="bn-lbl">الرئيسية</span>
+      </div>
+      <div class="bn-item" id="bn-stations" onclick="bnGo('stations','المحطات',this)">
+        <div class="bn-ico-wrap">⛽</div>
+        <span class="bn-lbl">المحطات</span>
+      </div>
+      <div class="bn-item" id="bn-field" onclick="bnGoField(this)" style="display:none">
+        <div class="bn-ico-wrap">🔧</div>
+        <span class="bn-lbl">الصيانة</span>
+      </div>
+      <div class="bn-item" id="bn-inventory" onclick="bnGoInv(this)">
+        <div class="bn-ico-wrap">📋</div>
+        <span class="bn-lbl">الجرد</span>
+      </div>
+      <div class="bn-item" id="bn-more" onclick="openMobDrawer()">
+        <div class="bn-ico-wrap">☰</div>
+        <span class="bn-lbl">المزيد</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ DRAWER SIDEBAR للموبايل ══ -->
+  <div id="mob-drawer-overlay" onclick="closeMobDrawer()"></div>
+  <div id="mob-sidebar-drawer">
+    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);padding:24px 18px 18px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;font-size:22px">📹</div>
+        <div>
+          <div style="color:#fff;font-weight:800;font-size:14px">نظام الكاميرات</div>
+          <div style="color:rgba(255,255,255,.5);font-size:10px">V1.0.0 — شعبة تقنية المعلومات</div>
+        </div>
+        <button onclick="closeMobDrawer()" style="margin-right:auto;background:rgba(255,255,255,.1);border:none;color:#fff;width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:16px">✕</button>
+      </div>
+      <div id="drawer-user" style="background:rgba(255,255,255,.08);border-radius:12px;padding:10px 12px;display:flex;align-items:center;gap:10px">
+        <div id="drawer-av" style="width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;color:#fff">م</div>
+        <div style="flex:1;min-width:0">
+          <div id="drawer-name" style="color:#fff;font-weight:700;font-size:13px">—</div>
+          <div id="drawer-role" style="color:rgba(255,255,255,.5);font-size:10px">—</div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:12px 8px">
+      <div class="drw-item" onclick="bnGo('dashboard','لوحة التحكم');closeMobDrawer()"><span>🏠</span>لوحة التحكم</div>
+      <div class="drw-item" onclick="bnGo('stations','المحطات');closeMobDrawer()"><span>⛽</span>المحطات</div>
+      <div class="drw-item" id="drw-field" onclick="bnGoField();closeMobDrawer()" style="display:none"><span>🔧</span>الصيانة</div>
+      <div class="drw-item" onclick="bnGoInv();closeMobDrawer()"><span>📋</span>الجرد</div>
+      <div class="drw-item" onclick="bnGo('coding','ترميز الأجهزة');closeMobDrawer()"><span>🏷️</span>ترميز الأجهزة</div>
+      <div class="drw-item" onclick="bnGo('circulars','التعاميم');closeMobDrawer()"><span>📢</span>التعاميم</div>
+      <div class="drw-item" onclick="bnGo('reports','التقارير');closeMobDrawer()"><span>📊</span>التقارير</div>
+      <div class="drw-item" id="drw-handover" onclick="bnGo('handover','الاستلام والتسليم');closeMobDrawer()" style="display:none"><span>🔄</span>الاستلام والتسليم</div>
+      <div class="drw-item" id="drw-users" onclick="bnGo('users','المستخدمون');closeMobDrawer()" style="display:none"><span>🔐</span>المستخدمون</div>
+      <div class="drw-item" id="drw-logs" onclick="bnGo('logs','السجل');closeMobDrawer()" style="display:none"><span>📋</span>السجل</div>
+      <div style="height:1px;background:#f1f5f9;margin:8px 6px"></div>
+      <div class="drw-item" onclick="openChangePw();closeMobDrawer()"><span>🔑</span>تغيير كلمة المرور</div>
+      <div class="drw-item" style="color:#dc2626" onclick="doLogout()"><span>🚪</span>تسجيل الخروج</div>
+    </div>
+  </div>
+
+  <!-- TOP NAVBAR (ديسكتوب فقط) -->
   <div class="topbar" id="sidebar">
     <div class="topbar-logo">
       <div class="tb-brand">
@@ -3999,6 +4262,7 @@ async function initApp(){
   }
   updateDashboard();
   populateDistrictFilters();
+  updateMobNav();
 
   // إذا جاء من مسح QR مباشر
   if(window._scanCode){
@@ -6787,6 +7051,86 @@ function getGPS(fieldId, btn){
     },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
+}
+
+// ══ MOBILE APP NAVIGATION ══
+const PAGE_TITLES = {
+  dashboard:'لوحة التحكم', stations:'المحطات', field:'الصيانة',
+  inventory:'الجرد', coding:'ترميز الأجهزة', circulars:'التعاميم',
+  reports:'التقارير', users:'المستخدمون', handover:'الاستلام والتسليم',
+  logs:'السجل', delegates:'المخولون', cameras:'الكاميرات'
+};
+
+function bnGo(tab, title, el){
+  // عنوان الصفحة
+  const t = title || PAGE_TITLES[tab] || tab;
+  const titleEl = document.getElementById('hdr-page-title');
+  if(titleEl) titleEl.textContent = t;
+  // تفعيل الـ nav item
+  document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else {
+    const bn = document.getElementById('bn-'+tab);
+    if(bn) bn.classList.add('active');
+  }
+  // الانتقال للصفحة
+  const navEl = document.getElementById('nav-'+tab) || document.querySelector('[onclick*="goTab(\''+tab+'\'"]');
+  goTab(tab, navEl);
+}
+
+function bnGoField(el){
+  document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else { const bn=document.getElementById('bn-field'); if(bn) bn.classList.add('active'); }
+  const titleEl=document.getElementById('hdr-page-title');
+  if(titleEl) titleEl.textContent='الصيانة';
+  goTab('field', document.getElementById('nav-field'));
+  setTimeout(()=>switchField('maintenance',document.getElementById('sub-maint')),80);
+}
+
+function bnGoInv(el){
+  document.querySelectorAll('.bn-item').forEach(i=>i.classList.remove('active'));
+  if(el) el.classList.add('active');
+  else { const bn=document.getElementById('bn-inventory'); if(bn) bn.classList.add('active'); }
+  const titleEl=document.getElementById('hdr-page-title');
+  if(titleEl) titleEl.textContent='الجرد';
+  _navInv('inv-gov');
+}
+
+function openMobDrawer(){
+  document.getElementById('mob-sidebar-drawer').classList.add('open');
+  document.getElementById('mob-drawer-overlay').style.display='block';
+  document.body.style.overflow='hidden';
+}
+function closeMobDrawer(){
+  document.getElementById('mob-sidebar-drawer').classList.remove('open');
+  document.getElementById('mob-drawer-overlay').style.display='none';
+  document.body.style.overflow='';
+}
+
+// تحديث الـ drawer بعد تسجيل الدخول
+function updateMobNav(){
+  if(!CU) return;
+  const isAdmin = CU.role==='admin';
+  // avatar
+  const av=document.getElementById('hdr-av');
+  if(av) av.textContent=(CU.fullname||'م')[0];
+  const dav=document.getElementById('drawer-av');
+  if(dav) dav.textContent=(CU.fullname||'م')[0];
+  const dn=document.getElementById('drawer-name');
+  if(dn) dn.textContent=CU.fullname||'';
+  const dr=document.getElementById('drawer-role');
+  if(dr) dr.textContent=isAdmin?'🔑 مدير النظام':'👤 مخول قاطع';
+  // إظهار/إخفاء عناصر الـ drawer
+  ['drw-users','drw-logs','drw-handover'].forEach(id=>{
+    const e=document.getElementById(id);
+    if(e) e.style.display=isAdmin?'':'none';
+  });
+  // bottom nav field
+  const bnField=document.getElementById('bn-field');
+  const drwField=document.getElementById('drw-field');
+  if(bnField) bnField.style.display='';  // للجميع (صيانة)
+  if(drwField) drwField.style.display='';
 }
 
 tryAutoLogin();</script>
