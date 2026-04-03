@@ -978,6 +978,9 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <div class="drw-item" id="drw-logs" onclick="bnGo('logs','السجل');closeMobDrawer()" style="display:none"><span>📋</span>السجل</div>
       <div style="height:1px;background:#f1f5f9;margin:8px 6px"></div>
       <div class="drw-item" onclick="openChangePw();closeMobDrawer()"><span>🔑</span>تغيير كلمة المرور</div>
+      <div style="height:1px;background:#f1f5f9;margin:6px 14px"></div>
+      <div class="drw-item" onclick="downloadOfflineCopy();closeMobDrawer()" style="color:#0891b2"><span>💾</span>نسخة احتياطية offline</div>
+      <div class="drw-item" onclick="_autoRefreshTick();toast('🔄 جاري تحديث البيانات...');closeMobDrawer()"><span>🔄</span>تحديث البيانات الآن</div>
       <div class="drw-item" style="color:#dc2626" onclick="doLogout()"><span>🚪</span>تسجيل الخروج</div>
     </div>
   </div>
@@ -1002,6 +1005,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="tb-actions">
 
           <button class="tb-btn" onclick="openChangePw()">🔑 <span class="btn-txt">كلمة المرور</span></button>
+          <button class="tb-btn" onclick="downloadOfflineCopy()" style="color:#0891b2;border-color:rgba(8,145,178,.3)" title="تحميل نسخة احتياطية للاستخدام بدون انترنت">💾 <span class="btn-txt">نسخة احتياطية</span></button>
           <button class="tb-btn" onclick="doLogout()">🚪 <span class="btn-txt">خروج</span></button>
         </div>
       </div>
@@ -4990,27 +4994,17 @@ async function saveMaint(){
       for(const k of toUpload){
         try{
           const kb = UF[k].kb || Math.round((UF[k].data||'').length*0.75/1024);
-          toast('📤 رفع '+k.replace('maint_','').replace('_',' ')+' ('+kb+'KB)...');
-          await api('POST','/api/files/maint_'+mid+'_'+k,{
-            name: UF[k].name,
-            data: UF[k].data,
-            mime: UF[k].mime
-          });
+          toast('📤 جاري رفع '+( kb>1024?Math.round(kb/102.4)/10+'MB':kb+'KB' )+'...');
+          await smartUploadFile('/api/files/maint_'+mid+'_'+k, UF[k]);
           delete UF[k];
           ok++;
         }catch(fe){
           fail++;
-          const msg = fe.message||'';
-          const is502 = msg.includes('502')||msg.includes('413')||msg.includes('Body');
-          if(is502){
-            toast('❌ '+k+': الملف كبير جداً (502) — حاول ضغط الصورة أولاً','err');
-          } else {
-            toast('❌ فشل رفع '+k+': '+msg,'err');
-          }
+          toast('❌ '+fe.message, 'err');
         }
       }
       if(ok>0 && fail===0) toast('✅ تم رفع '+ok+' ملف');
-      else if(ok>0) toast('⚠️ رُفع '+ok+' ملف — فشل '+fail,'err');
+      else if(ok>0) toast('⚠️ رُفع '+ok+' — فشل '+fail, 'err');
     }
 
     // ── تسجيل تلقائي في الاستلام والتسليم (استلام معطوبة) — فقط للسجلات الجديدة ولها أجهزة ──
@@ -7454,6 +7448,70 @@ function _reindexInvDvr(){
     const c=tr.cells[0]; if(c)c.textContent=i+1;
   });
 }
+// ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
+async function smartUploadFile(endpoint, fileObj){
+  const steps = [
+    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
+    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
+    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
+    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
+  ];
+
+  let {data, mime, name} = fileObj;
+  const isImage = mime && mime.startsWith('image/');
+
+  for(let attempt=0; attempt<steps.length; attempt++){
+    const kb = Math.round(data.length * 0.75 / 1024);
+    try{
+      if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
+      const result = await api('POST', endpoint, {name, data, mime});
+      return result; // نجح
+    }catch(e){
+      const msg = (e.message||'').toLowerCase();
+      const is502 = msg.includes('502') || msg.includes('413')
+                 || msg.includes('body') || msg.includes('payload')
+                 || msg.includes('entity');
+
+      if(is502 && isImage && attempt < steps.length-1){
+        // ضغط الصورة أكثر وأعد المحاولة
+        const next = steps[attempt+1];
+        toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
+        try{
+          // recompress من base64
+          const dataUrl = 'data:'+mime+';base64,'+data;
+          const compressed = await new Promise((res,rej)=>{
+            const img = new Image();
+            img.onload = function(){
+              let w=img.width, h=img.height;
+              const scale = Math.min(next.maxPx/w, next.maxPx/h, 1);
+              w=Math.round(w*scale); h=Math.round(h*scale);
+              const c = document.createElement('canvas');
+              c.width=w; c.height=h;
+              c.getContext('2d').drawImage(img,0,0,w,h);
+              const url = c.toDataURL('image/jpeg', next.q);
+              res({data:url.split(',')[1], mime:'image/jpeg'});
+            };
+            img.onerror = ()=>rej(new Error('فشل تحميل الصورة'));
+            img.src = dataUrl;
+          });
+          data = compressed.data;
+          mime = 'image/jpeg';
+          name = name.replace(/\.[^.]+$/, '.jpg');
+          continue; // أعد المحاولة
+        }catch(ce){ throw e; }
+      }
+
+      // خطأ آخر أو PDF كبير
+      if(is502){
+        const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
+        throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
+      }
+      throw e;
+    }
+  }
+  throw new Error('فشل الرفع بعد '+steps.length+' محاولات');
+}
+
 // ══ HANDOVER — استلام وتسليم ══
 // ══ تصدير الجرد إلى Excel (CSV) ══
 function exportInvExcel(id){
