@@ -7138,7 +7138,7 @@ function resetDeviceRows(rows){
   else addDeviceRow(); // صف واحد افتراضي
 }
 
-
+async function saveDistrict(){
   const name=(document.getElementById('dist-name')?.value||'').trim();
   if(!name){toast('أدخل اسم القاطع','err');return;}
   try{
