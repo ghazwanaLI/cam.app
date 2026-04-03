@@ -57,10 +57,8 @@ def init_pg():
 def pg_load():
     conn=get_conn()
     try:
-        cur=conn.cursor()
-        cur.execute("SELECT value FROM cam_store WHERE key='data'")
-        row=cur.fetchone(); cur.close()
-        return json.loads(row[0])
+        cur=conn.cursor(); cur.execute("SELECT value FROM cam_store WHERE key='data'")
+        row=cur.fetchone(); cur.close(); return json.loads(row[0])
     finally: release_conn(conn)
 
 def pg_save(db):
@@ -82,8 +80,7 @@ def pg_save_file(key,name,data,mime):
 def pg_load_file(key):
     conn=get_conn()
     try:
-        cur=conn.cursor()
-        cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
+        cur=conn.cursor(); cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
         row=cur.fetchone(); cur.close()
         return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
     finally: release_conn(conn)
@@ -91,8 +88,7 @@ def pg_load_file(key):
 def pg_del_file(key):
     conn=get_conn()
     try:
-        cur=conn.cursor()
-        cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
+        cur=conn.cursor(); cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
         conn.commit(); cur.close()
     finally: release_conn(conn)
 
@@ -124,31 +120,20 @@ def load_db():
     global _db_cache
     with _db_lock:
         if _db_cache is None:
-            if USE_DB:
-                _db_cache = pg_load()
+            if USE_DB: _db_cache = pg_load()
             elif os.path.exists(DB_FILE):
-                with open(DB_FILE,"r",encoding="utf-8") as f:
-                    _db_cache = json.load(f)
-            else:
-                _db_cache = default_db()
-                _bg_write(_db_cache)
-        # نُرجع نسخة عميقة لتجنب تعارض الـ threads
+                with open(DB_FILE,"r",encoding="utf-8") as f: _db_cache = json.load(f)
+            else: _db_cache = default_db()
         return copy.deepcopy(_db_cache)
 
 def save_db(db):
     global _db_cache
-    with _db_lock:
-        _db_cache = db
-    # كتابة PostgreSQL في background لعدم تأخير الرد
-    _bg_write(db)
-
-def _bg_write(db):
+    with _db_lock: _db_cache = db
     if USE_DB:
-        snapshot = copy.deepcopy(db)
-        threading.Thread(target=_pg_write_safe, args=(snapshot,), daemon=True).start()
+        snap = copy.deepcopy(db)
+        threading.Thread(target=_pg_write_safe, args=(snap,), daemon=True).start()
     else:
-        with open(DB_FILE,"w",encoding="utf-8") as f:
-            json.dump(db, f, ensure_ascii=False, indent=2)
+        with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
 
 def _pg_write_safe(db):
     try: pg_save(db)
@@ -528,7 +513,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["tours"].append(tour); save_db(db)
             add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
-            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','', urgent=True)} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
+            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','')} | التاريخ: {tour['date']} | الفني: {tour['technician']}", urgent=True)
             save_db(db)
             self.send_json({"ok":True,"tour":tour})
 
@@ -544,7 +529,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["maintenance"].append(maint); save_db(db)
             add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
-            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','', urgent=True)} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
+            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','')} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}", urgent=True)
             save_db(db)
             self.send_json({"ok":True,"maintenance":maint})
 
@@ -741,7 +726,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["tours"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—', urgent=True)} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
+            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—')} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
 
         elif p.startswith("/api/maintenance/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
@@ -752,7 +737,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["maintenance"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—', urgent=True)}"); save_db(db); self.send_json({"ok":True})
+            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—')}", urgent=True); save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/cameras/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
