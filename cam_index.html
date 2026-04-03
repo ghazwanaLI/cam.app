@@ -2647,9 +2647,6 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
-      if(r.status===502||r.status===413||r.status===503){
-        throw new Error(`خطأ ${r.status}`);
-      }
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
       return d;
@@ -4402,6 +4399,7 @@ async function initApp(){
       loadMaintenance(),
       loadDelegates(),
       loadCirculars(),
+      loadInvStations(),
     ]);
   }catch(e){
     toast('خطأ في تحميل البيانات: '+e.message,'err');
@@ -5795,26 +5793,9 @@ function _pdfToJpg(file, quality){
 
 function compressImage(file, maxW, maxH, quality){
   return new Promise(function(resolve){
-    // PDF → تحويل للصفحة الأولى كـ JPG ثم تطبيق maxW/maxH
+    // PDF → تحويل للصفحة الأولى كـ JPG
     if(file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf')){
-      _pdfToJpg(file, quality).then(function(res){
-        const img=new Image();
-        img.onload=function(){
-          let w=img.width, h=img.height;
-          if(w>maxW||h>maxH){
-            const sc=Math.min(maxW/w, maxH/h);
-            w=Math.round(w*sc); h=Math.round(h*sc);
-          }
-          const c=document.createElement('canvas');
-          c.width=w; c.height=h;
-          const ctx=c.getContext('2d');
-          ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
-          ctx.drawImage(img,0,0,w,h);
-          resolve({data:c.toDataURL('image/jpeg',quality).split(',')[1], mime:'image/jpeg'});
-        };
-        img.onerror=function(){ resolve(res); };
-        img.src='data:image/jpeg;base64,'+res.data;
-      }).catch(function(){
+      _pdfToJpg(file, quality).then(resolve).catch(function(){
         const r=new FileReader();
         r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
         r.readAsDataURL(file);
@@ -5859,8 +5840,8 @@ async function doUpload(event, key){
     // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
     // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
-    const quality=hiQ?0.88:0.72;
-    const maxPx=hiQ?1280:900;
+    const quality=hiQ?0.95:0.82;
+    const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
     // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
@@ -6688,8 +6669,8 @@ function doMultiUpload(event, prefix){
     const key = prefix + (idx > 0 ? (idx+1) : '');  // maint_img, maint_img2, maint_img3
 
     // ضغط الصور: max 1600px، جودة 0.82
-    const maxPx = file.type.startsWith('image/') ? 900 : 9999;
-    const quality = file.type.startsWith('image/') ? 0.72 : 0.88;
+    const maxPx = file.type.startsWith('image/') ? 1600 : 9999;
+    const quality = file.type.startsWith('image/') ? 0.82 : 0.95;
 
     compressImage(file, maxPx, maxPx, quality).then(function(compressed){
       const data = compressed.data;
@@ -7471,10 +7452,10 @@ function _reindexInvDvr(){
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
 async function smartUploadFile(endpoint, fileObj){
   const steps = [
-    {maxPx:900,  q:0.72},
-    {maxPx:700,  q:0.62},
-    {maxPx:550,  q:0.52},
-    {maxPx:400,  q:0.45},
+    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
+    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
+    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
+    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
   ];
 
   let {data, mime, name} = fileObj;
