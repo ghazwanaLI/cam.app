@@ -4403,6 +4403,9 @@ async function initApp(){
   updateDashboard();
   populateDistrictFilters();
   updateMobNav();
+  // بدء التحديث التلقائي والنسخ الاحتياطي
+  startAutoRefresh();
+  setTimeout(_saveBackup, 8000); // حفظ بعد 8 ثوانٍ من التحميل
 
   // إذا جاء من مسح QR مباشر
   if(window._scanCode){
@@ -4892,7 +4895,13 @@ async function loadMaintenance(){
     const d=await api('GET','/api/maintenance');
     allMaint=d.maintenance||[];
     renderMaint();
-  }catch(e){toast('loadMaintenance: '+e.message,'err');console.error('loadMaintenance',e);}
+    _saveBackup();
+  }catch(e){
+    toast('loadMaintenance: '+e.message,'err');
+    console.error('loadMaintenance',e);
+    // استعادة من النسخة الاحتياطية إذا فشل الاتصال
+    if(!allMaint.length) _restoreFromBackup();
+  }
 }
 function renderMaint(){
   const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
@@ -7801,7 +7810,195 @@ function updateMobNav(){
   if(drwField) drwField.style.display='';
 }
 
-tryAutoLogin();</script>
+tryAutoLogin();
+
+// ══════════════════════════════════════════
+//  AUTO-REFRESH + OFFLINE BACKUP
+// ══════════════════════════════════════════
+
+/* ── لوحة الاتصال ── */
+function _showConnBanner(online){
+  let b = document.getElementById('_conn-banner');
+  if(!b){
+    b = document.createElement('div');
+    b.id = '_conn-banner';
+    b.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99998;text-align:center;'
+      +'padding:10px 16px;font-family:Cairo,sans-serif;font-size:13px;font-weight:700;'
+      +'display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .3s';
+    document.body.prepend(b);
+  }
+  if(online){
+    b.style.background = '#16a34a'; b.style.color = '#fff';
+    b.innerHTML = '✅ تم الاتصال بالسيرفر — جاري تحديث البيانات...';
+    b.style.transform = 'translateY(0)';
+    setTimeout(()=>{ b.style.transform = 'translateY(-100%)'; }, 3000);
+  } else {
+    b.style.background = '#dc2626'; b.style.color = '#fff';
+    b.innerHTML = '📵 غير متصل — <span style="font-weight:400">البرنامج يعمل من النسخة الاحتياطية المحلية</span>'
+      +'<button onclick="_restoreFromBackup()" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.4);color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px">📂 تحميل النسخة</button>';
+    b.style.transform = 'translateY(0)';
+  }
+}
+
+/* ── حفظ النسخة الاحتياطية ── */
+function _saveBackup(){
+  try{
+    const bk = {
+      time: new Date().toISOString(),
+      maint: allMaint||[],
+      stations: allStations||[],
+      tours: allTours||[],
+      cams: allCams||[],
+      delegates: allDelegates||[],
+      inventory: allInventory||[],
+      handover: allHandover||[]
+    };
+    localStorage.setItem('cam_app_backup', JSON.stringify(bk));
+  }catch(e){}
+}
+
+/* ── استعادة النسخة الاحتياطية ── */
+function _restoreFromBackup(){
+  try{
+    const raw = localStorage.getItem('cam_app_backup');
+    if(!raw){ toast('لا توجد نسخة احتياطية محلية','err'); return; }
+    const bk = JSON.parse(raw);
+    allMaint      = bk.maint||[];
+    allStations   = bk.stations||[];
+    allTours      = bk.tours||[];
+    allCams       = bk.cams||[];
+    allDelegates  = bk.delegates||[];
+    allInventory  = bk.inventory||[];
+    allHandover   = bk.handover||[];
+    // تحديث الواجهة
+    if(typeof renderMaint       ==='function') renderMaint();
+    if(typeof renderStations    ==='function') renderStations();
+    if(typeof renderInvList     ==='function') renderInvList();
+    if(typeof updateDashboard   ==='function') updateDashboard();
+    const t = bk.time ? new Date(bk.time).toLocaleString('ar-IQ') : '—';
+    toast('✅ تم تحميل النسخة الاحتياطية — '+t);
+  }catch(e){ toast('خطأ في استعادة النسخة: '+e.message,'err'); }
+}
+
+/* ── تحميل نسخة HTML كاملة للاستخدام بدون انترنت ── */
+function downloadOfflineCopy(){
+  try{
+    const bk = JSON.parse(localStorage.getItem('cam_app_backup')||'{}');
+    const dataScript = '\n<script id="__offline_data__">\n'
+      +'window.__OFFLINE_DATA__ = '+JSON.stringify(bk)+';\n'
+      +'<\/script>';
+    const fullHtml = document.documentElement.outerHTML
+      .replace('</head>', dataScript+'</head>');
+    const blob = new Blob([fullHtml], {type:'text/html;charset=utf-8'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'cam-backup-'+new Date().toISOString().split('T')[0]+'.html';
+    a.click();
+    setTimeout(()=>URL.revokeObjectURL(a.href), 5000);
+    toast('✅ تم تحميل نسخة احتياطية كاملة');
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
+}
+
+/* ── Auto-Refresh كل 60 ثانية ── */
+let _arInterval = null;
+let _arCount = 0;
+
+async function _autoRefreshTick(){
+  if(!SERVER_ONLINE || !CU) return;
+  _arCount++;
+  try{
+    // كل دورة: تحديث الصيانة
+    const dm = await api('GET','/api/maintenance');
+    const nm = dm.maintenance||dm.items||[];
+    if(nm.length !== allMaint.length || JSON.stringify(nm.slice(0,3)) !== JSON.stringify(allMaint.slice(0,3))){
+      allMaint = nm;
+      if(typeof renderMaint==='function') renderMaint();
+      if(typeof updateDashboard==='function') updateDashboard();
+      _showUpdateToast('تم تحديث بيانات الصيانة');
+    }
+    // كل 3 دورات (3 دقائق): تحديث المحطات والجرد
+    if(_arCount % 3 === 0){
+      const ds = await api('GET','/api/stations');
+      allStations = ds.stations||[];
+      if(typeof renderStations==='function') renderStations();
+    }
+    // حفظ نسخة احتياطية بعد كل تحديث
+    _saveBackup();
+  }catch(e){
+    console.warn('auto-refresh error:', e.message);
+  }
+}
+
+let _updateToastTimer = null;
+function _showUpdateToast(msg){
+  let el = document.getElementById('_update-toast');
+  if(!el){
+    el = document.createElement('div');
+    el.id = '_update-toast';
+    el.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);'
+      +'background:#1d4ed8;color:#fff;border-radius:20px;padding:8px 18px;'
+      +'font-family:Cairo,sans-serif;font-size:12px;font-weight:700;'
+      +'z-index:9990;white-space:nowrap;box-shadow:0 4px 20px rgba(0,0,0,.2);'
+      +'opacity:0;transition:opacity .3s';
+    document.body.appendChild(el);
+  }
+  el.textContent = '🔄 '+msg;
+  el.style.opacity = '1';
+  clearTimeout(_updateToastTimer);
+  _updateToastTimer = setTimeout(()=>{ el.style.opacity='0'; }, 3000);
+}
+
+function startAutoRefresh(){
+  if(_arInterval) clearInterval(_arInterval);
+  _arInterval = setInterval(_autoRefreshTick, 60000); // كل دقيقة
+}
+
+/* ── Online/Offline Events ── */
+window.addEventListener('online', function(){
+  SERVER_ONLINE = true;
+  _showConnBanner(true);
+  if(CU) setTimeout(()=>{ loadMaintenance(); loadStations(); _saveBackup(); }, 1000);
+});
+
+window.addEventListener('offline', function(){
+  SERVER_ONLINE = false;
+  _showConnBanner(false);
+});
+
+/* ── تحميل البيانات الاحتياطية عند بدء التطبيق (إذا كانت موجودة) ── */
+(function _loadOfflineDataIfAny(){
+  if(window.__OFFLINE_DATA__){
+    const bk = window.__OFFLINE_DATA__;
+    allMaint     = bk.maint||[];
+    allStations  = bk.stations||[];
+    allTours     = bk.tours||[];
+    allInventory = bk.inventory||[];
+    allHandover  = bk.handover||[];
+    console.log('📦 تم تحميل البيانات المضمّنة من النسخة الاحتياطية');
+  }
+})();
+
+/* ── زر التحديث والنسخة الاحتياطية في الـ drawer ── */
+function _addBackupBtn(){
+  const drawer = document.querySelector('#mob-sidebar-drawer > div:last-child');
+  if(!drawer || document.getElementById('_backup-btn-added')) return;
+  const div = document.createElement('div');
+  div.id = '_backup-btn-added';
+  div.innerHTML =
+    '<div style="height:1px;background:#f1f5f9;margin:6px"></div>'+
+    '<div class="drw-item" onclick="downloadOfflineCopy()" style="color:#0891b2">'+
+      '<span>💾</span>نسخة احتياطية offline</div>'+
+    '<div class="drw-item" onclick="_autoRefreshTick();toast(\'جاري التحديث...\')">'+
+      '<span>🔄</span>تحديث البيانات الآن</div>';
+  drawer.appendChild(div);
+}
+
+// بدء Auto-Refresh + إضافة أزرار بعد تسجيل الدخول
+const _origInitApp = typeof initApp === 'function' ? initApp : null;
+document.addEventListener('DOMContentLoaded', function(){
+  setTimeout(_addBackupBtn, 2000);
+});
+</script>
 
 
 <!-- شريط إخباري لصيانة اليوم -->
