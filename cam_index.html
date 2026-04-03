@@ -1943,7 +1943,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div style="font-size:28px">📸</div>
             <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
             <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
-            <div style="font-size:10px;color:#f59e0b;margin-top:3px">⚠️ الحد الأقصى 800KB لكل ملف</div>
           </label>
           <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         </div>
@@ -4938,26 +4937,15 @@ async function saveMaint(){
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
     const mid=id||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
-    let uploadOk=0, uploadFail=0;
     for(const k of fileKeys){
       if(UF[k]){
         try{
-          const kb=UF[k].kb||Math.round((UF[k].data||'').length*0.75/1024);
-          if(kb>MAX_UPLOAD_KB){
-            toast('⚠️ '+UF[k].name.substring(0,20)+' — حجم '+kb+'KB كبير، تم تخطيه','err');
-            delete UF[k]; uploadFail++; continue;
-          }
           await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime});
-          delete UF[k]; uploadOk++;
+          delete UF[k];
         }catch(fe){
-          const isSize = fe.message&&(fe.message.includes('502')||fe.message.includes('413')||fe.message.includes('payload'));
-          toast('❌ فشل رفع الملف'+(isSize?' — الحجم كبير جداً، قلل جودة الصورة':''),'err');
-          uploadFail++;
+          toast('❌ فشل رفع الملف — '+fe.message,'err');
         }
       }
-    }
-    if(uploadFail>0&&uploadOk===0){
-      toast('⚠️ الصيانة حُفظت بدون الملفات — قلل حجم الصور وحاول مجدداً','err');
     }
 
     // ── تسجيل تلقائي في الاستلام والتسليم (استلام معطوبة) — فقط للسجلات الجديدة ولها أجهزة ──
@@ -6541,7 +6529,7 @@ function getOthers(){
 }
 
 // رفع ملفات متعددة دفعة واحدة
-const MAX_UPLOAD_KB = 800; // حد أقصى 800KB بعد الضغط
+const MAX_UPLOAD_KB = 999999; // بدون تقييد
 
 function doMultiUpload(event, prefix){
   const files=Array.from(event.target.files);
@@ -6551,25 +6539,15 @@ function doMultiUpload(event, prefix){
     ||document.getElementById('maint-img-preview');
   if(preview) preview.innerHTML='';
 
-  let loaded=0, skipped=0;
+  let loaded=0;
   files.forEach((file,idx)=>{
     const key=prefix+(idx>0?'_'+(idx+1):'');
-    // ضغط الصور — جودة منخفضة للحفاظ على الحجم
-    compressImage(file, 1024, 1024, 0.70).then(function(compressed){
+    compressImage(file, 9999, 9999, 0.95).then(function(compressed){
       const data=compressed.data; const mime=compressed.mime;
       const kb=Math.round(data.length*0.75/1024);
-
-      // تحقق من الحجم بعد الضغط
-      if(kb > MAX_UPLOAD_KB){
-        skipped++;
-        toast('⚠️ '+file.name.substring(0,20)+' — حجمه '+kb+'KB كبير جداً (الحد '+MAX_UPLOAD_KB+'KB)','err');
-        return;
-      }
-
       UF[key]={name:file.name,data,mime,kb};
       loaded++;
 
-      // عرض مصغّر
       if(preview && file.type.startsWith('image/')){
         const thumb=document.createElement('div');
         thumb.style.cssText='position:relative;display:inline-block';
@@ -6580,7 +6558,7 @@ function doMultiUpload(event, prefix){
         rm.textContent='✕'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1';
         rm.onclick=function(){delete UF[key];thumb.remove();};
         const sz=document.createElement('div');
-        sz.textContent=kb+'KB';
+        sz.textContent=kb>1024?(Math.round(kb/102.4)/10)+'MB':kb+'KB';
         sz.style.cssText='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:9px;text-align:center;border-radius:0 0 6px 6px';
         thumb.appendChild(im); thumb.appendChild(rm); thumb.appendChild(sz);
         if(preview) preview.appendChild(thumb);
@@ -6597,9 +6575,7 @@ function doMultiUpload(event, prefix){
       toast('فشل تحميل '+file.name,'err');
     });
   });
-  setTimeout(()=>{
-    if(loaded>0) toast('✅ تم تحميل '+loaded+' ملف'+(skipped?' — تجاوز '+skipped+' ملف':''));
-  }, 600);
+  setTimeout(()=>{ if(loaded>0) toast('✅ تم تحميل '+loaded+' ملف'); }, 600);
 }
 
 // إظهار/إخفاء حقل الحالة بحسب نوع المحطة
