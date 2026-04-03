@@ -1,1150 +1,5 @@
 <!DOCTYPE html>
-<h
-
-<!-- MODALS -->
-<div class="overlay" id="ov-tour" onclick="closeOv(event,'ov-tour')">
-  <div class="modal">
-    <div class="m-title">🚗 <span id="tour-ttl">إضافة جولة</span></div>
-    <input type="hidden" id="tour-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="tour-district" onchange="filterTourStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="tour-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">نوع الزيارة</label>
-        <select class="fi" dir="rtl" id="tour-type">
-          <option value="كشف">كشف</option>
-          <option value="صيانة">صيانة</option>
-          <option value="تركيب">تركيب</option>
-          <option value="متابعة">متابعة</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
-            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
-            <span>🖨️ جودة عالية</span>
-          </label>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
-            <div class="up-box" id="ub-tour">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_img')">
-              <button class="up-rm" onclick="rmFile('tour_img',event)">✕</button>
-              <div class="up-ico">📸</div>
-              <div class="up-lbl">صورة الموقع</div>
-              <div class="up-stat" id="us-tour_img">صورة أو PDF</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
-            <div class="up-box" id="ub-tour-rep">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
-              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
-              <div class="up-ico">📄</div>
-              <div class="up-lbl">تقرير الزيارة</div>
-              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
-            </div>
-          </div>
-          <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📋 مستند إضافي</div>
-            <div class="up-box" id="ub-tour-doc">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_doc')">
-              <button class="up-rm" onclick="rmFile('tour_doc',event)">✕</button>
-              <div class="up-ico">📋</div>
-              <div class="up-lbl">مستند إضافي</div>
-              <div class="up-stat" id="us-tour_doc">PDF أو صورة</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-tour')">إلغاء</button>
-      <button class="btn btn-p" id="save-tour-btn" onclick="saveTour()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-maint" onclick="closeOv(event,'ov-maint')">
-  <div class="modal">
-    <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
-    <input type="hidden" id="maint-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="maint-district" onchange="filterMaintStations()">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">المحطة *</label>
-        <select class="fi" dir="rtl" id="maint-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <!-- قائمة الأجهزة المتعددة -->
-      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
-          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
-        </div>
-        <div id="devices-list"></div>
-      </div>
-
-      <!-- نوع العطل العام -->
-      <div class="fg">
-        <label class="fl">نوع العطل العام</label>
-        <select class="fi" dir="rtl" id="maint-device">
-          <option value="عطل كلي">عطل كلي</option>
-          <option value="عطل جزئي">عطل جزئي</option>
-          <option value="كسر فيزيائي">كسر فيزيائي</option>
-          <option value="مشكلة برمجية">مشكلة برمجية</option>
-          <option value="انقطاع كابل">انقطاع كابل</option>
-          <option value="خلل في الطاقة">خلل في الطاقة</option>
-          <option value="صيانة دورية">صيانة دورية</option>
-          <option value="استبدال وقائي">استبدال وقائي</option>
-        </select>
-      </div>
-
-      <!-- سبب + فني -->
-      <div class="fg"><label class="fl">سبب الصيانة</label>
-        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
-      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="maint-qty" type="number" min="1" value="1" placeholder="1"></div>
-      <div class="fg"><label class="fl">الحالة بعد الصيانة</label><select class="fi" dir="rtl" id="maint-status-after"><option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option><option value="يعمل جزئياً">⚠️ يعمل جزئياً</option><option value="لا يزال معطلاً">❌ لا يزال معطلاً</option></select></div>
-      <div class="fg"><label class="fl">اسم الفني</label>
-        <input class="fi" id="maint-tech" type="text"></div>
-
-      <!-- الحالة بعد الصيانة -->
-      <div class="fg">
-        <label class="fl">الحالة بعد الصيانة</label>
-        <select class="fi" dir="rtl" id="m-status-after">
-          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
-          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
-          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
-          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
-        </select>
-      </div>
-
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
-
-      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
-            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
-            <span>🖨️ جودة طباعة عالية</span>
-          </label>
-        </div>
-
-        <!-- صور العطل — رفع دفعة واحدة -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل</div>
-          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s"
-            onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
-            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
-            <div style="font-size:28px">📸</div>
-            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
-            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
-          </label>
-          <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
-        </div>
-
-        <!-- سجلات الاشتغال — 3 سجلات -->
-        <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
-              <div class="up-box" id="ub-maint-rep">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep')">
-                <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال المحطة</div>
-                <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
-              <div class="up-box" id="ub-maint-rep2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep2')">
-                <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل اشتغال الصيانة</div>
-                <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
-              <div class="up-box" id="ub-maint-rep3">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep3')">
-                <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
-                <div class="up-ico">📄</div>
-                <div class="up-lbl">سجل إنجاز عمل</div>
-                <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- التكليف -->
-        <div>
-          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
-              <div class="up-box" id="ub-maint-tawkeef">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">وثيقة التكليف</div>
-                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
-              </div>
-            </div>
-            <div>
-              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
-              <div class="up-box" id="ub-maint-tawkeef2">
-                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef2')">
-                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
-                <div class="up-ico">📝</div>
-                <div class="up-lbl">تكليف إضافي</div>
-                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-maint')">إلغاء</button>
-      <button class="btn btn-o" id="btn-print-maint" onclick="printMaintDocs()" style="display:none">🖨️ طباعة المستندات</button>
-      <button class="btn btn-p" id="save-maint-btn" onclick="saveMaint()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-cam" onclick="closeOv(event,'ov-cam')">
-  <div class="modal">
-    <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
-    <input type="hidden" id="cam-eid">
-    <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" dir="rtl" id="cam-station"><option value="">— اختر المحطة —</option></select>
-      </div>
-      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
-      <div class="fg"><label class="fl">نوع الكاميرا</label>
-        <select class="fi" dir="rtl" id="cam-type">
-          <option value="داخلية">داخلية</option>
-          <option value="خارجية">خارجية</option>
-          <option value="PTZ">PTZ</option>
-          <option value="بُللت">بُللت</option>
-          <option value="돔">돔 Dome</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
-      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" dir="rtl" id="cam-status">
-          <option value="working">شغالة</option>
-          <option value="broken">معطلة</option>
-        </select>
-      </div>
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
-      <button class="btn btn-p" id="save-cam-btn" onclick="saveCam()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
-  <div class="modal" style="width:860px;max-height:92vh;overflow-y:auto;padding:0">
-    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
-      📦 <span id="inv-ttl">إضافة جرد محطة</span>
-    </div>
-    <input type="hidden" id="inv-eid">
-    <div style="padding:14px 16px">
-
-      <!-- معلومات المنفذ -->
-      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنفذ التوزيعي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المنفذ / البناية :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="width:100%;font-size:11px">
-                <option value="">— اختر المحطة —</option>
-              </select>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="inv-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
-            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- جدول الكاميرات — ديناميكي -->
-      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead>
-            <tr style="background:#e5e7eb">
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
-            </tr>
-          </thead>
-          <tbody id="cam-types-body"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
-      </div>
-
-      <!-- جهاز التسجيل — ديناميكي -->
-      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead>
-            <tr style="background:#e5e7eb">
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
-              <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
-            </tr>
-          </thead>
-          <tbody id="inv-dvr-body"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#eff6ff">
-          <button type="button" onclick="addDvrRow()" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
-        </div>
-      </div>
-        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
-        </div>
-      </div>
-
-      <!-- ملاحظات -->
-      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
-      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
-    </div>
-  </div>
-
-<div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
-  <div class="modal modal-sm">
-    <div class="m-title">📍 إضافة قاطع جديد</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم القاطع *</label>
-        <input class="fi" id="dist-name" type="text" placeholder="اسم القاطع"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-district')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveDistrict()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-delegate" onclick="closeOv(event,'ov-delegate')">
-  <div class="modal modal-sm">
-    <div class="m-title">👥 مخول القاطع</div>
-    <input type="hidden" id="d-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="d-district"><option value="">— اختر —</option></select>
-      </div>
-
-      <!-- مخول 1 -->
-      <div class="fg full" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
-        <div style="font-size:12px;font-weight:700;color:var(--p1);margin-bottom:8px">👤 المخول الأول</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">الاسم *</label><input class="fi" id="d-name" type="text" placeholder="اسم المخول"></div>
-          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone" type="text" placeholder="07xx..."></div>
-        </div>
-      </div>
-
-      <!-- مخول إضافي -->
-      <div class="fg full" id="d-extra-section" style="display:none;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
-        <div style="font-size:12px;font-weight:700;color:var(--p2);margin-bottom:8px">👤 المخول الإضافي</div>
-        <div class="fgrid">
-          <div class="fg"><label class="fl">الاسم</label><input class="fi" id="d-name2" type="text" placeholder="اسم المخول الإضافي"></div>
-          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone2" type="text" placeholder="07xx..."></div>
-        </div>
-      </div>
-
-      <div class="fg full" id="d-add-extra-btn">
-        <button type="button" class="btn btn-o btn-sm" style="width:100%" onclick="toggleExtraDelegate()">➕ إضافة مخول إضافي</button>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-delegate')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveDelegate()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-station" onclick="closeOv(event,'ov-station')">
-  <div class="modal modal-sm">
-    <div class="m-title">⛽ <span id="st-ttl">إضافة محطة</span></div>
-    <input type="hidden" id="st-eid">
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text" placeholder="اسم المحطة"></div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="st-district">
-          <option value="">— اختر القاطع —</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">النوع</label>
-        <select class="fi" dir="rtl" id="st-type" onchange="toggleSandaField();toggleStStatus()">
-          <option value="حكومية">حكومية</option>
-          <option value="أهلية">أهلية</option>
-        </select>
-      </div>
-
-      <!-- منظومة كاميرات رئيسية -->
-      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
-        <div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:12px">📷 منظومة كاميرات رئيسية</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label class="fl">📷 عدد الكاميرات</label>
-            <input class="fi" id="st-main-cam-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">🔍 نوع الكاميرات</label>
-            <input class="fi" id="st-main-cam-type" type="text" placeholder="مثال: خارجية 4MP...">
-          </div>
-          <div>
-            <label class="fl">💾 عدد الهاردات</label>
-            <input class="fi" id="st-main-hdd-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">💽 حجم الهارد</label>
-            <input class="fi" id="st-main-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">⏱️ مدة التسجيلات</label>
-            <select class="fi" dir="rtl" id="st-main-record-days">
-              <option value="">— اختر المدة —</option>
-              <option value="7 أيام">7 أيام</option>
-              <option value="14 يوم">14 يوم</option>
-              <option value="30 يوم">30 يوم</option>
-              <option value="60 يوم">60 يوم</option>
-              <option value="90 يوم">90 يوم</option>
-              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      <!-- منظومة كاميرات ساندة - تظهر عند اختيار أهلية -->
-      <div class="fg full" id="sanda-row" style="display:none;border:1.5px solid rgba(245,158,11,.35);border-radius:12px;padding:14px;background:rgba(245,158,11,.04)">
-        <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px">⚙️ منظومة كاميرات ساندة</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div>
-            <label class="fl">📷 عدد الكاميرات</label>
-            <input class="fi" id="st-sanda-cam-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">🔍 نوع الكاميرات</label>
-            <input class="fi" id="st-sanda-cam-type" type="text" placeholder="مثال: داخلية 2MP...">
-          </div>
-          <div>
-            <label class="fl">💾 عدد الهاردات</label>
-            <input class="fi" id="st-sanda-hdd-count" type="number" min="0" value="0" placeholder="0">
-          </div>
-          <div>
-            <label class="fl">💽 حجم الهارد</label>
-            <input class="fi" id="st-sanda-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
-            <select class="fi" dir="rtl" id="st-sanda-record-days">
-              <option value="">— اختر المدة —</option>
-              <option value="7 أيام">7 أيام</option>
-              <option value="14 يوم">14 يوم</option>
-              <option value="30 يوم">30 يوم</option>
-              <option value="60 يوم">60 يوم</option>
-              <option value="90 يوم">90 يوم</option>
-              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
-            </select>
-          </div>
-          <div style="grid-column:1/-1">
-            <label class="fl">📝 ملاحظات</label>
-            <input class="fi" id="st-sanda-notes" type="text" placeholder="ملاحظات عن المنظومة الساندة...">
-          </div>
-        </div>
-      </div>
-      <div class="fg" style="border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px;background:rgba(22,163,74,.03)">
-        <label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label>
-        <input class="fi" id="st-cam-working" type="number" min="0" value="0" placeholder="0">
-      </div>
-      <div class="fg" style="border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:10px;background:rgba(220,38,38,.03)">
-        <label class="fl" style="color:var(--a2)">📷 كاميرات لا تعمل</label>
-        <input class="fi" id="st-cam-broken" type="number" min="0" value="0" placeholder="0">
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-user" onclick="closeOv(event,'ov-user')">
-  <div class="modal" style="width:520px;padding:0;overflow:hidden;border-radius:20px">
-    <!-- Modal Header -->
-    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f,#1d4ed8);padding:24px 24px 20px;position:relative;overflow:hidden">
-      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
-      <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
-      <div style="position:relative;display:flex;align-items:center;gap:14px">
-        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:20px">🔐</div>
-        <div>
-          <div id="u-ttl" style="font-size:17px;font-weight:900;color:#fff">إضافة مستخدم</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.55)">تحديد الصلاحيات والوصول</div>
-        </div>
-      </div>
-    </div>
-    <input type="hidden" id="u-eid">
-    <!-- Modal Body -->
-    <div style="padding:20px;max-height:70vh;overflow-y:auto">
-      <!-- معلومات الحساب -->
-      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">معلومات الحساب</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">الاسم الكامل *</label>
-            <input class="fi" id="u-fn" type="text" placeholder="أدخل الاسم" style="width:100%;font-size:13px">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">اسم الدخول *</label>
-            <input class="fi" id="u-un" type="text" placeholder="username" style="width:100%;font-size:13px;direction:ltr;text-align:left">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">كلمة المرور</label>
-            <input class="fi" id="u-pw" type="password" placeholder="اتركها فارغة للإبقاء" style="width:100%;font-size:13px">
-          </div>
-          <div>
-            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">نوع الحساب</label>
-            <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()" style="width:100%;font-size:13px">
-              <option value="viewer">👤 مخول قاطع</option>
-              <option value="admin">🔑 مدير النظام</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      <!-- القواطع -->
-      <div id="u-district-row" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
-        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">القواطع المخصصة</div>
-        <div id="u-districts-wrap" style="display:flex;flex-wrap:wrap;gap:6px;max-height:130px;overflow-y:auto"></div>
-        <input type="hidden" id="u-district" value="">
-      </div>
-      <!-- الصلاحيات -->
-      <div id="u-perms" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-          <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px">الصلاحيات</div>
-          <button type="button" onclick="toggleAllPerms()" style="font-size:10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700">تحديد الكل</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">✏️</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعديل</div><div style="font-size:9px;color:#94a3b8">إضافة وتعديل</div></div>
-              <div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">🗑️</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">حذف</div><div style="font-size:9px;color:#94a3b8">حذف السجلات</div></div>
-              <div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">📎</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">ملفات</div><div style="font-size:9px;color:#94a3b8">رفع الصور</div></div>
-              <div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">📊</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تقارير</div><div style="font-size:9px;color:#94a3b8">عرض التقارير</div></div>
-              <div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">📦</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جرد</div><div style="font-size:9px;color:#94a3b8">جرد الكاميرات</div></div>
-              <div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">🚗</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جولات</div><div style="font-size:9px;color:#94a3b8">إدارة الجولات</div></div>
-              <div class="tog" id="p-tours" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">🔧</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">صيانة</div><div style="font-size:9px;color:#94a3b8">طلبات الصيانة</div></div>
-              <div class="tog" id="p-maint" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
-            <div style="display:flex;align-items:center;gap:6px">
-              <span style="font-size:14px">📢</span>
-              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعاميم</div><div style="font-size:9px;color:#94a3b8">إرسال التعاميم</div></div>
-              <div class="tog" id="p-circulars" onclick="this.classList.toggle('on')"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- Footer -->
-    <div style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-start;flex-direction:row-reverse">
-      <button onclick="saveUser()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:11px 28px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px">💾 حفظ</button>
-      <button onclick="closeModal('ov-user')" style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;padding:11px 20px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:600">إلغاء</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
-  <div class="modal" style="width:620px;max-height:92vh;overflow-y:auto">
-    <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
-    <input type="hidden" id="coding-eid">
-
-    <!-- تبويبات حكومي / أهلي -->
-    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:14px">
-      <button id="coding-tab-gov" onclick="switchCodingType('gov')"
-        style="flex:1;padding:9px;border:none;background:#eff6ff;color:#1d4ed8;font-family:Cairo,sans-serif;font-size:13px;font-weight:800;cursor:pointer;border-bottom:3px solid #1d4ed8">
-        🏛️ حكومي
-      </button>
-      <button id="coding-tab-priv" onclick="switchCodingType('priv')"
-        style="flex:1;padding:9px;border:none;background:#fff;color:#94a3b8;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent">
-        🏪 أهلي
-      </button>
-    </div>
-    <input type="hidden" id="coding-station-type" value="gov">
-
-    <!-- الحقول المشتركة -->
-    <div class="fgrid">
-      <div class="fg"><label class="fl">رقم الموقع *</label>
-        <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-TK-001">
-      </div>
-      <div class="fg"><label class="fl">اسم الموقع *</label>
-        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة">
-      </div>
-      <div class="fg"><label class="fl">القاطع</label>
-        <select class="fi" dir="rtl" id="coding-district" onchange="filterCodingStations()">
-          <option value="">— اختر —</option>
-        </select>
-      </div>
-      <div class="fg"><label class="fl">المحطة</label>
-        <select class="fi" dir="rtl" id="coding-station"><option value="">— اختر —</option></select>
-      </div>
-      <div class="fg"><label class="fl">تاريخ التركيب</label>
-        <input class="fi" id="coding-install-date" type="date">
-      </div>
-      <div class="fg"><label class="fl">عدد الكاميرات 📷</label>
-        <input class="fi" id="coding-cam-count" type="number" min="0" value="0" placeholder="0">
-      </div>
-      <div class="fg"><label class="fl">الحالة</label>
-        <select class="fi" dir="rtl" id="coding-status">
-          <option value="يعمل">✅ يعمل</option>
-          <option value="معطل">❌ معطل</option>
-          <option value="صيانة">🔧 صيانة</option>
-        </select>
-      </div>
-    </div>
-
-    <!-- محتوى حكومي -->
-    <div id="coding-gov-content">
-      <!-- NVR -->
-      <div id="coding-nvr-section" class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03);margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
-          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
-        <div id="nvr-rows"></div>
-      </div>
-      <!-- HDD -->
-      <div id="coding-hdd-section" class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03);margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
-          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
-        <div id="hdd-rows"></div>
-      </div>
-      <!-- أجهزة أخرى -->
-      <div class="fg full" style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:12px;background:rgba(124,58,237,.02);margin-bottom:10px">
-        <div style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:10px">🔌 أجهزة أخرى</div>
-        <div style="display:flex;flex-direction:column;gap:8px" id="other-rows"></div>
-        <button type="button" onclick="addOtherRow()" class="btn btn-o btn-sm" style="margin-top:6px">➕ إضافة جهاز</button>
-      </div>
-    </div>
-
-    <!-- محتوى أهلي -->
-    <div id="coding-priv-content" style="display:none">
-      <div style="background:#fef3c7;border:1.5px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;color:#92400e;font-size:12px;font-weight:600">
-        🏪 المحطة الأهلية — سجّل الأجهزة والهاردات والسيريال
-      </div>
-      <!-- NVR أهلي -->
-      <div class="fg full" style="border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;background:rgba(245,158,11,.03);margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#d97706">📹 أجهزة NVR/DVR (أهلي)</div>
-          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
-        <div id="nvr-rows-priv"></div>
-      </div>
-      <!-- HDD أهلي -->
-      <div class="fg full" style="border:1.5px solid rgba(245,158,11,.25);border-radius:12px;padding:12px;background:rgba(245,158,11,.02);margin-bottom:10px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <div style="font-size:13px;font-weight:800;color:#d97706">💾 الهاردات HDD (أهلي)</div>
-          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
-        </div>
-        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
-        <div id="hdd-rows-priv"></div>
-      </div>
-    </div>
-
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">ملاحظات</label>
-        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-<div class="overlay" id="ov-inv-building" onclick="closeOv(event,'ov-inv-building')">
-  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
-    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
-      🏢 <span id="invb-ttl">إضافة جرد بناية حكومية</span>
-    </div>
-    <input type="hidden" id="invb-eid">
-    <div style="padding:14px 16px">
-
-      <!-- بيانات المنشأة -->
-      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنشأة</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم البناية / المنشأة :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="invb-name" type="text" placeholder="اسم البناية أو الدائرة..." style="width:100%;font-size:11px">
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">القاطع :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="invb-district" onchange="updateInvbAddress()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="invb-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invb-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
-            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invb-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- جدول الكاميرات -->
-      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invb-cam-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRowTo('invb-cam-tbody')" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
-      </div>
-
-      <!-- جهاز التسجيل -->
-      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invb-dvr-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#eff6ff">
-          <button type="button" onclick="addDvrRowTo('invb-dvr-tbody')" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
-        </div>
-        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invb-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invb-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="invb-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invb-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invb-pw-cb"> طاقة شمسية</label>
-        </div>
-      </div>
-
-      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="invb-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv-building')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveInvBuilding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
-    </div>
-  </div>
-
-<!-- MODAL: جرد المحطات الأهلية (فورم كامل) -->
-<div class="overlay" id="ov-inv-private" onclick="closeOv(event,'ov-inv-private')">
-  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
-    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
-      🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span>
-    </div>
-
-    <input type="hidden" id="invp-eid">
-    <div style="padding:14px 16px">
-
-      <!-- بيانات المنشأة -->
-      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنشأة</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المحطة :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..." style="width:100%;font-size:11px">
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">القاطع :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="invp-district" onchange="updateInvpAddress()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">صاحب المحطة :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..." style="width:100%;font-size:11px">
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="invp-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
-            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- جدول الكاميرات -->
-      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invp-cam-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRowTo('invp-cam-tbody')" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
-      </div>
-
-      <!-- جهاز التسجيل -->
-      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invp-dvr-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#eff6ff">
-          <button type="button" onclick="addDvrRowTo('invp-dvr-tbody')" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
-        </div>
-        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invp-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invp-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="invp-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invp-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invp-pw-cb"> طاقة شمسية</label>
-        </div>
-      </div>
-
-      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv-private')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveInvPrivate()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">💾 حفظ</button>
-    </div>
-  </div>
-
-
-<!-- CHANGE PW MODAL -->
-<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔑 تغيير كلمة المرور</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
-      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
-      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
-      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-      </div><!-- /tabs-wrap -->
-    </div>
-
-<div class="overlay" id="ov-inv-private" onclick="closeOv(event,'ov-inv-private')">
-  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
-    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
-      🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span>
-    </div>
-
-    <input type="hidden" id="invp-eid">
-    <div style="padding:14px 16px">
-
-      <!-- بيانات المنشأة -->
-      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنشأة</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المحطة :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..." style="width:100%;font-size:11px">
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">القاطع :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <select class="fi" dir="rtl" id="invp-district" onchange="updateInvpAddress()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">صاحب المحطة :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
-              <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..." style="width:100%;font-size:11px">
-            </td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
-            <td colspan="5" id="invp-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
-            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
-            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
-            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
-          </tr>
-          <tr>
-            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
-            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
-          </tr>
-        </table>
-      </div>
-
-      <!-- جدول الكاميرات -->
-      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invp-cam-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#f0fdf4">
-          <button type="button" onclick="addCamRowTo('invp-cam-tbody')" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
-        </div>
-      </div>
-
-      <!-- جهاز التسجيل -->
-      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
-        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
-        <table style="width:100%;border-collapse:collapse;font-size:11px">
-          <thead><tr style="background:#e5e7eb">
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
-            <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
-          </tr></thead>
-          <tbody id="invp-dvr-tbody"></tbody>
-        </table>
-        <div style="padding:6px 10px;background:#eff6ff">
-          <button type="button" onclick="addDvrRowTo('invp-dvr-tbody')" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
-        </div>
-        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invp-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invp-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="invp-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invp-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invp-pw-cb"> طاقة شمسية</label>
-        </div>
-      </div>
-
-      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
-        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
-      </div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-inv-private')">إلغاء</button>
-      <button class="btn btn-p" onclick="saveInvPrivate()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">💾 حفظ</button>
-    </div>
-  </div>
-
-
-<!-- CHANGE PW MODAL -->
-<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔑 تغيير كلمة المرور</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
-      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
-      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
-      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
-    </div>
-  </div>
-</div>
-
-      </div>
-
-<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
-  <div class="modal modal-sm">
-    <div class="m-title">🔑 تغيير كلمة المرور</div>
-    <div class="fgrid">
-      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
-      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
-      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
-    </div>
-    <div class="m-footer">
-      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
-      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
-    </div>
-  </div>
-</div>tml lang="ar" dir="rtl">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -1327,7 +182,6 @@ body{font-family:'Cairo',sans-serif;background:var(--bg);color:var(--text);min-h
 
 /* TABLE */
 .table-wrap{overflow-x:auto;}
-.table-wrap table{table-layout:auto;}
 table{width:100%;border-collapse:collapse;font-size:14px;}
 thead tr{background:linear-gradient(135deg,#1e40af,#1d4ed8);}
 th{padding:12px 14px;text-align:right;color:#fff;font-weight:700;font-size:13px;white-space:nowrap;}
@@ -2461,7 +1315,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <table style="direction:rtl">
                   <thead><tr>
                     <th style="width:40px;text-align:right">#</th>
-                    <th style="text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
+                    <th style="text-align:right">اسم المحطة</th>
                     <th style="width:100px;text-align:right">القاطع</th>
                     <th style="width:80px;text-align:right">الحالة</th>
                     <th style="text-align:right;width:70px;background:rgba(22,163,74,.15)">✅ تعمل</th>
@@ -2535,7 +1389,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:#1e3a8a;color:#fff">
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:40px">#</th>
-                    <th style="padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
+                    <th style="padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right">اسم المحطة</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:70px">الكاميرات</th>
                     <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:120px">نوع الجهاز</th>
@@ -2571,7 +1425,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:linear-gradient(135deg,#0e7490,#0891b2);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
-                    <th style="padding:9px 12px;text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم البناية</th>
+                    <th style="padding:9px 12px;text-align:right">اسم البناية</th>
                     <th style="padding:9px 10px;text-align:right">المحطة</th>
                     <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
@@ -2608,7 +1462,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                 <thead>
                   <tr style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff">
                     <th style="padding:9px 10px;text-align:center;width:40px">#</th>
-                    <th style="padding:9px 12px;text-align:right;position:sticky;right:0;background:linear-gradient(135deg,#92400e,#d97706);z-index:2;min-width:120px">اسم المحطة</th>
+                    <th style="padding:9px 12px;text-align:right">اسم المحطة</th>
                     <th style="padding:9px 10px;text-align:right">المحطة المرتبطة</th>
                     <th style="padding:9px 10px;text-align:center;width:90px">القاطع</th>
                     <th style="padding:9px 10px;text-align:center;width:70px">الكاميرات</th>
@@ -2947,30 +1801,666 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
 <!-- TOUR MODAL -->
-
+<div class="overlay" id="ov-tour" onclick="closeOv(event,'ov-tour')">
+  <div class="modal">
+    <div class="m-title">🚗 <span id="tour-ttl">إضافة جولة</span></div>
+    <input type="hidden" id="tour-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="tour-date" type="date"></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="tour-district" onchange="filterTourStations()">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">المحطة *</label>
+        <select class="fi" dir="rtl" id="tour-station"><option value="">— اختر المحطة —</option></select>
+      </div>
+      <div class="fg"><label class="fl">نوع الزيارة</label>
+        <select class="fi" dir="rtl" id="tour-type">
+          <option value="كشف">كشف</option>
+          <option value="صيانة">صيانة</option>
+          <option value="تركيب">تركيب</option>
+          <option value="متابعة">متابعة</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
+      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
+            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
+            <span>🖨️ جودة عالية</span>
+          </label>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+          <div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
+            <div class="up-box" id="ub-tour">
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_img')">
+              <button class="up-rm" onclick="rmFile('tour_img',event)">✕</button>
+              <div class="up-ico">📸</div>
+              <div class="up-lbl">صورة الموقع</div>
+              <div class="up-stat" id="us-tour_img">صورة أو PDF</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
+            <div class="up-box" id="ub-tour-rep">
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
+              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
+              <div class="up-ico">📄</div>
+              <div class="up-lbl">تقرير الزيارة</div>
+              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📋 مستند إضافي</div>
+            <div class="up-box" id="ub-tour-doc">
+              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_doc')">
+              <button class="up-rm" onclick="rmFile('tour_doc',event)">✕</button>
+              <div class="up-ico">📋</div>
+              <div class="up-lbl">مستند إضافي</div>
+              <div class="up-stat" id="us-tour_doc">PDF أو صورة</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-tour')">إلغاء</button>
+      <button class="btn btn-p" id="save-tour-btn" onclick="saveTour()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- MAINTENANCE MODAL -->
+<div class="overlay" id="ov-maint" onclick="closeOv(event,'ov-maint')">
+  <div class="modal">
+    <div class="m-title">🔧 <span id="maint-ttl">إضافة صيانة</span></div>
+    <input type="hidden" id="maint-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="maint-date" type="date"></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="maint-district" onchange="filterMaintStations()">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">المحطة *</label>
+        <select class="fi" dir="rtl" id="maint-station"><option value="">— اختر المحطة —</option></select>
+      </div>
+      <!-- قائمة الأجهزة المتعددة -->
+      <div class="fg full" style="border:1.5px solid var(--border2);border-radius:12px;padding:14px;background:var(--bg2)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0;font-size:14px;font-weight:800;color:var(--p1)">🔧 الأجهزة المعطلة / المستبدلة</label>
+          <button type="button" onclick="addDeviceRow()" class="btn btn-p btn-sm">➕ إضافة جهاز</button>
+        </div>
+        <div id="devices-list"></div>
+      </div>
 
+      <!-- نوع العطل العام -->
+      <div class="fg">
+        <label class="fl">نوع العطل العام</label>
+        <select class="fi" dir="rtl" id="maint-device">
+          <option value="عطل كلي">عطل كلي</option>
+          <option value="عطل جزئي">عطل جزئي</option>
+          <option value="كسر فيزيائي">كسر فيزيائي</option>
+          <option value="مشكلة برمجية">مشكلة برمجية</option>
+          <option value="انقطاع كابل">انقطاع كابل</option>
+          <option value="خلل في الطاقة">خلل في الطاقة</option>
+          <option value="صيانة دورية">صيانة دورية</option>
+          <option value="استبدال وقائي">استبدال وقائي</option>
+        </select>
+      </div>
+
+      <!-- سبب + فني -->
+      <div class="fg"><label class="fl">سبب الصيانة</label>
+        <input class="fi" id="maint-reason" type="text" placeholder="وصف المشكلة..."></div>
+      <div class="fg"><label class="fl">الكمية</label><input class="fi" id="maint-qty" type="number" min="1" value="1" placeholder="1"></div>
+      <div class="fg"><label class="fl">الحالة بعد الصيانة</label><select class="fi" dir="rtl" id="maint-status-after"><option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option><option value="يعمل جزئياً">⚠️ يعمل جزئياً</option><option value="لا يزال معطلاً">❌ لا يزال معطلاً</option></select></div>
+      <div class="fg"><label class="fl">اسم الفني</label>
+        <input class="fi" id="maint-tech" type="text"></div>
+
+      <!-- الحالة بعد الصيانة -->
+      <div class="fg">
+        <label class="fl">الحالة بعد الصيانة</label>
+        <select class="fi" dir="rtl" id="m-status-after">
+          <option value="يعمل بشكل طبيعي">✅ يعمل بشكل طبيعي</option>
+          <option value="يعمل جزئياً">⚠️ يعمل جزئياً</option>
+          <option value="لا يزال معطلاً">❌ لا يزال معطلاً</option>
+          <option value="بانتظار قطعة غيار">⏳ بانتظار قطعة غيار</option>
+        </select>
+      </div>
+
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="maint-notes" rows="2" style="resize:vertical"></textarea></div>
+
+      <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
+          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
+            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
+            <span>🖨️ جودة طباعة عالية</span>
+          </label>
+        </div>
+
+        <!-- صور العطل — رفع دفعة واحدة -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور العطل</div>
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s"
+            onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
+            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
+            <div style="font-size:28px">📸</div>
+            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
+            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
+          </label>
+          <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
+        </div>
+
+        <!-- سجلات الاشتغال — 3 سجلات -->
+        <div style="margin-bottom:14px">
+          <div style="font-size:13px;font-weight:700;color:var(--a4);margin-bottom:8px">📋 سجلات الاشتغال</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال المحطة</div>
+              <div class="up-box" id="ub-maint-rep">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep')">
+                <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل اشتغال المحطة</div>
+                <div class="up-stat" id="us-maint_rep">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال الصيانة</div>
+              <div class="up-box" id="ub-maint-rep2">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep2')">
+                <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل اشتغال الصيانة</div>
+                <div class="up-stat" id="us-maint_rep2">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">سجل اشتغال إنجاز عمل</div>
+              <div class="up-box" id="ub-maint-rep3">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_rep3')">
+                <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
+                <div class="up-ico">📄</div>
+                <div class="up-lbl">سجل إنجاز عمل</div>
+                <div class="up-stat" id="us-maint_rep3">PDF أو صورة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- التكليف -->
+        <div>
+          <div style="font-size:13px;font-weight:700;color:#7c3aed;margin-bottom:8px">📝 التكليف</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">وثيقة التكليف</div>
+              <div class="up-box" id="ub-maint-tawkeef">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">وثيقة التكليف</div>
+                <div class="up-stat" id="us-maint_tawkeef">PDF أو صورة</div>
+              </div>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--t3);margin-bottom:5px">تكليف إضافي</div>
+              <div class="up-box" id="ub-maint-tawkeef2">
+                <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'maint_tawkeef2')">
+                <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
+                <div class="up-ico">📝</div>
+                <div class="up-lbl">تكليف إضافي</div>
+                <div class="up-stat" id="us-maint_tawkeef2">PDF أو صورة</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-maint')">إلغاء</button>
+      <button class="btn btn-o" id="btn-print-maint" onclick="printMaintDocs()" style="display:none">🖨️ طباعة المستندات</button>
+      <button class="btn btn-p" id="save-maint-btn" onclick="saveMaint()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- CAMERA MODAL -->
-
+<div class="overlay" id="ov-cam" onclick="closeOv(event,'ov-cam')">
+  <div class="modal">
+    <div class="m-title">📷 <span id="cam-ttl">إضافة كاميرا</span></div>
+    <input type="hidden" id="cam-eid">
+    <div class="fgrid">
+      <div class="fg"><label class="fl">رقم الكاميرا *</label><input class="fi" id="cam-no" type="text" placeholder="CAM-001"></div>
+      <div class="fg"><label class="fl">المحطة</label>
+        <select class="fi" dir="rtl" id="cam-station"><option value="">— اختر المحطة —</option></select>
+      </div>
+      <div class="fg"><label class="fl">الموقع التفصيلي</label><input class="fi" id="cam-loc" type="text" placeholder="مدخل المحطة / داخل المبنى..."></div>
+      <div class="fg"><label class="fl">نوع الكاميرا</label>
+        <select class="fi" dir="rtl" id="cam-type">
+          <option value="داخلية">داخلية</option>
+          <option value="خارجية">خارجية</option>
+          <option value="PTZ">PTZ</option>
+          <option value="بُللت">بُللت</option>
+          <option value="돔">돔 Dome</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">الشركة الصانعة / المورد</label><input class="fi" id="cam-mfr" type="text"></div>
+      <div class="fg"><label class="fl">آخر صيانة</label><input class="fi" id="cam-last" type="date"></div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" dir="rtl" id="cam-status">
+          <option value="working">شغالة</option>
+          <option value="broken">معطلة</option>
+        </select>
+      </div>
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="cam-notes" rows="2" style="resize:vertical"></textarea></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-cam')">إلغاء</button>
+      <button class="btn btn-p" id="save-cam-btn" onclick="saveCam()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- INVENTORY MODAL -->
+<div class="overlay" id="ov-inv" onclick="closeOv(event,'ov-inv')">
+  <div class="modal" style="width:860px;max-height:92vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 20px;font-size:14px">
+      📦 <span id="inv-ttl">إضافة جرد محطة</span>
+    </div>
+    <input type="hidden" id="inv-eid">
+    <div style="padding:14px 16px">
 
+      <!-- معلومات المنفذ -->
+      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنفذ التوزيعي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المنفذ / البناية :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="width:100%;font-size:11px">
+                <option value="">— اختر المحطة —</option>
+              </select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="inv-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
+            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات — ديناميكي -->
+      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#e5e7eb">
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
+            </tr>
+          </thead>
+          <tbody id="cam-types-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addCamRow()" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جهاز التسجيل — ديناميكي -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead>
+            <tr style="background:#e5e7eb">
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
+            </tr>
+          </thead>
+          <tbody id="inv-dvr-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#eff6ff">
+          <button type="button" onclick="addDvrRow()" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
+        </div>
+      </div>
+        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <!-- ملاحظات -->
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv')">إلغاء</button>
+      <button class="btn btn-p" id="save-inv-btn" onclick="saveInv()">💾 حفظ الجرد</button>
+    </div>
+  </div>
 </div>
 
 <!-- DISTRICT MODAL -->
-
+<div class="overlay" id="ov-district" onclick="closeOv(event,'ov-district')">
+  <div class="modal modal-sm">
+    <div class="m-title">📍 إضافة قاطع جديد</div>
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">اسم القاطع *</label>
+        <input class="fi" id="dist-name" type="text" placeholder="اسم القاطع"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-district')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveDistrict()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- DELEGATE MODAL -->
+<div class="overlay" id="ov-delegate" onclick="closeOv(event,'ov-delegate')">
+  <div class="modal modal-sm">
+    <div class="m-title">👥 مخول القاطع</div>
+    <input type="hidden" id="d-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="d-district"><option value="">— اختر —</option></select>
+      </div>
 
+      <!-- مخول 1 -->
+      <div class="fg full" style="border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
+        <div style="font-size:12px;font-weight:700;color:var(--p1);margin-bottom:8px">👤 المخول الأول</div>
+        <div class="fgrid">
+          <div class="fg"><label class="fl">الاسم *</label><input class="fi" id="d-name" type="text" placeholder="اسم المخول"></div>
+          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone" type="text" placeholder="07xx..."></div>
+        </div>
+      </div>
+
+      <!-- مخول إضافي -->
+      <div class="fg full" id="d-extra-section" style="display:none;border:1px solid var(--border);border-radius:10px;padding:12px;background:var(--bg2)">
+        <div style="font-size:12px;font-weight:700;color:var(--p2);margin-bottom:8px">👤 المخول الإضافي</div>
+        <div class="fgrid">
+          <div class="fg"><label class="fl">الاسم</label><input class="fi" id="d-name2" type="text" placeholder="اسم المخول الإضافي"></div>
+          <div class="fg"><label class="fl">رقم الهاتف</label><input class="fi" id="d-phone2" type="text" placeholder="07xx..."></div>
+        </div>
+      </div>
+
+      <div class="fg full" id="d-add-extra-btn">
+        <button type="button" class="btn btn-o btn-sm" style="width:100%" onclick="toggleExtraDelegate()">➕ إضافة مخول إضافي</button>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-delegate')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveDelegate()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- STATION MODAL -->
+<div class="overlay" id="ov-station" onclick="closeOv(event,'ov-station')">
+  <div class="modal modal-sm">
+    <div class="m-title">⛽ <span id="st-ttl">إضافة محطة</span></div>
+    <input type="hidden" id="st-eid">
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">اسم المحطة *</label><input class="fi" id="st-name" type="text" placeholder="اسم المحطة"></div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="st-district">
+          <option value="">— اختر القاطع —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">النوع</label>
+        <select class="fi" dir="rtl" id="st-type" onchange="toggleSandaField();toggleStStatus()">
+          <option value="حكومية">حكومية</option>
+          <option value="أهلية">أهلية</option>
+        </select>
+      </div>
 
+      <!-- منظومة كاميرات رئيسية -->
+      <div class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:14px;background:rgba(29,78,216,.03)">
+        <div style="font-size:14px;font-weight:800;color:#1d4ed8;margin-bottom:12px">📷 منظومة كاميرات رئيسية</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fl">📷 عدد الكاميرات</label>
+            <input class="fi" id="st-main-cam-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">🔍 نوع الكاميرات</label>
+            <input class="fi" id="st-main-cam-type" type="text" placeholder="مثال: خارجية 4MP...">
+          </div>
+          <div>
+            <label class="fl">💾 عدد الهاردات</label>
+            <input class="fi" id="st-main-hdd-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">💽 حجم الهارد</label>
+            <input class="fi" id="st-main-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="fl">⏱️ مدة التسجيلات</label>
+            <select class="fi" dir="rtl" id="st-main-record-days">
+              <option value="">— اختر المدة —</option>
+              <option value="7 أيام">7 أيام</option>
+              <option value="14 يوم">14 يوم</option>
+              <option value="30 يوم">30 يوم</option>
+              <option value="60 يوم">60 يوم</option>
+              <option value="90 يوم">90 يوم</option>
+              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- منظومة كاميرات ساندة - تظهر عند اختيار أهلية -->
+      <div class="fg full" id="sanda-row" style="display:none;border:1.5px solid rgba(245,158,11,.35);border-radius:12px;padding:14px;background:rgba(245,158,11,.04)">
+        <div style="font-size:14px;font-weight:800;color:#d97706;margin-bottom:12px">⚙️ منظومة كاميرات ساندة</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div>
+            <label class="fl">📷 عدد الكاميرات</label>
+            <input class="fi" id="st-sanda-cam-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">🔍 نوع الكاميرات</label>
+            <input class="fi" id="st-sanda-cam-type" type="text" placeholder="مثال: داخلية 2MP...">
+          </div>
+          <div>
+            <label class="fl">💾 عدد الهاردات</label>
+            <input class="fi" id="st-sanda-hdd-count" type="number" min="0" value="0" placeholder="0">
+          </div>
+          <div>
+            <label class="fl">💽 حجم الهارد</label>
+            <input class="fi" id="st-sanda-hdd-size" type="text" placeholder="مثال: 2TB، 4TB...">
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="fl">⏱️ مدة التسجيلات الفيديوية</label>
+            <select class="fi" dir="rtl" id="st-sanda-record-days">
+              <option value="">— اختر المدة —</option>
+              <option value="7 أيام">7 أيام</option>
+              <option value="14 يوم">14 يوم</option>
+              <option value="30 يوم">30 يوم</option>
+              <option value="60 يوم">60 يوم</option>
+              <option value="90 يوم">90 يوم</option>
+              <option value="أكثر من 90 يوم">أكثر من 90 يوم</option>
+            </select>
+          </div>
+          <div style="grid-column:1/-1">
+            <label class="fl">📝 ملاحظات</label>
+            <input class="fi" id="st-sanda-notes" type="text" placeholder="ملاحظات عن المنظومة الساندة...">
+          </div>
+        </div>
+      </div>
+      <div class="fg" style="border:1px solid rgba(22,163,74,.25);border-radius:10px;padding:10px;background:rgba(22,163,74,.03)">
+        <label class="fl" style="color:var(--a3)">📷 كاميرات تعمل</label>
+        <input class="fi" id="st-cam-working" type="number" min="0" value="0" placeholder="0">
+      </div>
+      <div class="fg" style="border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:10px;background:rgba(220,38,38,.03)">
+        <label class="fl" style="color:var(--a2)">📷 كاميرات لا تعمل</label>
+        <input class="fi" id="st-cam-broken" type="number" min="0" value="0" placeholder="0">
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-station')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveStation()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- USER MODAL -->
-
+<div class="overlay" id="ov-user" onclick="closeOv(event,'ov-user')">
+  <div class="modal" style="width:520px;padding:0;overflow:hidden;border-radius:20px">
+    <!-- Modal Header -->
+    <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f,#1d4ed8);padding:24px 24px 20px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.05)"></div>
+      <div style="position:absolute;bottom:-30px;left:20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="position:relative;display:flex;align-items:center;gap:14px">
+        <div style="width:44px;height:44px;border-radius:12px;background:rgba(255,255,255,.15);border:1.5px solid rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:20px">🔐</div>
+        <div>
+          <div id="u-ttl" style="font-size:17px;font-weight:900;color:#fff">إضافة مستخدم</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.55)">تحديد الصلاحيات والوصول</div>
+        </div>
+      </div>
+    </div>
+    <input type="hidden" id="u-eid">
+    <!-- Modal Body -->
+    <div style="padding:20px;max-height:70vh;overflow-y:auto">
+      <!-- معلومات الحساب -->
+      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px">معلومات الحساب</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">الاسم الكامل *</label>
+            <input class="fi" id="u-fn" type="text" placeholder="أدخل الاسم" style="width:100%;font-size:13px">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">اسم الدخول *</label>
+            <input class="fi" id="u-un" type="text" placeholder="username" style="width:100%;font-size:13px;direction:ltr;text-align:left">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">كلمة المرور</label>
+            <input class="fi" id="u-pw" type="password" placeholder="اتركها فارغة للإبقاء" style="width:100%;font-size:13px">
+          </div>
+          <div>
+            <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">نوع الحساب</label>
+            <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()" style="width:100%;font-size:13px">
+              <option value="viewer">👤 مخول قاطع</option>
+              <option value="admin">🔑 مدير النظام</option>
+            </select>
+          </div>
+        </div>
+      </div>
+      <!-- القواطع -->
+      <div id="u-district-row" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px;margin-bottom:16px">
+        <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px">القواطع المخصصة</div>
+        <div id="u-districts-wrap" style="display:flex;flex-wrap:wrap;gap:6px;max-height:130px;overflow-y:auto"></div>
+        <input type="hidden" id="u-district" value="">
+      </div>
+      <!-- الصلاحيات -->
+      <div id="u-perms" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+          <div style="font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px">الصلاحيات</div>
+          <button type="button" onclick="toggleAllPerms()" style="font-size:10px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 10px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-weight:700">تحديد الكل</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">✏️</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعديل</div><div style="font-size:9px;color:#94a3b8">إضافة وتعديل</div></div>
+              <div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🗑️</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">حذف</div><div style="font-size:9px;color:#94a3b8">حذف السجلات</div></div>
+              <div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📎</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">ملفات</div><div style="font-size:9px;color:#94a3b8">رفع الصور</div></div>
+              <div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📊</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تقارير</div><div style="font-size:9px;color:#94a3b8">عرض التقارير</div></div>
+              <div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📦</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جرد</div><div style="font-size:9px;color:#94a3b8">جرد الكاميرات</div></div>
+              <div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🚗</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">جولات</div><div style="font-size:9px;color:#94a3b8">إدارة الجولات</div></div>
+              <div class="tog" id="p-tours" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">🔧</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">صيانة</div><div style="font-size:9px;color:#94a3b8">طلبات الصيانة</div></div>
+              <div class="tog" id="p-maint" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+          <div class="perm-item" style="border-radius:8px;border:1.5px solid #e2e8f0;background:#fff;padding:8px 10px">
+            <div style="display:flex;align-items:center;gap:6px">
+              <span style="font-size:14px">📢</span>
+              <div style="flex:1"><div style="font-size:11px;font-weight:700;color:#1e293b">تعاميم</div><div style="font-size:9px;color:#94a3b8">إرسال التعاميم</div></div>
+              <div class="tog" id="p-circulars" onclick="this.classList.toggle('on')"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:16px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:10px;justify-content:flex-start;flex-direction:row-reverse">
+      <button onclick="saveUser()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:11px 28px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;display:flex;align-items:center;gap:6px">💾 حفظ</button>
+      <button onclick="closeModal('ov-user')" style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;padding:11px 20px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:14px;font-weight:600">إلغاء</button>
+    </div>
+  </div>
+</div>
 
 
 <!-- CIRCULAR MODAL -->
@@ -3040,10 +2530,535 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 
 <!-- CODING MODAL -->
+<div class="overlay" id="ov-coding" onclick="closeOv(event,'ov-coding')">
+  <div class="modal" style="width:620px;max-height:92vh;overflow-y:auto">
+    <div class="m-title">🏷️ <span id="coding-ttl">ترميز موقع جديد</span></div>
+    <input type="hidden" id="coding-eid">
 
+    <!-- تبويبات حكومي / أهلي -->
+    <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:14px">
+      <button id="coding-tab-gov" onclick="switchCodingType('gov')"
+        style="flex:1;padding:9px;border:none;background:#eff6ff;color:#1d4ed8;font-family:Cairo,sans-serif;font-size:13px;font-weight:800;cursor:pointer;border-bottom:3px solid #1d4ed8">
+        🏛️ حكومي
+      </button>
+      <button id="coding-tab-priv" onclick="switchCodingType('priv')"
+        style="flex:1;padding:9px;border:none;background:#fff;color:#94a3b8;font-family:Cairo,sans-serif;font-size:13px;font-weight:600;cursor:pointer;border-bottom:3px solid transparent">
+        🏪 أهلي
+      </button>
+    </div>
+    <input type="hidden" id="coding-station-type" value="gov">
+
+    <!-- الحقول المشتركة -->
+    <div class="fgrid">
+      <div class="fg"><label class="fl">رقم الموقع *</label>
+        <input class="fi" id="coding-code" type="text" placeholder="مثال: CAM-TK-001">
+      </div>
+      <div class="fg"><label class="fl">اسم الموقع *</label>
+        <input class="fi" id="coding-location" type="text" placeholder="مثال: غرفة المراقبة">
+      </div>
+      <div class="fg"><label class="fl">القاطع</label>
+        <select class="fi" dir="rtl" id="coding-district" onchange="filterCodingStations()">
+          <option value="">— اختر —</option>
+        </select>
+      </div>
+      <div class="fg"><label class="fl">المحطة</label>
+        <select class="fi" dir="rtl" id="coding-station"><option value="">— اختر —</option></select>
+      </div>
+      <div class="fg"><label class="fl">تاريخ التركيب</label>
+        <input class="fi" id="coding-install-date" type="date">
+      </div>
+      <div class="fg"><label class="fl">عدد الكاميرات 📷</label>
+        <input class="fi" id="coding-cam-count" type="number" min="0" value="0" placeholder="0">
+      </div>
+      <div class="fg"><label class="fl">الحالة</label>
+        <select class="fi" dir="rtl" id="coding-status">
+          <option value="يعمل">✅ يعمل</option>
+          <option value="معطل">❌ معطل</option>
+          <option value="صيانة">🔧 صيانة</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- محتوى حكومي -->
+    <div id="coding-gov-content">
+      <!-- NVR -->
+      <div id="coding-nvr-section" class="fg full" style="border:1.5px solid rgba(29,78,216,.25);border-radius:12px;padding:12px;background:rgba(29,78,216,.03);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#1d4ed8">📹 أجهزة NVR/DVR</div>
+          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
+        <div id="nvr-rows"></div>
+      </div>
+      <!-- HDD -->
+      <div id="coding-hdd-section" class="fg full" style="border:1.5px solid rgba(5,150,105,.25);border-radius:12px;padding:12px;background:rgba(5,150,105,.03);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#059669">💾 الهاردات HDD</div>
+          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
+        <div id="hdd-rows"></div>
+      </div>
+      <!-- أجهزة أخرى -->
+      <div class="fg full" style="border:1.5px solid rgba(124,58,237,.2);border-radius:12px;padding:12px;background:rgba(124,58,237,.02);margin-bottom:10px">
+        <div style="font-size:13px;font-weight:800;color:#7c3aed;margin-bottom:10px">🔌 أجهزة أخرى</div>
+        <div style="display:flex;flex-direction:column;gap:8px" id="other-rows"></div>
+        <button type="button" onclick="addOtherRow()" class="btn btn-o btn-sm" style="margin-top:6px">➕ إضافة جهاز</button>
+      </div>
+    </div>
+
+    <!-- محتوى أهلي -->
+    <div id="coding-priv-content" style="display:none">
+      <div style="background:#fef3c7;border:1.5px solid rgba(245,158,11,.3);border-radius:10px;padding:10px 14px;margin-bottom:12px;color:#92400e;font-size:12px;font-weight:600">
+        🏪 المحطة الأهلية — سجّل الأجهزة والهاردات والسيريال
+      </div>
+      <!-- NVR أهلي -->
+      <div class="fg full" style="border:1.5px solid rgba(245,158,11,.3);border-radius:12px;padding:12px;background:rgba(245,158,11,.03);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#d97706">📹 أجهزة NVR/DVR (أهلي)</div>
+          <button type="button" onclick="addNvrRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
+        <div id="nvr-rows-priv"></div>
+      </div>
+      <!-- HDD أهلي -->
+      <div class="fg full" style="border:1.5px solid rgba(245,158,11,.25);border-radius:12px;padding:12px;background:rgba(245,158,11,.02);margin-bottom:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:13px;font-weight:800;color:#d97706">💾 الهاردات HDD (أهلي)</div>
+          <button type="button" onclick="addHddRow()" class="btn btn-o btn-sm">➕ إضافة</button>
+        </div>
+        <div style="font-size:11px;color:var(--t3);margin-bottom:8px">Serial Number | 📷 مسح بالكاميرا</div>
+        <div id="hdd-rows-priv"></div>
+      </div>
+    </div>
+
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">ملاحظات</label>
+        <input class="fi" id="coding-notes" type="text" placeholder="أي ملاحظات...">
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-coding')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveCoding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+</div>
 
 <!-- MODAL: جرد البنايات الحكومية (فورم كامل) -->
-rLogin()" style="border:none;background:#1d4ed8;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🔑 إعادة الاتصال</button>';
+<div class="overlay" id="ov-inv-building" onclick="closeOv(event,'ov-inv-building')">
+  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
+      🏢 <span id="invb-ttl">إضافة جرد بناية حكومية</span>
+    </div>
+    <input type="hidden" id="invb-eid">
+    <div style="padding:14px 16px">
+
+      <!-- بيانات المنشأة -->
+      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنشأة</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم البناية / المنشأة :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <input class="fi" id="invb-name" type="text" placeholder="اسم البناية أو الدائرة..." style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">القاطع :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="invb-district" onchange="updateInvbAddress()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="invb-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invb-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
+            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invb-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات -->
+      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#e5e7eb">
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
+          </tr></thead>
+          <tbody id="invb-cam-tbody"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addCamRowTo('invb-cam-tbody')" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جهاز التسجيل -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#e5e7eb">
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
+          </tr></thead>
+          <tbody id="invb-dvr-tbody"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#eff6ff">
+          <button type="button" onclick="addDvrRowTo('invb-dvr-tbody')" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
+        </div>
+        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invb-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invb-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="invb-pw-cb"> عاكسة 4KVA</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invb-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invb-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invb-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv-building')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveInvBuilding()" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">💾 حفظ</button>
+    </div>
+  </div>
+
+<!-- MODAL: جرد المحطات الأهلية (فورم كامل) -->
+<div class="overlay" id="ov-inv-private" onclick="closeOv(event,'ov-inv-private')">
+  <div class="modal" style="width:860px;max-height:93vh;overflow-y:auto;padding:0">
+    <div class="m-title" style="position:sticky;top:0;z-index:10;background:#fff;border-bottom:1px solid #e2e8f0;padding:14px 20px;font-size:14px">
+      🏪 <span id="invp-ttl">إضافة جرد محطة أهلية</span>
+    </div>
+
+    <input type="hidden" id="invp-eid">
+    <div style="padding:14px 16px">
+
+      <!-- بيانات المنشأة -->
+      <div style="border:1.5px solid #334155;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#334155;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">بيانات المنشأة</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:150px">اسم المحطة :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <input class="fi" id="invp-name" type="text" placeholder="اسم المحطة الأهلية..." style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">القاطع :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <select class="fi" dir="rtl" id="invp-district" onchange="updateInvpAddress()" style="width:100%;font-size:11px"><option value="">— اختر القاطع —</option></select>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">صاحب المحطة :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
+              <input class="fi" id="invp-owner" type="text" placeholder="اسم المالك..." style="width:100%;font-size:11px">
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">العنوان الكامل :</td>
+            <td colspan="5" id="invp-address-cell" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:600;color:#1e40af">—</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">اسم الدائرة :</td>
+            <td colspan="5" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700">شركة توزيع المنتجات النفطية / فرع صلاح الدين</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">البريد / الهاتف :</td>
+            <td colspan="2" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-phone" type="text" placeholder="07xxxxxxxxx" style="width:100%;font-size:11px"></td>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0;width:100px">نوع النشاط :</td>
+            <td colspan="2" style="padding:5px 8px;border:1px solid #e2e8f0;font-weight:700;color:#dc2626">أمني رقابي</td>
+          </tr>
+          <tr>
+            <td style="padding:5px 8px;font-weight:700;background:#f8fafc;border:1px solid #e2e8f0">الإحداثيات :</td>
+            <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0"><input class="fi" id="invp-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="width:100%;font-size:11px"></td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- جدول الكاميرات -->
+      <div style="border:1.5px solid #16a34a;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#16a34a;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">📷 جدول الكاميرات</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#e5e7eb">
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:32px;color:#111;text-align:center">#</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:85px;color:#111;text-align:center">نوع الكاميرا</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الداخلية</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:80px;color:#111;text-align:center">عدد الخارجية</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:90px;color:#111;text-align:center">حجم العدسة</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">الملاحظات</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:26px;color:#111"></th>
+          </tr></thead>
+          <tbody id="invp-cam-tbody"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f0fdf4">
+          <button type="button" onclick="addCamRowTo('invp-cam-tbody')" class="btn btn-o btn-sm" style="color:#16a34a;border-color:rgba(22,163,74,.4);font-size:11px">➕ إضافة نوع كاميرا</button>
+        </div>
+      </div>
+
+      <!-- جهاز التسجيل -->
+      <div style="border:1.5px solid #1d4ed8;border-radius:6px;overflow:hidden;margin-bottom:12px">
+        <div style="background:#1d4ed8;color:#fff;font-weight:800;font-size:11px;padding:5px 12px">🎥 جهاز التسجيل الفيديوي</div>
+        <table style="width:100%;border-collapse:collapse;font-size:11px">
+          <thead><tr style="background:#e5e7eb">
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:36px;color:#111;text-align:center">#</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;color:#111;text-align:center">نوع جهاز التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:88px;color:#111;text-align:center">طريقة الربط</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:78px;color:#111;text-align:center">سعة الهارد (TB)</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:58px;color:#111;text-align:center">عدد الهاردات</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:118px;color:#111;text-align:center">فترة التسجيل</th>
+            <th style="padding:5px 8px;border:1px solid #d1d5db;width:28px;color:#111"></th>
+          </tr></thead>
+          <tbody id="invp-dvr-tbody"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#eff6ff">
+          <button type="button" onclick="addDvrRowTo('invp-dvr-tbody')" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
+        </div>
+        <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="invp-pw-cb"> كهرباء وطني</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="invp-pw-cb"> مولد</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="invp-pw-cb"> عاكسة 4KVA</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="invp-pw-cb"> UPS</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="invp-pw-cb"> طاقة شمسية</label>
+        </div>
+      </div>
+
+      <div><label style="font-size:11px;font-weight:700;display:block;margin-bottom:4px">📝 ملاحظات</label>
+        <textarea class="fi" dir="rtl" id="invp-notes" rows="2" style="resize:vertical;font-size:11px;text-align:right;width:100%"></textarea>
+      </div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-inv-private')">إلغاء</button>
+      <button class="btn btn-p" onclick="saveInvPrivate()" style="background:linear-gradient(135deg,#d97706,#f59e0b)">💾 حفظ</button>
+    </div>
+  </div>
+
+
+<!-- CHANGE PW MODAL -->
+<div class="overlay" id="ov-chpw" onclick="closeOv(event,'ov-chpw')">
+  <div class="modal modal-sm">
+    <div class="m-title">🔑 تغيير كلمة المرور</div>
+    <div class="fgrid">
+      <div class="fg full"><label class="fl">كلمة المرور الحالية</label><input class="fi" id="pw-old" type="password"></div>
+      <div class="fg full"><label class="fl">كلمة المرور الجديدة</label><input class="fi" id="pw-new" type="password"></div>
+      <div class="fg full"><label class="fl">تأكيد كلمة المرور</label><input class="fi" id="pw-con" type="password"></div>
+    </div>
+    <div class="m-footer">
+      <button class="btn btn-o" onclick="closeModal('ov-chpw')">إلغاء</button>
+      <button class="btn btn-p" onclick="doChangePw()">💾 حفظ</button>
+    </div>
+  </div>
+</div>
+
+      </div><!-- /tabs-wrap -->
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- HANDOVER MODAL -->
+<div class="overlay" id="ov-handover" onclick="closeOv(event,'ov-handover')">
+  <div class="modal" style="width:580px;padding:0;overflow:hidden;border-radius:20px">
+    <div id="hov-modal-header" style="background:linear-gradient(135deg,#0f172a,#0891b2);padding:20px 22px">
+      <div style="font-size:16px;font-weight:900;color:#fff" id="hov-modal-title">📦 تسليم مواد</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px" id="hov-modal-sub">تسليم أجهزة كاميرات وملحقاتها للمخول</div>
+    </div>
+    <input type="hidden" id="hov-eid">
+    <input type="hidden" id="hov-op-type">
+    <div style="padding:18px;max-height:65vh;overflow-y:auto">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">التاريخ *</label>
+          <input class="fi" id="hov-date" type="date" style="width:100%;font-size:13px">
+        </div>
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">القاطع</label>
+          <select class="fi" dir="rtl" id="hov-district" style="width:100%;font-size:13px">
+            <option value="">— اختر القاطع —</option>
+          </select>
+        </div>
+        <div style="grid-column:1/-1">
+          <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">اسم المخول / الجهة *</label>
+          <input class="fi" id="hov-person" type="text" placeholder="اسم المخول أو الجهة..." style="width:100%;font-size:13px">
+        </div>
+      </div>
+      <div style="border:1.5px solid #e2e8f0;border-radius:10px;overflow:hidden;margin-bottom:12px">
+        <div id="hov-table-header" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;font-weight:800;font-size:11px;padding:6px 12px">📦 قائمة المواد المسلّمة</div>
+        <table style="width:100%;border-collapse:collapse;font-size:12px">
+          <thead><tr style="background:#f8fafc">
+            <th style="padding:6px 8px;border:1px solid #e2e8f0;text-align:center;width:32px">#</th>
+            <th style="padding:6px 8px;border:1px solid #e2e8f0">اسم المادة / الجهاز</th>
+            <th style="padding:6px 8px;border:1px solid #e2e8f0;width:70px;text-align:center">الكمية</th>
+            <th style="padding:6px 8px;border:1px solid #e2e8f0;width:110px">الحالة</th>
+            <th style="padding:6px 8px;border:1px solid #e2e8f0;width:24px"></th>
+          </tr></thead>
+          <tbody id="hov-items-body"></tbody>
+        </table>
+        <div style="padding:6px 10px;background:#f9fafb">
+          <button type="button" onclick="addHovItem()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700">➕ إضافة مادة</button>
+        </div>
+      </div>
+      <div>
+        <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:5px">📝 ملاحظات</label>
+        <textarea class="fi" id="hov-notes" dir="rtl" rows="2" style="width:100%;font-size:13px;text-align:right;resize:vertical"></textarea>
+      </div>
+    </div>
+    <div style="padding:12px 18px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:8px;flex-direction:row-reverse">
+      <button onclick="saveHandover()" style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:10px 24px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">💾 حفظ</button>
+      <button onclick="closeModal('ov-handover')" style="background:#fff;color:#64748b;border:1.5px solid #e2e8f0;padding:10px 18px;border-radius:10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px">إلغاء</button>
+    </div>
+  </div>
+</div>
+<!-- LIGHTBOX -->
+<div class="overlay" id="lb" onclick="if(event.target===this)document.getElementById('lb').classList.remove('open')" style="flex-direction:column;gap:12px">
+  <div style="position:absolute;top:16px;right:16px;display:flex;gap:8px;z-index:1">
+    <a id="lb-save" download="صورة.jpg" style="background:rgba(22,163,74,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;text-decoration:none;font-size:13px;font-weight:700">⬇️ حفظ</a>
+    <button id="lb-share" style="background:rgba(124,58,237,.85);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px;font-weight:700">📤 مشاركة</button>
+    <button style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;font-family:'Cairo',sans-serif;font-size:13px" onclick="document.getElementById('lb').classList.remove('open')">✕ إغلاق</button>
+  </div>
+  <div id="lb-content" style="max-width:90vw;max-height:85vh;display:flex;align-items:center;justify-content:center"></div>
+</div>
+
+<script>const API='';
+let TOKEN=localStorage.getItem('cam_token')||'';
+let CU=null;
+// دالة تنقل الجرد الآمنة
+function _navInv(sub){
+  if(typeof goInventorySub==='function') goInventorySub(sub);
+  else if(typeof switchInvSub==='function') switchInvSub(sub);
+}
+let allTours=[],allMaint=[],allCams=[],allStations=[],allDelegates=[];
+let sP_t=1,sP_m=1,sP_c=1,PP=12;
+let UF={},DISTRICTS_LIST=[];
+let SERVER_ONLINE=false;
+
+const AUTO_USER='admin';
+const AUTO_PASS='1000';
+
+// ── LOCAL STORAGE DB (يعمل بدون سيرفر) ──
+const LS = {
+  get(key){ try{ return JSON.parse(localStorage.getItem('cam_'+key)||'null'); }catch(e){ return null; } },
+  set(key,val){ localStorage.setItem('cam_'+key, JSON.stringify(val)); },
+  del(key){ localStorage.removeItem('cam_'+key); },
+};
+
+function lsGetList(key){ return LS.get(key)||[]; }
+function lsNextId(key){ const id=(LS.get('nid_'+key)||0)+1; LS.set('nid_'+key,id); return id; }
+
+// ── API — يحاول السيرفر أولاً، يرجع للـ localStorage إذا فشل ──
+let _refreshing=false;
+async function api(method,path,body=null){
+  if(SERVER_ONLINE){
+    try{
+      const r=await fetch(API+path,{
+        method,
+        headers:{'Content-Type':'application/json','Authorization':'Bearer '+TOKEN},
+        body:body?JSON.stringify(body):null
+      });
+      if(r.status===401 && path!=='/api/login' && !_refreshing){
+        _refreshing=true;
+        const ok=await silentLogin();
+        _refreshing=false;
+        if(ok) return api(method,path,body);
+        // السيرفر رفض — اشتغل offline وأوقف polling
+        SERVER_ONLINE=false;
+        if(typeof _activityTimer!=='undefined' && _activityTimer){
+          clearInterval(_activityTimer); _activityTimer=null;
+        }
+        showOfflineBanner();
+        return lsApi(method,path,body);
+      }
+      const d=await r.json();
+      if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
+      return d;
+    }catch(e){
+      if(e.name==='TypeError'||e.message==='Failed to fetch'){
+        SERVER_ONLINE=false; showOfflineBanner();
+        return lsApi(method,path,body);
+      }
+      throw e;
+    }
+  }
+  return lsApi(method,path,body);
+}
+
+// ── LOCAL API — محاكاة السيرفر بـ localStorage ──
+function lsApi(method,path,body){
+  const seg=path.split('?')[0].replace(/\/$/,'').split('/');
+  const res=seg[2];        // stations, tours, ...
+  const rid=parseInt(seg[3])||0;
+
+  if(method==='GET'){
+    if(res==='me')        return {user:CU||{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
+    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
+    if(res==='logs')      return {logs:[]};
+    if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
+    const list=lsGetList(res);
+    return {[res]:list, tours:res==='tours'?list:undefined, maintenance:res==='maintenance'?list:undefined,
+      stations:res==='stations'?list:undefined, cameras:res==='cameras'?list:undefined,
+      coding:res==='coding'?list:undefined,
+      circulars:res==='circulars'?list:undefined, reads:[], delegates:res==='delegates'?list:undefined,
+      users:res==='users'?list:undefined};
+  }
+  if(method==='POST'){
+    if(res==='login') return {token:'local-token',user:{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
+    if(res==='logout') return {ok:true};
+    if(res==='files'){ LS.set('file_'+seg.slice(3).join('_'),body); return {ok:true}; }
+    const list=lsGetList(res);
+    const id=lsNextId(res);
+    const item={...body,id};
+    list.push(item);
+    LS.set(res,list);
+    return {ok:true,id,...item};
+  }
+  if(method==='PUT' && rid){
+    const list=lsGetList(res);
+    const idx=list.findIndex(x=>x.id===rid);
+    if(idx>-1){ list[idx]={...list[idx],...body}; LS.set(res,list); }
+    return {ok:true};
+  }
+  if(method==='DELETE' && rid){
+    const list=lsGetList(res).filter(x=>x.id!==rid);
+    LS.set(res,list);
+    return {ok:true};
+  }
+  return {ok:true};
+}
+
+// silentLogin — يستخدم silentLoginWith (تم استبداله)
+async function silentLogin(){ return silentLoginWith(AUTO_USER,AUTO_PASS); }
+
+function showOfflineBanner(){
+  if(document.getElementById('offline-banner')) return;
+  const b=document.createElement('div');
+  b.id='offline-banner';
+  b.style.cssText='position:fixed;bottom:40px;left:0;right:0;z-index:9999;background:#f59e0b;color:#000;text-align:center;padding:6px;font-size:13px;font-weight:700;font-family:Cairo,sans-serif;display:flex;align-items:center;justify-content:center;gap:10px';
+  b.innerHTML='⚠️ وضع عمل بدون سيرفر — البيانات محفوظة محلياً <button onclick="showTopbarLogin()" style="border:none;background:#1d4ed8;color:#fff;border-radius:6px;padding:3px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🔑 إعادة الاتصال</button>';
   document.body.appendChild(b);
 }
 
@@ -5052,7 +5067,7 @@ function renderStations(){
         </colgroup>
         <thead><tr>
           <th style="text-align:right">#</th>
-          <th style="text-align:right;position:sticky;right:0;z-index:2;min-width:110px">اسم المحطة</th>
+          <th style="text-align:right">اسم المحطة</th>
           <th style="text-align:right">الحالة</th>
           <th style="text-align:right;background:rgba(22,163,74,.15)">✅ تعمل</th>
           <th style="text-align:right;background:rgba(220,38,38,.15)">❌ معطلة</th>
@@ -6190,10 +6205,10 @@ async function doUpload(event, key){
   const p = (async()=>{
   try{
     const file=event.target.files[0]; if(!file)return;
-    if(file.size>8*1024*1024){toast('حجم الملف كبير جداً — الحد 8MB','err');event.target.value='';return;}
+    if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
     const hiQ=document.getElementById('upload-quality')?.checked;
-    const quality=hiQ?0.88:0.75;
-    const maxPx=hiQ?1280:900;
+    const quality=hiQ?0.95:0.82;
+    const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
     UF[key]={ name:finalName, data, mime:'image/jpeg' };
@@ -7349,7 +7364,7 @@ function showStationDetail(sid){
     <div style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
         <div style="font-weight:700;font-size:14px">🚗 الجولات الميدانية (${tours.length})</div>
-        <button class="btn btn-p btn-sm" onclick="openTourFromStation('${sid}','${(s.district||'')}')">➕ إضافة جولة</button>
+        <button class="btn btn-p btn-sm" onclick="closeModal('ov-station-detail');goTab('field',document.querySelector('[onclick*=\"field\"]'));setTimeout(()=>{document.getElementById('tour-station')?.closest('.modal')?.classList.remove('open');openTourModal(0);setTimeout(()=>{const ds=document.getElementById('tour-district');if(ds){ds.value='${s.district||''}';filterTourStations();setTimeout(()=>{const ss=document.getElementById('tour-station');if(ss)ss.value='${sid}';},100);}},50);},300)">➕ إضافة جولة</button>
       </div>
       ${tours.length?`<table style="width:100%;border-collapse:collapse;font-size:12px">
         <thead><tr style="background:var(--bg2)">
@@ -7517,19 +7532,9 @@ function startNotifPolling(){
   _activityTimer = setInterval(updateActivityTicker, 30000);
 }
 
-// أيقونات الأنشطة
-const ACTION_ICONS = {
-  'جولة':'🚗','صيانة':'🔧','محطة':'⛽','إضافة':'➕','تعديل':'✏️','حذف':'🗑️',
-  'جرد':'📋','مستخدم':'👤','تسليم':'📦','استلام':'📥','تعاميم':'📢','كاميرا':'📷'
-};
-function getActionIcon(action){
-  for(const[k,v] of Object.entries(ACTION_ICONS)) if(action.includes(k)) return v;
-  return '📌';
-}
-
 async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
-  if(!SERVER_ONLINE) return;
+  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
   try{
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
@@ -7537,57 +7542,31 @@ async function updateActivityTicker(){
     const tickerContent = document.getElementById('maint-ticker-content');
     if(!tickerBar || !tickerContent) return;
 
-    if(!list.length){ tickerBar.style.display='none'; return; }
+    // فلترة: جولات وصيانة فقط
+    const relevant = list.filter(n =>
+      n.action.includes('جولة') || n.action.includes('صيانة')
+    );
 
-    // بناء صفوف الشريط مع ألوان المستخدمين
-    const items = list.slice(0,30).map(n=>{
-      const icon = getActionIcon(n.action);
-      const color = n.color || '#60a5fa';
-      const urgMark = n.urgent ? '🚨 ' : '';
-      return `<span style="margin-left:24px;display:inline-flex;align-items:center;gap:5px">`
-        +`<span style="background:${color};color:#fff;font-size:9px;font-weight:800;padding:1px 7px;border-radius:10px">${n.user}</span>`
-        +`<span style="color:rgba(255,255,255,.7)">${urgMark}${icon} ${n.action}</span>`
-        +`<span style="color:rgba(255,255,255,.5);font-size:10px">— ${n.details}</span>`
-        +`<span style="color:rgba(255,255,255,.3);font-size:9px">[${n.time.slice(11)}]</span>`
-        +`</span>`;
+    if(!relevant.length){ tickerBar.style.display='none'; return; }
+
+    // بناء نص الشريط
+    const items = relevant.slice(0,20).map(n=>{
+      const icon = n.action.includes('جولة')?'🚗':'🔧';
+      return `${icon} ${n.user}: ${n.action} — ${n.details} [${n.time}]`;
     });
-    tickerContent.innerHTML = items.join('<span style="margin:0 12px;color:rgba(255,255,255,.2)">◈</span>');
+    tickerContent.textContent = items.join('   ◈   ');
     tickerBar.style.display = 'flex';
 
-    // تنبيه عاجل — أحدث إشعار غير مقروء urgent
+    // تنبيه إذا جاءت فعالية جديدة
     const unread = d.unread || 0;
-    const urgentNotif = list.find(n=>!n.read && n.urgent);
-    if(urgentNotif && unread > _lastNotifCount && _lastNotifCount >= 0){
-      showUrgentAlert(urgentNotif);
+    if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
+      toast('📡 فعالية جديدة من مخوّل');
     }
     _lastNotifCount = unread;
+
+    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
-}
-
-function showUrgentAlert(n){
-  const alertDiv = document.getElementById('urgent-alert');
-  const alertText = document.getElementById('urgent-text');
-  if(!alertDiv || !alertText) return;
-  const color = n.color || '#dc2626';
-  // ضبط موضع العاجل فوق الشريط إذا كان ظاهراً
-  const bar = document.getElementById('maint-ticker-bar');
-  const barH = bar && bar.style.display!=='none' ? bar.offsetHeight||38 : 0;
-  alertDiv.style.bottom = barH + 'px';
-  alertDiv.style.background = `linear-gradient(90deg,${shadeColor(color,-40)},${color},${shadeColor(color,-40)})`;
-  alertText.textContent = `${getActionIcon(n.action)}  ${n.user}  —  ${n.action}: ${n.details}  [${n.time||''}]`;
-  alertDiv.style.display = 'flex';
-  clearTimeout(window._urgentTimer);
-  window._urgentTimer = setTimeout(()=>{ alertDiv.style.display='none'; }, 20000);
-}
-function shadeColor(col, pct){
-  try{
-    const n=parseInt(col.replace('#',''),16);
-    const r=Math.min(255,Math.max(0,(n>>16)+pct));
-    const g=Math.min(255,Math.max(0,((n>>8)&0xff)+pct));
-    const b=Math.min(255,Math.max(0,(n&0xff)+pct));
-    return '#'+[r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-  }catch(e){return col;}
 }
 
 // دوال وهمية للتوافق
@@ -7708,7 +7687,7 @@ function renderInvBuildings(){
   tb.innerHTML = list.length ? list.map((x,i)=>`
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
-      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px;position:sticky;right:0;background:${i%2?'#f8fafc':'#fff'};z-index:1;min-width:120px">${x.name||'—'}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
       <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#0891b2">${x.cam_count||0}</td>
@@ -7858,7 +7837,7 @@ function renderInvPrivate(){
   tb.innerHTML = list.length ? list.map((x,i)=>`
     <tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
-      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px;position:sticky;right:0;background:${i%2?'#f8fafc':'#fff'};z-index:1;min-width:120px">${x.name||'—'}</td>
+      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.name||'—'}</td>
       <td style="padding:7px 8px;${B};font-size:11px">${x.station_name||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
       <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#d97706">${x.cam_count||0}</td>
@@ -8846,54 +8825,18 @@ function exportHandoverExcel(){
   toast('تم التصدير ✅');
 }
 
-
-function openTourFromStation(sid, district){
-  closeModal('ov-station-detail');
-  goTab('field', document.querySelector('[onclick*="field"]'));
-  setTimeout(function(){
-    openTourModal(0);
-    setTimeout(function(){
-      const ds=document.getElementById('tour-district');
-      if(ds){ ds.value=district; filterTourStations(); }
-      setTimeout(function(){
-        const ss=document.getElementById('tour-station');
-        if(ss) ss.value=sid;
-      },100);
-    },50);
-  },300);
-}
-
 tryAutoLogin();</script>
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<!-- شريط الأخبار — ثابت في الأسفل -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;font-family:'Cairo',sans-serif;direction:rtl;background:linear-gradient(90deg,#0f172a,#1e3a5f);color:#fff;padding:6px 12px;box-shadow:0 -2px 20px rgba(0,0,0,.4);align-items:center;gap:10px">
-  <span id="ticker-label" style="background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
+  <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
   <div style="overflow:hidden;flex:1;position:relative;height:20px">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 40s linear infinite;display:flex;gap:0;align-items:center"></div>
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 200s linear infinite"></div>
   </div>
-  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.1);border:none;color:rgba(255,255,255,.7);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
-</div>
-
-<!-- تنبيه عاجل — مستقل فوق الشريط -->
-<div id="urgent-alert" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9001;font-family:'Cairo',sans-serif;direction:rtl;background:linear-gradient(90deg,#7f1d1d,#dc2626,#991b1b);color:#fff;padding:8px 14px;box-shadow:0 -3px 20px rgba(220,38,38,.6);align-items:center;gap:10px;animation:urgentPulse .8s ease-in-out infinite">
-  <span style="font-size:18px;animation:shake .25s ease-in-out infinite;flex-shrink:0">🚨</span>
-  <span id="urgent-text" style="font-weight:900;font-size:12px;letter-spacing:.3px;flex:1;text-align:center"></span>
-  <span style="font-size:18px;animation:shake .25s ease-in-out infinite;flex-shrink:0">🚨</span>
-  <button onclick="document.getElementById('urgent-alert').style.display='none'" style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);color:#fff;border-radius:6px;padding:2px 10px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;flex-shrink:0">✕</button>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
 <style>
-
-/* Sticky column للهاتف */
-@media(max-width:768px){
-  .table-wrap td[style*="sticky"], .table-wrap th[style*="sticky"]{
-    position:sticky!important;
-    box-shadow:-2px 0 4px rgba(0,0,0,.1);
-  }
-}
-@keyframes urgentPulse{0%,100%{opacity:1}50%{opacity:.85}}
-@keyframes shake{0%,100%{transform:rotate(0deg)}25%{transform:rotate(-8deg)}75%{transform:rotate(8deg)}}
 @keyframes tickerScroll{
   0%{transform:translateX(-100%)}
   100%{transform:translateX(100%)}
