@@ -1770,7 +1770,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <td colspan="5" style="padding:4px 6px;border:1px solid #e2e8f0">
                 <div style="display:flex;gap:6px;align-items:center">
                   <input class="fi" id="inv-coords" type="text" placeholder="34.xxxx° N, 43.xxxx° E" style="flex:1;font-size:11px">
-                  <button type="button" onclick="getGPS('inv-coords')" id="gps-btn-inv" title="تحديد موقعي الحالي" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:4px;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;flex-shrink:0">
+                  <button type="button" onclick="getGPS('inv-coords',this)" id="gps-btn-inv" title="تحديد موقعي الحالي" style="background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:8px;padding:6px 10px;cursor:pointer;font-size:13px;white-space:nowrap;display:flex;align-items:center;gap:4px;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;flex-shrink:0">
                     📍 GPS
                   </button>
                 </div>
@@ -6748,8 +6748,7 @@ function toggleExtraDelegate(){
 }
 
 // ══ GPS — تحديد الإحداثيات تلقائياً ══
-function getGPS(fieldId){
-  const btn = document.getElementById('gps-btn-'+fieldId.replace('inv-','inv'));
+function getGPS(fieldId, btn){
   const inp = document.getElementById(fieldId);
   if(!inp){ toast('حقل الإحداثيات غير موجود','err'); return; }
 
@@ -6758,33 +6757,33 @@ function getGPS(fieldId){
     return;
   }
 
-  // تغيير الزر أثناء التحديد
-  const origText = btn ? btn.innerHTML : '';
-  if(btn){ btn.innerHTML='⏳ جاري...'; btn.disabled=true; btn.style.background='#94a3b8'; }
+  const origHTML = btn ? btn.innerHTML : '';
+  const origBg   = btn ? btn.style.background : '';
+  if(btn){ btn.innerHTML='⏳'; btn.disabled=true; btn.style.background='#94a3b8'; }
 
   navigator.geolocation.getCurrentPosition(
     function(pos){
-      const lat = pos.coords.latitude.toFixed(6);
-      const lng = pos.coords.longitude.toFixed(6);
-      const acc = Math.round(pos.coords.accuracy);
-      // تنسيق: 34.123456° N, 43.123456° E
-      const latDir = lat >= 0 ? 'N' : 'S';
-      const lngDir = lng >= 0 ? 'E' : 'W';
-      inp.value = Math.abs(lat) + '° ' + latDir + ', ' + Math.abs(lng) + '° ' + lngDir;
-      inp.style.borderColor = '#16a34a';
-      inp.style.background = '#f0fdf4';
-      setTimeout(()=>{ inp.style.borderColor=''; inp.style.background=''; }, 2000);
+      const latNum = pos.coords.latitude;
+      const lngNum = pos.coords.longitude;
+      const acc    = Math.round(pos.coords.accuracy);
+      const lat    = Math.abs(latNum).toFixed(6);
+      const lng    = Math.abs(lngNum).toFixed(6);
+      const latDir = latNum >= 0 ? 'N' : 'S';
+      const lngDir = lngNum >= 0 ? 'E' : 'W';
+      inp.value = lat + '° ' + latDir + ', ' + lng + '° ' + lngDir;
+      inp.style.borderColor='#16a34a'; inp.style.background='#f0fdf4';
+      setTimeout(function(){ inp.style.borderColor=''; inp.style.background=''; }, 2500);
       if(btn){ btn.innerHTML='✅ تم'; btn.disabled=false; btn.style.background='linear-gradient(135deg,#16a34a,#22c55e)'; }
-      toast('✅ تم تحديد الموقع — دقة: ' + acc + 'م');
+      toast('✅ تم تحديد الموقع — دقة: ' + acc + ' م');
     },
     function(err){
-      if(btn){ btn.innerHTML=origText; btn.disabled=false; btn.style.background='linear-gradient(135deg,#16a34a,#22c55e)'; }
+      if(btn){ btn.innerHTML=origHTML; btn.disabled=false; btn.style.background=origBg; }
       const msgs = {
-        1: 'تم رفض الوصول للموقع — أذن GPS مطلوب',
+        1: 'تم رفض الوصول للموقع — فعّل إذن GPS',
         2: 'تعذّر تحديد الموقع — تأكد من تشغيل GPS',
         3: 'انتهت مهلة تحديد الموقع — حاول مجدداً'
       };
-      toast(msgs[err.code]||'خطأ في GPS', 'err');
+      toast(msgs[err.code]||'خطأ في GPS: '+err.message, 'err');
     },
     { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
   );
