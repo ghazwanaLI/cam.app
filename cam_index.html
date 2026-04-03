@@ -932,6 +932,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div class="bn-ico-wrap">📋</div>
         <span class="bn-lbl">الجرد</span>
       </div>
+      <div class="bn-item" id="bn-circulars" onclick="bnGo('circulars','التعاميم',this)">
+        <div class="bn-ico-wrap">📢</div>
+        <span class="bn-lbl">التعاميم</span>
+        <span id="bn-circ-badge" style="display:none;position:absolute;top:2px;right:4px;background:#dc2626;color:#fff;border-radius:10px;font-size:9px;font-weight:800;padding:1px 5px;border:2px solid #fff"></span>
+      </div>
       <div class="bn-item" id="bn-more" onclick="openMobDrawer()">
         <div class="bn-ico-wrap">☰</div>
         <span class="bn-lbl">المزيد</span>
@@ -1104,6 +1109,22 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
             <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
+          </div>
+
+          <!-- الجرد -->
+          <div id="dash-inv-card" onclick="_navInv('inv-stations')" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#d1fae5" stroke-width="8"/>
+                <circle id="circ-inv" cx="45" cy="45" r="38" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+              </svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">📋</div>
+              </div>
+            </div>
+            <div style="font-size:26px;font-weight:900;color:#10b981;line-height:1" id="s-inv-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#065f46;margin-top:4px">الجرد</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-inv-sub">محطة مسجلة</div>
           </div>
 
         </div>
@@ -1459,6 +1480,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
                   <option value="">كل المحطات</option>
                 </select>
                 <button class="btn btn-o btn-sm" onclick="loadInvStations()">🔄</button>
+                <button class="btn btn-o btn-sm" onclick="exportInvExcel()" style="color:#16a34a;border-color:rgba(22,163,74,.4)">📊 تصدير Excel</button>
                 <button class="btn btn-p btn-sm" id="btn-add-inv" onclick="openInvForm()" style="display:none">➕ إضافة جرد</button>
               </div>
             </div>
@@ -3931,6 +3953,7 @@ function renderInvList(){
       <td style="padding:5px 6px;text-align:center;${B}">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
+        <button class="btn btn-o btn-sm" onclick="event.stopPropagation();exportInvExcel(${x.id})" style="padding:3px 6px;font-size:10px;color:#16a34a" title="تصدير Excel">📊</button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
     </tr>`;
@@ -3945,7 +3968,7 @@ function openInvForm(id){
   // إعادة تعيين عدادات الصفوف
   _invDvrCount = 0;
   const ss=document.getElementById('inv-station');
-  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}"${m.station_id===s.id?' selected':''}>${s.name}</option>`).join('');}
+  if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.map(s=>`<option value="${s.id}"${m.station_id===s.id?' selected':''}>${s.name}${s.type&&s.type!=='حكومية'?' ('+s.type+')':''}</option>`).join('');}  
   // الحقول البسيطة
   ['inv-phone','inv-coords','inv-notes'].forEach(eid=>{
     const key=eid.replace('inv-','');
@@ -4428,7 +4451,15 @@ function updateDashboard(){
   const badge=document.getElementById('unvisited-badge');
   if(badge){ badge.style.display=unvisited?'':'none'; badge.textContent=unvisited; }
 
-  // احصائيات الكاميرات من الجرد أو من المحطات
+  // ── بطاقة الجرد ──
+  const invCount = (allInventory||[]).length;
+  const invCountEl = document.getElementById('s-inv-count');
+  const invSubEl   = document.getElementById('s-inv-sub');
+  if(invCountEl) invCountEl.textContent = invCount;
+  if(invSubEl)   invSubEl.textContent   = invCount + ' محطة مسجلة';
+  setCircle('circ-inv', Math.min(invCount/20, 1));
+
+  // ── احصائيات الكاميرات من الجرد أو من المحطات ──
   let camOk=0,camBad=0;
   if(allInventory&&allInventory.length){
     allInventory.forEach(x=>{camOk+=(+x.cam_count||0);});
@@ -5193,6 +5224,9 @@ async function loadCirculars(){
     const unread=allCirculars.filter(c=>!(d.reads||[]).includes(c.id)).length;
     const badge=document.getElementById('circulars-badge');
     if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
+    // badge الموبايل
+    const bnBadge=document.getElementById('bn-circ-badge');
+    if(bnBadge){bnBadge.style.display=unread?'':'none';bnBadge.textContent=unread;}
 
     // إشعار للمستخدمين بتعميم جديد
     if(CU?.role!=='admin' && _lastCircCount>=0){
@@ -7310,6 +7344,76 @@ function _reindexInvDvr(){
   });
 }
 // ══ HANDOVER — استلام وتسليم ══
+// ══ تصدير الجرد إلى Excel (CSV) ══
+function exportInvExcel(id){
+  // إذا مُرر id → تصدير محطة واحدة، وإلا → تصدير الكل
+  const list = id
+    ? (allInventory||[]).filter(x=>String(x.id)===String(id))
+    : (allInventory||[]);
+
+  if(!list.length){ toast('لا توجد بيانات للتصدير','err'); return; }
+
+  const rows = [];
+  // رأس الجدول
+  rows.push([
+    'اسم المحطة','القاطع','الهاتف','الإحداثيات',
+    'عدد الكاميرات','نوع الكاميرا','إجمالي الداخلية','إجمالي الخارجية',
+    'نوع الجهاز (DVR/NVR)','طريقة الربط','سعة الهارد','عدد الهاردات','فترة التسجيل',
+    'مصدر الطاقة','ملاحظات'
+  ]);
+
+  list.forEach(x=>{
+    // صفوف الكاميرات
+    let cams=[];
+    try{const cr=x.cam_rows;cams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);}catch(e){}
+    const camIn=cams.reduce((a,r)=>a+(parseInt(r.indoor)||0),0);
+    const camOut=cams.reduce((a,r)=>a+(parseInt(r.outdoor)||0),0);
+    const camTotal=camIn+camOut||+x.cam_count||0;
+    const camTypes=cams.map(r=>r.type).filter(Boolean).join(' + ')||x.cam_spec||'';
+
+    // صفوف DVR
+    let dvrs=[];
+    try{const dr=x.dvr_rows;dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
+    if(!dvrs.length&&x.dvr_model) dvrs=[{model:x.dvr_model,conn:x.dvr_spec||'',hdd_size:x.hdd_size||'',hdd_count:x.hdd_count||0,storage:x.storage_days||''}];
+
+    const pw=(x.power_source||x.power||'').replace(/\+/g,'،');
+
+    if(!dvrs.length){
+      rows.push([
+        x.station_name||x.station||'',x.district||'',x.phone||'',x.coords||'',
+        camTotal,camTypes,camIn,camOut,
+        '','','','','',pw,x.notes||''
+      ]);
+    } else {
+      dvrs.forEach((d,i)=>{
+        rows.push([
+          i===0?(x.station_name||x.station||''):'',
+          i===0?(x.district||''):'',
+          i===0?(x.phone||''):'',
+          i===0?(x.coords||''):'',
+          i===0?camTotal:'', i===0?camTypes:'',
+          i===0?camIn:'', i===0?camOut:'',
+          d.model||'', d.conn||'', d.hdd_size||'', d.hdd_count||'', d.storage||'',
+          i===0?pw:'', i===0?(x.notes||''):''
+        ]);
+      });
+    }
+  });
+
+  const csv = '\uFEFF' + rows.map(r=>
+    r.map(c=>'"'+String(c===null||c===undefined?'':c).replace(/"/g,'""')+'"').join(',')
+  ).join('\n');
+
+  const a=document.createElement('a');
+  const fname = id
+    ? 'جرد_'+(list[0]?.station_name||id)+'_'+new Date().toISOString().split('T')[0]+'.csv'
+    : 'جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.csv';
+  a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download=fname;
+  a.click();
+  toast('✅ تم التصدير — '+list.length+' محطة');
+}
+
 async function loadHandover(){
   try{
     const d=await api('GET','/api/handover');
