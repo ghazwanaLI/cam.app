@@ -2075,24 +2075,14 @@ tr:hover td{background:rgba(30,58,95,.03);}
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:85px">سعة الهارد (TB)</th>
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:65px">عدد الهاردات</th>
               <th style="padding:5px 8px;border:1px solid #bfdbfe;width:130px">فترة التسجيل</th>
+              <th style="padding:5px 8px;border:1px solid #bfdbfe;width:28px"></th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;color:#94a3b8">1</td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-dvr-model" type="text" placeholder="مثال: NVR 32-ch" style="width:100%;font-size:11px;padding:3px 6px"></td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe">
-                <select class="fi" dir="rtl" id="inv-dvr-spec" style="width:100%;font-size:11px;padding:3px 6px">
-                  <option value="IP شبكي">IP شبكي</option>
-                  <option value="Coaxial">Coaxial</option>
-                </select>
-              </td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-size" type="text" placeholder="8" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-hdd-count" type="number" min="0" value="0" style="width:100%;font-size:11px;padding:3px 6px;text-align:center"></td>
-              <td style="padding:2px 4px;border:1px solid #dbeafe"><input class="fi" id="inv-storage-days" type="text" placeholder="6 أشهر فما فوق" style="width:100%;font-size:11px;padding:3px 6px"></td>
-            </tr>
-          </tbody>
+          <tbody id="inv-dvr-body"></tbody>
         </table>
+        <div style="padding:6px 10px;background:#eff6ff;border-top:1px solid #bfdbfe">
+          <button type="button" onclick="addInvDvrRow()" class="btn btn-o btn-sm" style="color:#1d4ed8;border-color:rgba(29,78,216,.4);font-size:11px">➕ إضافة جهاز تسجيل</button>
+        </div>
         <div style="padding:6px 12px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
           <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
           <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
@@ -3898,17 +3888,29 @@ function openInvForm(id){
   // تحميل المحطات الحكومية
   const ss=document.getElementById('inv-station');
   if(ss){ss.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>s.type==='حكومية').map(s=>`<option value="${s.id}"${m.station_id===s.id?' selected':''}>${s.name}</option>`).join('');}
-  // تحميل الحقول
-  const flds={'inv-dvr-model':'dvr_model','inv-hdd-size':'hdd_size','inv-storage-days':'storage_days','inv-phone':'phone','inv-coords':'coords','inv-notes':'notes'};
-  Object.entries(flds).forEach(([eid,key])=>{const el=document.getElementById(eid);if(el)el.value=m[key]||'';});
-  const dvrSpec=document.getElementById('inv-dvr-spec');if(dvrSpec)dvrSpec.value=m.dvr_spec||'IP شبكي';
-  const hddCount=document.getElementById('inv-hdd-count');if(hddCount)hddCount.value=m.hdd_count||0;
+  // الحقول البسيطة
+  ['inv-phone','inv-coords','inv-notes'].forEach(eid=>{
+    const key=eid.replace('inv-','');
+    const el=document.getElementById(eid);
+    if(el) el.value=m[key]||'';
+  });
   // مصدر الطاقة
   const pwVals=(m.power_source||'').split('+').map(s=>s.trim());
   document.querySelectorAll('.inv-pw-cb').forEach(cb=>{cb.checked=pwVals.includes(cb.value);});
   // صفوف الكاميرات
-  let camRows=[];try{camRows=m.cam_rows?JSON.parse(m.cam_rows):[];}catch(e){}
+  let camRows=[];
+  try{const cr=m.cam_rows;camRows=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);}catch(e){}
   setCamRows(camRows);
+  // صفوف DVR — ديناميكية
+  const dvrTb=document.getElementById('inv-dvr-body');
+  if(dvrTb) dvrTb.innerHTML='';
+  let dvrRows=[];
+  try{const dr=m.dvr_rows;dvrRows=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
+  if(!dvrRows.length&&(m.dvr_model||m.dvr_spec)){
+    dvrRows=[{model:m.dvr_model||'',conn:m.dvr_spec||'IP شبكي',hdd_size:m.hdd_size||'',hdd_count:m.hdd_count||0,storage:m.storage_days||''}];
+  }
+  if(dvrRows.length) dvrRows.forEach(r=>addInvDvrRow(r));
+  else addInvDvrRow();
   updateInvAddress();
   document.getElementById('ov-inv').classList.add('open');
 }
@@ -3919,13 +3921,22 @@ async function saveInv(){
   if(!stId){toast('اختر المحطة أولاً','err');return;}
   const st=allStations.find(s=>s.id===stId)||{};
   const v=id=>document.getElementById(id)?.value||'';
-  const g=id=>parseInt(document.getElementById(id)?.value)||0;
   const camRows=getCamRows();
+  // قراءة صفوف DVR الديناميكية
+  const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr')].map(tr=>({
+    model: tr.querySelector('.inv-dvr-model-inp')?.value||'',
+    conn:  tr.querySelector('.inv-dvr-spec-sel')?.value||'IP شبكي',
+    hdd_size: tr.querySelector('.inv-hdd-size-inp')?.value||'',
+    hdd_count: parseInt(tr.querySelector('.inv-hdd-count-inp')?.value)||0,
+    storage: tr.querySelector('.inv-storage-sel')?.value||''
+  })).filter(r=>r.model||r.hdd_size||r.storage);
+  const dvr1=dvrRows[0]||{};
   const body={
     station_id:stId,station_name:st.name||'',district:st.district||'',
-    dvr_model:v('inv-dvr-model'),dvr_spec:v('inv-dvr-spec'),
-    hdd_size:v('inv-hdd-size'),hdd_count:g('inv-hdd-count'),
-    storage_days:v('inv-storage-days'),
+    dvr_model:dvr1.model||'',dvr_spec:dvr1.conn||'IP شبكي',
+    hdd_size:dvr1.hdd_size||'',hdd_count:dvr1.hdd_count||0,
+    storage_days:dvr1.storage||'',
+    dvr_rows:JSON.stringify(dvrRows),
     power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
     phone:v('inv-phone'),coords:v('inv-coords'),notes:v('inv-notes'),
     cam_rows:JSON.stringify(camRows),
@@ -4275,6 +4286,9 @@ async function initApp(){
     ['btn-add-maint','btn-add-cam','btn-add-st','btn-add-coding','btn-add-inv'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
+    // زر إضافة صيانة — يظهر لجميع المستخدمين
+    const btnMaint=document.getElementById('btn-add-maint');
+    if(btnMaint) btnMaint.style.display='inline-block';
     // زر إضافة جولة — مدير فقط
     const btnAddTour=document.getElementById('btn-add-tour');
     if(btnAddTour) btnAddTour.style.display=showTours&&can('edit')?'inline-block':'none';
@@ -7096,7 +7110,46 @@ function getGPS(fieldId, btn){
   );
 }
 
-// ══ MOBILE APP NAVIGATION ══
+// ── إضافة صف DVR ديناميكي لجرد المحطات الحكومية ──
+let _invDvrCount = 0;
+function addInvDvrRow(data={}){
+  _invDvrCount++;
+  const i = _invDvrCount;
+  const tb = document.getElementById('inv-dvr-body');
+  if(!tb) return;
+  const storOpts = ['','90 يوم فما فوق','6 أشهر فما فوق','30 يوم','60 يوم','سنة فما فوق']
+    .map(o=>`<option value="${o}"${(data.storage||'')===o?' selected':''}>${o||'— اختر —'}</option>`).join('');
+  const tr = document.createElement('tr');
+  tr.innerHTML=`
+    <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;font-weight:800;color:#1d4ed8;font-size:11px">${i}</td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe">
+      <input class="fi inv-dvr-model-inp" type="text" value="${data.model||''}" placeholder="مثال: NVR 32-ch" style="width:100%;font-size:11px;padding:3px 6px">
+    </td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe">
+      <select class="fi inv-dvr-spec-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">
+        <option value="IP شبكي"${(data.conn||'IP شبكي')==='IP شبكي'?' selected':''}>IP شبكي</option>
+        <option value="Coaxial"${data.conn==='Coaxial'?' selected':''}>Coaxial</option>
+      </select>
+    </td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe">
+      <input class="fi inv-hdd-size-inp" type="text" value="${data.hdd_size||''}" placeholder="8 TB" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
+    </td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe">
+      <input class="fi inv-hdd-count-inp" type="number" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
+    </td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe">
+      <select class="fi inv-storage-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">${storOpts}</select>
+    </td>
+    <td style="padding:2px 4px;border:1px solid #dbeafe;text-align:center">
+      <button type="button" onclick="this.closest('tr').remove();_reindexInvDvr()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
+    </td>`;
+  tb.appendChild(tr);
+}
+function _reindexInvDvr(){
+  document.querySelectorAll('#inv-dvr-body tr').forEach((tr,i)=>{
+    const c=tr.cells[0]; if(c)c.textContent=i+1;
+  });
+}
 const PAGE_TITLES = {
   dashboard:'لوحة التحكم', stations:'المحطات', field:'الصيانة',
   inventory:'الجرد', coding:'ترميز الأجهزة', circulars:'التعاميم',
