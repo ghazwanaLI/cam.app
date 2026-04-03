@@ -4943,6 +4943,12 @@ function openMaintModal(id){
   let devRows=[];
   try{const dr=m.devices;devRows=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
   resetDeviceRows(devRows);
+  // تحميل الصور المحفوظة في الـ preview
+  const prev=document.getElementById('maint-img-preview');
+  if(prev) prev.innerHTML='';
+  if(id && m.id){
+    _loadMaintPreviews(id, prev);
+  }
 }
 async function saveMaint(){
   const id=parseInt(document.getElementById('maint-eid').value)||0;
@@ -6563,19 +6569,85 @@ function getOthers(){
 }
 
 // رفع ملفات متعددة دفعة واحدة
-const MAX_UPLOAD_KB = 999999; // بدون تقييد
+// تحميل الصور المحفوظة في preview الصيانة
+function _loadMaintPreviews(mid, container){
+  if(!container) container = document.getElementById('maint-img-preview');
+  if(!container) return;
+  container.innerHTML = '<span style="font-size:11px;color:#94a3b8">⏳ جاري تحميل الصور...</span>';
+  const imgKeys = ['maint_img','maint_img2','maint_img3'];
+  const repKeys = ['maint_rep','maint_rep2','maint_rep3'];
+  const tawKeys = ['maint_tawkeef','maint_tawkeef2'];
+  const allKeys = [...imgKeys,...repKeys,...tawKeys];
+  const labels  = {
+    maint_img:'صورة 1',maint_img2:'صورة 2',maint_img3:'صورة 3',
+    maint_rep:'سجل 1',maint_rep2:'سجل 2',maint_rep3:'سجل 3',
+    maint_tawkeef:'تكليف 1',maint_tawkeef2:'تكليف 2'
+  };
+  Promise.all(allKeys.map(k=>
+    api('GET','/api/files/maint_'+mid+'_'+k)
+      .then(res=>{ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
+      .catch(()=>null)
+  )).then(results=>{
+    const found = results.filter(Boolean);
+    container.innerHTML = '';
+    if(!found.length){
+      container.innerHTML = '<span style="font-size:11px;color:#94a3b8">لا توجد ملفات مرفوعة</span>';
+      return;
+    }
+    found.forEach(({k,d})=>{
+      const src = 'data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg = d.mime&&d.mime.startsWith('image/');
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
+      if(isImg){
+        const img = document.createElement('img');
+        img.src = src;
+        img.title = labels[k]||k;
+        img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #e2e8f0;cursor:zoom-in';
+        img.onclick = ()=>openLB(src);
+        wrap.appendChild(img);
+        // label
+        const lbl = document.createElement('div');
+        lbl.textContent = labels[k]||k;
+        lbl.style.cssText = 'font-size:9px;text-align:center;color:#64748b;margin-top:2px';
+        wrap.appendChild(lbl);
+      } else {
+        const a = document.createElement('a');
+        a.href = src; a.download = (d.name||k);
+        a.style.cssText = 'display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;background:#f1f5f9;border-radius:8px;padding:10px 8px;font-size:11px;color:#1d4ed8;font-weight:700;width:72px';
+        a.innerHTML = '<span style="font-size:24px">📄</span><span style="font-size:9px;text-align:center;color:#475569">'+(labels[k]||k)+'</span><span style="font-size:9px;color:#16a34a">⬇️ تحميل</span>';
+        wrap.appendChild(a);
+      }
+      container.appendChild(wrap);
+    });
+    // زر عرض الكل
+    if(found.length){
+      const allBtn = document.createElement('button');
+      allBtn.className='btn btn-o btn-sm';
+      allBtn.style.cssText='font-size:11px;display:block;margin-top:6px';
+      allBtn.textContent='📎 عرض الكل ('+found.length+')';
+      allBtn.onclick=()=>showMaintFiles(mid);
+      container.appendChild(allBtn);
+    }
+  });
+}
 
 function doMultiUpload(event, prefix){
   const files=Array.from(event.target.files);
   if(!files.length) return;
-  const preview=document.getElementById(prefix.replace('_','_').split('_')[0]+'-'+prefix.split('_')[1]+'-preview')
-    ||document.getElementById(prefix+'-preview')
-    ||document.getElementById('maint-img-preview');
+  // إيجاد الـ preview container بطرق متعددة
+  const previewId = prefix.replace('maint_img','maint-img')
+                          .replace('maint_rep','maint-rep')
+                          .replace('maint_tawkeef','maint-tawkeef')
+                          .replace(/_\d+$/,'')+'-preview';
+  const preview = document.getElementById('maint-img-preview')
+               || document.getElementById(previewId)
+               || document.getElementById(prefix+'-preview');
   if(preview) preview.innerHTML='';
 
   let loaded=0;
   files.forEach((file,idx)=>{
-    const key=prefix+(idx>0?'_'+(idx+1):'');
+    const key=prefix+(idx>0?idx+1:'');  // maint_img, maint_img2, maint_img3
     compressImage(file, 9999, 9999, 0.95).then(function(compressed){
       const data=compressed.data; const mime=compressed.mime;
       const kb=Math.round(data.length*0.75/1024);
@@ -6583,33 +6655,36 @@ function doMultiUpload(event, prefix){
       loaded++;
 
       if(preview && file.type.startsWith('image/')){
-        const thumb=document.createElement('div');
-        thumb.style.cssText='position:relative;display:inline-block';
+        const wrap=document.createElement('div');
+        wrap.style.cssText='position:relative;display:inline-block;vertical-align:top';
         const im=document.createElement('img');
         im.src='data:'+mime+';base64,'+data;
-        im.style.cssText='width:70px;height:70px;object-fit:cover;border-radius:8px;border:2px solid var(--border)';
+        im.style.cssText='width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #e2e8f0';
         const rm=document.createElement('button');
-        rm.textContent='✕'; rm.style.cssText='position:absolute;top:-4px;right:-4px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1';
-        rm.onclick=function(){delete UF[key];thumb.remove();};
+        rm.textContent='✕';
+        rm.style.cssText='position:absolute;top:-5px;right:-5px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1;z-index:2';
+        rm.onclick=function(){delete UF[key];wrap.remove();};
         const sz=document.createElement('div');
-        sz.textContent=kb>1024?(Math.round(kb/102.4)/10)+'MB':kb+'KB';
-        sz.style.cssText='position:absolute;bottom:0;left:0;right:0;background:rgba(0,0,0,.55);color:#fff;font-size:9px;text-align:center;border-radius:0 0 6px 6px';
-        thumb.appendChild(im); thumb.appendChild(rm); thumb.appendChild(sz);
-        if(preview) preview.appendChild(thumb);
+        sz.textContent=kb>1024?Math.round(kb/102.4)/10+'MB':kb+'KB';
+        sz.style.cssText='font-size:9px;text-align:center;color:#64748b;margin-top:2px';
+        wrap.appendChild(im); wrap.appendChild(rm); wrap.appendChild(sz);
+        if(preview) preview.appendChild(wrap);
       } else if(preview){
-        const lbl=document.createElement('div');
-        lbl.style.cssText='background:var(--bg2);border-radius:8px;padding:6px 10px;font-size:11px;font-weight:600;color:var(--t2);display:flex;align-items:center;gap:6px';
-        lbl.innerHTML='📄 '+file.name.substring(0,20)+' <span style="color:#94a3b8;font-size:10px">('+kb+'KB)</span>';
+        const wrap=document.createElement('div');
+        wrap.style.cssText='display:inline-flex;flex-direction:column;align-items:center;gap:3px;background:#f1f5f9;border-radius:8px;padding:8px;font-size:10px;vertical-align:top';
+        wrap.innerHTML='<span style="font-size:22px">📄</span><span style="color:#475569;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+file.name.substring(0,15)+'</span><span style="color:#94a3b8">'+kb+'KB</span>';
         const rm=document.createElement('button');
-        rm.textContent='✕'; rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:14px;margin-right:auto';
-        rm.onclick=function(){delete UF[key];lbl.remove();};
-        lbl.appendChild(rm); preview.appendChild(lbl);
+        rm.textContent='✕';
+        rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;font-weight:700';
+        rm.onclick=function(){delete UF[key];wrap.remove();};
+        wrap.appendChild(rm);
+        if(preview) preview.appendChild(wrap);
       }
     }).catch(function(){
       toast('فشل تحميل '+file.name,'err');
     });
   });
-  setTimeout(()=>{ if(loaded>0) toast('✅ تم تحميل '+loaded+' ملف'); }, 600);
+  setTimeout(()=>{ if(loaded>0||files.length) toast('✅ تم تحميل '+files.length+' ملف'); }, 700);
 }
 
 // إظهار/إخفاء حقل الحالة بحسب نوع المحطة
