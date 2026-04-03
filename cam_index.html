@@ -2647,6 +2647,10 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
+      // 502/413/503 → السيرفر يرجع HTML مش JSON
+      if(r.status===502||r.status===413||r.status===503){
+        throw new Error(`خطأ ${r.status}`);
+      }
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
       return d;
@@ -5839,8 +5843,8 @@ async function doUpload(event, key){
     // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
     // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
-    const quality=hiQ?0.95:0.82;
-    const maxPx=hiQ?1920:1280;
+    const quality=hiQ?0.88:0.72;
+    const maxPx=hiQ?1280:900;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
     // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
@@ -6668,8 +6672,8 @@ function doMultiUpload(event, prefix){
     const key = prefix + (idx > 0 ? (idx+1) : '');  // maint_img, maint_img2, maint_img3
 
     // ضغط الصور: max 1600px، جودة 0.82
-    const maxPx = file.type.startsWith('image/') ? 1600 : 9999;
-    const quality = file.type.startsWith('image/') ? 0.82 : 0.95;
+    const maxPx = file.type.startsWith('image/') ? 900 : 9999;
+    const quality = file.type.startsWith('image/') ? 0.72 : 0.88;
 
     compressImage(file, maxPx, maxPx, quality).then(function(compressed){
       const data = compressed.data;
@@ -7450,11 +7454,12 @@ function _reindexInvDvr(){
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
 async function smartUploadFile(endpoint, fileObj){
+  // الخطوات تبدأ من الحجم الحالي وتنزل — كل محاولة أصغر من السابقة
   const steps = [
-    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
-    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
-    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
-    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
+    {maxPx:900,  q:0.72},  // المحاولة الأولى  (يجب أن تنجح في الغالب)
+    {maxPx:700,  q:0.62},  // المحاولة الثانية
+    {maxPx:550,  q:0.52},  // المحاولة الثالثة
+    {maxPx:400,  q:0.45},  // المحاولة الرابعة  (ضغط قوي جداً)
   ];
 
   let {data, mime, name} = fileObj;
@@ -7465,19 +7470,17 @@ async function smartUploadFile(endpoint, fileObj){
     try{
       if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
       const result = await api('POST', endpoint, {name, data, mime});
-      return result; // نجح
+      return result;
     }catch(e){
       const msg = (e.message||'').toLowerCase();
-      const is502 = msg.includes('502') || msg.includes('413')
+      const is502 = msg.includes('502') || msg.includes('413') || msg.includes('503')
                  || msg.includes('body') || msg.includes('payload')
                  || msg.includes('entity');
 
       if(is502 && isImage && attempt < steps.length-1){
-        // ضغط الصورة أكثر وأعد المحاولة
         const next = steps[attempt+1];
         toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
         try{
-          // recompress من base64
           const dataUrl = 'data:'+mime+';base64,'+data;
           const compressed = await new Promise((res,rej)=>{
             const img = new Image();
@@ -7497,11 +7500,10 @@ async function smartUploadFile(endpoint, fileObj){
           data = compressed.data;
           mime = 'image/jpeg';
           name = name.replace(/\.[^.]+$/, '.jpg');
-          continue; // أعد المحاولة
+          continue;
         }catch(ce){ throw e; }
       }
 
-      // خطأ آخر أو PDF كبير
       if(is502){
         const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
         throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
