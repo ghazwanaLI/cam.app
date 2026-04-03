@@ -4974,15 +4974,34 @@ async function saveMaint(){
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
     const mid=id||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
-    for(const k of fileKeys){
-      if(UF[k]){
+    const toUpload = fileKeys.filter(k=>UF[k]);
+    if(toUpload.length){
+      toast('⏳ جاري رفع '+toUpload.length+' ملف...');
+      let ok=0, fail=0;
+      for(const k of toUpload){
         try{
-          await api('POST','/api/files/maint_'+mid+'_'+k,{name:UF[k].name,data:UF[k].data,mime:UF[k].mime});
+          const kb = UF[k].kb || Math.round((UF[k].data||'').length*0.75/1024);
+          toast('📤 رفع '+k.replace('maint_','').replace('_',' ')+' ('+kb+'KB)...');
+          await api('POST','/api/files/maint_'+mid+'_'+k,{
+            name: UF[k].name,
+            data: UF[k].data,
+            mime: UF[k].mime
+          });
           delete UF[k];
+          ok++;
         }catch(fe){
-          toast('❌ فشل رفع الملف — '+fe.message,'err');
+          fail++;
+          const msg = fe.message||'';
+          const is502 = msg.includes('502')||msg.includes('413')||msg.includes('Body');
+          if(is502){
+            toast('❌ '+k+': الملف كبير جداً (502) — حاول ضغط الصورة أولاً','err');
+          } else {
+            toast('❌ فشل رفع '+k+': '+msg,'err');
+          }
         }
       }
+      if(ok>0 && fail===0) toast('✅ تم رفع '+ok+' ملف');
+      else if(ok>0) toast('⚠️ رُفع '+ok+' ملف — فشل '+fail,'err');
     }
 
     // ── تسجيل تلقائي في الاستلام والتسليم (استلام معطوبة) — فقط للسجلات الجديدة ولها أجهزة ──
@@ -6635,58 +6654,66 @@ function _loadMaintPreviews(mid, container){
 function doMultiUpload(event, prefix){
   const files=Array.from(event.target.files);
   if(!files.length) return;
-  // إيجاد الـ preview container بطرق متعددة
-  const previewId = prefix.replace('maint_img','maint-img')
-                          .replace('maint_rep','maint-rep')
-                          .replace('maint_tawkeef','maint-tawkeef')
-                          .replace(/_\d+$/,'')+'-preview';
+
+  // إيجاد الـ preview container
   const preview = document.getElementById('maint-img-preview')
-               || document.getElementById(previewId)
                || document.getElementById(prefix+'-preview');
   if(preview) preview.innerHTML='';
 
   let loaded=0;
   files.forEach((file,idx)=>{
-    const key=prefix+(idx>0?idx+1:'');  // maint_img, maint_img2, maint_img3
-    compressImage(file, 9999, 9999, 0.95).then(function(compressed){
-      const data=compressed.data; const mime=compressed.mime;
-      const kb=Math.round(data.length*0.75/1024);
-      UF[key]={name:file.name,data,mime,kb};
+    const key = prefix + (idx > 0 ? (idx+1) : '');  // maint_img, maint_img2, maint_img3
+
+    // ضغط الصور: max 1600px، جودة 0.82
+    const maxPx = file.type.startsWith('image/') ? 1600 : 9999;
+    const quality = file.type.startsWith('image/') ? 0.82 : 0.95;
+
+    compressImage(file, maxPx, maxPx, quality).then(function(compressed){
+      const data = compressed.data;
+      const mime = compressed.mime;
+      const kb   = Math.round(data.length * 0.75 / 1024);
+      UF[key] = {name: file.name, data, mime, kb};
       loaded++;
 
-      if(preview && file.type.startsWith('image/')){
-        const wrap=document.createElement('div');
-        wrap.style.cssText='position:relative;display:inline-block;vertical-align:top';
-        const im=document.createElement('img');
-        im.src='data:'+mime+';base64,'+data;
-        im.style.cssText='width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #e2e8f0';
-        const rm=document.createElement('button');
-        rm.textContent='✕';
-        rm.style.cssText='position:absolute;top:-5px;right:-5px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1;z-index:2';
-        rm.onclick=function(){delete UF[key];wrap.remove();};
-        const sz=document.createElement('div');
-        sz.textContent=kb>1024?Math.round(kb/102.4)/10+'MB':kb+'KB';
-        sz.style.cssText='font-size:9px;text-align:center;color:#64748b;margin-top:2px';
-        wrap.appendChild(im); wrap.appendChild(rm); wrap.appendChild(sz);
-        if(preview) preview.appendChild(wrap);
-      } else if(preview){
-        const wrap=document.createElement('div');
-        wrap.style.cssText='display:inline-flex;flex-direction:column;align-items:center;gap:3px;background:#f1f5f9;border-radius:8px;padding:8px;font-size:10px;vertical-align:top';
-        wrap.innerHTML='<span style="font-size:22px">📄</span><span style="color:#475569;max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+file.name.substring(0,15)+'</span><span style="color:#94a3b8">'+kb+'KB</span>';
-        const rm=document.createElement('button');
-        rm.textContent='✕';
-        rm.style.cssText='background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;font-weight:700';
-        rm.onclick=function(){delete UF[key];wrap.remove();};
+      if(!preview) return;
+
+      if(file.type.startsWith('image/')){
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top;margin:3px';
+        const im = document.createElement('img');
+        im.src = 'data:'+mime+';base64,'+data;
+        im.style.cssText = 'width:72px;height:72px;object-fit:cover;border-radius:8px;border:2px solid #e2e8f0;cursor:zoom-in';
+        im.onclick = function(){ openLB('data:'+mime+';base64,'+data); };
+        const rm = document.createElement('button');
+        rm.textContent = '✕';
+        rm.style.cssText = 'position:absolute;top:-5px;right:-5px;background:#dc2626;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:10px;cursor:pointer;line-height:1;z-index:2';
+        rm.onclick = function(){ delete UF[key]; wrap.remove(); };
+        const sz = document.createElement('div');
+        sz.textContent = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
+        sz.style.cssText = 'font-size:9px;text-align:center;color:#64748b;margin-top:2px';
+        wrap.append(im, rm, sz);
+        preview.appendChild(wrap);
+      } else {
+        const wrap = document.createElement('div');
+        wrap.style.cssText = 'display:inline-flex;flex-direction:column;align-items:center;gap:2px;background:#f1f5f9;border-radius:8px;padding:8px;vertical-align:top;margin:3px;width:75px';
+        wrap.innerHTML = '<span style="font-size:22px">📄</span>'
+          + '<span style="font-size:9px;color:#475569;text-align:center;overflow:hidden;max-width:65px;white-space:nowrap;text-overflow:ellipsis">'+file.name.substring(0,14)+'</span>'
+          + '<span style="font-size:9px;color:#94a3b8">'+kb+'KB</span>';
+        const rm = document.createElement('button');
+        rm.textContent = '✕';
+        rm.style.cssText = 'background:none;border:none;color:#dc2626;cursor:pointer;font-size:12px;font-weight:700;margin-top:2px';
+        rm.onclick = function(){ delete UF[key]; wrap.remove(); };
         wrap.appendChild(rm);
-        if(preview) preview.appendChild(wrap);
+        preview.appendChild(wrap);
       }
     }).catch(function(){
-      toast('فشل تحميل '+file.name,'err');
+      toast('فشل تحميل: '+file.name, 'err');
     });
   });
-  setTimeout(()=>{ if(loaded>0||files.length) toast('✅ تم تحميل '+files.length+' ملف'); }, 700);
+  setTimeout(function(){
+    if(files.length) toast('✅ جاهز للرفع — '+files.length+' ملف (سيُرفع عند الحفظ)');
+  }, 800);
 }
-
 // إظهار/إخفاء حقل الحالة بحسب نوع المحطة
 function toggleStStatus(){
   const t=document.getElementById('st-type')?.value;
