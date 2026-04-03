@@ -2647,7 +2647,6 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
-      // 502/413/503 → السيرفر يرجع HTML مش JSON
       if(r.status===502||r.status===413||r.status===503){
         throw new Error(`خطأ ${r.status}`);
       }
@@ -5796,9 +5795,26 @@ function _pdfToJpg(file, quality){
 
 function compressImage(file, maxW, maxH, quality){
   return new Promise(function(resolve){
-    // PDF → تحويل للصفحة الأولى كـ JPG
+    // PDF → تحويل للصفحة الأولى كـ JPG ثم تطبيق maxW/maxH
     if(file.type==='application/pdf' || file.name.toLowerCase().endsWith('.pdf')){
-      _pdfToJpg(file, quality).then(resolve).catch(function(){
+      _pdfToJpg(file, quality).then(function(res){
+        const img=new Image();
+        img.onload=function(){
+          let w=img.width, h=img.height;
+          if(w>maxW||h>maxH){
+            const sc=Math.min(maxW/w, maxH/h);
+            w=Math.round(w*sc); h=Math.round(h*sc);
+          }
+          const c=document.createElement('canvas');
+          c.width=w; c.height=h;
+          const ctx=c.getContext('2d');
+          ctx.fillStyle='#ffffff'; ctx.fillRect(0,0,w,h);
+          ctx.drawImage(img,0,0,w,h);
+          resolve({data:c.toDataURL('image/jpeg',quality).split(',')[1], mime:'image/jpeg'});
+        };
+        img.onerror=function(){ resolve(res); };
+        img.src='data:image/jpeg;base64,'+res.data;
+      }).catch(function(){
         const r=new FileReader();
         r.onload=function(){resolve({data:r.result.split(',')[1],mime:file.type});};
         r.readAsDataURL(file);
@@ -7454,12 +7470,11 @@ function _reindexInvDvr(){
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
 async function smartUploadFile(endpoint, fileObj){
-  // الخطوات تبدأ من الحجم الحالي وتنزل — كل محاولة أصغر من السابقة
   const steps = [
-    {maxPx:900,  q:0.72},  // المحاولة الأولى  (يجب أن تنجح في الغالب)
-    {maxPx:700,  q:0.62},  // المحاولة الثانية
-    {maxPx:550,  q:0.52},  // المحاولة الثالثة
-    {maxPx:400,  q:0.45},  // المحاولة الرابعة  (ضغط قوي جداً)
+    {maxPx:900,  q:0.72},
+    {maxPx:700,  q:0.62},
+    {maxPx:550,  q:0.52},
+    {maxPx:400,  q:0.45},
   ];
 
   let {data, mime, name} = fileObj;
@@ -7470,17 +7485,19 @@ async function smartUploadFile(endpoint, fileObj){
     try{
       if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
       const result = await api('POST', endpoint, {name, data, mime});
-      return result;
+      return result; // نجح
     }catch(e){
       const msg = (e.message||'').toLowerCase();
-      const is502 = msg.includes('502') || msg.includes('413') || msg.includes('503')
+      const is502 = msg.includes('502') || msg.includes('413')
                  || msg.includes('body') || msg.includes('payload')
                  || msg.includes('entity');
 
       if(is502 && isImage && attempt < steps.length-1){
+        // ضغط الصورة أكثر وأعد المحاولة
         const next = steps[attempt+1];
         toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
         try{
+          // recompress من base64
           const dataUrl = 'data:'+mime+';base64,'+data;
           const compressed = await new Promise((res,rej)=>{
             const img = new Image();
@@ -7500,10 +7517,11 @@ async function smartUploadFile(endpoint, fileObj){
           data = compressed.data;
           mime = 'image/jpeg';
           name = name.replace(/\.[^.]+$/, '.jpg');
-          continue;
+          continue; // أعد المحاولة
         }catch(ce){ throw e; }
       }
 
+      // خطأ آخر أو PDF كبير
       if(is502){
         const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
         throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
