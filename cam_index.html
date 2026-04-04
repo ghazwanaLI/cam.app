@@ -2162,55 +2162,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <tbody id="inv-dvr-body"></tbody>
           </table>
         </div>
-        <!-- مصدر الطاقة -->
-        <div style="padding:8px 14px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
-        </div>
       </div>
 
       <!-- ملاحظات -->
       <div class="fg">
         <label class="fl">📝 ملاحظات</label>
         <textarea class="fi" dir="rtl" id="inv-notes" rows="2" style="resize:vertical;font-size:12px;text-align:right"></textarea>
-      </div>
-
-      <!-- قسم NVR -->
-      <div style="border:1.5px solid #7c3aed;border-radius:10px;overflow:hidden;margin-top:4px">
-        <div style="background:#7c3aed;color:#fff;font-weight:800;font-size:12px;padding:7px 14px;display:flex;justify-content:space-between;align-items:center">
-          <span>📹 أجهزة NVR</span>
-          <button type="button" onclick="addInvNvrRow()" class="btn btn-o btn-sm" style="color:#fff;border-color:rgba(255,255,255,.4);font-size:11px;padding:3px 10px">➕ إضافة</button>
-        </div>
-        <div style="overflow-x:auto">
-          <table style="width:100%;border-collapse:collapse;font-size:11px">
-            <thead>
-              <tr style="background:#f5f3ff">
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:34px">#</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe">موديل NVR</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:100px">طريقة الربط</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:80px">سعة الهارد</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:65px">عدد الهاردات</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:120px">فترة التسجيل</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe">ملاحظات</th>
-                <th style="padding:5px 8px;border:1px solid #ddd6fe;width:28px"></th>
-              </tr>
-            </thead>
-            <tbody id="inv-nvr-body"></tbody>
-          </table>
-        </div>
-        <!-- مصدر طاقة NVR -->
-        <div style="padding:8px 14px;background:#f5f3ff;border-top:1px solid #ddd6fe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#7c3aed">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-nvr-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-nvr-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-nvr-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-nvr-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-nvr-pw-cb"> طاقة شمسية</label>
-        </div>
       </div>
 
     </div>
@@ -4030,16 +3987,6 @@ function openInvForm(id){
   }
   if(dvrRows.length) dvrRows.forEach(r=>addInvDvrRow(r));
   else addInvDvrRow();
-  // صفوف NVR
-  const nvrTb=document.getElementById('inv-nvr-body');
-  if(nvrTb) nvrTb.innerHTML='';
-  _invNvrCount=0;
-  let nvrRows=[];
-  try{const nr=m.nvr_rows;nvrRows=Array.isArray(nr)?nr:(nr?JSON.parse(nr):[]);}catch(e){}
-  nvrRows.forEach(r=>addInvNvrRow(r));
-  // مصدر طاقة NVR
-  const nvrPw=(m.nvr_power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
-  document.querySelectorAll('.inv-nvr-pw-cb').forEach(cb=>{cb.checked=nvrPw.includes(cb.value);});
   updateInvAddress();
   document.getElementById('ov-inv').classList.add('open');
 }
@@ -4051,15 +3998,20 @@ async function saveInv(){
   const st=allStations.find(s=>s.id===stId)||{};
   const v=id=>document.getElementById(id)?.value||'';
   const camRows=getCamRows();
-  // قراءة صفوف DVR الديناميكية
-  const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr')].map(tr=>({
-    model: tr.querySelector('.inv-dvr-model-inp')?.value||'',
-    conn:  tr.querySelector('.inv-dvr-spec-sel')?.value||'IP شبكي',
-    hdd_size: tr.querySelector('.inv-hdd-size-inp')?.value||'',
-    hdd_count: parseInt(tr.querySelector('.inv-hdd-count-inp')?.value)||0,
-    storage: tr.querySelector('.inv-storage-sel')?.value||'',
-    note: tr.querySelector('.inv-dvr-note-inp')?.value||''
-  })).filter(r=>r.model||r.hdd_size||r.storage);
+  // قراءة صفوف DVR الديناميكية مع مصدر الطاقة
+  const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr.dvr-device-row')].map(tr=>{
+    const pwTr=tr.nextElementSibling;
+    const pw=pwTr?[...pwTr.querySelectorAll('.dvr-pw-cb:checked')].map(c=>c.value).join(' + '):'';
+    return {
+      model: tr.querySelector('.inv-dvr-model-inp')?.value||'',
+      conn:  tr.querySelector('.inv-dvr-spec-sel')?.value||'IP شبكي',
+      hdd_size: tr.querySelector('.inv-hdd-size-inp')?.value||'',
+      hdd_count: parseInt(tr.querySelector('.inv-hdd-count-inp')?.value)||0,
+      storage: tr.querySelector('.inv-storage-sel')?.value||'',
+      note: tr.querySelector('.inv-dvr-note-inp')?.value||'',
+      power: pw
+    };
+  }).filter(r=>r.model||r.hdd_size||r.storage);
   const dvr1=dvrRows[0]||{};
   const body={
     station_id:stId,station_name:st.name||'',district:st.district||'',
@@ -4067,16 +4019,7 @@ async function saveInv(){
     hdd_size:dvr1.hdd_size||'',hdd_count:dvr1.hdd_count||0,
     storage_days:dvr1.storage||'',
     dvr_rows:JSON.stringify(dvrRows),
-    power_source:[...document.querySelectorAll('.inv-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
-    nvr_rows:JSON.stringify([...document.querySelectorAll('#inv-nvr-body tr')].map(tr=>({
-      model: tr.querySelector('.inv-nvr-model-inp')?.value||'',
-      conn:  tr.querySelector('.inv-nvr-spec-sel')?.value||'IP شبكي',
-      hdd_size: tr.querySelector('.inv-nvr-hdd-size-inp')?.value||'',
-      hdd_count: parseInt(tr.querySelector('.inv-nvr-hdd-count-inp')?.value)||0,
-      storage: tr.querySelector('.inv-nvr-storage-sel')?.value||'',
-      note: tr.querySelector('.inv-nvr-note-inp')?.value||''
-    })).filter(r=>r.model||r.hdd_size||r.storage)),
-    nvr_power_source:[...document.querySelectorAll('.inv-nvr-pw-cb:checked')].map(c=>c.value).join(' + ')||'',
+    power_source:dvrRows[0]?.power||'',
     phone:v('inv-phone'),coords:v('inv-coords'),notes:v('inv-notes'),
     cam_rows:JSON.stringify(camRows),
     cam_indoor:camRows.reduce((a,r)=>a+(+r.indoor||0),0),
@@ -4168,6 +4111,22 @@ function printInvSingle(id){
     dvrRows='<tr><td colspan="8" style="text-align:center;padding:10px;color:#999;border:1px solid #ddd">لا توجد بيانات أجهزة تسجيل</td></tr>';
   } else {
     filledDvrs.forEach(function(r,i){
+      // مصدر الطاقة لكل جهاز
+      var pwList=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
+      var pwSavedR=(r.power||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
+      var rowPwHtml='';
+      if(pwSavedR.length){
+        rowPwHtml='<div style="display:flex;flex-wrap:wrap;gap:3px 6px">';
+        pwList.forEach(function(p){
+          if(pwSavedR.indexOf(p)>=0){
+            rowPwHtml+='<span style="font-size:9px;display:inline-flex;align-items:center;gap:2px">'+
+              '<span style="background:#166534;color:#fff;width:11px;height:11px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px">✓</span>'+p+'</span>';
+          }
+        });
+        rowPwHtml+='</div>';
+      } else {
+        rowPwHtml='<span style="color:#999;font-size:9px">—</span>';
+      }
       dvrRows+='<tr>'+
         '<td style="text-align:center;border:1px solid #555;font-weight:800;font-size:10px">'+(i+1)+'</td>'+
         '<td style="border:1px solid #555;padding:2px 6px;font-weight:700;font-size:10px">'+(r.model||'')+'</td>'+
@@ -4175,7 +4134,7 @@ function printInvSingle(id){
         '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#1d4ed8">'+(r.hdd_size||'')+'</td>'+
         '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#7c3aed">'+(r.hdd_count||'')+'</td>'+
         '<td style="text-align:center;border:1px solid #555;font-size:10px">'+(r.storage||'')+'</td>'+
-        '<td style="padding:2px 6px;border:1px solid #555">'+(i===0?pwHtml:'')+'</td>'+
+        '<td style="padding:2px 6px;border:1px solid #555">'+rowPwHtml+'</td>'+
         '<td style="border:1px solid #555;font-size:10px;padding:2px 5px">'+(r.note||'')+'</td>'+
       '</tr>';
     });
@@ -4228,42 +4187,6 @@ function printInvSingle(id){
     '</tr>';
   }
 
-  /* ── صفوف NVR ── */
-  var nvrs=[];
-  try{var nr=x.nvr_rows;nvrs=Array.isArray(nr)?nr:(nr?JSON.parse(nr):[]);}catch(e){}
-  var filledNvrs=nvrs.filter(function(r){return r.model||r.hdd_size||r.storage;});
-  var nvrPw=x.nvr_power_source||'';
-
-  var nvrRows='';
-  if(!filledNvrs.length){
-    nvrRows='<tr><td colspan="8" style="text-align:center;padding:10px;color:#999;border:1px solid #ddd">لا توجد بيانات NVR</td></tr>';
-  } else {
-    var nvrPwHtml='<div style="display:flex;flex-wrap:wrap;gap:3px 8px">';
-    var pwListN=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
-    var pwSavedN=(nvrPw||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
-    pwListN.forEach(function(p){
-      if(pwSavedN.indexOf(p)>=0){
-        nvrPwHtml+='<span style="font-size:9px;display:inline-flex;align-items:center;gap:2px">'+
-          '<span style="background:#7c3aed;color:#fff;width:11px;height:11px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px">✓</span>'+p+'</span>';
-      }
-    });
-    nvrPwHtml+='</div>';
-    if(!pwSavedN.length) nvrPwHtml='<span style="color:#999;font-size:9px">—</span>';
-
-    filledNvrs.forEach(function(r,i){
-      nvrRows+='<tr>'+
-        '<td style="text-align:center;border:1px solid #555;font-weight:800;font-size:10px">'+(i+1)+'</td>'+
-        '<td style="border:1px solid #555;padding:2px 6px;font-weight:700;font-size:10px">'+(r.model||'')+'</td>'+
-        '<td style="text-align:center;border:1px solid #555;font-size:10px">'+(r.conn||'')+'</td>'+
-        '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#1d4ed8">'+(r.hdd_size||'')+'</td>'+
-        '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#7c3aed">'+(r.hdd_count||'')+'</td>'+
-        '<td style="text-align:center;border:1px solid #555;font-size:10px">'+(r.storage||'')+'</td>'+
-        '<td style="padding:2px 6px;border:1px solid #555">'+(i===0?nvrPwHtml:'')+'</td>'+
-        '<td style="border:1px solid #555;font-size:10px;padding:2px 5px">'+(r.note||'')+'</td>'+
-      '</tr>';
-    });
-  }
-
   /* ── فتح نافذة طباعة جديدة ── */
   var w=window.open('','_blank','width=1000,height=750');
   w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'+
@@ -4304,13 +4227,6 @@ function printInvSingle(id){
       '<th style="width:58px">عدد الهاردات</th><th style="width:88px">فترة التسجيل</th>'+
       '<th style="width:140px">مصدر الطاقة</th><th>الملاحظات</th>'+
     '</tr></thead><tbody>'+dvrRows+'</tbody></table>'+
-    '<div class="sh" style="margin-top:10px;background:#7c3aed">📹 أجهزة NVR</div>'+
-    '<table><thead><tr>'+
-      '<th style="width:28px">#</th><th>موديل NVR</th>'+
-      '<th style="width:70px">طريقة الربط</th><th style="width:65px">سعة الهارد (TB)</th>'+
-      '<th style="width:58px">عدد الهاردات</th><th style="width:88px">فترة التسجيل</th>'+
-      '<th style="width:140px">مصدر الطاقة</th><th>الملاحظات</th>'+
-    '</tr></thead><tbody>'+nvrRows+'</tbody></table>'+
     '<div class="sigs">'+
       '<div class="sig-box"><div class="sig-line"></div><div style="font-size:11px;font-weight:700">مسؤول وحدة كاميرات المراقبة</div></div>'+
       '<div class="sig-box"><div class="sig-line"></div><div style="font-size:11px;font-weight:700">مدير فرع صلاح الدين</div></div>'+
@@ -7510,7 +7426,19 @@ function addInvDvrRow(data={}){
   if(!tb) return;
   const storOpts = ['','90 يوم فما فوق','6 أشهر فما فوق','30 يوم','60 يوم','سنة فما فوق']
     .map(o=>`<option value="${o}"${(data.storage||'')===o?' selected':''}>${o||'— اختر —'}</option>`).join('');
+  const pwSaved=(data.power||'').split('+').map(s=>s.trim()).filter(Boolean);
+  const pwOpts=[
+    {v:'كهرباء وطني',l:'⚡ وطني'},
+    {v:'مولد',l:'🔋 مولد'},
+    {v:'عاكسة 4KVA',l:'🔌 عاكسة'},
+    {v:'UPS',l:'UPS'},
+    {v:'طاقة شمسية',l:'☀️ شمسية'}
+  ].map(p=>`<label style="display:inline-flex;align-items:center;gap:3px;font-size:10px;cursor:pointer;white-space:nowrap">
+    <input type="checkbox" class="dvr-pw-cb" value="${p.v}"${pwSaved.includes(p.v)?' checked':''}> ${p.l}
+  </label>`).join('');
+
   const tr = document.createElement('tr');
+  tr.className='dvr-device-row';
   tr.innerHTML=`
     <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;font-weight:800;color:#1d4ed8;font-size:11px">${i}</td>
     <td style="padding:2px 4px;border:1px solid #dbeafe">
@@ -7535,57 +7463,23 @@ function addInvDvrRow(data={}){
       <input class="fi inv-dvr-note-inp" type="text" value="${data.note||''}" placeholder="ملاحظة..." style="width:100%;font-size:11px;padding:3px 6px">
     </td>
     <td style="padding:2px 4px;border:1px solid #dbeafe;text-align:center">
-      <button type="button" onclick="this.closest('tr').remove();_reindexInvDvr()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
+      <button type="button" onclick="this.closest('.dvr-device-row').nextElementSibling.remove();this.closest('.dvr-device-row').remove();_reindexInvDvr()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
     </td>`;
   tb.appendChild(tr);
+
+  // صف مصدر الطاقة
+  const pwTr = document.createElement('tr');
+  pwTr.className='dvr-pw-row';
+  pwTr.innerHTML=`<td colspan="8" style="padding:4px 10px;background:#f0f7ff;border:1px solid #dbeafe;border-top:none">
+    <span style="font-size:10px;font-weight:700;color:#1d4ed8;margin-left:8px">⚡ مصدر الطاقة:</span>
+    ${pwOpts}
+  </td>`;
+  tb.appendChild(pwTr);
 }
 function _reindexInvDvr(){
-  document.querySelectorAll('#inv-dvr-body tr').forEach((tr,i)=>{
-    const c=tr.cells[0]; if(c)c.textContent=i+1;
-  });
-}
-
-// ── إضافة صف NVR ديناميكي ──
-let _invNvrCount = 0;
-function addInvNvrRow(data={}){
-  _invNvrCount++;
-  const i = _invNvrCount;
-  const tb = document.getElementById('inv-nvr-body');
-  if(!tb) return;
-  const storOpts = ['','90 يوم فما فوق','6 أشهر فما فوق','30 يوم','60 يوم','سنة فما فوق']
-    .map(o=>`<option value="${o}"${(data.storage||'')===o?' selected':''}>${o||'— اختر —'}</option>`).join('');
-  const tr = document.createElement('tr');
-  tr.innerHTML=`
-    <td style="padding:3px 6px;border:1px solid #ede9fe;text-align:center;font-weight:800;color:#7c3aed;font-size:11px">${i}</td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <input class="fi inv-nvr-model-inp" type="text" value="${data.model||''}" placeholder="مثال: NVR 32ch Hikvision" style="width:100%;font-size:11px;padding:3px 6px">
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <select class="fi inv-nvr-spec-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">
-        <option value="IP شبكي"${(data.conn||'IP شبكي')==='IP شبكي'?' selected':''}>IP شبكي</option>
-        <option value="Coaxial"${data.conn==='Coaxial'?' selected':''}>Coaxial</option>
-      </select>
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <input class="fi inv-nvr-hdd-size-inp" type="text" value="${data.hdd_size||''}" placeholder="8 TB" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <input class="fi inv-nvr-hdd-count-inp" type="number" min="0" value="${data.hdd_count||0}" style="width:100%;font-size:11px;padding:3px 6px;text-align:center">
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <select class="fi inv-nvr-storage-sel" dir="rtl" style="width:100%;font-size:11px;padding:3px 6px">${storOpts}</select>
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe">
-      <input class="fi inv-nvr-note-inp" type="text" value="${data.note||''}" placeholder="ملاحظة..." style="width:100%;font-size:11px;padding:3px 6px">
-    </td>
-    <td style="padding:2px 4px;border:1px solid #ede9fe;text-align:center">
-      <button type="button" onclick="this.closest('tr').remove();_reindexInvNvr()" style="background:#ede9fe;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#7c3aed;font-size:12px;font-weight:900">✕</button>
-    </td>`;
-  tb.appendChild(tr);
-}
-function _reindexInvNvr(){
-  document.querySelectorAll('#inv-nvr-body tr').forEach((tr,i)=>{
-    const c=tr.cells[0]; if(c)c.textContent=i+1;
+  let idx=1;
+  document.querySelectorAll('#inv-dvr-body tr.dvr-device-row').forEach(tr=>{
+    const c=tr.cells[0]; if(c)c.textContent=idx++;
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
@@ -7669,32 +7563,22 @@ function exportInvExcel(id){
 
   loadXLSX().then(()=>{
     const wb = XLSX.utils.book_new();
-
     list.forEach(x=>{
-      // ── كاميرات ──
+      // كاميرات
       let cams=[];
       try{const cr=x.cam_rows;cams=Array.isArray(cr)?cr:(cr?JSON.parse(cr):[]);}catch(e){}
-      if(!cams.length&&(+x.cam_count||0)>0)
-        cams=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||+x.cam_count||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||'',note:''}];
+      if(!cams.length&&(+x.cam_count||0)>0) cams=[{type:x.cam_spec||'IP',indoor:+x.cam_indoor||+x.cam_count||0,outdoor:+x.cam_outdoor||0,lens:x.cam_res||'',note:''}];
       const filledCams=cams.filter(r=>(parseInt(r.indoor)||0)>0||(parseInt(r.outdoor)||0)>0||(r.lens&&r.lens!='—')||r.note);
       const camIn=filledCams.reduce((a,r)=>a+(parseInt(r.indoor)||0),0);
       const camOut=filledCams.reduce((a,r)=>a+(parseInt(r.outdoor)||0),0);
       const total=camIn+camOut||+x.cam_count||0;
 
-      // ── DVR ──
+      // DVR مع مصدر الطاقة لكل صف
       let dvrs=[];
       try{const dr=x.dvr_rows;dvrs=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
-      if(!dvrs.length&&(x.dvr_model||x.dvr))
-        dvrs=[{model:x.dvr_model||x.dvr||'',conn:x.dvr_spec||'IP شبكي',hdd_size:x.hdd_size||'',hdd_count:x.hdd_count||0,storage:x.storage_days||x.storage||'',note:''}];
+      if(!dvrs.length&&(x.dvr_model||x.dvr)) dvrs=[{model:x.dvr_model||x.dvr||'',conn:x.dvr_spec||'IP شبكي',hdd_size:x.hdd_size||'',hdd_count:x.hdd_count||0,storage:x.storage_days||x.storage||'',note:'',power:x.power_source||''}];
       const filledDvrs=dvrs.filter(r=>r.model||r.hdd_size||r.storage);
 
-      // ── NVR ──
-      let nvrs=[];
-      try{const nr=x.nvr_rows;nvrs=Array.isArray(nr)?nr:(nr?JSON.parse(nr):[]);}catch(e){}
-      const filledNvrs=nvrs.filter(r=>r.model||r.hdd_size||r.storage);
-
-      const pw=(x.power_source||x.power||'').replace(/\+/g,' + ');
-      const nvrPw=(x.nvr_power_source||'').replace(/\+/g,' + ');
       const stName=x.station_name||x.station||'—';
       const district=x.district||'';
       const address='محافظة صلاح الدين'+(district?' — قضاء '+district+' — مركز القضاء':'');
@@ -7703,10 +7587,8 @@ function exportInvExcel(id){
       const aoa=[]; const merges=[]; let r=0;
 
       // عنوان
-      aoa.push(['استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي','','','','','','']);
-      merges.push({s:{r,c:0},e:{r,c:6}}); r++;
-      aoa.push(['('+stName+')','','','','','','']);
-      merges.push({s:{r,c:0},e:{r,c:6}}); r++;
+      aoa.push(['استمارة جرد كاميرات المراقبة وأجهزة التسجيل الفيديوي','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
+      aoa.push(['('+stName+')','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
       aoa.push([]); r++;
 
       // معلومات
@@ -7729,18 +7611,16 @@ function exportInvExcel(id){
       }
       aoa.push([]); r++;
 
-      // جدول DVR
+      // جدول أجهزة التسجيل
       aoa.push(['🎥 أجهزة التسجيل الفيديوي','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
       aoa.push(['#','نوع جهاز التسجيل','طريقة الربط','سعة الهارد (TB)','عدد الهاردات','فترة التسجيل','مصدر الطاقة']); r++;
       if(!filledDvrs.length){ aoa.push(['لا توجد بيانات أجهزة تسجيل','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
-      } else { filledDvrs.forEach((d,i)=>{ aoa.push([i+1,d.model||'',d.conn||'',d.hdd_size||'',d.hdd_count||'',d.storage||'',i===0?pw:'']); r++; }); }
-      aoa.push([]); r++;
-
-      // جدول NVR
-      aoa.push(['📹 أجهزة NVR','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
-      aoa.push(['#','موديل NVR','طريقة الربط','سعة الهارد (TB)','عدد الهاردات','فترة التسجيل','مصدر الطاقة']); r++;
-      if(!filledNvrs.length){ aoa.push(['لا توجد بيانات NVR','','','','','','']); merges.push({s:{r,c:0},e:{r,c:6}}); r++;
-      } else { filledNvrs.forEach((d,i)=>{ aoa.push([i+1,d.model||'',d.conn||'',d.hdd_size||'',d.hdd_count||'',d.storage||'',i===0?nvrPw:'']); r++; }); }
+      } else {
+        filledDvrs.forEach((d,i)=>{
+          aoa.push([i+1, d.model||'', d.conn||'', d.hdd_size||'', d.hdd_count||'', d.storage||'', (d.power||'').replace(/\+/g,' + ')]);
+          r++;
+        });
+      }
       aoa.push([]); r++;
 
       // التوقيعات
@@ -7748,20 +7628,20 @@ function exportInvExcel(id){
       aoa.push(['التوقيع : ___________________','','','','التوقيع : ___________________','','']); merges.push({s:{r,c:0},e:{r,c:3}}); merges.push({s:{r,c:4},e:{r,c:6}}); r++;
 
       const ws = XLSX.utils.aoa_to_sheet(aoa);
-      ws['!merges'] = merges;
-      ws['!cols'] = [{wch:20},{wch:22},{wch:14},{wch:14},{wch:16},{wch:22},{wch:18}];
-      ws['!dir'] = 'rtl';
-      const shName = stName.substring(0,28).replace(/[\\\/\?\*\[\]:]/g,'');
+      ws['!merges']=merges;
+      ws['!cols']=[{wch:20},{wch:22},{wch:16},{wch:14},{wch:16},{wch:22},{wch:22}];
+      ws['!dir']='rtl';
+      const shName=stName.substring(0,28).replace(/[\\\/\?\*\[\]:]/g,'');
       XLSX.utils.book_append_sheet(wb, ws, shName||('محطة_'+x.id));
     });
 
     const fname = id
       ? 'جرد_'+(list[0]?.station_name||id)+'_'+new Date().toISOString().split('T')[0]+'.xlsx'
       : 'جرد_الكاميرات_'+new Date().toISOString().split('T')[0]+'.xlsx';
-    const out = XLSX.write(wb,{bookType:'xlsx',type:'array'});
-    const blob = new Blob([out],{type:'application/octet-stream'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const out=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+    const blob=new Blob([out],{type:'application/octet-stream'});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
     a.href=url; a.download=fname;
     document.body.appendChild(a); a.click();
     setTimeout(()=>{URL.revokeObjectURL(url);a.remove();},2000);
