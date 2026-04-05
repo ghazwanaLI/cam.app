@@ -2,7 +2,7 @@
 """
 نظام إدارة كاميرات المراقبة
 """
-import json, os, hashlib, uuid, base64, io, threading, copy
+import json, os, hashlib, uuid, base64, io, urllib.request, threading, copy
 from http.server import HTTPServer, BaseHTTPRequestHandler
 from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
@@ -13,6 +13,30 @@ DATABASE_URL = os.environ.get("DATABASE_URL", "")
 USE_DB = bool(DATABASE_URL)
 DB_FILE = "cam_db.json"
 
+# ── Supabase Storage ──
+SB_URL    = "https://vcgfmmdpjpiktkyorili.supabase.co"
+SB_KEY    = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o"
+SB_BUCKET = "Cam-files"
+USE_SB    = bool(SB_URL and SB_KEY)
+
+def sb_upload(name, data_b64, mime):
+    """رفع ملف لـ Supabase وإرجاع الـ URL العام"""
+    try:
+        raw = base64.b64decode(data_b64)
+        ext = "pdf" if mime == "application/pdf" else "jpg"
+        path = f"{uuid.uuid4().hex[:12]}.{ext}"
+        url = f"{SB_URL}/storage/v1/object/{SB_BUCKET}/{path}"
+        req = urllib.request.Request(url, data=raw, method="POST")
+        req.add_header("Authorization", f"Bearer {SB_KEY}")
+        req.add_header("Content-Type", mime)
+        req.add_header("x-upsert", "true")
+        with urllib.request.urlopen(req, timeout=30) as r:
+            r.read()
+        return f"{SB_URL}/storage/v1/object/public/{SB_BUCKET}/{path}"
+    except Exception as e:
+        print(f"[Supabase upload error] {e}")
+        return None
+
 def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
@@ -22,13 +46,13 @@ _pg_pool_lock = threading.Lock()
 _PG_POOL_MAX  = 5
 
 def get_conn():
-    import pg8000, urllib.parse
+    import pg8000, urllib.parse as _up
     with _pg_pool_lock:
         while _pg_pool:
             conn = _pg_pool.pop()
             try: conn.run("SELECT 1"); return conn
             except: pass
-    r = urllib.parse.urlparse(DATABASE_URL)
+    r = _up.urlparse(DATABASE_URL)
     return pg8000.connect(host=r.hostname, port=r.port or 5432,
         database=r.path.lstrip("/"), user=r.username, password=r.password, ssl_context=True)
 
@@ -140,6 +164,17 @@ def _pg_write_safe(db):
     except Exception as e: print(f"[DB write error] {e}")
 
 def save_file(key,name,data,mime):
+    # إذا الـ data هو URL مسبقاً (من Supabase) → حفظ مباشرة
+    if data and data.startswith("http"):
+        if USE_DB: pg_save_file(key,name,data,mime); return
+        db=load_db(); db["files"][key]={"name":name,"data":data,"mime":mime}; save_db(db); return
+    # محاولة رفع لـ Supabase أولاً
+    if USE_SB and data:
+        url = sb_upload(name, data, mime or "image/jpeg")
+        if url:
+            if USE_DB: pg_save_file(key,name,url,mime); return
+            db=load_db(); db["files"][key]={"name":name,"data":url,"mime":mime}; save_db(db); return
+    # fallback: حفظ base64 في قاعدة البيانات
     if USE_DB: pg_save_file(key,name,data,mime); return
     db=load_db(); db["files"][key]={"name":name,"data":data,"mime":mime}; save_db(db)
 
