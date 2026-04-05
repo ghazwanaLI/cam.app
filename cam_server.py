@@ -689,7 +689,7 @@ class Handler(BaseHTTPRequestHandler):
                 "password":hash_pw(body.get("password","")),"role":role,"active":True,
                 "district":body.get("district",""),
                 "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True} if role=="admin"
-                    else body.get("perms",{"view":True,"edit":False,"del":False,"files":False,"reports":False})}
+                    else body.get("perms",{"view":True,"edit":True,"del":False,"files":True,"reports":False})}
             db["users"].append(nu); save_db(db)
             self.send_json({"ok":True,"user":{k:v for k,v in nu.items() if k!="password"}})
 
