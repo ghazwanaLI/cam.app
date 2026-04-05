@@ -2,8 +2,9 @@
 """
 نظام إدارة كاميرات المراقبة
 """
-import json, os, hashlib, uuid, base64, io
+import json, os, hashlib, uuid, base64, io, threading, copy
 from http.server import HTTPServer, BaseHTTPRequestHandler
+from socketserver import ThreadingMixIn
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime, timedelta, timedelta
 
@@ -15,12 +16,29 @@ DB_FILE = "cam_db.json"
 def hash_pw(pw):
     return hashlib.sha256(pw.encode()).hexdigest()
 
-# ── PostgreSQL ──
+# ── PostgreSQL Connection Pool ──
+_pg_pool      = []
+_pg_pool_lock = threading.Lock()
+_PG_POOL_MAX  = 5
+
 def get_conn():
     import pg8000, urllib.parse
+    with _pg_pool_lock:
+        while _pg_pool:
+            conn = _pg_pool.pop()
+            try: conn.run("SELECT 1"); return conn
+            except: pass
     r = urllib.parse.urlparse(DATABASE_URL)
-    return pg8000.connect(host=r.hostname,port=r.port or 5432,
-        database=r.path.lstrip("/"),user=r.username,password=r.password,ssl_context=True)
+    return pg8000.connect(host=r.hostname, port=r.port or 5432,
+        database=r.path.lstrip("/"), user=r.username, password=r.password, ssl_context=True)
+
+def release_conn(conn):
+    with _pg_pool_lock:
+        if len(_pg_pool) < _PG_POOL_MAX:
+            _pg_pool.append(conn)
+        else:
+            try: conn.close()
+            except: pass
 
 def init_pg():
     conn=get_conn(); cur=conn.cursor()
@@ -34,58 +52,92 @@ def init_pg():
     if not cur.fetchone():
         cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[json.dumps(default_db(),ensure_ascii=False)])
         conn.commit()
-    cur.close(); conn.close()
+    cur.close(); release_conn(conn)
 
 def pg_load():
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT value FROM cam_store WHERE key='data'")
-    row=cur.fetchone(); cur.close(); conn.close()
-    return json.loads(row[0])
+    conn=get_conn()
+    try:
+        cur=conn.cursor(); cur.execute("SELECT value FROM cam_store WHERE key='data'")
+        row=cur.fetchone(); cur.close(); return json.loads(row[0])
+    finally: release_conn(conn)
 
 def pg_save(db):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_save_file(key,name,data,mime):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("INSERT INTO cam_files(key,name,data,mime) VALUES(%s,%s,%s,%s) ON CONFLICT(key) DO UPDATE SET name=%s,data=%s,mime=%s",[key,name,data,mime,name,data,mime])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("INSERT INTO cam_files(key,name,data,mime) VALUES(%s,%s,%s,%s) ON CONFLICT(key) DO UPDATE SET name=%s,data=%s,mime=%s",[key,name,data,mime,name,data,mime])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_load_file(key):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
-    row=cur.fetchone(); cur.close(); conn.close()
-    return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+    conn=get_conn()
+    try:
+        cur=conn.cursor(); cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
+        row=cur.fetchone(); cur.close()
+        return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+    finally: release_conn(conn)
 
 def pg_del_file(key):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
-    conn.commit(); cur.close(); conn.close()
+    conn=get_conn()
+    try:
+        cur=conn.cursor(); cur.execute("DELETE FROM cam_files WHERE key=%s",[key])
+        conn.commit(); cur.close()
+    finally: release_conn(conn)
 
 def pg_add_log(user,action,details,ip=""):
     try:
-        conn=get_conn(); cur=conn.cursor()
-        cur.execute("INSERT INTO cam_logs(user_name,user_fullname,action,details,ip) VALUES(%s,%s,%s,%s,%s)",
-            [user.get("username",""),user.get("fullname",""),action,details,ip])
-        conn.commit(); cur.close(); conn.close()
+        conn=get_conn()
+        try:
+            cur=conn.cursor()
+            cur.execute("INSERT INTO cam_logs(user_name,user_fullname,action,details,ip) VALUES(%s,%s,%s,%s,%s)",
+                [user.get("username",""),user.get("fullname",""),action,details,ip])
+            conn.commit(); cur.close()
+        finally: release_conn(conn)
     except: pass
 
 def pg_get_logs(limit=100):
-    conn=get_conn(); cur=conn.cursor()
-    cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
-    rows=cur.fetchall(); cur.close(); conn.close()
-    return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+    conn=get_conn()
+    try:
+        cur=conn.cursor()
+        cur.execute("SELECT id,user_name,user_fullname,action,details,ip,created_at FROM cam_logs ORDER BY created_at DESC LIMIT %s",[limit])
+        rows=cur.fetchall(); cur.close()
+        return [{"id":r[0],"username":r[1],"fullname":r[2],"action":r[3],"details":r[4],"ip":r[5],"time":str(r[6])} for r in rows]
+    finally: release_conn(conn)
+
+# ── كاش قاعدة البيانات في الذاكرة ──
+_db_cache = None
+_db_lock  = threading.RLock()
 
 def load_db():
-    if USE_DB: return pg_load()
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE,"r",encoding="utf-8") as f: return json.load(f)
-    db=default_db(); save_db(db); return db
+    global _db_cache
+    with _db_lock:
+        if _db_cache is None:
+            if USE_DB: _db_cache = pg_load()
+            elif os.path.exists(DB_FILE):
+                with open(DB_FILE,"r",encoding="utf-8") as f: _db_cache = json.load(f)
+            else: _db_cache = default_db()
+        return copy.deepcopy(_db_cache)
 
 def save_db(db):
-    if USE_DB: pg_save(db); return
-    with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
+    global _db_cache
+    with _db_lock: _db_cache = db
+    if USE_DB:
+        snap = copy.deepcopy(db)
+        threading.Thread(target=_pg_write_safe, args=(snap,), daemon=True).start()
+    else:
+        with open(DB_FILE,"w",encoding="utf-8") as f: json.dump(db,f,ensure_ascii=False,indent=2)
+
+def _pg_write_safe(db):
+    try: pg_save(db)
+    except Exception as e: print(f"[DB write error] {e}")
 
 def save_file(key,name,data,mime):
     if USE_DB: pg_save_file(key,name,data,mime); return
@@ -461,7 +513,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["tours"].append(tour); save_db(db)
             add_log_safe(u,"إضافة جولة",f"جولة: {station.get('name','')} - {tour['date']}",self.ip())
-            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','', urgent=True)} | التاريخ: {tour['date']} | الفني: {tour['technician']}")
+            add_notification(db, u, "إضافة جولة ميدانية", f"محطة: {station.get('name','')} | التاريخ: {tour['date']} | الفني: {tour['technician']}", urgent=True)
             save_db(db)
             self.send_json({"ok":True,"tour":tour})
 
@@ -477,7 +529,7 @@ class Handler(BaseHTTPRequestHandler):
             }
             db["maintenance"].append(maint); save_db(db)
             add_log_safe(u,"إضافة صيانة",f"صيانة: {station.get('name','')} - {maint['device_type']}",self.ip())
-            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','', urgent=True)} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}")
+            add_notification(db, u, "إضافة صيانة ميدانية", f"محطة: {station.get('name','')} | الجهاز: {maint['device_type']} | السبب: {maint['reason']}", urgent=True)
             save_db(db)
             self.send_json({"ok":True,"maintenance":maint})
 
@@ -611,8 +663,6 @@ class Handler(BaseHTTPRequestHandler):
                 "cam_rows":body.get("cam_rows",""),
                 "dvr_rows":body.get("dvr_rows",""),
                 "power_source":body.get("power_source",""),
-                "nvr_rows":body.get("nvr_rows",""),
-                "nvr_power_source":body.get("nvr_power_source",""),
                 "phone":body.get("phone",""),"coords":body.get("coords",""),
                 "poe_count":body.get("poe_count",0),"poe_spec":body.get("poe_spec",""),
                 "ups_count":body.get("ups_count",0),"ups_spec":body.get("ups_spec",""),
@@ -676,7 +726,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["tours"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—', urgent=True)} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
+            add_notification(db, u, "تعديل جولة ميدانية", f"جولة المحطة: {db['tours'][idx].get('station_name','—')} | التاريخ: {db['tours'][idx].get('date','')}"); save_db(db); self.send_json({"ok":True,"tour":db["tours"][idx]})
 
         elif p.startswith("/api/maintenance/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
@@ -687,7 +737,7 @@ class Handler(BaseHTTPRequestHandler):
             if "station_id" in body:
                 st=next((s for s in db["stations"] if s["id"]==body["station_id"]),{})
                 db["maintenance"][idx]["station_name"]=st.get("name","")
-            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—', urgent=True)}"); save_db(db); self.send_json({"ok":True})
+            add_notification(db, u, "تعديل صيانة ميدانية", f"صيانة المحطة: {db['maintenance'][idx].get('station_name','—')}"); save_db(db); self.send_json({"ok":True})
 
         elif p.startswith("/api/cameras/"):
             if not self.can(u,"edit"): self.send_json({"error":"لا صلاحية"},403); return
@@ -709,7 +759,7 @@ class Handler(BaseHTTPRequestHandler):
             fields=["station_id","station_name","district","status",
                     "dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","storage_days",
                     "cam_count","cam_spec","cam_res","cam_indoor","cam_outdoor","cam_rows","dvr_rows",
-                    "power_source","nvr_rows","nvr_power_source","phone","coords",
+                    "power_source","phone","coords",
                     "poe_count","poe_spec","ups_count","ups_spec","notes"]
             for f in fields:
                 if f in body: db["inventory"][idx][f]=body[f]
@@ -835,11 +885,14 @@ class Handler(BaseHTTPRequestHandler):
             key="/".join(p.split("/")[3:]); del_file(key); self.send_json({"ok":True})
         else: self.send_json({"error":"غير موجود"},404)
 
+class ThreadedHTTPServer(ThreadingMixIn, HTTPServer):
+    daemon_threads = True
+
 if __name__=="__main__":
     if USE_DB:
         print("⏳ تهيئة قاعدة البيانات...")
         init_pg()
-    server=HTTPServer(("0.0.0.0",PORT),Handler)
+    server=ThreadedHTTPServer(("0.0.0.0",PORT),Handler)
     print(f"\n  📹  نظام إدارة كاميرات المراقبة")
     print(f"  ✅  السيرفر يعمل على المنفذ {PORT}")
     print(f"  🌐  http://localhost:{PORT}\n")
