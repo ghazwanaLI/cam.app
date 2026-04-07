@@ -2647,9 +2647,7 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
-      if(r.status===502||r.status===413||r.status===503){
-        throw new Error(`خطأ ${r.status}`);
-      }
+      if(r.status===502||r.status===413||r.status===503){throw new Error(`خطأ ${r.status}`);}
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
       return d;
@@ -4855,7 +4853,7 @@ async function saveTour(){
     const tid=id||r.id;
     for(const fk of ['tour_img','tour_rep','tour_doc']){
       if(UF[fk]){
-        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
+        await smartUploadFile('/api/files/tour_'+tid+'_'+fk, UF[fk]);
         delete UF[fk];
       }
     }
@@ -5385,9 +5383,7 @@ async function saveQuickCircular(){
         await Promise.all(uploads.map(qk=>{
           // استخدم رقم المرفق الأصلي: qcirc_1→circ_1, qcirc_2→circ_2
           const fileKey=qk.replace('qcirc_','circ_');
-          return api('POST','/api/files/circ_'+cid+'_'+fileKey,{
-            name:UF[qk].name, data:UF[qk].data, mime:UF[qk].mime
-          }).catch(e=>console.error('upload err:',qk,e));
+          return smartUploadFile('/api/files/circ_'+cid+'_'+fileKey, UF[qk]).catch(e=>console.error('upload err:',qk,e));
         }));
         // تنظيف
         qkeys.forEach(k=>{
@@ -5429,9 +5425,7 @@ async function saveCircular(){
       const fileKeys=['circ_1','circ_2','circ_3'];
       const uploads=fileKeys.filter(k=>UF[k]);
       await Promise.all(uploads.map(k=>
-        api('POST','/api/files/circ_'+cid+'_'+k, {
-          name:UF[k].name, data:UF[k].data, mime:UF[k].mime
-        }).catch(e=>console.error('file upload error:',k,e))
+        smartUploadFile('/api/files/circ_'+cid+'_'+k, UF[k]).catch(e=>console.error('file upload error:',k,e))
       ));
       // تنظيف حقول الملفات
       fileKeys.forEach(k=>{
@@ -5727,9 +5721,9 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    const _src=_fileSrc(d);
-    if(_isImg(d)) openLB(_src);
-    else{ const a=document.createElement('a');a.href=_src;a.download=d.name||'file';a.target='_blank';a.click(); }
+    const _vs=_fileSrc(d);
+    if(_isImg(d)) openLB(_vs);
+    else{ const a=document.createElement('a');a.href=_vs;a.download=d.name||'file';a.target='_blank';a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -5953,8 +5947,8 @@ function showMaintFiles(mid){
         repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
         repInp.onchange=function(ev){
           const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,1280,1280,0.85).then(function(res){
-            return api('POST','/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+          compressImage(file,900,900,0.75).then(function(res){
+            return smartUploadFile('/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-maint-files');
@@ -6953,7 +6947,7 @@ function toggleCircImg(cid, btn){
         return;
       }
       const mime = d.mime || 'image/jpeg';
-      const src  = _fileSrc(d);
+      const src=_fileSrc(d);
       imgDiv.innerHTML = '';
 
       // الصورة
@@ -7453,90 +7447,75 @@ function _reindexInvDvr(){
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
+
 // ══ Supabase Storage — رفع مباشر من المتصفح ══
 const _SB_URL    = 'https://vcgfmmdpjpiktkyorili.supabase.co';
 const _SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
 const _SB_BUCKET = 'Cam-files';
 
-// تحويل base64 إلى Blob
-function _b64toBlob(b64, mime){
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
+// رفع blob لـ Supabase وإرجاع URL عام
+async function _sbUpload(b64, mime){
+  const bin=atob(b64), arr=new Uint8Array(bin.length);
   for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
-  return new Blob([arr], {type: mime});
-}
-
-// رفع مباشر لـ Supabase من المتصفح
-async function _sbUpload(b64data, mime, name){
-  const ext  = (mime==='application/pdf') ? 'pdf' : 'jpg';
-  const path = Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
-  const blob = _b64toBlob(b64data, mime);
-  const res  = await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': 'Bearer '+_SB_KEY,
-      'Content-Type': mime,
-      'x-upsert': 'true'
-    },
-    body: blob
+  const blob=new Blob([arr],{type:mime});
+  const ext=(mime==='application/pdf')?'pdf':'jpg';
+  const path=Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+  const res=await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`,{
+    method:'POST',
+    headers:{'Authorization':'Bearer '+_SB_KEY,'Content-Type':mime,'x-upsert':'true'},
+    body:blob
   });
-  if(!res.ok){
-    const err = await res.text();
-    throw new Error('Supabase: '+err);
-  }
+  if(!res.ok) throw new Error('Supabase '+(await res.text()));
   return `${_SB_URL}/storage/v1/object/public/${_SB_BUCKET}/${path}`;
 }
 
-// دالة مساعدة لعرض الملفات (URL أو base64)
+// ضغط صورة إلى 900px
+async function _compress(b64, mime){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=function(){
+      let w=img.width,h=img.height;
+      if(w>900||h>900){const s=Math.min(900/w,900/h);w=Math.round(w*s);h=Math.round(h*s);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',0.78).split(',')[1]);
+    };
+    img.onerror=()=>rej(new Error('err'));
+    img.src='data:'+mime+';base64,'+b64;
+  });
+}
+
+// رفع ذكي: Supabase أولاً ثم fallback للسيرفر
+async function smartUploadFile(endpoint, fileObj){
+  let {data,mime,name}=fileObj;
+  // ضغط الصور
+  if(mime&&mime.startsWith('image/')&&data){
+    try{ data=await _compress(data,mime); mime='image/jpeg'; name=name.replace(/\.[^.]+$/,'.jpg'); }catch(e){}
+  }
+  try{
+    const url=await _sbUpload(data,mime);
+    await api('POST',endpoint,{name,data:url,mime});
+    return {ok:true,url};
+  }catch(e){
+    console.warn('[SB fallback]',e.message);
+    return await api('POST',endpoint,{name,data,mime});
+  }
+}
+
+// عرض ملف: URL أو base64
 function _fileSrc(d){
   if(!d) return '';
-  const data = d.data || d;
-  if(typeof data==='string' && data.startsWith('http')) return data;
-  return 'data:'+(d.mime||'image/jpeg')+';base64,'+data;
+  const v=d.data||d;
+  if(typeof v==='string'&&v.startsWith('http')) return v;
+  return 'data:'+(d.mime||'image/jpeg')+';base64,'+v;
 }
 function _isImg(d){
   if(!d) return false;
-  const data = d.data || d;
-  if(typeof data==='string' && data.startsWith('http')) return true;
-  return !!(d.mime && d.mime.startsWith('image/'));
+  const v=d.data||d;
+  if(typeof v==='string'&&v.startsWith('http')) return true;
+  return !!(d.mime&&d.mime.startsWith('image/'));
 }
 
-async function smartUploadFile(endpoint, fileObj){
-  let {data, mime, name} = fileObj;
-
-  // ضغط الصورة لـ 900px قبل الرفع
-  if(mime && mime.startsWith('image/') && data){
-    try{
-      data = await new Promise((res,rej)=>{
-        const img=new Image();
-        img.onload=function(){
-          let w=img.width,h=img.height;
-          if(w>900||h>900){const sc=Math.min(900/w,900/h);w=Math.round(w*sc);h=Math.round(h*sc);}
-          const c=document.createElement('canvas');c.width=w;c.height=h;
-          c.getContext('2d').drawImage(img,0,0,w,h);
-          res(c.toDataURL('image/jpeg',0.75).split(',')[1]);
-        };
-        img.onerror=()=>rej(new Error('err'));
-        img.src='data:'+mime+';base64,'+data;
-      });
-      mime='image/jpeg';
-      name=name.replace(/\.[^.]+$/,'.jpg');
-    }catch(e){}
-  }
-
-  try{
-    // 1. رفع لـ Supabase مباشرة من المتصفح
-    toast('📤 جاري الرفع...');
-    const url = await _sbUpload(data, mime, name);
-    // 2. حفظ الـ URL فقط في السيرفر (بيانات صغيرة جداً)
-    await api('POST', endpoint, {name, data: url, mime});
-    return {ok: true, url};
-  }catch(e){
-    console.warn('[Supabase] failed, fallback to server:', e.message);
-    // fallback: رفع base64 للسيرفر
-    return await api('POST', endpoint, {name, data, mime});
-  }
-}
 
 // ══ HANDOVER — استلام وتسليم ══
 // ══ تصدير الجرد إلى Excel (CSV) ══
