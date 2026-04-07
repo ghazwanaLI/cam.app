@@ -867,14 +867,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
   background:#eff6ff;color:#1d4ed8;
 }
 .drw-item span{ font-size:20px;width:28px;text-align:center; }
-
-/* شعار الصيانة العاجلة */
-@keyframes urgentPop{0%{transform:scale(.5) translateY(-50px);opacity:0}60%{transform:scale(1.1) translateY(0);opacity:1}80%{transform:scale(.97)}100%{transform:scale(1);opacity:1}}
-@keyframes urgentFade{0%{opacity:1;transform:scale(1)}100%{opacity:0;transform:scale(.8) translateY(-20px)}}
-#urgent-badge{position:fixed;top:70px;right:20px;z-index:99999;background:#dc2626;color:#fff;font-family:Cairo,sans-serif;padding:10px 20px;border-radius:12px;font-size:14px;font-weight:900;box-shadow:0 4px 20px rgba(220,38,38,.5);border:2px solid #fff;direction:rtl;animation:urgentPop .4s ease forwards;display:none}
-#urgent-badge.show{display:flex;align-items:center;gap:8px}
-#urgent-badge.hide{animation:urgentFade .5s ease forwards}
-
 </style>
 </head>
 <body>
@@ -1056,100 +1048,103 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- DASHBOARD -->
       <div id="tab-dashboard">
 
-        <!-- بطاقات لوحة التحكم 3×2 -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:16px">
+        <!-- 4 Circular Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
 
           <!-- الجولات -->
           <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(29,78,216,.1);border:1.5px solid rgba(29,78,216,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#e0e7ff" stroke-width="8"/>
-                <circle id="circ-tours" cx="36" cy="36" r="30" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0e7ff" stroke-width="8"/>
+                <circle id="circ-tours" cx="45" cy="45" r="38" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:18px">🚗</div>
+                <div style="font-size:22px">🚗</div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
-            <div style="font-size:11px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
+            <div style="font-size:26px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-tours-sub">—</div>
           </div>
 
           <!-- الصيانة -->
           <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#fee2e2" stroke-width="8"/>
-                <circle id="circ-maint" cx="36" cy="36" r="30" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#fee2e2" stroke-width="8"/>
+                <circle id="circ-maint" cx="45" cy="45" r="38" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:18px">🔧</div>
+                <div style="font-size:22px">🔧</div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
-            <div style="font-size:11px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
+            <div style="font-size:26px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-cams-bad-sub">—</div>
           </div>
 
           <!-- المحطات -->
           <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#e0f2fe" stroke-width="8"/>
-                <circle id="circ-stations" cx="36" cy="36" r="30" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
+                <circle id="circ-stations" cx="45" cy="45" r="38" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:18px">⛽</div>
+                <div style="font-size:22px">⛽</div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
-            <div style="font-size:11px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
+            <div style="font-size:26px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
+            <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-stations-sub">—</div>
           </div>
 
           <!-- التقارير -->
           <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#ede9fe" stroke-width="8"/>
-                <circle id="circ-reports" cx="36" cy="36" r="30" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#ede9fe" stroke-width="8"/>
+                <circle id="circ-reports" cx="45" cy="45" r="38" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:18px">📊</div>
+                <div style="font-size:22px">📊</div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
-            <div style="font-size:11px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
+            <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
+            <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
           </div>
 
           <!-- الجرد -->
-          <div id="dash-inv-card" onclick="_navInv('inv-stations')" style="background:#fff;border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center;border:1.5px solid rgba(16,185,129,.15);transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#d1fae5" stroke-width="8"/>
-                <circle id="circ-inv" cx="36" cy="36" r="30" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
+          <div id="dash-inv-card" onclick="_navInv('inv-stations')" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#d1fae5" stroke-width="8"/>
+                <circle id="circ-inv" cx="45" cy="45" r="38" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
               <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
-                <div style="font-size:18px">📋</div>
+                <div style="font-size:22px">📋</div>
               </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#10b981;line-height:1" id="s-inv-count">—</div>
-            <div style="font-size:11px;font-weight:800;color:#065f46;margin-top:4px">الجرد</div>
+            <div style="font-size:26px;font-weight:900;color:#10b981;line-height:1" id="s-inv-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#065f46;margin-top:4px">الجرد</div>
             <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-inv-sub">محطة مسجلة</div>
+          </div>
 
           <!-- الاستلام والتسليم -->
-          <div id="dash-handover-card" onclick="goTab('handover',document.getElementById('nav-handover'))" style="background:#fff;border-radius:14px;padding:14px 10px;cursor:pointer;text-align:center;border:1.5px solid rgba(234,88,12,.25);transition:transform .2s" onmouseover="this.style.transform='translateY(-2px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:72px;height:72px;margin:0 auto 8px">
-              <svg width="72" height="72" style="transform:rotate(-90deg)">
-                <circle cx="36" cy="36" r="30" fill="none" stroke="#fed7aa" stroke-width="7"/>
-                <circle id="circ-handover" cx="36" cy="36" r="30" fill="none" stroke="#ea580c" stroke-width="7" stroke-linecap="round" stroke-dasharray="188" stroke-dashoffset="188" style="transition:stroke-dashoffset 1s ease"/>
+          <div id="dash-handover-card" onclick="goTab('handover',document.getElementById('nav-handover'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(234,88,12,.1);border:1.5px solid rgba(234,88,12,.2);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#fed7aa" stroke-width="8"/>
+                <circle id="circ-handover" cx="45" cy="45" r="38" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:18px">🔄</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">🔄</div>
+              </div>
             </div>
-            <div style="font-size:22px;font-weight:900;color:#ea580c;line-height:1" id="s-handover-count">—</div>
-            <div style="font-size:11px;font-weight:800;color:#7c2d12;margin-top:3px">الاستلام والتسليم</div>
-            <div style="font-size:10px;color:#94a3b8;margin-top:1px" id="s-handover-sub">—</div>
+            <div style="font-size:26px;font-weight:900;color:#ea580c;line-height:1" id="s-handover-count">—</div>
+            <div style="font-size:12px;font-weight:800;color:#7c2d12;margin-top:4px">الاستلام والتسليم</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-handover-sub">—</div>
           </div>
 
         </div>
@@ -1176,15 +1171,19 @@ tr:hover td{background:rgba(30,58,95,.03);}
               </div>
             </div>
 
-            <!-- Today's Maintenance Widget -->
+            <!-- Recent Tours Widget -->
             <div class="section" style="flex:1">
               <div class="sec-hdr" style="padding:10px 14px">
-                <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#dc2626"></div>🔔 إجراءات صيانة اليوم</div>
-                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px;background:#dc2626;border-color:#dc2626" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)">+ صيانة</button>
+                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>🚗 أحدث الجولات</div>
+                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)">+ جولة</button>
               </div>
-              <div id="today-maint-dash" style="padding:6px 10px;max-height:200px;overflow-y:auto">
-                <div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد صيانات اليوم ✅</div>
-              </div>
+              <div id="widget-tours" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
+            </div>
+
+            <!-- Today's Maintenance Alert -->
+            <div id="today-maint-alert" style="display:none;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:14px;padding:14px 16px;color:#fff;margin-bottom:8px">
+              <div style="font-size:12px;opacity:.75;margin-bottom:8px">🔔 إجراءات صيانة اليوم</div>
+              <div id="today-maint-list" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
 
             <!-- Maintenance per District Widget -->
@@ -1246,10 +1245,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <div id="recent-maint-tb" style="display:none"></div>
 
         <!-- Footer -->
-        <div style="margin-top:8px;text-align:center;padding:16px;border-radius:var(--r)">
-          <div style="font-size:10px;color:var(--t3);letter-spacing:3px;margin-bottom:4px">— إعداد وبرمجة —</div>
-          <div style="font-size:18px;font-weight:900;color:var(--p1);letter-spacing:1px;animation:blink 1.5s step-end infinite">Ghazwan Ali Alqaissi</div>
-          <div style="font-size:10px;color:var(--t3);margin-top:4px">شعبة تقنية المعلومات — V1.0.0</div>
+        <div style="margin-top:8px;text-align:center;padding:20px;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);border-radius:var(--r)">
+          <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:6px">— إعداد وبرمجة —</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 0 24px rgba(96,165,250,.6)">Ghazwan Ali Alqaissi</div>
+          <div style="width:40px;height:3px;background:linear-gradient(90deg,#bfdbfe,#60a5fa);border-radius:4px;margin:8px auto"></div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5)">شعبة تقنية المعلومات — V1.0.0</div>
         </div>
       </div>
 
@@ -1344,6 +1344,8 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
+      </div><!-- /tab-tours -->
+
       <!-- MAINTENANCE TAB -->
       <div id="tab-maintenance" style="display:none">
         <div class="section">
@@ -1360,34 +1362,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
           </div>
           <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="openMaintModal()" style="display:none">➕ إضافة صيانة</button>
-          </div>
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
-              <tbody id="maint-tb"></tbody>
-            </table>
-          </div>
-          <div class="pagination" id="pg-maint"></div>
-        </div>
-      </div>
-
-      </div><!-- /tab-field -->
-        <div class="section">
-          <div class="sec-hdr">
-            <div class="sec-actions">
-              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-maint" placeholder="بحث..." oninput="filterMaint()"></div>
-              <select class="fi btn-sm" id="f-maint-district" onchange="filterMaint()" style="width:120px">
-                <option value="">كل القواطع</option>
-              </select>
-              <button class="btn btn-o btn-sm" onclick="printMaintTable()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportMaintCSV()">📤 تصدير</button>
-              <button class="btn btn-o btn-sm" onclick="loadMaintenance()">🔄</button>
-            </div>
-            <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
-          </div>
-          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="openMaintModal()" style="display:none">➕ إضافة صيانة</button>
+            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)" style="display:none">➕ إضافة صيانة</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -1632,29 +1607,28 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
       <!-- CIRCULARS TAB -->
       <div id="tab-circulars" style="display:none">
-        <div class="section" style="padding:0;overflow:hidden">
-          <!-- رأس قسم التعاميم -->
-          <div style="background:linear-gradient(135deg,#78350f,#d97706);padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-              <div style="font-size:16px;font-weight:900;color:#fff">📢 التعاميم والتبليغات</div>
-              <button class="btn btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:#fff;color:#d97706;border:none;font-weight:700;padding:6px 14px;border-radius:8px">➕ إضافة</button>
-            </div>
-            <div style="display:flex;gap:8px;flex-wrap:wrap">
-              <select class="fi btn-sm" id="f-circ-district" onchange="filterCirculars()" style="width:130px;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-title"><div class="sdot" style="background:#f59e0b;box-shadow:0 0 8px rgba(245,158,11,.4)"></div>📢 التعاميم والتبليغات</div>
+            <div class="sec-actions" id="circ-sec-actions">
+              <select class="fi btn-sm" id="f-circ-district" onchange="filterCirculars()" style="width:130px">
                 <option value="">كل القواطع</option>
               </select>
-              <select class="fi btn-sm" id="f-circ-type" onchange="filterCirculars()" style="width:120px;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">
+              <select class="fi btn-sm" id="f-circ-type" onchange="filterCirculars()" style="width:120px">
                 <option value="">كل الأنواع</option>
                 <option value="تعميم">تعميم</option>
                 <option value="تبليغ">تبليغ</option>
                 <option value="أمر إداري">أمر إداري</option>
                 <option value="عام">عام</option>
               </select>
-              <input type="text" id="sq-circ" placeholder="🔍 بحث..." oninput="filterCirculars()" class="fi btn-sm" style="flex:1;min-width:140px;background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">
-              <button class="btn btn-sm" onclick="loadCirculars()" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3)">🔄</button>
+              <div class="search-box">
+                <span class="si">🔍</span>
+                <input type="text" id="sq-circ" placeholder="بحث في التعاميم..." oninput="filterCirculars()" style="width:160px">
+              </div>
+              <button class="btn btn-o btn-sm" onclick="loadCirculars()">🔄</button>
+              <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display:none;background:linear-gradient(135deg,#d97706,#f59e0b)">➕ إضافة تعميم</button>
             </div>
           </div>
-          <div id="circ-sec-actions" style="display:none"></div>
 
           <!-- Add Circular Form - admin only -->
           <!-- نموذج الإضافة — لوحة جانبية من اليمين -->
@@ -1820,30 +1794,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div id="tab-users" style="display:none">
-        <div class="section" style="padding:0;overflow:hidden">
-          <!-- رأس قسم المستخدمين -->
-          <div style="background:linear-gradient(135deg,#1e1b4b,#3730a3);padding:16px 20px">
-            <div style="display:flex;justify-content:space-between;align-items:center">
-              <div>
-                <div style="font-size:16px;font-weight:900;color:#fff">🔐 إدارة المستخدمين</div>
-                <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px" id="users-count-lbl">جاري التحميل...</div>
-              </div>
-              <button class="btn btn-sm" onclick="openUserModal()" style="background:#fff;color:#3730a3;border:none;font-weight:700;padding:8px 16px;border-radius:8px">➕ مستخدم جديد</button>
-            </div>
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
+            <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
           </div>
-          <!-- فلترة -->
-          <div style="padding:10px 16px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <input type="text" id="sq-users" placeholder="🔍 بحث بالاسم..." oninput="filterUsers()" class="fi btn-sm" style="flex:1;min-width:160px">
-            <select class="fi btn-sm" id="f-users-role" onchange="filterUsers()" style="width:120px">
-              <option value="">كل الأدوار</option>
-              <option value="admin">مدير</option>
-              <option value="user">مستخدم</option>
-            </select>
+          <!-- Users Cards -->
+          <div style="padding:16px" id="users-cards">
+            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
           </div>
-          <!-- بطاقات المستخدمين -->
-          <div style="padding:14px 16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px" id="users-cards">
-            <div style="text-align:center;padding:30px;color:var(--t3);grid-column:1/-1">جاري التحميل...</div>
-          </div>
+          <!-- Users Table (hidden, for compat) -->
           <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
         </div>
       </div>
@@ -4464,7 +4424,6 @@ async function initApp(){
   updateDashboard();
   populateDistrictFilters();
   updateMobNav();
-  updateTodayMaintDash();
   // بدء التحديث التلقائي والنسخ الاحتياطي
   startAutoRefresh();
   setTimeout(_saveBackup, 8000); // حفظ بعد 8 ثوانٍ من التحميل
@@ -4485,28 +4444,7 @@ async function initApp(){
 
 function setCircle(id, pct){
   const el=document.getElementById(id); if(!el) return;
-  el.style.strokeDashoffset = 188 - 188*Math.min(pct,1);
-}
-
-
-function updateTodayMaintDash(){
-  const el=document.getElementById('today-maint-dash');
-  if(!el) return;
-  const today=new Date().toISOString().split('T')[0];
-  const list=(allMaint||[]).filter(m=>m.date===today).slice(0,8);
-  if(!list.length){
-    el.innerHTML='<div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد صيانات اليوم ✅</div>';
-    return;
-  }
-  el.innerHTML=list.map(m=>`
-    <div style="display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:8px;background:var(--bg2);margin-bottom:4px;cursor:pointer" onclick="editMaint(${m.id})">
-      <span style="font-size:18px">🔧</span>
-      <div style="flex:1;min-width:0">
-        <div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${m.station_name||'—'}</div>
-        <div style="font-size:10px;color:var(--t3)">${m.device_type||'—'} | ${m.technician||'—'}</div>
-      </div>
-      <span style="font-size:10px;background:#fee2e2;color:#dc2626;padding:2px 6px;border-radius:5px;white-space:nowrap">${m.district||''}</span>
-    </div>`).join('');
+  el.style.strokeDashoffset = 239 - 239*Math.min(pct,1);
 }
 
 function updateDashboard(){
@@ -4544,14 +4482,12 @@ function updateDashboard(){
   if(invCountEl) invCountEl.textContent = invCount;
   if(invSubEl)   invSubEl.textContent   = invCount + ' محطة مسجلة';
   setCircle('circ-inv', Math.min(invCount/20, 1));
-  const hovTotal=(allHandover||[]).length;
-  const hovDel=(allHandover||[]).filter(x=>x.op_type==='deliver').length;
-  const hovRec=(allHandover||[]).filter(x=>x.op_type==='receive').length;
-  const hce=document.getElementById('s-handover-count');
-  const hse=document.getElementById('s-handover-sub');
-  if(hce) hce.textContent=hovTotal||'—';
-  if(hse) hse.textContent=hovTotal?('تسليم:'+hovDel+' | استلام:'+hovRec):'لا توجد سجلات';
-  setCircle('circ-handover', Math.min(hovTotal/10,1));
+  const _hov=allHandover||[];
+  const _hce=document.getElementById('s-handover-count');
+  const _hse=document.getElementById('s-handover-sub');
+  if(_hce)_hce.textContent=_hov.length||'—';
+  if(_hse)_hse.textContent=_hov.length?('تسليم:'+_hov.filter(x=>x.op_type==='deliver').length+' | استلام:'+_hov.filter(x=>x.op_type==='receive').length):'لا توجد سجلات';
+  setCircle('circ-handover',Math.min((_hov.length||0)/10,1));
 
   // ── احصائيات الكاميرات من الجرد أو من المحطات ──
   let camOk=0,camBad=0;
@@ -4640,7 +4576,7 @@ function updateDashboard(){
   function donutChart(pct, value, label, color){
     const r=36, c=2*Math.PI*r, dash=pct/100*c, gap=c-dash;
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:90px">'
-      +'<svg width="72" height="72" viewBox="0 0 90 90">'
+      +'<svg width="90" height="90" viewBox="0 0 90 90">'
       +'<circle cx="45" cy="45" r="'+r+'" fill="none" stroke="#f1f5f9" stroke-width="10"/>'
       +'<circle cx="45" cy="45" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="10"'
       +' stroke-dasharray="'+dash.toFixed(1)+' '+gap.toFixed(1)+'"'
@@ -5025,19 +4961,6 @@ function renderMaint(){
   renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
 }
 function filterMaint(){sP_m=1;renderMaint();}
-
-function showUrgentBadge(msg){
-  const b=document.getElementById('urgent-badge');
-  if(!b)return;
-  b.className='show';
-  b.innerHTML='🚨 '+msg;
-  clearTimeout(b._t);
-  b._t=setTimeout(()=>{
-    b.classList.add('hide');
-    setTimeout(()=>{b.className='';b.innerHTML='';},500);
-  },3000);
-}
-
 function openMaintModal(id){
   const m=id?allMaint.find(x=>x.id===id)||{}:{};
   document.getElementById('ov-maint').classList.add('open');
@@ -5085,7 +5008,7 @@ async function saveMaint(){
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||r.id;
+    const mid=id||(r.maintenance&&r.maintenance.id)||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     const toUpload = fileKeys.filter(k=>UF[k]);
     if(toUpload.length){
@@ -5563,8 +5486,6 @@ async function loadUsers(){
   }catch(e){toast('خطأ في تحميل المستخدمين','err');}
 }
 function renderUsers(){
-  const lbl=document.getElementById('users-count-lbl');
-  if(lbl){ const total=(allUsers||[]).length; lbl.textContent=total+' مستخدم مسجل'; }
   const cards=document.getElementById('users-cards');
   if(!cards)return;
   if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
@@ -5604,20 +5525,6 @@ function renderUsers(){
       }).join('')}</tbody>
     </table>`;
 }
-
-function filterUsers(){
-  const q=(document.getElementById('sq-users')?.value||'').toLowerCase();
-  const role=document.getElementById('f-users-role')?.value||'';
-  const rows=document.querySelectorAll('#users-cards tbody tr');
-  rows.forEach(r=>{
-    const text=r.textContent.toLowerCase();
-    const roleCell=r.querySelector('td:nth-child(3)')?.textContent||'';
-    const isAdmin=roleCell.includes('مدير');
-    const matchRole=!role||(role==='admin'&&isAdmin)||(role==='user'&&!isAdmin);
-    r.style.display=(!q||text.includes(q))&&matchRole?'':'none';
-  });
-}
-
 function openUserModal(id){
   const u=id?allUsers.find(x=>x.id===id)||{}:{};
   document.getElementById('u-eid').value=id||'';
@@ -5840,8 +5747,7 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
-    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
+    const _vs=_fileSrc(d);if(_isImg(d))openLB(_vs);else{const a=document.createElement('a');a.href=_vs;a.download=d.name||'file';a.target='_blank';a.click();}
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -5948,29 +5854,23 @@ function compressImage(file, maxW, maxH, quality){
   });
 }
 
-async function doUpload(event, key){
+async function doUpload(event,key){
   try{
-    const file=event.target.files[0]; if(!file)return;
+    const file=event.target.files[0];if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
-    // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
-    const quality=hiQ?0.95:0.82;
-    const maxPx=hiQ?1920:1280;
-    const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
-    const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
-    UF[key]={ name:finalName, data, mime:'image/jpeg' };
-    // حجم بعد الضغط
+    const {data,mime}=await compressImage(file,hiQ?1920:1280,hiQ?1920:1280,hiQ?0.95:0.82);
+    const finalName=file.name.replace(/\.[^.]+$/,'')+'.jpg';
+    UF[key]={name:finalName,data,mime:'image/jpeg'};
     const kb=Math.round(data.length*0.75/1024);
-    const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent=file.name+' ('+kb+'KB)';
-    const box=event.target.closest('.up-box');
-    if(box) box.classList.add('hf');
-  }catch(e){
-    toast('خطأ في رفع الملف: '+e.message,'err');
-    console.error('doUpload error:',e);
-  }
+    if(key==='hov_doc'){
+      const nm=document.getElementById('hov-file-name');if(nm)nm.textContent=file.name+' ('+kb+'KB)';
+      const pv=document.getElementById('hov-file-preview');if(pv)pv.innerHTML=`<img src="data:image/jpeg;base64,${data}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:4px">`;
+      return;
+    }
+    const stat=document.getElementById('us-'+key);if(stat)stat.textContent=file.name+' ('+kb+'KB)';
+    const box=event.target.closest('.up-box');if(box)box.classList.add('hf');
+  }catch(e){toast('خطأ: '+e.message,'err');}
 }
 function rmFile(key, e){
   e?.stopPropagation();
@@ -6024,8 +5924,7 @@ function showMaintFiles(mid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg=d.mime&&d.mime.startsWith('image/');
+      const src=_fileSrc(d);const isImg=_isImg(d);
 
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
@@ -6182,8 +6081,7 @@ function viewCircFiles(cid){
     list.innerHTML='';
     found.forEach(function(item,idx){
       const k=item.k, d=item.d;
-      const isImg=d.mime&&d.mime.startsWith('image/');
-      const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
+      const src=_fileSrc(d);const isImg=_isImg(d);
       const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
 
       const card=document.createElement('div');
@@ -6733,8 +6631,7 @@ function _loadMaintPreviews(mid, container){
       return;
     }
     found.forEach(({k,d})=>{
-      const src = 'data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg = d.mime&&d.mime.startsWith('image/');
+      const src=_fileSrc(d);const isImg=_isImg(d);
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
       if(isImg){
@@ -6815,7 +6712,7 @@ function doMultiUpload(event, prefix){
       } else {
         const wrap = document.createElement('div');
         wrap.style.cssText = 'display:inline-flex;flex-direction:column;align-items:center;gap:2px;background:#f1f5f9;border-radius:8px;padding:8px;vertical-align:top;margin:3px;width:75px';
-        wrap.innerHTML = '<span style="font-size:18px">📄</span>'
+        wrap.innerHTML = '<span style="font-size:22px">📄</span>'
           + '<span style="font-size:9px;color:#475569;text-align:center;overflow:hidden;max-width:65px;white-space:nowrap;text-overflow:ellipsis">'+file.name.substring(0,14)+'</span>'
           + '<span style="font-size:9px;color:#94a3b8">'+kb+'KB</span>';
         const rm = document.createElement('button');
@@ -7005,8 +6902,8 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
-        const src='data:'+d.mime+';base64,'+d.data;
+      if(d&&d.data&&_isImg(d)){
+        const src=_fileSrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
         const img=document.createElement('img');
@@ -7280,8 +7177,7 @@ function showTourFiles(tid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg=d.mime&&d.mime.startsWith('image/');
+      const src=_fileSrc(d);const isImg=_isImg(d);
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
       // هيدر البطاقة
@@ -7359,14 +7255,8 @@ async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
   if(!SERVER_ONLINE) return;
   try{
-    // تصفير الشريط كل 24 ساعة
-    const lastReset = parseInt(localStorage.getItem('ticker_last_reset')||'0');
-    const now = Date.now();
-    if(now - lastReset > 24*60*60*1000){
-      api('POST','/api/notifications/clear',{}).catch(()=>{});
-      localStorage.setItem('ticker_last_reset', now);
-    }
-
+    const lr=parseInt(localStorage.getItem('tkr_reset')||'0');
+    if(Date.now()-lr>864e5){api('POST','/api/notifications/clear',{}).catch(()=>{});localStorage.setItem('tkr_reset',Date.now());}
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
     const tickerBar = document.getElementById('maint-ticker-bar');
@@ -7375,6 +7265,7 @@ async function updateActivityTicker(){
 
     if(!list.length){ tickerBar.style.display='none'; return; }
 
+    // بناء نص الشريط من آخر 20 فعالية
     const items = list.slice(0,20).map(n=>{
       const icon = n.action.includes('جولة')?'🚗':
                    n.action.includes('صيانة')?'🔧':
@@ -7384,11 +7275,14 @@ async function updateActivityTicker(){
     tickerContent.textContent = items.join('   ◈   ');
     tickerBar.style.display = 'flex';
 
+    // تنبيه إذا جاءت فعالية جديدة
     const unread = d.unread || 0;
     if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
       toast('📡 فعالية جديدة من مخوّل');
     }
     _lastNotifCount = unread;
+
+    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
 }
@@ -7569,68 +7463,45 @@ function _reindexInvDvr(){
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
-async function smartUploadFile(endpoint, fileObj){
-  const steps = [
-    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
-    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
-    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
-    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
-  ];
 
-  let {data, mime, name} = fileObj;
-  const isImage = mime && mime.startsWith('image/');
-
-  for(let attempt=0; attempt<steps.length; attempt++){
-    const kb = Math.round(data.length * 0.75 / 1024);
-    try{
-      if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
-      const result = await api('POST', endpoint, {name, data, mime});
-      return result; // نجح
-    }catch(e){
-      const msg = (e.message||'').toLowerCase();
-      const is502 = msg.includes('502') || msg.includes('413')
-                 || msg.includes('body') || msg.includes('payload')
-                 || msg.includes('entity');
-
-      if(is502 && isImage && attempt < steps.length-1){
-        // ضغط الصورة أكثر وأعد المحاولة
-        const next = steps[attempt+1];
-        toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
-        try{
-          // recompress من base64
-          const dataUrl = 'data:'+mime+';base64,'+data;
-          const compressed = await new Promise((res,rej)=>{
-            const img = new Image();
-            img.onload = function(){
-              let w=img.width, h=img.height;
-              const scale = Math.min(next.maxPx/w, next.maxPx/h, 1);
-              w=Math.round(w*scale); h=Math.round(h*scale);
-              const c = document.createElement('canvas');
-              c.width=w; c.height=h;
-              c.getContext('2d').drawImage(img,0,0,w,h);
-              const url = c.toDataURL('image/jpeg', next.q);
-              res({data:url.split(',')[1], mime:'image/jpeg'});
-            };
-            img.onerror = ()=>rej(new Error('فشل تحميل الصورة'));
-            img.src = dataUrl;
-          });
-          data = compressed.data;
-          mime = 'image/jpeg';
-          name = name.replace(/\.[^.]+$/, '.jpg');
-          continue; // أعد المحاولة
-        }catch(ce){ throw e; }
-      }
-
-      // خطأ آخر أو PDF كبير
-      if(is502){
-        const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
-        throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
-      }
-      throw e;
-    }
-  }
-  throw new Error('فشل الرفع بعد '+steps.length+' محاولات');
+// ══ Supabase ══
+const _SB_URL='https://vcgfmmdpjpiktkyorili.supabase.co';
+const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
+const _SB_BUCKET='Cam-files';
+async function _sbUpload(b64,mime){
+  const bin=atob(b64),arr=new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
+  const blob=new Blob([arr],{type:mime});
+  const ext=mime==='application/pdf'?'pdf':'jpg';
+  const path=Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+  const res=await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`,{method:'POST',headers:{'Authorization':'Bearer '+_SB_KEY,'Content-Type':mime,'x-upsert':'true'},body:blob});
+  if(!res.ok)throw new Error('SB '+(await res.text()));
+  return `${_SB_URL}/storage/v1/object/public/${_SB_BUCKET}/${path}`;
 }
+async function _compress(b64,mime){
+  return new Promise((res,rej)=>{
+    const img=new Image();
+    img.onload=function(){
+      let w=img.width,h=img.height;
+      if(w>900||h>900){const s=Math.min(900/w,900/h);w=Math.round(w*s);h=Math.round(h*s);}
+      const c=document.createElement('canvas');c.width=w;c.height=h;
+      c.getContext('2d').drawImage(img,0,0,w,h);
+      res(c.toDataURL('image/jpeg',0.78).split(',')[1]);
+    };
+    img.onerror=()=>rej(new Error('err'));
+    img.src='data:'+mime+';base64,'+b64;
+  });
+}
+async function smartUploadFile(endpoint,fileObj){
+  let {data,mime,name}=fileObj;
+  if(mime&&mime.startsWith('image/')&&data){try{data=await _compress(data,mime);mime='image/jpeg';name=name.replace(/\.[^.]+$/,'.jpg');}catch(e){}}
+  try{const url=await _sbUpload(data,mime);await api('POST',endpoint,{name,data:url,mime});return{ok:true,url};}
+  catch(e){console.warn('[SB]',e.message);return await api('POST',endpoint,{name,data,mime});}
+}
+function _fileSrc(d){if(!d)return'';const v=d.data||d;if(typeof v==='string'&&v.startsWith('http'))return v;return'data:'+(d.mime||'image/jpeg')+';base64,'+v;}
+function _isImg(d){if(!d)return false;const v=d.data||d;if(typeof v==='string'&&v.startsWith('http'))return true;return!!(d.mime&&d.mime.startsWith('image/'));}
+
+// smartUploadFile moved above
 
 // ══ HANDOVER — استلام وتسليم ══
 // ══ تصدير الجرد إلى Excel (CSV) ══
@@ -8180,8 +8051,7 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<div id="urgent-badge"></div>
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:#0a0a0a;color:#fff;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -3px 20px rgba(0,0,0,.5);align-items:center;gap:0;border-top:2px solid #dc2626">
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
   <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
   <div style="overflow:hidden;flex:1;position:relative;height:20px">
     <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite"></div>
