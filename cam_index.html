@@ -5724,9 +5724,9 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    const src5=_fileSrc(d); const isImg5=_isImg(d);
-    if(isImg5) openLB(src5);
-    else{ const a=document.createElement('a');a.href=src5;a.download=d.name||'file';a.target='_blank';a.click(); }
+    const _src=_fileSrc(d);
+    if(_isImg(d)) openLB(_src);
+    else{ const a=document.createElement('a');a.href=_src;a.download=d.name||'file';a.target='_blank';a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -5950,8 +5950,8 @@ function showMaintFiles(mid){
         repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
         repInp.onchange=function(ev){
           const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,900,900,0.72).then(function(res){
-            return smartUploadFile('/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+          compressImage(file,1280,1280,0.85).then(function(res){
+            return api('POST','/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-maint-files');
@@ -6890,7 +6890,7 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&_isImg(d)){
+      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
         const src=_fileSrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
@@ -6949,7 +6949,8 @@ function toggleCircImg(cid, btn){
         if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=false; }
         return;
       }
-      const src  = _fileSrc(d);
+      const mime = d.mime || 'image/jpeg';
+      const src  = _fileSrc({data:d.data,mime});
       imgDiv.innerHTML = '';
 
       // الصورة
@@ -7449,130 +7450,89 @@ function _reindexInvDvr(){
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
-// ══ Supabase Storage ══
-const SB_URL    = 'https://vcgfmmdpjpiktkyorili.supabase.co';
-const SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
-const SB_BUCKET = 'Cam-files';
+// ══ Supabase Storage — رفع مباشر من المتصفح ══
+const _SB_URL    = 'https://vcgfmmdpjpiktkyorili.supabase.co';
+const _SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
+const _SB_BUCKET = 'Cam-files';
 
+// تحويل base64 إلى Blob
+function _b64toBlob(b64, mime){
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
+  return new Blob([arr], {type: mime});
+}
+
+// رفع مباشر لـ Supabase من المتصفح
+async function _sbUpload(b64data, mime, name){
+  const ext  = (mime==='application/pdf') ? 'pdf' : 'jpg';
+  const path = Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
+  const blob = _b64toBlob(b64data, mime);
+  const res  = await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`, {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer '+_SB_KEY,
+      'Content-Type': mime,
+      'x-upsert': 'true'
+    },
+    body: blob
+  });
+  if(!res.ok){
+    const err = await res.text();
+    throw new Error('Supabase: '+err);
+  }
+  return `${_SB_URL}/storage/v1/object/public/${_SB_BUCKET}/${path}`;
+}
+
+// دالة مساعدة لعرض الملفات (URL أو base64)
 function _fileSrc(d){
   if(!d) return '';
-  const data=d.data||d;
-  if(typeof data==='string'&&data.startsWith('http')) return data;
+  const data = d.data || d;
+  if(typeof data==='string' && data.startsWith('http')) return data;
   return 'data:'+(d.mime||'image/jpeg')+';base64,'+data;
 }
 function _isImg(d){
   if(!d) return false;
-  const data=d.data||d;
-  if(typeof data==='string'&&data.startsWith('http')) return true;
-  return !!(d.mime&&d.mime.startsWith('image/'));
+  const data = d.data || d;
+  if(typeof data==='string' && data.startsWith('http')) return true;
+  return !!(d.mime && d.mime.startsWith('image/'));
 }
 
-async function _uploadToSupabase(base64Data,mime,filename){
-  const byteChars=atob(base64Data);
-  const bytes=new Uint8Array(byteChars.length);
-  for(let i=0;i<byteChars.length;i++) bytes[i]=byteChars.charCodeAt(i);
-  const blob=new Blob([bytes],{type:mime});
-  const ext=mime==='application/pdf'?'pdf':'jpg';
-  const path=Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
-  const res=await fetch(
-    `${SB_URL}/storage/v1/object/${SB_BUCKET}/${path}`,
-    {method:'POST',headers:{'Authorization':'Bearer '+SB_KEY,'Content-Type':mime,'x-upsert':'true'},body:blob}
-  );
-  if(!res.ok) throw new Error('Supabase: '+(await res.text()));
-  return `${SB_URL}/storage/v1/object/public/${SB_BUCKET}/${path}`;
-}
+async function smartUploadFile(endpoint, fileObj){
+  let {data, mime, name} = fileObj;
 
-async function smartUploadFile(endpoint,fileObj){
-  let {data,mime,name}=fileObj;
-  const isImage=mime&&mime.startsWith('image/');
-  if(isImage){
+  // ضغط الصورة لـ 900px قبل الرفع
+  if(mime && mime.startsWith('image/') && data){
     try{
-      const compressed=await new Promise((res,rej)=>{
+      data = await new Promise((res,rej)=>{
         const img=new Image();
         img.onload=function(){
           let w=img.width,h=img.height;
           if(w>900||h>900){const sc=Math.min(900/w,900/h);w=Math.round(w*sc);h=Math.round(h*sc);}
           const c=document.createElement('canvas');c.width=w;c.height=h;
           c.getContext('2d').drawImage(img,0,0,w,h);
-          res({data:c.toDataURL('image/jpeg',0.72).split(',')[1],mime:'image/jpeg'});
+          res(c.toDataURL('image/jpeg',0.75).split(',')[1]);
         };
-        img.onerror=()=>rej(new Error('فشل'));
+        img.onerror=()=>rej(new Error('err'));
         img.src='data:'+mime+';base64,'+data;
       });
-      data=compressed.data;mime='image/jpeg';
+      mime='image/jpeg';
       name=name.replace(/\.[^.]+$/,'.jpg');
     }catch(e){}
   }
+
   try{
-    const url=await _uploadToSupabase(data,mime,name);
-    await api('POST',endpoint,{name,data:url,mime});
-    return {ok:true,url};
+    // 1. رفع لـ Supabase مباشرة من المتصفح
+    toast('📤 جاري الرفع...');
+    const url = await _sbUpload(data, mime, name);
+    // 2. حفظ الـ URL فقط في السيرفر (بيانات صغيرة جداً)
+    await api('POST', endpoint, {name, data: url, mime});
+    return {ok: true, url};
   }catch(e){
-    console.warn('Supabase fallback:',e.message);
-    return await api('POST',endpoint,{name,data,mime});
+    console.warn('[Supabase] failed, fallback to server:', e.message);
+    // fallback: رفع base64 للسيرفر
+    return await api('POST', endpoint, {name, data, mime});
   }
-}
-async function smartUploadFile(endpoint, fileObj){
-  const steps = [
-    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
-    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
-    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
-    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
-  ];
-
-  let {data, mime, name} = fileObj;
-  const isImage = mime && mime.startsWith('image/');
-
-  for(let attempt=0; attempt<steps.length; attempt++){
-    const kb = Math.round(data.length * 0.75 / 1024);
-    try{
-      if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
-      const result = await api('POST', endpoint, {name, data, mime});
-      return result; // نجح
-    }catch(e){
-      const msg = (e.message||'').toLowerCase();
-      const is502 = msg.includes('502') || msg.includes('413')
-                 || msg.includes('body') || msg.includes('payload')
-                 || msg.includes('entity');
-
-      if(is502 && isImage && attempt < steps.length-1){
-        // ضغط الصورة أكثر وأعد المحاولة
-        const next = steps[attempt+1];
-        toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
-        try{
-          // recompress من base64
-          const dataUrl = 'data:'+mime+';base64,'+data;
-          const compressed = await new Promise((res,rej)=>{
-            const img = new Image();
-            img.onload = function(){
-              let w=img.width, h=img.height;
-              const scale = Math.min(next.maxPx/w, next.maxPx/h, 1);
-              w=Math.round(w*scale); h=Math.round(h*scale);
-              const c = document.createElement('canvas');
-              c.width=w; c.height=h;
-              c.getContext('2d').drawImage(img,0,0,w,h);
-              const url = c.toDataURL('image/jpeg', next.q);
-              res({data:url.split(',')[1], mime:'image/jpeg'});
-            };
-            img.onerror = ()=>rej(new Error('فشل تحميل الصورة'));
-            img.src = dataUrl;
-          });
-          data = compressed.data;
-          mime = 'image/jpeg';
-          name = name.replace(/\.[^.]+$/, '.jpg');
-          continue; // أعد المحاولة
-        }catch(ce){ throw e; }
-      }
-
-      // خطأ آخر أو PDF كبير
-      if(is502){
-        const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
-        throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
-      }
-      throw e;
-    }
-  }
-  throw new Error('فشل الرفع بعد '+steps.length+' محاولات');
 }
 
 // ══ HANDOVER — استلام وتسليم ══
