@@ -1344,10 +1344,35 @@ tr:hover td{background:rgba(30,58,95,.03);}
         </div>
       </div>
 
-      </div><!-- /tab-tours -->
-
       <!-- MAINTENANCE TAB -->
       <div id="tab-maintenance" style="display:none">
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-actions">
+              <div class="search-box"><span class="si">🔍</span><input type="text" id="sq-maint" placeholder="بحث..." oninput="filterMaint()"></div>
+              <select class="fi btn-sm" id="f-maint-district" onchange="filterMaint()" style="width:120px">
+                <option value="">كل القواطع</option>
+              </select>
+              <button class="btn btn-o btn-sm" onclick="printMaintTable()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="exportMaintCSV()">📤 تصدير</button>
+              <button class="btn btn-o btn-sm" onclick="loadMaintenance()">🔄</button>
+            </div>
+            <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
+          </div>
+          <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
+            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="openMaintModal()" style="display:none">➕ إضافة صيانة</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>#</th><th>التاريخ</th><th>المحطة</th><th>القاطع</th><th>نوع الجهاز</th><th>الكمية</th><th>السبب</th><th>الفني</th><th>ملاحظات</th><th>إجراءات</th></tr></thead>
+              <tbody id="maint-tb"></tbody>
+            </table>
+          </div>
+          <div class="pagination" id="pg-maint"></div>
+        </div>
+      </div>
+
+      </div><!-- /tab-field -->
         <div class="section">
           <div class="sec-hdr">
             <div class="sec-actions">
@@ -5539,7 +5564,7 @@ async function loadUsers(){
 }
 function renderUsers(){
   const lbl=document.getElementById('users-count-lbl');
-  if(lbl){ const total=(allUsersData||[]).length; lbl.textContent=total+' مستخدم مسجل'; }
+  if(lbl){ const total=(allUsers||[]).length; lbl.textContent=total+' مستخدم مسجل'; }
   const cards=document.getElementById('users-cards');
   if(!cards)return;
   if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
@@ -5583,11 +5608,13 @@ function renderUsers(){
 function filterUsers(){
   const q=(document.getElementById('sq-users')?.value||'').toLowerCase();
   const role=document.getElementById('f-users-role')?.value||'';
-  const cards=document.querySelectorAll('#users-cards .user-card-item');
-  cards.forEach(c=>{
-    const text=c.textContent.toLowerCase();
-    const r=c.dataset.role||'';
-    c.style.display=(!q||text.includes(q))&&(!role||r===role)?'':'none';
+  const rows=document.querySelectorAll('#users-cards tbody tr');
+  rows.forEach(r=>{
+    const text=r.textContent.toLowerCase();
+    const roleCell=r.querySelector('td:nth-child(3)')?.textContent||'';
+    const isAdmin=roleCell.includes('مدير');
+    const matchRole=!role||(role==='admin'&&isAdmin)||(role==='user'&&!isAdmin);
+    r.style.display=(!q||text.includes(q))&&matchRole?'':'none';
   });
 }
 
