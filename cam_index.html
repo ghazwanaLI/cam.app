@@ -2647,7 +2647,6 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
-      if(r.status===502||r.status===413||r.status===503){throw new Error(`خطأ ${r.status}`);}
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
       return d;
@@ -4853,7 +4852,7 @@ async function saveTour(){
     const tid=id||r.id;
     for(const fk of ['tour_img','tour_rep','tour_doc']){
       if(UF[fk]){
-        await smartUploadFile('/api/files/tour_'+tid+'_'+fk, UF[fk]);
+        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
         delete UF[fk];
       }
     }
@@ -4986,7 +4985,7 @@ async function saveMaint(){
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||(r.maintenance&&r.maintenance.id)||r.id;
+    const mid=id||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     const toUpload = fileKeys.filter(k=>UF[k]);
     if(toUpload.length){
@@ -5383,7 +5382,9 @@ async function saveQuickCircular(){
         await Promise.all(uploads.map(qk=>{
           // استخدم رقم المرفق الأصلي: qcirc_1→circ_1, qcirc_2→circ_2
           const fileKey=qk.replace('qcirc_','circ_');
-          return smartUploadFile('/api/files/circ_'+cid+'_'+fileKey, UF[qk]).catch(e=>console.error('upload err:',qk,e));
+          return api('POST','/api/files/circ_'+cid+'_'+fileKey,{
+            name:UF[qk].name, data:UF[qk].data, mime:UF[qk].mime
+          }).catch(e=>console.error('upload err:',qk,e));
         }));
         // تنظيف
         qkeys.forEach(k=>{
@@ -5425,7 +5426,9 @@ async function saveCircular(){
       const fileKeys=['circ_1','circ_2','circ_3'];
       const uploads=fileKeys.filter(k=>UF[k]);
       await Promise.all(uploads.map(k=>
-        smartUploadFile('/api/files/circ_'+cid+'_'+k, UF[k]).catch(e=>console.error('file upload error:',k,e))
+        api('POST','/api/files/circ_'+cid+'_'+k, {
+          name:UF[k].name, data:UF[k].data, mime:UF[k].mime
+        }).catch(e=>console.error('file upload error:',k,e))
       ));
       // تنظيف حقول الملفات
       fileKeys.forEach(k=>{
@@ -5721,9 +5724,8 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    const _vs=_fileSrc(d);
-    if(_isImg(d)) openLB(_vs);
-    else{ const a=document.createElement('a');a.href=_vs;a.download=d.name||'file';a.target='_blank';a.click(); }
+    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
+    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -5834,17 +5836,21 @@ async function doUpload(event, key){
   try{
     const file=event.target.files[0]; if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
-    // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
     const quality=hiQ?0.95:0.82;
     const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
     UF[key]={ name:finalName, data, mime:'image/jpeg' };
-    // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
+    // إذا كان مرفق الاستلام والتسليم
+    if(key==='hov_doc'){
+      const nm=document.getElementById('hov-file-name');
+      if(nm) nm.textContent=file.name+' ('+kb+'KB)';
+      const pv=document.getElementById('hov-file-preview');
+      if(pv) pv.innerHTML=`<img src="data:image/jpeg;base64,${data}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:4px;border:1px solid #bfdbfe">`;
+      return;
+    }
     const stat=document.getElementById('us-'+key);
     if(stat) stat.textContent=file.name+' ('+kb+'KB)';
     const box=event.target.closest('.up-box');
@@ -5906,8 +5912,8 @@ function showMaintFiles(mid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src=_fileSrc(d);
-      const isImg=_isImg(d);
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg=d.mime&&d.mime.startsWith('image/');
 
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
@@ -5947,8 +5953,8 @@ function showMaintFiles(mid){
         repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
         repInp.onchange=function(ev){
           const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,900,900,0.75).then(function(res){
-            return smartUploadFile('/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+          compressImage(file,1280,1280,0.85).then(function(res){
+            return api('POST','/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-maint-files');
@@ -6064,8 +6070,8 @@ function viewCircFiles(cid){
     list.innerHTML='';
     found.forEach(function(item,idx){
       const k=item.k, d=item.d;
-      const src=_fileSrc(d);
-      const isImg=_isImg(d);
+      const isImg=d.mime&&d.mime.startsWith('image/');
+      const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
       const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
 
       const card=document.createElement('div');
@@ -6615,8 +6621,8 @@ function _loadMaintPreviews(mid, container){
       return;
     }
     found.forEach(({k,d})=>{
-      const src = _fileSrc(d);
-      const isImg = _isImg(d);
+      const src = 'data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg = d.mime&&d.mime.startsWith('image/');
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
       if(isImg){
@@ -6887,8 +6893,8 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&_isImg(d)){
-        const src=_fileSrc(d);
+      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
+        const src='data:'+d.mime+';base64,'+d.data;
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
         const img=document.createElement('img');
@@ -6947,7 +6953,7 @@ function toggleCircImg(cid, btn){
         return;
       }
       const mime = d.mime || 'image/jpeg';
-      const src=_fileSrc(d);
+      const src  = 'data:'+mime+';base64,'+d.data;
       imgDiv.innerHTML = '';
 
       // الصورة
@@ -7162,8 +7168,8 @@ function showTourFiles(tid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src=_fileSrc(d);
-      const isImg=_isImg(d);
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg=d.mime&&d.mime.startsWith('image/');
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
       // هيدر البطاقة
@@ -7447,75 +7453,68 @@ function _reindexInvDvr(){
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
-
-// ══ Supabase Storage — رفع مباشر من المتصفح ══
-const _SB_URL    = 'https://vcgfmmdpjpiktkyorili.supabase.co';
-const _SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
-const _SB_BUCKET = 'Cam-files';
-
-// رفع blob لـ Supabase وإرجاع URL عام
-async function _sbUpload(b64, mime){
-  const bin=atob(b64), arr=new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++) arr[i]=bin.charCodeAt(i);
-  const blob=new Blob([arr],{type:mime});
-  const ext=(mime==='application/pdf')?'pdf':'jpg';
-  const path=Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
-  const res=await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`,{
-    method:'POST',
-    headers:{'Authorization':'Bearer '+_SB_KEY,'Content-Type':mime,'x-upsert':'true'},
-    body:blob
-  });
-  if(!res.ok) throw new Error('Supabase '+(await res.text()));
-  return `${_SB_URL}/storage/v1/object/public/${_SB_BUCKET}/${path}`;
-}
-
-// ضغط صورة إلى 900px
-async function _compress(b64, mime){
-  return new Promise((res,rej)=>{
-    const img=new Image();
-    img.onload=function(){
-      let w=img.width,h=img.height;
-      if(w>900||h>900){const s=Math.min(900/w,900/h);w=Math.round(w*s);h=Math.round(h*s);}
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      res(c.toDataURL('image/jpeg',0.78).split(',')[1]);
-    };
-    img.onerror=()=>rej(new Error('err'));
-    img.src='data:'+mime+';base64,'+b64;
-  });
-}
-
-// رفع ذكي: Supabase أولاً ثم fallback للسيرفر
 async function smartUploadFile(endpoint, fileObj){
-  let {data,mime,name}=fileObj;
-  // ضغط الصور
-  if(mime&&mime.startsWith('image/')&&data){
-    try{ data=await _compress(data,mime); mime='image/jpeg'; name=name.replace(/\.[^.]+$/,'.jpg'); }catch(e){}
-  }
-  try{
-    const url=await _sbUpload(data,mime);
-    await api('POST',endpoint,{name,data:url,mime});
-    return {ok:true,url};
-  }catch(e){
-    console.warn('[SB fallback]',e.message);
-    return await api('POST',endpoint,{name,data,mime});
-  }
-}
+  const steps = [
+    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
+    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
+    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
+    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
+  ];
 
-// عرض ملف: URL أو base64
-function _fileSrc(d){
-  if(!d) return '';
-  const v=d.data||d;
-  if(typeof v==='string'&&v.startsWith('http')) return v;
-  return 'data:'+(d.mime||'image/jpeg')+';base64,'+v;
-}
-function _isImg(d){
-  if(!d) return false;
-  const v=d.data||d;
-  if(typeof v==='string'&&v.startsWith('http')) return true;
-  return !!(d.mime&&d.mime.startsWith('image/'));
-}
+  let {data, mime, name} = fileObj;
+  const isImage = mime && mime.startsWith('image/');
 
+  for(let attempt=0; attempt<steps.length; attempt++){
+    const kb = Math.round(data.length * 0.75 / 1024);
+    try{
+      if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
+      const result = await api('POST', endpoint, {name, data, mime});
+      return result; // نجح
+    }catch(e){
+      const msg = (e.message||'').toLowerCase();
+      const is502 = msg.includes('502') || msg.includes('413')
+                 || msg.includes('body') || msg.includes('payload')
+                 || msg.includes('entity');
+
+      if(is502 && isImage && attempt < steps.length-1){
+        // ضغط الصورة أكثر وأعد المحاولة
+        const next = steps[attempt+1];
+        toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
+        try{
+          // recompress من base64
+          const dataUrl = 'data:'+mime+';base64,'+data;
+          const compressed = await new Promise((res,rej)=>{
+            const img = new Image();
+            img.onload = function(){
+              let w=img.width, h=img.height;
+              const scale = Math.min(next.maxPx/w, next.maxPx/h, 1);
+              w=Math.round(w*scale); h=Math.round(h*scale);
+              const c = document.createElement('canvas');
+              c.width=w; c.height=h;
+              c.getContext('2d').drawImage(img,0,0,w,h);
+              const url = c.toDataURL('image/jpeg', next.q);
+              res({data:url.split(',')[1], mime:'image/jpeg'});
+            };
+            img.onerror = ()=>rej(new Error('فشل تحميل الصورة'));
+            img.src = dataUrl;
+          });
+          data = compressed.data;
+          mime = 'image/jpeg';
+          name = name.replace(/\.[^.]+$/, '.jpg');
+          continue; // أعد المحاولة
+        }catch(ce){ throw e; }
+      }
+
+      // خطأ آخر أو PDF كبير
+      if(is502){
+        const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
+        throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
+      }
+      throw e;
+    }
+  }
+  throw new Error('فشل الرفع بعد '+steps.length+' محاولات');
+}
 
 // ══ HANDOVER — استلام وتسليم ══
 // ══ تصدير الجرد إلى Excel (CSV) ══
@@ -7634,6 +7633,7 @@ function renderHandover(){
       <td style="font-size:11px;color:#64748b">${x.notes||''}</td>
       <td>
         <button onclick="printHandover(${x.id})" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">📄</button>
+        <button onclick="viewHovFile(${x.id})" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px" title="عرض المرفق">📎</button>
         ${CU?.role==='admin'?`<button onclick="delHandover(${x.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">🗑️</button>`:''}
       </td>
     </tr>`;
@@ -7679,6 +7679,16 @@ function openHandoverModal(opType,id){
       <div id="hov-s-items"></div>
       <button type="button" onclick="addHovSItemRow()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;margin-bottom:10px">➕ إضافة جهاز</button>
       <div class="fg"><label class="fl">ملاحظات</label><textarea class="fi" id="hov-s-notes" dir="rtl" rows="2" style="resize:vertical;text-align:right"></textarea></div>
+      <!-- مرفق الاستمارة -->
+      <div style="border:1.5px dashed #bfdbfe;border-radius:10px;padding:10px 14px;background:#f0f7ff;margin-bottom:8px">
+        <div style="font-size:12px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📎 مرفق الاستمارة</div>
+        <label id="hov-file-label" style="display:flex;align-items:center;gap:8px;cursor:pointer;background:#fff;border:1px solid #bfdbfe;border-radius:8px;padding:8px 12px;font-size:12px;color:#475569">
+          <span style="font-size:18px">📄</span>
+          <span id="hov-file-name">صورة أو PDF للاستمارة</span>
+          <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'hov_doc')">
+        </label>
+        <div id="hov-file-preview" style="margin-top:6px"></div>
+      </div>
       <div class="m-footer">
         <button class="btn btn-o" onclick="closeModal('ov-handover-simple')">إلغاء</button>
         <button class="btn btn-p" onclick="saveHandover()">💾 حفظ</button>
@@ -7691,6 +7701,12 @@ function openHandoverModal(opType,id){
   document.getElementById('hov-s-date').value=x.date||new Date().toISOString().split('T')[0];
   document.getElementById('hov-s-person').value=x.person||'';
   document.getElementById('hov-s-notes').value=x.notes||'';
+  // reset الملف
+  delete UF['hov_doc'];
+  const hovFN=document.getElementById('hov-file-name');
+  const hovFP=document.getElementById('hov-file-preview');
+  if(hovFN) hovFN.textContent='صورة أو PDF للاستمارة';
+  if(hovFP) hovFP.innerHTML='';
   const ds=document.getElementById('hov-s-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
   const itemsDiv=document.getElementById('hov-s-items');itemsDiv.innerHTML='';
@@ -7720,9 +7736,21 @@ async function saveHandover(){
     district:document.getElementById('hov-s-district')?.value||'',person:document.getElementById('hov-s-person')?.value||'',
     notes:document.getElementById('hov-s-notes')?.value||'',items:JSON.stringify(items),created_by:CU?.fullname||''};
   try{
-    if(id)await api('PUT','/api/handover/'+id,body);
-    else await api('POST','/api/handover',body);
-    closeModal('ov-handover-simple');toast('تم الحفظ ✅');await loadHandover();
+    let hovId;
+    if(id){ await api('PUT','/api/handover/'+id,body); hovId=id; }
+    else { const r=await api('POST','/api/handover',body); hovId=(r.item&&r.item.id)||r.id; }
+    // رفع المرفق إذا موجود
+    if(UF['hov_doc'] && hovId){
+      try{
+        await smartUploadFile('/api/files/hov_'+hovId+'_doc', UF['hov_doc']);
+        delete UF['hov_doc'];
+        const nm=document.getElementById('hov-file-name');
+        if(nm) nm.textContent='صورة أو PDF للاستمارة';
+        const pv=document.getElementById('hov-file-preview');
+        if(pv) pv.innerHTML='';
+      }catch(fe){ toast('⚠️ تم الحفظ لكن فشل رفع الملف: '+fe.message,'err'); }
+    }
+    closeModal('ov-handover-simple');toast('تم الحفظ ✅');await loadHandover();updateDashboard();
   }catch(e){toast('خطأ: '+e.message,'err');}
 }
 
@@ -7730,6 +7758,17 @@ async function delHandover(id){
   if(!confirm('حذف هذا السجل؟'))return;
   try{await api('DELETE','/api/handover/'+id);toast('تم الحذف');await loadHandover();}
   catch(e){toast('خطأ','err');}
+}
+
+async function viewHovFile(id){
+  try{
+    const res=await api('GET','/api/files/hov_'+id+'_doc');
+    const d=res.file||res;
+    if(!d||!d.data){toast('لا يوجد مرفق لهذا السجل','err');return;}
+    const src=_fileSrc(d);
+    if(_isImg(d)) openLB(src);
+    else{ const a=document.createElement('a');a.href=src;a.download=d.name||'مرفق';a.target='_blank';a.click(); }
+  }catch(e){toast('لا يوجد مرفق','err');}
 }
 
 function printHandover(id){
