@@ -4986,7 +4986,7 @@ async function saveMaint(){
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||r.id;
+    const mid=id||(r.maintenance&&r.maintenance.id)||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     const toUpload = fileKeys.filter(k=>UF[k]);
     if(toUpload.length){
