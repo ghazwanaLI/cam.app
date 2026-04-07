@@ -1362,7 +1362,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 سجل الصيانة وصرف الأجهزة</div>
           </div>
           <div style="padding:12px 16px;border-bottom:1px solid var(--border)">
-            <!-- زر إضافة صيانة — مخفي من هنا، موجود داخل التبويب -->
+            <button class="btn btn-p btn-sm" id="btn-add-maint" onclick="openMaintModal()" style="display:none">➕ إضافة صيانة</button>
           </div>
           <div class="table-wrap">
             <table>
@@ -7330,8 +7330,16 @@ function startNotifPolling(){
 
 async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
-  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
+  if(!SERVER_ONLINE) return;
   try{
+    // تصفير الشريط كل 24 ساعة
+    const lastReset = parseInt(localStorage.getItem('ticker_last_reset')||'0');
+    const now = Date.now();
+    if(now - lastReset > 24*60*60*1000){
+      api('POST','/api/notifications/clear',{}).catch(()=>{});
+      localStorage.setItem('ticker_last_reset', now);
+    }
+
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
     const tickerBar = document.getElementById('maint-ticker-bar');
@@ -7340,7 +7348,6 @@ async function updateActivityTicker(){
 
     if(!list.length){ tickerBar.style.display='none'; return; }
 
-    // بناء نص الشريط من آخر 20 فعالية
     const items = list.slice(0,20).map(n=>{
       const icon = n.action.includes('جولة')?'🚗':
                    n.action.includes('صيانة')?'🔧':
@@ -7350,14 +7357,11 @@ async function updateActivityTicker(){
     tickerContent.textContent = items.join('   ◈   ');
     tickerBar.style.display = 'flex';
 
-    // تنبيه إذا جاءت فعالية جديدة
     const unread = d.unread || 0;
     if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
       toast('📡 فعالية جديدة من مخوّل');
     }
     _lastNotifCount = unread;
-
-    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
 }
