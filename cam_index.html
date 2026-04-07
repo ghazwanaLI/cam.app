@@ -2647,6 +2647,9 @@ async function api(method,path,body=null){
         showOfflineBanner();
         return lsApi(method,path,body);
       }
+      if(r.status===502||r.status===413||r.status===503){
+        throw new Error(`خطأ ${r.status}`);
+      }
       const d=await r.json();
       if(!r.ok) throw new Error(d.error||`خطأ ${r.status}`);
       return d;
@@ -6890,7 +6893,7 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
+      if(d&&d.data&&_isImg(d)){
         const src=_fileSrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
@@ -6950,7 +6953,7 @@ function toggleCircImg(cid, btn){
         return;
       }
       const mime = d.mime || 'image/jpeg';
-      const src  = _fileSrc({data:d.data,mime});
+      const src  = _fileSrc(d);
       imgDiv.innerHTML = '';
 
       // الصورة
