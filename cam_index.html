@@ -1286,7 +1286,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <table>
               <thead><tr>
                 <th>#</th><th>التاريخ</th><th>النوع</th><th>المخول / الجهة</th>
-                <th>القاطع</th><th>الأجهزة</th><th>الكمية</th><th>ملاحظات</th><th>إجراءات</th>
+                <th>القاطع</th><th>الأجهزة</th><th>الكمية</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>
               </tr></thead>
               <tbody id="handover-list-body">
                 <tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">جاري التحميل...</td></tr>
@@ -4954,6 +4954,7 @@ function renderMaint(){
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
     <td><button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})" title="عرض الملفات المرفوعة">📎 ملفات</button></td>
     <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
+        <button class="btn btn-o btn-sm" onclick="printMaintRecord(${m.id})" title="طباعة">🖨️</button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
   </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
   renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
@@ -6170,6 +6171,49 @@ function printToursTable(){
     +'</tbody></table>'
     +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' زيارة</div>';
   _openPrintWindow('سجل الجولات الميدانية', tbl);
+}
+
+// ── طباعة سجل صيانة واحد ──
+function printMaintRecord(id){
+  const m=allMaint.find(x=>x.id===id);
+  if(!m){toast('السجل غير موجود','err');return;}
+  let devList='';
+  try{const devs=JSON.parse(m.devices||'[]');devList=devs.map((d,i)=>`<tr><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${i+1}</td><td style="padding:5px 10px;border:1px solid #ccc">${d.device||''}</td><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${d.qty||0}</td></tr>`).join('');}catch(e){devList=`<tr><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">1</td><td style="padding:5px 10px;border:1px solid #ccc">${m.device_type||'—'}</td><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${m.qty||0}</td></tr>`;}
+  const w=window.open('','_blank','width=750,height=600');
+  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>
+    body{font-family:Arial,sans-serif;padding:20px;direction:rtl;font-size:13px}
+    h2{text-align:center;font-size:16px;margin-bottom:4px}
+    .sub{text-align:center;color:#555;font-size:11px;margin-bottom:16px}
+    table{width:100%;border-collapse:collapse;margin-bottom:12px}
+    th{background:#1d4ed8;color:#fff;padding:7px 10px;text-align:right;font-size:12px}
+    td{padding:7px 10px;border:1px solid #ccc;font-size:12px}
+    .label{background:#f1f5f9;font-weight:700;width:150px}
+    .sig{display:flex;justify-content:space-between;margin-top:30px;padding-top:10px;border-top:1px solid #ccc}
+    .sig div{text-align:center;width:200px}
+    .sig .line{border-top:1px solid #333;margin-top:40px;padding-top:4px;font-size:11px}
+    @media print{.np{display:none}@page{margin:10mm}}
+  </style></head><body>
+  <div class="np" style="margin-bottom:12px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>
+  <h2>استمارة صيانة كاميرات المراقبة</h2>
+  <div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>
+  <table>
+    <tr><td class="label">التاريخ</td><td>${m.date||'—'}</td><td class="label">القاطع</td><td>${m.district||'—'}</td></tr>
+    <tr><td class="label">المحطة</td><td>${m.station_name||'—'}</td><td class="label">الفني</td><td>${m.technician||'—'}</td></tr>
+    <tr><td class="label">سبب العطل</td><td colspan="3">${m.reason||'—'}</td></tr>
+    <tr><td class="label">الحالة بعد الصيانة</td><td colspan="3">${m.status_after||'—'}</td></tr>
+    <tr><td class="label">ملاحظات</td><td colspan="3">${m.notes||'—'}</td></tr>
+  </table>
+  <table>
+    <thead><tr><th>#</th><th>الجهاز / المادة</th><th style="text-align:center">الكمية</th></tr></thead>
+    <tbody>${devList}</tbody>
+  </table>
+  <div class="sig">
+    <div><div class="line">الفني المنفذ</div></div>
+    <div><div class="line">مسؤول المحطة</div></div>
+    <div><div class="line">مسؤول الشعبة</div></div>
+  </div>
+  </body></html>`);
+  w.document.close();
 }
 
 // ── طباعة الصيانة ──
@@ -7615,9 +7659,17 @@ function renderHandover(){
       <td><span class="db">${x.district||'—'}</span></td>
       <td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${itemNames}">${itemNames||'—'}</td>
       <td style="text-align:center;font-weight:800;color:#1d4ed8">${totalQty}</td>
+      <td style="text-align:center">
+        ${x.signed_at?
+          `<span style="background:#dcfce7;color:#16a34a;border-radius:8px;font-size:10px;font-weight:700;padding:3px 8px;display:inline-block">✅ موقّع<br><span style="font-size:9px;font-weight:400">${x.signed_at||''}</span></span>
+           ${x.signed_url?`<br><button onclick="viewHovSignature(${x.id})" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 6px;border-radius:5px;cursor:pointer;font-size:10px;margin-top:3px">👁️ التوقيع</button>`:''}`:
+          `<span style="background:#fef3c7;color:#d97706;border-radius:8px;font-size:10px;font-weight:700;padding:3px 8px">⏳ بانتظار التوقيع</span>
+           ${(CU&&x.person&&(x.person===CU.fullname||x.person===CU.username))?`<br><button onclick="openSignModal(${x.id})" style="background:#16a34a;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;margin-top:4px">✍️ توقيع</button>`:''}`
+        }
+      </td>
       <td style="font-size:11px;color:#64748b">${x.notes||''}</td>
       <td>
-        <button onclick="openHandoverModal(x.op_type,${x.id})" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">✏️</button>
+        <button onclick="openHandoverModal('${x.op_type}',${x.id})" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">✏️</button>
         <button onclick="printHandover(${x.id})" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">📄</button>
         ${CU?.role==='admin'?`<button onclick="delHandover(${x.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">🗑️</button>`:''}
       </td>
@@ -7652,13 +7704,18 @@ function openHandoverModal(opType,id){
   if(!ov){
     ov=document.createElement('div');ov.id='ov-handover-simple';ov.className='overlay';
     ov.onclick=function(e){if(e.target===ov)closeModal('ov-handover-simple');};
-    ov.innerHTML=`<div class="modal" style="width:500px;direction:rtl">
+    ov.innerHTML=`<div class="modal" style="width:520px;direction:rtl">
       <div class="m-title" id="hov-s-title">📦 تسليم مواد</div>
       <input type="hidden" id="hov-s-eid"><input type="hidden" id="hov-s-type">
       <div class="fgrid">
         <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="hov-s-date" type="date"></div>
-        <div class="fg"><label class="fl">القاطع</label><select class="fi" dir="rtl" id="hov-s-district"></select></div>
-        <div class="fg full"><label class="fl">المخول / الجهة *</label><input class="fi" id="hov-s-person" type="text" placeholder="اسم المخول..."></div>
+        <div class="fg"><label class="fl">القاطع</label><select class="fi" dir="rtl" id="hov-s-district" onchange="filterHovUsers()"></select></div>
+        <div class="fg full"><label class="fl">المخول *</label>
+          <select class="fi" dir="rtl" id="hov-s-user-sel" onchange="onHovUserSelect()">
+            <option value="">— اختر مخول —</option>
+          </select>
+        </div>
+        <div class="fg full"><label class="fl">أو اكتب الجهة يدوياً</label><input class="fi" id="hov-s-person" type="text" placeholder="اسم المخول / الجهة..."></div>
       </div>
       <div style="margin:10px 0 5px;font-size:12px;font-weight:700;color:#1d4ed8">📦 الأجهزة</div>
       <div id="hov-s-items"></div>
@@ -7666,7 +7723,7 @@ function openHandoverModal(opType,id){
       <div class="fg"><label class="fl">ملاحظات</label><textarea class="fi" id="hov-s-notes" dir="rtl" rows="2" style="resize:vertical;text-align:right"></textarea></div>
       <div class="m-footer">
         <button class="btn btn-o" onclick="closeModal('ov-handover-simple')">إلغاء</button>
-        <button class="btn btn-p" onclick="saveHandover()">💾 حفظ</button>
+        <button class="btn btn-p" onclick="saveHandover()">💾 حفظ وإرسال للمخول</button>
       </div></div>`;
     document.body.appendChild(ov);
   }
@@ -7678,10 +7735,26 @@ function openHandoverModal(opType,id){
   document.getElementById('hov-s-notes').value=x.notes||'';
   const ds=document.getElementById('hov-s-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
+  filterHovUsers();
+  if(x.person){const sel=document.getElementById('hov-s-user-sel');if(sel)[...sel.options].forEach(o=>{if(o.value===x.person)o.selected=true;});}
   const itemsDiv=document.getElementById('hov-s-items');itemsDiv.innerHTML='';
   const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
   if(items.length)items.forEach(r=>addHovSItemRow(r));else addHovSItemRow();
   ov.classList.add('open');
+}
+
+
+function filterHovUsers(){
+  const dist=document.getElementById('hov-s-district')?.value||'';
+  const sel=document.getElementById('hov-s-user-sel');
+  if(!sel)return;
+  const users=(allUsers||[]).filter(u=>u.role!=='admin'&&(!dist||u.district===dist||!u.district));
+  sel.innerHTML='<option value="">— اختر مخول —</option>'+users.map(u=>`<option value="${u.fullname||u.username}">${u.fullname||u.username} (${u.district||'كل القواطع'})</option>`).join('');
+}
+function onHovUserSelect(){
+  const sel=document.getElementById('hov-s-user-sel');
+  const inp=document.getElementById('hov-s-person');
+  if(sel&&inp&&sel.value) inp.value=sel.value;
 }
 
 function addHovSItemRow(data={}){
@@ -7703,12 +7776,138 @@ async function saveHandover(){
   if(!items.length){toast('أضف جهازاً واحداً على الأقل','err');return;}
   const body={op_type:opType,date:document.getElementById('hov-s-date')?.value||new Date().toISOString().split('T')[0],
     district:document.getElementById('hov-s-district')?.value||'',person:document.getElementById('hov-s-person')?.value||'',
-    notes:document.getElementById('hov-s-notes')?.value||'',items:JSON.stringify(items),created_by:CU?.fullname||''};
+    notes:document.getElementById('hov-s-notes')?.value||'',items:JSON.stringify(items),created_by:CU?.fullname||'',status:'pending',signed_at:'',signed_url:''};
   try{
     if(id)await api('PUT','/api/handover/'+id,body);
     else await api('POST','/api/handover',body);
     closeModal('ov-handover-simple');toast('تم الحفظ ✅');await loadHandover();
   }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+
+// ══ نظام التوقيع الرقمي ══
+let _signCanvas=null, _signCtx=null, _signDrawing=false, _signHovId=0;
+
+function openSignModal(hovId){
+  _signHovId=hovId;
+  const x=(allHandover||[]).find(r=>r.id===hovId)||{};
+  const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+  const isDeliver=x.op_type==='deliver';
+
+  // بناء HTML الاستمارة كاملاً داخل canvas لاحقاً
+  let ov=document.getElementById('ov-sign-modal');
+  if(ov) ov.remove();
+  ov=document.createElement('div');ov.id='ov-sign-modal';ov.className='overlay';
+  ov.onclick=function(e){if(e.target===ov)closeModal('ov-sign-modal');};
+
+  const itemRows=items.map((r,i)=>`<tr>
+    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${i+1}</td>
+    <td style="padding:5px 8px;border:1px solid #999;font-size:12px">${r.name||''}</td>
+    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${r.qty||0}</td>
+    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${r.status||''}</td>
+  </tr>`).join('');
+
+  ov.innerHTML=`<div class="modal" style="width:640px;max-height:92vh;overflow-y:auto;direction:rtl;padding:0">
+    <div style="background:#1d4ed8;padding:14px 20px;display:flex;justify-content:space-between;align-items:center">
+      <span style="font-size:15px;font-weight:900;color:#fff">✍️ توقيع استمارة ${isDeliver?'التسليم':'الاستلام'}</span>
+      <button onclick="closeModal('ov-sign-modal')" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px">✕</button>
+    </div>
+    <!-- الاستمارة -->
+    <div id="form-to-sign" style="padding:20px;background:#fff;font-family:Arial,sans-serif;direction:rtl">
+      <div style="text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:10px;margin-bottom:14px">
+        <div style="font-size:15px;font-weight:900;color:#1d4ed8">استمارة ${isDeliver?'تسليم':'استلام'} أجهزة كاميرات المراقبة</div>
+        <div style="font-size:11px;color:#555;margin-top:2px">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>
+      </div>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
+        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px;width:100px">التاريخ</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px">${x.date||'—'}</td>
+            <td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px;width:80px">القاطع</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px">${x.district||'—'}</td></tr>
+        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">المخول</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.person||'—'}</td></tr>
+        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">المسؤول</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.created_by||'—'}</td></tr>
+        ${x.notes?`<tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">ملاحظات</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.notes}</td></tr>`:''}
+      </table>
+      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
+        <thead><tr>
+          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">#</th>
+          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:right;border:1px solid #999;font-size:12px">الجهاز / المادة</th>
+          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">الكمية</th>
+          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">الحالة</th>
+        </tr></thead>
+        <tbody>${itemRows}</tbody>
+      </table>
+      <!-- منطقة التوقيع -->
+      <div style="margin-top:8px">
+        <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px">✍️ توقيع المستلم (${x.person||'المخول'}):</div>
+        <div style="border:2px dashed #1d4ed8;border-radius:10px;overflow:hidden;background:#f8fafc;position:relative">
+          <canvas id="sign-canvas" width="580" height="160" style="width:100%;touch-action:none;cursor:crosshair;display:block"></canvas>
+          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:#cbd5e1;font-size:13px" id="sign-hint">وقّع هنا بإصبعك أو الماوس</div>
+        </div>
+      </div>
+    </div>
+    <!-- أزرار -->
+    <div style="padding:12px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:8px;align-items:center">
+      <button onclick="clearSign()" style="background:#fff;border:1px solid #e2e8f0;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🗑️ مسح التوقيع</button>
+      <div style="flex:1"></div>
+      <button onclick="closeModal('ov-sign-modal')" class="btn btn-o">إلغاء</button>
+      <button onclick="submitSignature()" style="background:#16a34a;color:#fff;border:none;padding:9px 22px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">✅ وقّعت — إرسال للمدير</button>
+    </div>
+  </div>`;
+  document.body.appendChild(ov);
+  ov.classList.add('open');
+  _signCanvas=document.getElementById('sign-canvas');
+  _signCtx=_signCanvas.getContext('2d');
+  _signCtx.strokeStyle='#1d4ed8';_signCtx.lineWidth=2.5;_signCtx.lineCap='round';_signCtx.lineJoin='round';
+  const getPos=e=>{
+    const r=_signCanvas.getBoundingClientRect();
+    const sx=_signCanvas.width/r.width,sy=_signCanvas.height/r.height;
+    const s=e.touches?e.touches[0]:e;
+    return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};
+  };
+  const start=e=>{e.preventDefault();_signDrawing=true;const p=getPos(e);_signCtx.beginPath();_signCtx.moveTo(p.x,p.y);document.getElementById('sign-hint').style.display='none';};
+  const draw=e=>{e.preventDefault();if(!_signDrawing)return;const p=getPos(e);_signCtx.lineTo(p.x,p.y);_signCtx.stroke();};
+  const stop=e=>{e.preventDefault();_signDrawing=false;};
+  _signCanvas.addEventListener('mousedown',start);_signCanvas.addEventListener('mousemove',draw);
+  _signCanvas.addEventListener('mouseup',stop);_signCanvas.addEventListener('mouseleave',stop);
+  _signCanvas.addEventListener('touchstart',start,{passive:false});
+  _signCanvas.addEventListener('touchmove',draw,{passive:false});
+  _signCanvas.addEventListener('touchend',stop,{passive:false});
+}
+
+function clearSign(){
+  if(_signCtx&&_signCanvas){_signCtx.clearRect(0,0,_signCanvas.width,_signCanvas.height);const h=document.getElementById('sign-hint');if(h)h.style.display='';}
+}
+
+function isCanvasEmpty(){
+  if(!_signCanvas)return true;
+  return !_signCtx.getImageData(0,0,_signCanvas.width,_signCanvas.height).data.some(x=>x!==0);
+}
+
+async function submitSignature(){
+  if(isCanvasEmpty()){toast('يرجى التوقيع أولاً','err');return;}
+  try{
+    toast('⏳ جاري رفع الاستمارة الموقّعة...');
+    // تحويل الاستمارة كاملة (الـ div) إلى صورة عبر html2canvas
+    const formDiv=document.getElementById('form-to-sign');
+    let signedB64;
+    if(typeof html2canvas!=='undefined'){
+      const cvs=await html2canvas(formDiv,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
+      signedB64=cvs.toDataURL('image/jpeg',0.92).split(',')[1];
+    } else {
+      // fallback: رفع التوقيع فقط
+      signedB64=_signCanvas.toDataURL('image/png').split(',')[1];
+    }
+    const url=await _sbUpload(signedB64,'image/jpeg');
+    const now=new Date().toLocaleString('ar-IQ');
+    await api('PUT','/api/handover/'+_signHovId,{status:'signed',signed_at:now,signed_by:CU?.fullname||CU?.username||'',signed_url:url});
+    closeModal('ov-sign-modal');
+    toast('✅ تم إرسال الاستمارة الموقّعة للمدير');
+    await loadHandover();updateDashboard();
+  }catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+function viewHovSignature(hovId){
+  const x=(allHandover||[]).find(r=>r.id===hovId)||{};
+  if(!x.signed_url){toast('لا يوجد مرفق','err');return;}
+  openLB(x.signed_url);
 }
 
 async function delHandover(id){
