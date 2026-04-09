@@ -4329,7 +4329,7 @@ function goTab(name, el){
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
-  if(name==='reports')    { populateReportDistricts(); generateReport(); }
+  if(name==='reports')    { populateReportDistricts(); generateReport(); loadHandover().then(()=>generateHovReport()).catch(()=>{}); }
   if(name==='delegates')  { loadDelegates(); }
   if(name==='circulars')  { loadCirculars(); }
   if(name==='users')      { loadUsers(); }
@@ -8060,6 +8060,15 @@ function printHandover(id){
 }
 
 function generateHovReport(){
+  // تأكد من تحميل البيانات
+  if(!allHandover||!allHandover.length){
+    loadHandover().then(()=>_buildHovReport()).catch(()=>_buildHovReport());
+  } else {
+    _buildHovReport();
+  }
+}
+
+function _buildHovReport(){
   const dist=document.getElementById('rhov-district')?.value||'';
   const type=document.getElementById('rhov-type')?.value||'';
   const status=document.getElementById('rhov-status')?.value||'';
