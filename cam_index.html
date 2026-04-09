@@ -4473,6 +4473,7 @@ async function initApp(){
       loadDelegates(),
       loadCirculars(),
       loadHandover(),
+      loadInvStations(),
     ]);
   }catch(e){
     toast('خطأ في تحميل البيانات: '+e.message,'err');
