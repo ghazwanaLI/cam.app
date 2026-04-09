@@ -3246,7 +3246,7 @@ function printVoidLabel(id){
     +'.ftr{border-top:1px solid #ccc;display:flex;justify-content:space-between;padding:2px 6px;background:#f5f5f5;font-size:6px;direction:rtl;font-family:"Cairo",Arial,sans-serif}'
     +'.btns{display:flex;gap:8px}'
     +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
-    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
+    +'@media print{@page{margin:0;size:A4 landscape}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
     +'<\/style><\/head><body>'
     +'<div class="ctrl">'
     +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
@@ -6201,7 +6201,7 @@ function _openPrintWindow(title, tableHTML, extraStyle){
     +'.badge-ok{background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:20px;font-size:11px}'
     +'.badge-bad{background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:20px;font-size:11px}'
     +'.btn-p{background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700}'
-    +'@media print{.no-print{display:none!important}@page{margin:10mm}}'
+    +'@media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}'
     +(extraStyle||'')
     +'</style></head><body>'
     +'<div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;align-items:center">'
@@ -6250,7 +6250,7 @@ function printMaintRecord(id){
     .sig{display:flex;justify-content:space-between;margin-top:30px;padding-top:10px;border-top:1px solid #ccc}
     .sig div{text-align:center;width:200px}
     .sig .line{border-top:1px solid #333;margin-top:40px;padding-top:4px;font-size:11px}
-    @media print{.np{display:none}@page{margin:10mm}}
+    @media print{.np{display:none}@page{margin:8mm;size:A4 landscape}}
   </style></head><body>
   <div class="np" style="margin-bottom:12px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>
   <h2>استمارة صيانة كاميرات المراقبة</h2>
@@ -6341,7 +6341,7 @@ function printCodingFormSingle(id){
     .sig-line{border-bottom:1px solid #333;margin:30px 10px 4px}
     .sig-label{font-size:11px;font-weight:700}
     .no-print{margin-bottom:12px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:8mm}}
+    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
   </style></head><body>
   <div class="no-print">
     <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
@@ -6522,7 +6522,7 @@ function printCodingForm(){
     .sig-line{border-bottom:1px solid #333;margin:30px 10px 4px}
     .sig-label{font-size:11px;font-weight:700}
     .no-print{margin-bottom:12px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:8mm}}
+    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
   </style></head><body>
   <div class="no-print">
     <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
@@ -8241,7 +8241,7 @@ function printPersonHovReport(person){
     +'body{font-family:Arial,sans-serif;padding:20px;direction:rtl;font-size:13px}'
     +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
     +'th{background:#1d4ed8;color:#fff;padding:8px 10px;font-size:12px;text-align:right}'
-    +'@media print{.np{display:none}@page{margin:10mm;size:A4 portrait}}'
+    +'@media print{.np{display:none}@page{margin:10mm;size:A4 landscape}}'
     +'</style></head><body>'
     +'<div class="np" style="margin-bottom:14px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
     +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:10px;margin-bottom:16px">'
