@@ -6031,7 +6031,12 @@ function showMaintFiles(mid){
   ov.classList.add('open');
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .then(function(res){
+        // السيرفر يرجع {ok,file} أو {data,mime,name} مباشرة
+        const d=res.file||res;
+        if(!d||!d.data) return null;
+        return {k:k,d:d};
+      })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
@@ -6042,7 +6047,12 @@ function showMaintFiles(mid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src=_fileSrc(d);const isImg=_isImg(d);
+      // إذا data رابط Supabase — استخدمه مباشرة
+      const rawData=d.data||'';
+      const isSbUrl=typeof rawData==='string'&&(rawData.startsWith('http')||rawData.startsWith('https'));
+      const src=isSbUrl ? rawData : ('data:'+(d.mime||'image/jpeg')+';base64,'+rawData);
+      const isPdf=d.mime==='application/pdf'||(d.name||'').toLowerCase().endsWith('.pdf');
+      const isImg=!isPdf&&(isSbUrl||(d.mime&&d.mime.startsWith('image/'))||(!d.mime&&!isPdf));
 
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
@@ -6071,7 +6081,8 @@ function showMaintFiles(mid){
       // تحميل
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.jpg';
+      dl.href=src; dl.download=(d.name||k)+(isPdf?'.pdf':'.jpg');
+      dl.target='_blank';
       dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
       dl.textContent='⬇️ حفظ';
       btns.appendChild(dl);
@@ -6102,15 +6113,20 @@ function showMaintFiles(mid){
       hdr.appendChild(btns);
       card.appendChild(hdr);
 
-      // عرض الصورة مباشرة
+      // عرض الصورة أو PDF
       if(isImg){
         const img=document.createElement('img');
         img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
+        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
         img.onclick=function(){openLB(src);};
+        img.onerror=function(){this.style.display='none';const e=document.createElement('div');e.style.cssText='padding:14px;text-align:center;color:#dc2626;font-size:12px';e.textContent='⚠️ تعذّر تحميل الصورة';card.appendChild(e);};
         card.appendChild(img);
+      } else if(isPdf){
+        const pdfDiv=document.createElement('div');
+        pdfDiv.style.cssText='padding:14px;text-align:center;background:#f8fafc';
+        pdfDiv.innerHTML='<div style="font-size:28px">📄</div><div style="font-size:12px;color:#64748b;margin-top:4px">'+(d.name||'ملف PDF')+'</div>';
+        card.appendChild(pdfDiv);
       }
-
       list.appendChild(card);
     });
   });
@@ -7338,7 +7354,11 @@ function showTourFiles(tid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const src=_fileSrc(d);const isImg=_isImg(d);
+      const rawData=d.data||'';
+      const isSbUrl=typeof rawData==='string'&&(rawData.startsWith('http')||rawData.startsWith('https'));
+      const src=isSbUrl ? rawData : ('data:'+(d.mime||'image/jpeg')+';base64,'+rawData);
+      const isPdf=d.mime==='application/pdf'||(d.name||'').toLowerCase().endsWith('.pdf');
+      const isImg=!isPdf;
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
       // هيدر البطاقة
@@ -7361,7 +7381,8 @@ function showTourFiles(tid){
       // حفظ
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.jpg';
+      dl.href=src; dl.download=(d.name||k)+(isPdf?'.pdf':'.jpg');
+      dl.target='_blank';
       dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
       dl.textContent='⬇️ حفظ';
       btns.appendChild(dl);
@@ -7372,7 +7393,9 @@ function showTourFiles(tid){
         repInp.onchange=function(ev){
           const file=ev.target.files[0]; if(!file) return;
           compressImage(file,1280,1280,0.85).then(function(res){
-            return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+            return _sbUpload(res.data, res.mime||'image/jpeg').then(function(url){
+              return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:url,mime:res.mime});
+            });
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-tour-files');
@@ -7389,13 +7412,19 @@ function showTourFiles(tid){
       }
       hdr.appendChild(btns);
       card.appendChild(hdr);
-      // عرض الصورة مباشرة
+      // عرض الصورة أو PDF
       if(isImg){
         const img=document.createElement('img');
         img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
+        img.style.cssText='width:100%;max-height:280px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
         img.onclick=function(){openLB(src);};
+        img.onerror=function(){this.style.display='none';const e=document.createElement('div');e.style.cssText='padding:14px;text-align:center;color:#dc2626;font-size:12px';e.textContent='⚠️ تعذّر تحميل الصورة';card.appendChild(e);};
         card.appendChild(img);
+      } else {
+        const pdfDiv=document.createElement('div');
+        pdfDiv.style.cssText='padding:16px;text-align:center;background:#f8fafc';
+        pdfDiv.innerHTML='<div style="font-size:32px">📄</div><div style="font-size:12px;color:#64748b;margin-top:4px">'+(d.name||'ملف PDF')+'</div>';
+        card.appendChild(pdfDiv);
       }
       list.appendChild(card);
     });
