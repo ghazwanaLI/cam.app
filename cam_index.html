@@ -3919,6 +3919,28 @@ async function saveGenToList(){
 //  NAVIGATION
 // ══════════════════════════════════════════
 
+
+// تنسيق التاريخ — يوم/شهر/سنة
+function fmtDate(d){
+  if(!d) return '—';
+  try{
+    const dt=new Date(d);
+    if(isNaN(dt)) return d;
+    const day=String(dt.getDate()).padStart(2,'0');
+    const mon=String(dt.getMonth()+1).padStart(2,'0');
+    const yr=dt.getFullYear();
+    return day+'/'+mon+'/'+yr;
+  }catch(e){return d;}
+}
+function fmtDateTime(d){
+  if(!d) return '—';
+  try{
+    const dt=new Date(d);
+    if(isNaN(dt)) return d;
+    return fmtDate(d)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+  }catch(e){return d;}
+}
+
 const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','handover','users','logs'];
 
 function updateInvAddress(){
@@ -6072,7 +6094,7 @@ function printCamReport(type){
     +'th{background:#1d4ed8;color:#fff;padding:8px}td{border:1px solid #ddd;padding:7px}'
     +'@media print{button{display:none}}</style></head><body>'
     +'<h2 style="color:#1d4ed8">تقرير '+title+'</h2>'
-    +'<p>العدد: '+list.length+' محطة — '+new Date().toLocaleDateString('ar-IQ')+'</p>'
+    +'<p>العدد: '+list.length+' محطة — '+fmtDate(new Date())+'</p>'
     +'<button onclick="window.print()" style="margin-bottom:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">🖨️ طباعة</button>'
     +'<table><thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>يعمل</th><th>معطل</th></tr></thead>'
     +'<tbody>'+list.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+(s.name||'—')+'</td><td>'+(s.district||'—')+'</td>'
@@ -6187,7 +6209,7 @@ function _openPrintWindow(title, tableHTML, extraStyle){
     +'<button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">✕ إغلاق</button>'
     +'</div>'
     +'<h2>'+title+'</h2>'
-    +'<div class="sub">نظام إدارة كاميرات المراقبة — شعبة تقنية المعلومات — '+new Date().toLocaleDateString('ar-IQ')+'</div>'
+    +'<div class="sub">نظام إدارة كاميرات المراقبة — شعبة تقنية المعلومات — '+fmtDate(new Date())+'</div>'
     +tableHTML
     +'</body></html>');
   w.document.close();
@@ -6276,7 +6298,7 @@ function printCodingFormSingle(id){
   const d=allCoding.find(x=>x.id===id);
   if(!d){toast('لم يتم العثور على البيانات','err');return;}
   // استخدم نفس buildForm من printCodingForm
-  const today=new Date().toLocaleDateString('ar-IQ');
+  const today=fmtDate(new Date());
   const nvrs=d.nvrs||[];
   const hdds=d.hdds||[];
   const others=d.others||[];
@@ -6372,7 +6394,7 @@ function printCodingForm(){
   if(!list.length){toast('لا توجد بيانات','err');return;}
 
   // بناء استمارة لكل جهاز
-  const today=new Date().toLocaleDateString('ar-IQ');
+  const today=fmtDate(new Date());
 
   function buildForm(d,idx){
     const nvrs=d.nvrs||[];
@@ -8231,7 +8253,7 @@ function printPersonHovReport(person){
     +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd;width:100px">إجمالي العمليات</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+records.length+'</td></tr>'
     +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">إجمالي القطع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+totQty+'</td>'
     +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">الموقّع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#16a34a">'+totSigned+'/'+records.length+'</td></tr>'
-    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">تاريخ الطباعة</td><td colspan="3" style="padding:8px;border:1px solid #ddd">'+new Date().toLocaleDateString('ar-IQ')+'</td></tr>'
+    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">تاريخ الطباعة</td><td colspan="3" style="padding:8px;border:1px solid #ddd">'+fmtDate(new Date())+'</td></tr>'
     +'</table>'
     +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📦 ملخص الأجهزة الكلي</div>'
     +'<table style="margin-bottom:16px">'
@@ -8262,7 +8284,7 @@ function printHovReport(){
     +'</style></head><body>'
     +'<div class="np" style="margin-bottom:10px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
     +'<h2>تقرير الاستلام والتسليم — أجهزة كاميرات المراقبة</h2>'
-    +'<div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — تاريخ الطباعة: '+new Date().toLocaleDateString('ar-IQ')+'</div>'
+    +'<div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — تاريخ الطباعة: '+fmtDate(new Date())+'</div>'
     +(byPerson?byPerson.innerHTML:'')
     +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin:12px 0 8px">📋 التفاصيل الكاملة</div>'
     +table.outerHTML
