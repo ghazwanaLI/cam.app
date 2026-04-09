@@ -1581,12 +1581,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
           </div>
         </div>
-        <!-- District Summary -->
-        <div class="section">
-          <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📍 ملخص القواطع</div></div>
-          <div id="district-summary" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
-        </div>
-
         <!-- تقرير الاستلام والتسليم -->
         <div class="section" style="margin-top:16px">
           <div class="sec-hdr">
@@ -8111,21 +8105,57 @@ function generateHovReport(){
     if(x.status==='signed') byPerson[p].signed++;
   });
 
+  // تجميع تفاصيل كل مخول
+  const personDetails={};
+  list.forEach(x=>{
+    const p=x.person||'غير محدد';
+    if(!personDetails[p]) personDetails[p]=[];
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    personDetails[p].push({...x,_items:it,_qty:it.reduce((a,r)=>a+(+r.qty||0),0)});
+  });
+
   const personDiv=document.getElementById('hov-report-by-person');
-  if(personDiv) personDiv.innerHTML=`
-    <div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:10px">📋 ملخص بالمخولين</div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
-    ${Object.entries(byPerson).map(([person,d])=>`
-      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px">
-        <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:8px">👤 ${person}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">
-          <div style="background:#f0fdf4;border-radius:6px;padding:5px;text-align:center"><div style="color:#16a34a;font-weight:700;font-size:16px">${d.deliver}</div><div style="color:#64748b">تسليم</div></div>
-          <div style="background:#fff1f2;border-radius:6px;padding:5px;text-align:center"><div style="color:#dc2626;font-weight:700;font-size:16px">${d.receive}</div><div style="color:#64748b">استلام</div></div>
-          <div style="background:#eff6ff;border-radius:6px;padding:5px;text-align:center"><div style="color:#1d4ed8;font-weight:700;font-size:16px">${d.items}</div><div style="color:#64748b">إجمالي قطع</div></div>
-          <div style="background:${d.signed===d.total?'#f0fdf4':'#fef9c3'};border-radius:6px;padding:5px;text-align:center"><div style="color:${d.signed===d.total?'#16a34a':'#d97706'};font-weight:700;font-size:16px">${d.signed}/${d.total}</div><div style="color:#64748b">موقّع</div></div>
+  if(personDiv) personDiv.innerHTML=Object.entries(personDetails).map(([person,records])=>{
+    const totDel=records.filter(r=>r.op_type==='deliver').length;
+    const totRec=records.filter(r=>r.op_type==='receive').length;
+    const totQty=records.reduce((a,r)=>a+r._qty,0);
+    const totSigned=records.filter(r=>r.status==='signed').length;
+    const rowsHtml=records.map((r,i)=>{
+      const names=r._items.map(d=>d.name+(d.qty>1?' ('+d.qty+')':'')).join('، ');
+      return `<tr style="background:${i%2===0?'#f8fafc':'#fff'}">
+        <td style="font-size:11px;padding:5px 8px">${r.date||'—'}</td>
+        <td style="text-align:center;padding:5px 8px"><span style="background:${r.op_type==='deliver'?'#dcfce7':'#fee2e2'};color:${r.op_type==='deliver'?'#16a34a':'#dc2626'};border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px">${r.op_type==='deliver'?'📦 تسليم':'📥 استلام'}</span></td>
+        <td style="font-size:11px;padding:5px 8px"><span class="db">${r.district||'—'}</span></td>
+        <td style="font-size:11px;padding:5px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${names}">${names||'—'}</td>
+        <td style="text-align:center;font-weight:700;color:#1d4ed8;padding:5px 8px">${r._qty}</td>
+        <td style="text-align:center;padding:5px 8px"><span style="background:${r.status==='signed'?'#dcfce7':'#fef9c3'};color:${r.status==='signed'?'#16a34a':'#d97706'};border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px">${r.status==='signed'?'✅ موقّع':'⏳ معلق'}</span></td>
+      </tr>`;
+    }).join('');
+    return `<div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:16px;overflow:hidden">
+      <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:14px;font-weight:900;color:#fff">👤 ${person}</div>
+          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">
+            📦 تسليم: ${totDel} &nbsp;|&nbsp; 📥 استلام: ${totRec} &nbsp;|&nbsp; 📊 إجمالي قطع: ${totQty} &nbsp;|&nbsp; ✅ موقّع: ${totSigned}/${records.length}
+          </div>
         </div>
-      </div>`).join('')}
+        <button onclick="printPersonHovReport('${person.replace(/'/g,"\'")}')" style="background:#fff;color:#1d4ed8;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🖨️ طباعة تقريره</button>
+      </div>
+      <div style="overflow-x:auto">
+        <table style="width:100%;border-collapse:collapse">
+          <thead><tr style="background:#f1f5f9">
+            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">التاريخ</th>
+            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">النوع</th>
+            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">القاطع</th>
+            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">الأجهزة</th>
+            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">الكمية</th>
+            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">الحالة</th>
+          </tr></thead>
+          <tbody>${rowsHtml}</tbody>
+        </table>
+      </div>
     </div>`;
+  }).join('');
 
   // الجدول التفصيلي
   const tb=document.getElementById('hov-report-tbody');
@@ -8145,6 +8175,64 @@ function generateHovReport(){
       <td><span style="background:${isSigned?'#dcfce7':'#fef9c3'};color:${isSigned?'#16a34a':'#d97706'};border-radius:8px;font-size:10px;font-weight:700;padding:2px 8px">${isSigned?'✅ موقّع':'⏳ معلق'}</span></td>
     </tr>`;
   }).join(''):'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">لا توجد سجلات</td></tr>';
+}
+
+function printPersonHovReport(person){
+  const records=(allHandover||[]).filter(x=>x.person===person);
+  if(!records.length){toast('لا توجد سجلات','err');return;}
+  const totQty=records.reduce((a,x)=>{const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);return a+it.reduce((b,r)=>b+(+r.qty||0),0);},0);
+  const totSigned=records.filter(x=>x.status==='signed').length;
+
+  const rowsHtml=records.map((x,i)=>{
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    const names=it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
+    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
+    return '<tr style="background:'+(i%2===0?'#f8fafc':'#fff')+'">'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(x.date||'—')+'</td>'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">'+(x.op_type==='deliver'?'📦 تسليم':'📥 استلام')+'</td>'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(x.district||'—')+'</td>'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(names||'—')+'</td>'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center;font-weight:700;color:#1d4ed8">'+qty+'</td>'
+      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">'+(x.status==='signed'?'✅ موقّع':'⏳ معلق')+'</td>'
+      +'</tr>';
+  }).join('');
+
+  // تجميع كل الأجهزة
+  const allItems={};
+  records.forEach(x=>{
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    it.forEach(r=>{if(!allItems[r.name])allItems[r.name]=0;allItems[r.name]+=(+r.qty||0);});
+  });
+  const itemsSummary=Object.entries(allItems).map(([name,qty])=>'<tr><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">'+name+'</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;text-align:center;font-weight:700;color:#1d4ed8">'+qty+'</td></tr>').join('');
+
+  const w=window.open('','_blank','width=800,height=600');
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
+    +'body{font-family:Arial,sans-serif;padding:20px;direction:rtl;font-size:13px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
+    +'th{background:#1d4ed8;color:#fff;padding:8px 10px;font-size:12px;text-align:right}'
+    +'@media print{.np{display:none}@page{margin:10mm;size:A4 portrait}}'
+    +'</style></head><body>'
+    +'<div class="np" style="margin-bottom:14px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
+    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:10px;margin-bottom:16px">'
+    +'<div style="font-size:17px;font-weight:900">تقرير الاستلام والتسليم</div>'
+    +'<div style="font-size:12px;color:#555;margin-top:3px">شركة توزيع المنتجات النفطية / فرع صلاح الدين</div>'
+    +'</div>'
+    +'<table style="margin-bottom:16px">'
+    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd;width:120px">المخول</td><td style="padding:8px;border:1px solid #ddd;font-size:14px;font-weight:700">'+person+'</td>'
+    +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd;width:100px">إجمالي العمليات</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+records.length+'</td></tr>'
+    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">إجمالي القطع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+totQty+'</td>'
+    +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">الموقّع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#16a34a">'+totSigned+'/'+records.length+'</td></tr>'
+    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">تاريخ الطباعة</td><td colspan="3" style="padding:8px;border:1px solid #ddd">'+new Date().toLocaleDateString('ar-IQ')+'</td></tr>'
+    +'</table>'
+    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📦 ملخص الأجهزة الكلي</div>'
+    +'<table style="margin-bottom:16px">'
+    +'<thead><tr><th>اسم الجهاز / المادة</th><th style="width:100px;text-align:center">الكمية الكلية</th></tr></thead>'
+    +'<tbody>'+itemsSummary+'</tbody></table>'
+    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📋 تفاصيل العمليات</div>'
+    +'<table><thead><tr><th>التاريخ</th><th>النوع</th><th>القاطع</th><th>الأجهزة</th><th style="width:70px;text-align:center">الكمية</th><th style="width:80px;text-align:center">الحالة</th></tr></thead>'
+    +'<tbody>'+rowsHtml+'</tbody></table>'
+    +'</body></html>');
+  w.document.close();
 }
 
 function printHovReport(){
