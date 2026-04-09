@@ -2742,238 +2742,18 @@ window.addEventListener('load',function(){
             <button class="btn btn-sm" onclick="openUserModal()" style="background:#fff;color:#3730a3;border:none;font-weight:700;padding:7px 16px;border-radius:8px">➕ مستخدم جديد</button>
           </div>
           <div style="padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <input type="text" id="sq-users" placeholder="🔍 بحث بالاسم..." oninput="filterUsers()" class="fi btn-sm" style="flex:1;min-width:140px">
+            <input type="text" id="sq-users" placeholder="🔍 بحث..." oninput="filterUsers()" class="fi btn-sm" style="flex:1;min-width:140px">
             <select class="fi btn-sm" id="f-users-role" onchange="filterUsers()" style="width:110px">
               <option value="">كل الأدوار</option>
               <option value="admin">مدير</option>
               <option value="user">مخول</option>
             </select>
           </div>
-          <div style="padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px" id="users-cards">
-    <table width="100%" style="border-collapse:collapse;font-size:14px">
-      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
-      </tr></thead>
-      <tbody><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">م</div>
-              مسؤول وحدة الكاميرات
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">admin</td>
-          <td style="padding:10px 14px"><span class="badge b-navy">🔑 مدير</span></td>
-          <td style="padding:10px 14px"><span class="db">الكل</span></td>
-          <td style="padding:10px 14px"><span class="badge b-navy">كل الصلاحيات</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(1)">✏️</button>
-            
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">م</div>
-              مثنى فياض علي
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">مثنى فياض علي</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">بيجي</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(2)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(2)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">م</div>
-              محمد
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">محمد زكي اسماعيل</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">سامراء</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(3)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(3)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ع</div>
-              علي دحام محمود البشر
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">علي</td>
-          <td style="padding:10px 14px"><span class="badge b-navy">🔑 مدير</span></td>
-          <td style="padding:10px 14px"><span class="db">الكل</span></td>
-          <td style="padding:10px 14px"><span class="badge b-navy">كل الصلاحيات</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(4)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(4)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ا</div>
-              احمد
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">احمد راشد جوبان</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">سامراء</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(5)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(5)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">م</div>
-              مثنى احمد مسلط
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">مثنى احمد مسلط</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">الشرقاط</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(6)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(6)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ا</div>
-              ايهاب
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">ايهاب خميس ردام</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">الدجيل</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(7)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(7)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ا</div>
-              اسعد
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">اسعد سعيد حاتم</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">الدجيل</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(8)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(8)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ع</div>
-              عبدالرزاق
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">عبدالرزاق محمد حسن</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">بلد</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(9)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(9)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">س</div>
-              سيف الدين
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">سيف الدين عزيز ابراهيم</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">امرلي الطوز</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(10)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(10)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ا</div>
-              احمد الهايس
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">احمد حامد هايس</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">العلم</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(11)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(11)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">1</div>
-              1
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">1</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">بيجي</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(12)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(12)">🗑️</button>
-          </td>
-        </tr><tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">ي</div>
-              ياسر عمار محمد
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">ياسر عمار محمد</td>
-          <td style="padding:10px 14px"><span class="badge b-blue">👤 مخول</span></td>
-          <td style="padding:10px 14px"><span class="db">تكريت</span></td>
-          <td style="padding:10px 14px"><span class="badge b-blue" style="font-size:10px">تعديل</span> <span class="badge b-blue" style="font-size:10px">حذف</span> <span class="badge b-blue" style="font-size:10px">ملفات</span> <span class="badge b-blue" style="font-size:10px">تقارير</span></td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge b-ok">✅ فعّال</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(13)">✏️</button>
-            <button class="btn btn-r btn-sm" onclick="delUser(13)">🗑️</button>
-          </td>
-        </tr></tbody>
-    </table></div>
-          <!-- Users Table (hidden, for compat) -->
+          <div style="padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:10px" id="users-cards">
+            <div style="text-align:center;padding:30px;color:var(--t3);grid-column:1/-1">جاري التحميل...</div>
+          </div>
           <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
-        </div>
-      </div>
+        </div></div>
 
       <!-- LOGS TAB -->
       <div id="tab-logs" style="display:none">
@@ -3555,10 +3335,24 @@ window.addEventListener('load',function(){
         <input type="hidden" id="u-district" value="">
       </div>
     </div>
-    <div id="u-perms" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تعديل</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">حذف</div><div style="font-size:11px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
-      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">ملفات</div><div style="font-size:11px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
+    <div id="u-perms" style="margin-top:12px">
+      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">⚙️ الصلاحيات العامة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:12px">
+        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">✏️ تعديل</div><div style="font-size:10px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">🗑️ حذف</div><div style="font-size:10px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">📎 ملفات</div><div style="font-size:10px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">📊 تقارير</div><div style="font-size:10px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
+      </div>
+      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📂 الأقسام المتاحة</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px">
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">🚗 الجولات</div><div class="tog" id="p-tours" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">🔧 الصيانة</div><div class="tog" id="p-maint" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">📷 الكاميرات</div><div class="tog" id="p-cameras" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">⛽ المحطات</div><div class="tog" id="p-stations" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">📋 الجرد</div><div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">🔄 الاستلام</div><div class="tog" id="p-handover" onclick="this.classList.toggle('on')"></div></div>
+        <div class="perm-item"><div style="font-size:11px;font-weight:600">📢 التعاميم</div><div class="tog" id="p-circulars" onclick="this.classList.toggle('on')"></div></div>
+      </div>
       <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تقارير</div><div style="font-size:11px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="m-footer">
@@ -6654,45 +6448,42 @@ function filterUsers(){
   });
 }
 function renderUsers(){
+  const lbl=document.getElementById('users-count-lbl');
+  if(lbl) lbl.textContent=(allUsers||[]).length+' مستخدم مسجل';
   const cards=document.getElementById('users-cards');
   if(!cards)return;
-  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
-  cards.innerHTML=`
-    <table width="100%" style="border-collapse:collapse;font-size:14px">
-      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
-        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
-        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
-      </tr></thead>
-      <tbody>${allUsers.map(u=>{
-        const perms=u.perms||{};
-        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
-          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
-            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
-        return `<tr style="border-bottom:1px solid var(--border)">
-          <td style="padding:10px 14px;font-weight:700">
-            <div style="display:flex;align-items:center;gap:8px">
-              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
-              ${u.fullname||'—'}
-            </div>
-          </td>
-          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
-          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
-          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
-          <td style="padding:10px 14px">${permBadges}</td>
-          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
-          <td style="padding:10px 14px;text-align:center">
-            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
-            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
-          </td>
-        </tr>`;
-      }).join('')}</tbody>
-    </table>`;
+  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);grid-column:1/-1">لا يوجد مستخدمون</div>';return;}
+  const tabs=['tours','maint','cameras','stations','inventory','handover','circulars'];
+  const tnames={tours:'🚗',maint:'🔧',cameras:'📷',stations:'⛽',inventory:'📋',handover:'🔄',circulars:'📢'};
+  cards.innerHTML=(allUsers||[]).map(u=>{
+    const p=u.perms||{};
+    const isAdmin=u.role==='admin';
+    const bg=isAdmin?'linear-gradient(135deg,#1e1b4b,#3730a3)':'linear-gradient(135deg,#0c4a6e,#0369a1)';
+    const activeTabs=isAdmin?tabs:tabs.filter(t=>p['tab_'+t]!==false);
+    const tabBadges=activeTabs.map(t=>`<span style="background:rgba(255,255,255,.15);color:#fff;border-radius:5px;font-size:10px;padding:2px 6px">${tnames[t]}</span>`).join('');
+    const permBadges=isAdmin?'<span style="background:#fbbf24;color:#000;border-radius:5px;font-size:9px;font-weight:700;padding:2px 7px">مدير النظام</span>':
+      [p.edit&&'✏️',p.del&&'🗑️',p.files&&'📎',p.reports&&'📊'].filter(Boolean).map(x=>`<span style="background:rgba(255,255,255,.12);color:#fff;border-radius:5px;font-size:10px;padding:2px 5px">${x}</span>`).join('')||'<span style="color:rgba(255,255,255,.4);font-size:10px">قراءة فقط</span>';
+    return `<div style="background:${bg};border-radius:12px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.15)">
+      <div style="padding:12px 13px;display:flex;align-items:center;gap:9px">
+        <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:16px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:13px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.fullname||'—'}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.6)">${u.username||'—'}${u.district?' · '+u.district:''}</div>
+        </div>
+        <div style="display:flex;gap:3px">
+          ${u.id!==CU?.id?`<button onclick="editUser(${u.id})" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12px">✏️</button>`:''}
+          ${u.id!==CU?.id&&isAdmin?`<button onclick="delUser(${u.id})" style="background:rgba(220,38,38,.35);border:none;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12px">🗑️</button>`:''}
+        </div>
+      </div>
+      <div style="padding:6px 11px;background:rgba(0,0,0,.18);display:flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:space-between">
+        <div style="display:flex;gap:3px;flex-wrap:wrap">${permBadges}</div>
+        <span style="background:${u.active!==false?'#16a34a':'#dc2626'};color:#fff;border-radius:5px;font-size:9px;font-weight:700;padding:2px 6px">${u.active!==false?'● فعّال':'● موقوف'}</span>
+      </div>
+      <div style="padding:5px 11px 9px;display:flex;gap:3px;flex-wrap:wrap">${tabBadges||'<span style="color:rgba(255,255,255,.3);font-size:10px">لا أقسام</span>'}</div>
+    </div>`;
+  }).join('');
 }
+
 function openUserModal(id){
   const u=id?allUsers.find(x=>x.id===id)||{}:{};
   document.getElementById('u-eid').value=id||'';
@@ -6715,6 +6506,10 @@ function openUserModal(id){
   ['edit','del','files','reports'].forEach(p=>{
     const el=document.getElementById('p-'+p);
     if(el) el.classList.toggle('on', perms[p]===true);
+  });
+  ['tours','maint','cameras','stations','inventory','handover','circulars'].forEach(t=>{
+    const el=document.getElementById('p-'+t);
+    if(el) el.classList.toggle('on', perms['tab_'+t]!==false);
   });
   toggleUserPerms();
   document.getElementById('ov-user').classList.add('open');
@@ -6743,6 +6538,13 @@ async function saveUser(){
     del:   document.getElementById('p-del')?.classList.contains('on'),
     files: document.getElementById('p-files')?.classList.contains('on'),
     reports:document.getElementById('p-reports')?.classList.contains('on'),
+    tab_tours:document.getElementById('p-tours')?.classList.contains('on')!==false,
+    tab_maint:document.getElementById('p-maint')?.classList.contains('on')!==false,
+    tab_cameras:document.getElementById('p-cameras')?.classList.contains('on')!==false,
+    tab_stations:document.getElementById('p-stations')?.classList.contains('on')!==false,
+    tab_inventory:document.getElementById('p-inventory')?.classList.contains('on')!==false,
+    tab_handover:document.getElementById('p-handover')?.classList.contains('on')!==false,
+    tab_circulars:document.getElementById('p-circulars')?.classList.contains('on')!==false,
     };
   const body={fullname:fn,username:un,role,district,districts,perms};
   if(pw) body.password=pw;
@@ -9271,7 +9073,7 @@ document.addEventListener('DOMContentLoaded', function(){
   <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
 <style>
-@keyframes tickerScroll{0%{transform:translateY(-50%) translateX(100vw)}100%{transform:translateY(-50%) translateX(-100%)}}
+@keyframes tickerScroll{0%{transform:translateY(-50%) translateX(-100%)}100%{transform:translateY(-50%) translateX(100vw)}}
 @keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 
@@ -9347,7 +9149,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }catch(ex){}
 })();
 </script>
-y &gt; *:not(#inv-print-overlay){display:none!important}
   #inv-print-overlay{position:static!important;background:none!important;padding:0!important;overflow:visible!important}
   #inv-print-overlay &gt; div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
   #inv-print-overlay &gt; div &gt; div:first-child{display:none!important}
