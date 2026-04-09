@@ -795,9 +795,14 @@ class Handler(BaseHTTPRequestHandler):
             db["inventory"][idx]["updated_at"]=datetime.now().strftime("%Y-%m-%d %H:%M")
             save_db(db); self.send_json({"ok":True})
 
-        if p.startswith("/api/handover/"):
-            hid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("handover",[])) if x["id"]==hid),None)
-            if idx is not None: db["handover"][idx]={**db["handover"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+        elif p.startswith("/api/handover/"):
+            hid=int(p.split("/")[-1])
+            idx=next((i for i,x in enumerate(db.get("handover",[])) if x["id"]==hid),None)
+            if idx is None: self.send_json({"error":"غير موجود"},404); return
+            if u["role"]!="admin":
+                allowed={"status","signed_at","signed_by","signed_url"}
+                body={k:v for k,v in body.items() if k in allowed}
+            db["handover"][idx]={**db["handover"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
             save_db(db); self.send_json({"ok":True})
         elif p.startswith("/api/inv_buildings/"):
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inv_buildings",[])) if x["id"]==iid),None)
@@ -892,9 +897,10 @@ class Handler(BaseHTTPRequestHandler):
             db["inventory"]=[x for x in db.get("inventory",[]) if x["id"]!=iid]; save_db(db)
             self.send_json({"ok":True})
 
-        if p.startswith("/api/handover/"):
-            hid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("handover",[])) if x["id"]==hid),None)
-            if idx is not None: db["handover"][idx]={**db["handover"][idx],**body,"updated_at":datetime.now().strftime("%Y-%m-%d %H:%M")}
+        elif p.startswith("/api/handover/"):
+            if u["role"]!="admin": self.send_json({"error":"غير مصرح"},403); return
+            hid=int(p.split("/")[-1])
+            db["handover"]=[x for x in db.get("handover",[]) if x["id"]!=hid]
             save_db(db); self.send_json({"ok":True})
         elif p.startswith("/api/inv_buildings/"):
             iid=int(p.split("/")[-1])
