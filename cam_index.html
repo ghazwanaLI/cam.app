@@ -7760,7 +7760,9 @@ function openHandoverModal(opType,id){
         </div>
         <div class="fg full"><label class="fl">أو اكتب الجهة يدوياً</label><input class="fi" id="hov-s-person" type="text" placeholder="اسم المخول / الجهة..."></div>
       </div>
-      <div style="margin:10px 0 5px;font-size:12px;font-weight:700;color:#1d4ed8">📦 الأجهزة</div>
+      <div style="margin:10px 0 5px;font-size:12px;font-weight:700;color:#1d4ed8">📦 الأجهزة
+        <button type="button" id="btn-load-maint-items" onclick="loadMaintItemsToHov()" style="margin-right:10px;background:#fef3c7;color:#d97706;border:1px solid #fcd34d;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">🔧 جلب من سجل الصيانة</button>
+      </div>
       <div id="hov-s-items"></div>
       <button type="button" onclick="addHovSItemRow()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;margin-bottom:10px">➕ إضافة جهاز</button>
       <div class="fg"><label class="fl">ملاحظات</label><textarea class="fi" id="hov-s-notes" dir="rtl" rows="2" style="resize:vertical;text-align:right"></textarea></div>
@@ -7793,6 +7795,43 @@ function filterHovUsers(){
   if(!sel)return;
   const users=(allUsers||[]).filter(u=>u.role!=='admin'&&(!dist||u.district===dist||!u.district));
   sel.innerHTML='<option value="">— اختر مخول —</option>'+users.map(u=>`<option value="${u.fullname||u.username}">${u.fullname||u.username} (${u.district||'كل القواطع'})</option>`).join('');
+  // جلب تلقائي من الصيانة عند تغيير القاطع
+  loadMaintItemsToHov();
+}
+
+function loadMaintItemsToHov(){
+  const dist=document.getElementById('hov-s-district')?.value||'';
+  const opType=document.getElementById('hov-s-type')?.value||'deliver';
+  if(!dist) return;
+
+  // جمع الأجهزة من سجلات الصيانة للقاطع المحدد
+  const maintList=(allMaint||[]).filter(m=>m.district===dist);
+  if(!maintList.length){toast('لا توجد سجلات صيانة لهذا القاطع','err');return;}
+
+  // تجميع الأجهزة وكمياتها
+  const devMap={};
+  maintList.forEach(m=>{
+    let devs=[];
+    try{devs=JSON.parse(m.devices||'[]');}catch(e){
+      if(m.device_type) devs=[{device:m.device_type,qty:m.qty||1}];
+    }
+    devs.forEach(d=>{
+      if(!d.device)return;
+      if(!devMap[d.device]) devMap[d.device]=0;
+      devMap[d.device]+=(+d.qty||1);
+    });
+  });
+
+  if(!Object.keys(devMap).length){toast('لا توجد أجهزة في سجلات الصيانة','err');return;}
+
+  // مسح الصفوف الحالية وإضافة الجديدة
+  const itemsDiv=document.getElementById('hov-s-items');
+  if(!itemsDiv)return;
+  itemsDiv.innerHTML='';
+  Object.entries(devMap).forEach(([name,qty])=>{
+    addHovSItemRow({name, qty, status: opType==='receive'?'معطوبة':'جديدة'});
+  });
+  toast('✅ تم جلب '+Object.keys(devMap).length+' جهاز من سجل الصيانة');
 }
 function onHovUserSelect(){
   const sel=document.getElementById('hov-s-user-sel');
