@@ -915,6 +915,23 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
 
 <!-- APP -->
+<div id="app-loader" style="position:fixed;inset:0;z-index:999999;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:sans-serif">
+  <div style="width:64px;height:64px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:36px;margin-bottom:16px;box-shadow:0 8px 24px rgba(29,78,216,.4)">📹</div>
+  <div style="color:#fff;font-size:16px;font-weight:700;margin-bottom:8px">نظام كاميرات المراقبة</div>
+  <div style="color:rgba(255,255,255,.5);font-size:12px">شعبة تقنية المعلومات</div>
+  <div style="margin-top:20px;width:40px;height:3px;background:rgba(255,255,255,.1);border-radius:3px;overflow:hidden">
+    <div style="width:100%;height:100%;background:#3b82f6;border-radius:3px;animation:ld .8s ease-in-out infinite alternate"></div>
+  </div>
+</div>
+<style>@keyframes ld{from{transform:translateX(-100%)}to{transform:translateX(100%)}}</style>
+<script>
+window.addEventListener('load',function(){
+  setTimeout(function(){
+    var l=document.getElementById('app-loader');
+    if(l){l.style.transition='opacity .3s';l.style.opacity='0';setTimeout(function(){l.remove();},300);}
+  },300);
+});
+</script>
 <div id="app" style="display: block;">
 
   <!-- ══ APP HEADER للموبايل ══ -->
@@ -1054,6 +1071,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
+      <div class="nav-item" id="nav-handover" onclick="goTab('handover',this)" style="display:none"><span class="ni">🔄</span>الاستلام والتسليم</div>
       <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
       <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style=""><span class="ni">📊</span>التقارير</div>
       <div class="nav-sect" id="admin-sect" style="">|</div>
@@ -5027,7 +5045,7 @@ async function saveGenToList(){
 //  NAVIGATION
 // ══════════════════════════════════════════
 
-const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
+const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','handover','users','logs'];
 
 function updateInvAddress(){
   const stId=document.getElementById('inv-station')?.value;
