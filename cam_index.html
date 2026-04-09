@@ -7,6 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="كاميرات المراقبة">
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22%D9%83%D8%A7%D9%85%D9%8A%D8%B1%D8%A7%D8%AA%20%D8%A7%D9%84%D9%85%D8%B1%D8%A7%D9%82%D8%A8%D8%A9%22%2C%22short_name%22%3A%22%D9%83%D8%A7%D9%85%D9%8A%D8%B1%D8%A7%D8%AA%22%2C%22start_url%22%3A%22%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%231d4ed8%22%2C%22theme_color%22%3A%22%231d4ed8%22%2C%22lang%22%3A%22ar%22%7D">
 <meta name="theme-color" content="#1d4ed8">
 <title>نظام كاميرات المراقبة</title>
 <rect width='100' height='100' rx='20' fill='%231d4ed8'/><text y='75' x='50' text-anchor='middle' font-size='65'>📹</text></svg>">
@@ -1032,7 +1033,6 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
       <div class="nav-item" onclick="goTab('coding',this)" id="nav-coding"><span class="ni">🏷️</span><b>ترميز الأجهزة</b></div>
       <div class="nav-item" onclick="goTab('circulars',this)" id="nav-circulars"><span class="ni">📢</span>التعاميم<span class="nbadge" id="circulars-badge" style="display:none">!</span></div>
-      <div class="nav-item" id="nav-handover" onclick="goTab('handover',this)" style="display:none"><span class="ni">🔄</span>الاستلام والتسليم</div>
       <div class="nav-item" id="nav-users" onclick="goTab('users',this)"><span class="ni">🔐</span>المستخدمون</div>
       <div class="nav-item" id="nav-reports" onclick="goTab('reports',this)" style="display:none"><span class="ni">📊</span>التقارير</div>
       <div class="nav-sect" id="admin-sect" style="display:none">|</div>
@@ -1049,169 +1049,192 @@ tr:hover td{background:rgba(30,58,95,.03);}
       <!-- DASHBOARD -->
       <div id="tab-dashboard">
 
-        <!-- عناصر مخفية للتوافق -->
-        <div id="unvisited-bar" style="display:none"><div class="alert-chips" id="unvisited-chips"></div></div>
-        <div id="recent-tours-tb" style="display:none"></div>
-        <div id="recent-maint-tb" style="display:none"></div>
-        <span id="s-cams-ok" style="display:none"></span>
-        <span id="s-cams-bad" style="display:none"></span>
-        <div id="cam-status-bar" style="display:none"></div>
-        <div id="cam-pct-lbl" style="display:none"></div>
-        <div id="widget-tours" style="display:none"></div>
-        <div id="today-maint-alert" style="display:none"></div>
-        <div id="today-maint-list" style="display:none"></div>
-        <div id="s-cams-bad-sub" style="display:none"></div>
-
-        <!-- ═══ صف البطاقات 3×2 ═══ -->
-        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:16px">
+        <!-- 4 Circular Stats -->
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px;margin-bottom:18px">
 
           <!-- الجولات -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:linear-gradient(135deg,#eff6ff,#dbeafe);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #bfdbfe;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#bfdbfe" stroke-width="7"/>
-                <circle id="circ-tours" cx="40" cy="40" r="34" fill="none" stroke="#1d4ed8" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(29,78,216,.1);border:1.5px solid rgba(29,78,216,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0e7ff" stroke-width="8"/>
+                <circle id="circ-tours" cx="45" cy="45" r="38" fill="none" stroke="#1d4ed8" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">🚗</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">🚗</div>
+              </div>
             </div>
-            <div style="font-size:28px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
+            <div style="font-size:26px;font-weight:900;color:#1d4ed8;line-height:1" id="s-tours-count">—</div>
             <div style="font-size:12px;font-weight:800;color:#1e3a8a;margin-top:4px">الجولات الميدانية</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px" id="s-tours-sub">—</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-tours-sub">—</div>
           </div>
 
           <!-- الصيانة -->
-          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:linear-gradient(135deg,#fff1f2,#fee2e2);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #fecaca;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#fecaca" stroke-width="7"/>
-                <circle id="circ-maint" cx="40" cy="40" r="34" fill="none" stroke="#dc2626" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
+          <div onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(220,38,38,.1);border:1.5px solid rgba(220,38,38,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#fee2e2" stroke-width="8"/>
+                <circle id="circ-maint" cx="45" cy="45" r="38" fill="none" stroke="#dc2626" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">🔧</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">🔧</div>
+              </div>
             </div>
-            <div style="font-size:28px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
+            <div style="font-size:26px;font-weight:900;color:#dc2626;line-height:1" id="s-maint-count">—</div>
             <div style="font-size:12px;font-weight:800;color:#7f1d1d;margin-top:4px">الصيانة</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px" id="s-maint-sub">—</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-cams-bad-sub">—</div>
           </div>
 
           <!-- المحطات -->
-          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #bae6fd;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#bae6fd" stroke-width="7"/>
-                <circle id="circ-stations" cx="40" cy="40" r="34" fill="none" stroke="#0369a1" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
+          <div onclick="goTab('stations',document.querySelector('[onclick*=stations]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(3,105,161,.1);border:1.5px solid rgba(3,105,161,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#e0f2fe" stroke-width="8"/>
+                <circle id="circ-stations" cx="45" cy="45" r="38" fill="none" stroke="#0369a1" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">⛽</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">⛽</div>
+              </div>
             </div>
-            <div style="font-size:28px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
+            <div style="font-size:26px;font-weight:900;color:#0369a1;line-height:1" id="s-stations">—</div>
             <div style="font-size:12px;font-weight:800;color:#0c4a6e;margin-top:4px">المحطات</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px" id="s-stations-sub">—</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-stations-sub">—</div>
           </div>
 
           <!-- التقارير -->
-          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:linear-gradient(135deg,#f5f3ff,#ede9fe);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #ddd6fe;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#ddd6fe" stroke-width="7"/>
-                <circle id="circ-reports" cx="40" cy="40" r="34" fill="none" stroke="#7c3aed" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
+          <div id="dash-reports-card" onclick="goTab('reports',document.querySelector('[onclick*=reports]'))" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(124,58,237,.1);border:1.5px solid rgba(124,58,237,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#ede9fe" stroke-width="8"/>
+                <circle id="circ-reports" cx="45" cy="45" r="38" fill="none" stroke="#7c3aed" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">📊</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">📊</div>
+              </div>
             </div>
-            <div style="font-size:28px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
+            <div style="font-size:26px;font-weight:900;color:#7c3aed;line-height:1" id="s-unvisited">—</div>
             <div style="font-size:12px;font-weight:800;color:#4c1d95;margin-top:4px">التقارير</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px">لم تُزَر 30 يوم</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px">محطة لم تُزَر 30 يوم</div>
           </div>
 
           <!-- الجرد -->
-          <div id="dash-inv-card" onclick="_navInv('inv-stations')" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #bbf7d0;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#bbf7d0" stroke-width="7"/>
-                <circle id="circ-inv" cx="40" cy="40" r="34" fill="none" stroke="#10b981" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
+          <div id="dash-inv-card" onclick="_navInv('inv-stations')" style="background:#fff;border-radius:16px;padding:18px 14px;cursor:pointer;text-align:center;box-shadow:0 4px 16px rgba(16,185,129,.1);border:1.5px solid rgba(16,185,129,.15);transition:all .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
+            <div style="position:relative;width:90px;height:90px;margin:0 auto 10px">
+              <svg width="90" height="90" style="transform:rotate(-90deg)">
+                <circle cx="45" cy="45" r="38" fill="none" stroke="#d1fae5" stroke-width="8"/>
+                <circle id="circ-inv" cx="45" cy="45" r="38" fill="none" stroke="#10b981" stroke-width="8" stroke-linecap="round" stroke-dasharray="239" stroke-dashoffset="239" style="transition:stroke-dashoffset 1s ease"/>
               </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">📋</div>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <div style="font-size:22px">📋</div>
+              </div>
             </div>
-            <div style="font-size:28px;font-weight:900;color:#10b981;line-height:1" id="s-inv-count">—</div>
+            <div style="font-size:26px;font-weight:900;color:#10b981;line-height:1" id="s-inv-count">—</div>
             <div style="font-size:12px;font-weight:800;color:#065f46;margin-top:4px">الجرد</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px" id="s-inv-sub">محطة مسجلة</div>
-          </div>
-
-          <!-- الاستلام والتسليم -->
-          <div id="dash-handover-card" onclick="goTab('handover',document.getElementById('nav-handover'))" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:16px;padding:16px 12px;cursor:pointer;text-align:center;border:1.5px solid #fed7aa;transition:transform .2s" onmouseover="this.style.transform='translateY(-3px)'" onmouseout="this.style.transform='none'">
-            <div style="position:relative;width:80px;height:80px;margin:0 auto 8px">
-              <svg width="80" height="80" style="transform:rotate(-90deg)">
-                <circle cx="40" cy="40" r="34" fill="none" stroke="#fed7aa" stroke-width="7"/>
-                <circle id="circ-handover" cx="40" cy="40" r="34" fill="none" stroke="#ea580c" stroke-width="7" stroke-linecap="round" stroke-dasharray="214" stroke-dashoffset="214" style="transition:stroke-dashoffset 1s ease"/>
-              </svg>
-              <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px">🔄</div>
-            </div>
-            <div style="font-size:28px;font-weight:900;color:#ea580c;line-height:1" id="s-handover-count">—</div>
-            <div style="font-size:12px;font-weight:800;color:#7c2d12;margin-top:4px">الاستلام والتسليم</div>
-            <div style="font-size:10px;color:#64748b;margin-top:2px" id="s-handover-sub">—</div>
+            <div style="font-size:10px;color:#94a3b8;margin-top:2px" id="s-inv-sub">محطة مسجلة</div>
           </div>
 
         </div>
 
-        <!-- ═══ صف الويدجت ═══ -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
+        <!-- Widget -->
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px">
+          <div style="display:flex;flex-direction:column;gap:12px;grid-column:1/-1">
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
 
-          <!-- صيانة اليوم -->
-          <div class="section">
-            <div class="sec-hdr" style="padding:10px 14px">
-              <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#dc2626"></div>🔔 صيانات اليوم</div>
-              <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 10px;background:#dc2626;border-color:#dc2626" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('maintenance',document.getElementById('sub-maint'));setTimeout(openMaintModal,300)">+ صيانة</button>
-            </div>
-            <div id="today-maint-dash" style="padding:6px 10px;max-height:180px;overflow-y:auto">
-              <div style="text-align:center;padding:20px;color:var(--t3);font-size:12px">لا توجد صيانات اليوم ✅</div>
-            </div>
-          </div>
-
-          <!-- الصيانة بالقواطع -->
-          <div class="section">
-            <div class="sec-hdr" style="padding:10px 14px">
-              <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#f59e0b"></div>🗺️ الصيانة بالقواطع</div>
-            </div>
-            <div id="widget-maint" style="padding:6px 0;max-height:180px;overflow-y:auto"></div>
-          </div>
-
-        </div>
-
-        <!-- ═══ إحصائيات الكاميرات ═══ -->
-        <div id="cam-stats-section" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px">
-          <div class="section">
-            <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('gov-stat-body',this)">
-              <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#1d4ed8"></div>🏛️ الكاميرات الحكومية</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <button onclick="event.stopPropagation();printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:var(--p1)">🖨️</button>
-                <span id="gov-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
+            <!-- Camera Status -->
+            <div class="section">
+              <div class="sec-hdr" style="padding:10px 14px">
+                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>📷 حالة الكاميرات</div>
+              </div>
+              <div style="padding:12px 14px">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+                  <span style="font-size:12px;color:var(--a3);font-weight:700">✅ تعمل: <span id="s-cams-ok" style="font-size:18px">—</span></span>
+                  <span style="font-size:12px;color:var(--a2);font-weight:700">❌ معطلة: <span id="s-cams-bad" style="font-size:18px">—</span></span>
+                </div>
+                <div style="height:8px;background:var(--border);border-radius:6px;overflow:hidden">
+                  <div id="cam-status-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#16a34a,#4ade80);border-radius:6px;transition:width .5s"></div>
+                </div>
+                <div id="cam-pct-lbl" style="font-size:10px;color:var(--t3);margin-top:4px;text-align:center">—</div>
               </div>
             </div>
-            <div id="gov-stat-body" style="padding:10px;display:none">
-              <div id="gov-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
-            </div>
-          </div>
-          <div class="section">
-            <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('priv-stat-body',this)">
-              <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#d97706"></div>🏪 الكاميرات الأهلية</div>
-              <div style="display:flex;align-items:center;gap:4px">
-                <button onclick="event.stopPropagation();printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:#d97706">🖨️</button>
-                <span id="priv-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
+
+            <!-- Recent Tours Widget -->
+            <div class="section" style="flex:1">
+              <div class="sec-hdr" style="padding:10px 14px">
+                <div class="sec-title" style="font-size:13px"><div class="sdot"></div>🚗 أحدث الجولات</div>
+                <button class="btn btn-p btn-sm" style="font-size:10px;padding:4px 8px" onclick="goTab('field',document.querySelector('[onclick*=field]'));switchField('tours',document.getElementById('sub-tours'));setTimeout(openTourModal,300)">+ جولة</button>
               </div>
+              <div id="widget-tours" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
             </div>
-            <div id="priv-stat-body" style="padding:10px;display:none">
-              <div id="priv-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
+
+            <!-- Today's Maintenance Alert -->
+            <div id="today-maint-alert" style="display:none;background:linear-gradient(135deg,#1e3a5f,#1d4ed8);border-radius:14px;padding:14px 16px;color:#fff;margin-bottom:8px">
+              <div style="font-size:12px;opacity:.75;margin-bottom:8px">🔔 إجراءات صيانة اليوم</div>
+              <div id="today-maint-list" style="display:flex;flex-direction:column;gap:8px"></div>
             </div>
+
+            <!-- Maintenance per District Widget -->
+            <div class="section">
+              <div class="sec-hdr" style="padding:10px 14px">
+                <div class="sec-title" style="font-size:13px"><div class="sdot" style="background:#dc2626"></div>🔧 إجراءات الصيانة بالقواطع</div>
+              </div>
+              <div id="widget-maint" style="padding:8px 0;max-height:200px;overflow-y:auto"></div>
+            </div>
+
+          </div>
           </div>
         </div>
+
+        <!-- Bottom: Stats + Delegates -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+
+          <!-- Camera Stats Side by Side — admin only -->
+          <div id="cam-stats-section" style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+
+            <!-- Government Stats -->
+            <div class="section">
+              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('gov-stat-body',this)">
+                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#1d4ed8"></div>🏛️ الحكومية</div>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <button onclick="event.stopPropagation();printCamReport('gov')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:var(--p1)">🖨️</button>
+                  <span id="gov-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
+                </div>
+              </div>
+              <div id="gov-stat-body" style="padding:10px;display:none">
+                <div id="gov-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
+              </div>
+            </div>
+
+            <!-- Private Stats -->
+            <div class="section">
+              <div class="sec-hdr" style="cursor:pointer;padding:10px 14px" onclick="toggleStatSection('priv-stat-body',this)">
+                <div class="sec-title" style="font-size:12px"><div class="sdot" style="background:#d97706"></div>🏪 الأهلية</div>
+                <div style="display:flex;align-items:center;gap:4px">
+                  <button onclick="event.stopPropagation();printCamReport('priv')" style="background:none;border:1px solid var(--border);border-radius:6px;padding:2px 7px;cursor:pointer;font-size:11px;color:#d97706">🖨️</button>
+                  <span id="priv-stat-arrow" style="font-size:16px;transition:.3s;transform:rotate(180deg);display:inline-block">▲</span>
+                </div>
+              </div>
+              <div id="priv-stat-body" style="padding:10px;display:none">
+                <div id="priv-cams-stats" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center"></div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Delegates Table -->
+
+        </div>
+
+        <!-- Users Quick Section - admin only -->
+        <!-- Hidden elements kept for compatibility -->
+        <div id="unvisited-bar" style="display:none"><div class="alert-chips" id="unvisited-chips"></div></div>
+        <div id="recent-tours-tb" style="display:none"></div>
+        <div id="recent-maint-tb" style="display:none"></div>
 
         <!-- Footer -->
         <div style="margin-top:8px;text-align:center;padding:20px;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);border-radius:var(--r)">
-          <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
-            <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:2px">إعداد وبرمجة</div>
-            <div style="width:1px;height:16px;background:rgba(255,255,255,.2)"></div>
-            <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,.85);font-family:monospace;letter-spacing:2px">Ghazwan A. Alqaissi</div>
-            <div style="width:1px;height:16px;background:rgba(255,255,255,.2)"></div>
-            <div style="font-size:10px;color:rgba(255,255,255,.35)">شعبة تقنية المعلومات — V1.0.0</div>
-          </div>
+          <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:6px">— إعداد وبرمجة —</div>
+          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 0 24px rgba(96,165,250,.6)">Ghazwan Ali Alqaissi</div>
+          <div style="width:40px;height:3px;background:linear-gradient(90deg,#bfdbfe,#60a5fa);border-radius:4px;margin:8px auto"></div>
+          <div style="font-size:11px;color:rgba(255,255,255,.5)">شعبة تقنية المعلومات — V1.0.0</div>
         </div>
       </div>
 
@@ -1247,7 +1270,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
             <table>
               <thead><tr>
                 <th>#</th><th>التاريخ</th><th>النوع</th><th>المخول / الجهة</th>
-                <th>القاطع</th><th>الأجهزة</th><th>الكمية</th><th>الحالة</th><th>ملاحظات</th><th>إجراءات</th>
+                <th>القاطع</th><th>الأجهزة</th><th>الكمية</th><th>ملاحظات</th><th>إجراءات</th>
               </tr></thead>
               <tbody id="handover-list-body">
                 <tr><td colspan="9" style="text-align:center;padding:30px;color:#94a3b8">جاري التحميل...</td></tr>
@@ -1516,91 +1539,36 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
       <!-- REPORTS TAB -->
       <div id="tab-reports" style="display:none">
-        <!-- ═══ تقارير الجولات والصيانة — صف واحد مضغوط ═══ -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px">
-
-          <!-- تقرير الجولات -->
-          <div class="section" style="padding:0;overflow:hidden">
-            <div style="background:linear-gradient(135deg,#1e3a8a,#1d4ed8);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-              <div style="font-size:13px;font-weight:800;color:#fff">🚗 تقرير الجولات</div>
-              <button class="btn btn-sm" onclick="generateReport()" style="background:#fff;color:#1d4ed8;border:none;font-weight:700;font-size:11px;padding:4px 12px;border-radius:6px">📊 توليد</button>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
+          <div class="section">
+            <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📊 تقرير الجولات</div></div>
+            <div style="padding:16px">
+              <div class="fgrid" style="margin-bottom:12px;direction:rtl">
+                <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="r-from" type="date"></div>
+                <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="r-to" type="date"></div>
+                <div class="fg"><label class="fl">القاطع</label>
+                  <select class="fi" dir="rtl" id="r-district"><option value="">الكل</option></select></div>
+              </div>
+              <button class="btn btn-p btn-sm" style="width:100%" onclick="generateReport()">📊 توليد التقرير</button>
+              <div id="report-result" style="margin-top:14px"></div>
             </div>
-            <div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-              <div style="flex:1;min-width:100px">
-                <label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">من</label>
-                <input class="fi" id="r-from" type="date" style="padding:5px 8px;font-size:12px">
-              </div>
-              <div style="flex:1;min-width:100px">
-                <label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">إلى</label>
-                <input class="fi" id="r-to" type="date" style="padding:5px 8px;font-size:12px">
-              </div>
-              <div style="flex:1;min-width:110px">
-                <label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">القاطع</label>
-                <select class="fi" dir="rtl" id="r-district" style="padding:5px 8px;font-size:12px"><option value="">الكل</option></select>
-              </div>
-            </div>
-            <div id="report-result" style="padding:0 12px 10px"></div>
           </div>
-
-          <!-- تقرير الصيانة -->
-          <div class="section" style="padding:0;overflow:hidden">
-            <div style="background:linear-gradient(135deg,#7f1d1d,#dc2626);padding:10px 14px;display:flex;align-items:center;justify-content:space-between">
-              <div style="font-size:13px;font-weight:800;color:#fff">🔧 تقرير الصيانة</div>
-              <button class="btn btn-sm" onclick="generateMaintReport()" style="background:#fff;color:#dc2626;border:none;font-weight:700;font-size:11px;padding:4px 12px;border-radius:6px">📊 توليد</button>
-            </div>
-            <div style="padding:10px 12px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
-              <div style="flex:1;min-width:100px">
-                <label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">من</label>
-                <input class="fi" id="rm-from" type="date" style="padding:5px 8px;font-size:12px">
+          <div class="section">
+            <div class="sec-hdr"><div class="sec-title"><div class="sdot" style="background:#dc2626"></div>🔧 تقرير الصيانة</div></div>
+            <div style="padding:16px">
+              <div class="fgrid" style="margin-bottom:12px;direction:rtl">
+                <div class="fg"><label class="fl">من تاريخ</label><input class="fi" id="rm-from" type="date"></div>
+                <div class="fg"><label class="fl">إلى تاريخ</label><input class="fi" id="rm-to" type="date"></div>
               </div>
-              <div style="flex:1;min-width:100px">
-                <label style="font-size:10px;color:var(--t3);display:block;margin-bottom:3px">إلى</label>
-                <input class="fi" id="rm-to" type="date" style="padding:5px 8px;font-size:12px">
-              </div>
+              <button class="btn btn-p btn-sm" style="width:100%" onclick="generateMaintReport()">📊 توليد التقرير</button>
+              <div id="maint-report-result" style="margin-top:14px"></div>
             </div>
-            <div id="maint-report-result" style="padding:0 12px 10px"></div>
           </div>
-
         </div>
-
-        <!-- تقرير الاستلام والتسليم -->
-        <div class="section" style="margin-top:0">
-          <div class="sec-hdr">
-            <div class="sec-title"><div class="sdot" style="background:#ea580c"></div>🔄 تقرير الاستلام والتسليم</div>
-            <div class="sec-actions">
-              <select class="fi btn-sm" id="rhov-district" style="width:130px">
-                <option value="">كل القواطع</option>
-              </select>
-              <select class="fi btn-sm" id="rhov-type" style="width:120px">
-                <option value="">كل العمليات</option>
-                <option value="deliver">📦 تسليم</option>
-                <option value="receive">📥 استلام</option>
-              </select>
-              <select class="fi btn-sm" id="rhov-status" style="width:120px">
-                <option value="">كل الحالات</option>
-                <option value="signed">✅ موقّع</option>
-                <option value="pending">⏳ معلق</option>
-              </select>
-              <button class="btn btn-p btn-sm" onclick="generateHovReport()">📊 توليد</button>
-              <button class="btn btn-o btn-sm" onclick="printHovReport()">🖨️ طباعة</button>
-              <button class="btn btn-o btn-sm" onclick="exportHovCSV()">📤 CSV</button>
-            </div>
-          </div>
-          <div id="hov-report-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e2e8f0;border-bottom:1px solid #e2e8f0"></div>
-          <div style="padding:14px 16px">
-            <div id="hov-report-by-person" style="margin-bottom:16px"></div>
-            <div class="table-wrap">
-              <table id="hov-report-table">
-                <thead><tr>
-                  <th>#</th><th>التاريخ</th><th>النوع</th><th>المخول</th><th>القاطع</th>
-                  <th>الأجهزة</th><th>الكمية</th><th>الحالة</th>
-                </tr></thead>
-                <tbody id="hov-report-tbody">
-                  <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">اضغط "توليد" لعرض التقرير</td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
+        <!-- District Summary -->
+        <div class="section">
+          <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📍 ملخص القواطع</div></div>
+          <div id="district-summary" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
         </div>
       </div>
 
@@ -1811,28 +1779,16 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
 
       <div id="tab-users" style="display:none">
-        <div class="section" style="padding:0;overflow:hidden">
-          <!-- رأس -->
-          <div style="background:linear-gradient(135deg,#1e1b4b,#3730a3);padding:14px 20px;display:flex;justify-content:space-between;align-items:center">
-            <div>
-              <div style="font-size:15px;font-weight:900;color:#fff">🔐 إدارة المستخدمين</div>
-              <div style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px" id="users-count-lbl">جاري التحميل...</div>
-            </div>
-            <button class="btn btn-sm" onclick="openUserModal()" style="background:#fff;color:#3730a3;border:none;font-weight:700;padding:7px 16px;border-radius:8px">➕ مستخدم جديد</button>
+        <div class="section">
+          <div class="sec-hdr">
+            <div class="sec-title"><div class="sdot"></div>🔐 إدارة المستخدمين</div>
+            <button class="btn btn-p btn-sm" onclick="openUserModal()">➕ إضافة مستخدم</button>
           </div>
-          <!-- فلترة -->
-          <div style="padding:8px 14px;background:var(--bg2);border-bottom:1px solid var(--border);display:flex;gap:8px;flex-wrap:wrap">
-            <input type="text" id="sq-users" placeholder="🔍 بحث بالاسم..." oninput="filterUsers()" class="fi btn-sm" style="flex:1;min-width:140px">
-            <select class="fi btn-sm" id="f-users-role" onchange="filterUsers()" style="width:110px">
-              <option value="">كل الأدوار</option>
-              <option value="admin">مدير</option>
-              <option value="user">مخول</option>
-            </select>
+          <!-- Users Cards -->
+          <div style="padding:16px" id="users-cards">
+            <div style="text-align:center;padding:30px;color:var(--t3)">جاري التحميل...</div>
           </div>
-          <!-- بطاقات المستخدمين -->
-          <div style="padding:12px 14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:10px" id="users-cards">
-            <div style="text-align:center;padding:30px;color:var(--t3);grid-column:1/-1">جاري التحميل...</div>
-          </div>
+          <!-- Users Table (hidden, for compat) -->
           <div style="display:none"><table><tbody id="users-tb"></tbody></table></div>
         </div>
       </div>
@@ -1877,19 +1833,18 @@ tr:hover td{background:rgba(30,58,95,.03);}
       </div>
       <div class="fg"><label class="fl">نوع الزيارة</label>
         <select class="fi" dir="rtl" id="tour-type">
-          <option value="كشف دوري">كشف دوري</option>
+          <option value="كشف">كشف</option>
+          <option value="صيانة">صيانة</option>
+          <option value="تركيب">تركيب</option>
           <option value="متابعة">متابعة</option>
         </select>
       </div>
-      <div class="fg"><label class="fl">اسم الفني</label>
-        <input class="fi" id="tour-tech" type="text" placeholder="اسم الفني" readonly style="background:var(--bg2);color:var(--t2)">
-      </div>
+      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
       <div class="fg full"><label class="fl">ملاحظات</label>
-        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3"></textarea>
-      </div>
+        <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3" style="resize:vertical"></textarea></div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <label class="fl" style="margin:0">📎 سجل أشغال الزيارة</label>
+          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
           <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
             <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
             <span>🖨️ جودة عالية</span>
@@ -1907,12 +1862,12 @@ tr:hover td{background:rgba(30,58,95,.03);}
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 سجل الأشغال</div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
             <div class="up-box" id="ub-tour-rep">
               <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
               <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
               <div class="up-ico">📄</div>
-              <div class="up-lbl">سجل الأشغال</div>
+              <div class="up-lbl">تقرير الزيارة</div>
               <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
             </div>
           </div>
@@ -2419,24 +2374,11 @@ tr:hover td{background:rgba(30,58,95,.03);}
         <input type="hidden" id="u-district" value="">
       </div>
     </div>
-    <div id="u-perms" style="margin-top:12px">
-      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">⚙️ الصلاحيات العامة</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px">
-        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">✏️ تعديل</div><div style="font-size:10px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">🗑️ حذف</div><div style="font-size:10px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">📎 ملفات</div><div style="font-size:10px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:12px;font-weight:600">📊 تقارير</div><div style="font-size:10px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)">📂 الأقسام المتاحة</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px">
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">🚗 الجولات</div></div><div class="tog" id="p-tours" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">🔧 الصيانة</div></div><div class="tog" id="p-maint" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">📷 الكاميرات</div></div><div class="tog" id="p-cameras" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">⛽ المحطات</div></div><div class="tog" id="p-stations" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">📋 الجرد</div></div><div class="tog" id="p-inventory" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">🔄 الاستلام</div></div><div class="tog" id="p-handover" onclick="this.classList.toggle('on')"></div></div>
-        <div class="perm-item"><div><div style="font-size:11px;font-weight:600">📢 التعاميم</div></div><div class="tog" id="p-circulars" onclick="this.classList.toggle('on')"></div></div>
-      </div>
+    <div id="u-perms" style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تعديل</div><div style="font-size:11px;color:var(--t3)">إضافة وتعديل السجلات</div></div><div class="tog" id="p-edit" onclick="this.classList.toggle('on')"></div></div>
+      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">حذف</div><div style="font-size:11px;color:var(--t3)">حذف السجلات</div></div><div class="tog" id="p-del" onclick="this.classList.toggle('on')"></div></div>
+      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">ملفات</div><div style="font-size:11px;color:var(--t3)">رفع الصور والمستندات</div></div><div class="tog" id="p-files" onclick="this.classList.toggle('on')"></div></div>
+      <div class="perm-item"><div><div style="font-size:13px;font-weight:600">تقارير</div><div style="font-size:11px;color:var(--t3)">عرض التقارير</div></div><div class="tog" id="p-reports" onclick="this.classList.toggle('on')"></div></div>
     </div>
     <div class="m-footer">
       <button class="btn btn-o" onclick="closeModal('ov-user')">إلغاء</button>
@@ -2728,7 +2670,7 @@ function lsApi(method,path,body){
 
   if(method==='GET'){
     if(res==='me')        return {user:CU||{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
-    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
+    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
     if(res==='logs')      return {logs:[]};
     if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
     const list=lsGetList(res);
@@ -3251,7 +3193,7 @@ function printVoidLabel(id){
     +'.ftr{border-top:1px solid #ccc;display:flex;justify-content:space-between;padding:2px 6px;background:#f5f5f5;font-size:6px;direction:rtl;font-family:"Cairo",Arial,sans-serif}'
     +'.btns{display:flex;gap:8px}'
     +'.btn{padding:7px 18px;cursor:pointer;font-size:13px;border:none;border-radius:6px;color:#fff;font-weight:bold}'
-    +'@media print{@page{margin:0;size:A4 landscape}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
+    +'@media print{@page{margin:0}.ctrl,.btns{display:none!important}body{background:#fff;padding:0}}'
     +'<\/style><\/head><body>'
     +'<div class="ctrl">'
     +'<div class="cg"><label>عرض (مم)</label><input id="W" type="number" value="80"></div>'
@@ -3924,29 +3866,7 @@ async function saveGenToList(){
 //  NAVIGATION
 // ══════════════════════════════════════════
 
-
-// تنسيق التاريخ — يوم/شهر/سنة
-function fmtDate(d){
-  if(!d) return '—';
-  try{
-    const dt=new Date(d);
-    if(isNaN(dt)) return d;
-    const day=String(dt.getDate()).padStart(2,'0');
-    const mon=String(dt.getMonth()+1).padStart(2,'0');
-    const yr=dt.getFullYear();
-    return day+'/'+mon+'/'+yr;
-  }catch(e){return d;}
-}
-function fmtDateTime(d){
-  if(!d) return '—';
-  try{
-    const dt=new Date(d);
-    if(isNaN(dt)) return d;
-    return fmtDate(d)+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
-  }catch(e){return d;}
-}
-
-const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','handover','users','logs'];
+const ALL_TABS = ['dashboard','field','cameras','stations','inventory','coding','reports','delegates','circulars','users','logs'];
 
 function updateInvAddress(){
   const stId=document.getElementById('inv-station')?.value;
@@ -4356,7 +4276,7 @@ function goTab(name, el){
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
-  if(name==='reports')    { populateReportDistricts(); generateReport(); loadHandover().then(()=>generateHovReport()).catch(()=>{}); }
+  if(name==='reports')    { populateReportDistricts(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
   if(name==='circulars')  { loadCirculars(); }
   if(name==='users')      { loadUsers(); }
@@ -4410,7 +4330,6 @@ async function initApp(){
     if(dt) dt.textContent = CU.district||'';
     // تشغيل الإشعارات للمدير
     if(CU.role==='admin') startNotifPolling();
-    else { const tb=document.getElementById('maint-ticker-bar'); if(tb) tb.style.display='none'; }
     // polling التعاميم للمستخدمين كل 60 ثانية
     if(CU.role!=='admin'){
       clearInterval(window._circPollingTimer);
@@ -4421,23 +4340,25 @@ async function initApp(){
     ['nav-logs','admin-sect'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
     });
-    // الجولات — للجميع (المخولون يشوفون قاطعهم فقط)
-    const showTours = true;
-    // tab الميدانية يظهر للجميع
+    // الجولات — مدير فقط | الصيانة — للجميع
+    const showTours = isAdmin;
+    // tab الميدانية يظهر للجميع (فيه صيانة)
     const navField=document.getElementById('nav-field-dropdown');
     if(navField) navField.style.display='';
     const mbnField=document.getElementById('mbn-field');
     if(mbnField) mbnField.style.display='';
-    // sub-tab الجولات — للجميع
+    // sub-tab الجولات — مدير فقط
     const subTours=document.getElementById('sub-tours');
-    if(subTours) subTours.style.display='';
-    // nav-sub-item الجولات في الـ sidebar — للجميع
+    if(subTours) subTours.style.display=showTours?'':'none';
+    // nav-sub-item الجولات في الـ sidebar — مدير فقط
     document.querySelectorAll('.nav-sub-item').forEach(item=>{
       if(item.textContent.includes('الجولات الميدانية'))
-        item.style.display='';
+        item.style.display=showTours?'':'none';
     });
+    // بطاقة الجولات في الداشبورد — مدير فقط
     const dfc=document.getElementById('dash-field-card');
-    if(dfc) dfc.style.display='';
+    if(dfc) dfc.style.display=showTours?'':'none';
+    // بطاقة الصيانة — للجميع
     const dmc=document.getElementById('dash-maint-card');
     if(dmc) dmc.style.display='';
     // استلام وتسليم — مدير فقط
@@ -4448,39 +4369,17 @@ async function initApp(){
     if(navUsers) navUsers.style.display=isAdmin?'':'none';
     const camStats=document.getElementById('cam-stats-section');
     if(camStats) camStats.style.display=isAdmin?'grid':'none';
-    // التقارير مرئية للجميع
+    // التقارير مرئية للجميع لكن مصفّاة بالقاطع
     document.getElementById('nav-reports')?.style && (document.getElementById('nav-reports').style.display='');
-    // تطبيق صلاحيات التبويبات من إعدادات المستخدم
-    if(!isAdmin){
-      const p=CU?.perms||{};
-      const tabMap={
-        'tours':['nav-field-dropdown','mbn-field'],
-        'cameras':['nav-cameras','mbn-cameras'],
-        'stations':['nav-stations','mbn-stations'],
-        'inventory':['nav-inventory','mbn-inventory'],
-        'handover':['nav-handover'],
-        'circulars':['nav-circulars','mbn-circulars'],
-        'reports':['nav-reports'],
-      };
-      Object.entries(tabMap).forEach(([tab,ids])=>{
-        const show=p['tab_'+tab]!==false;
-        ids.forEach(id=>{const el=document.getElementById(id);if(el)el.style.display=show?'':'none';});
-      });
-      // الصيانة والجولات — التبويب المشترك
-      const showField=(p.tab_tours!==false)||(p.tab_maint!==false);
-      const nf=document.getElementById('nav-field-dropdown');
-      if(nf) nf.style.display=showField?'':'none';
-      const subT=document.getElementById('sub-tours');
-      if(subT) subT.style.display=p.tab_tours!==false?'':'none';
-      const subM=document.getElementById('sub-maint');
-      if(subM) subM.style.display=p.tab_maint!==false?'':'none';
-    }
     ['btn-add-maint','btn-add-cam','btn-add-st','btn-add-coding','btn-add-inv'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=can('edit')?'inline-block':'none';
     });
-    // زر إضافة جولة — للجميع
+    // زر إضافة صيانة — يظهر لجميع المستخدمين
+    const btnMaint=document.getElementById('btn-add-maint');
+    if(btnMaint) btnMaint.style.display='inline-block';
+    // زر إضافة جولة — مدير فقط
     const btnAddTour=document.getElementById('btn-add-tour');
-    if(btnAddTour) btnAddTour.style.display=can('edit')?'inline-block':'none';
+    if(btnAddTour) btnAddTour.style.display=showTours&&can('edit')?'inline-block':'none';
     const circBtn=document.getElementById('btn-add-circ');
     if(circBtn) circBtn.style.display=CU?.role==='admin'?'inline-block':'none';
     const circActions=document.getElementById('circ-sec-actions');
@@ -4491,7 +4390,7 @@ async function initApp(){
     const d=await api('GET','/api/districts');
     DISTRICTS_LIST=d.districts||[];
   }catch(e){
-    DISTRICTS_LIST=['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+    DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
   }
 
   try{
@@ -4501,8 +4400,6 @@ async function initApp(){
       loadMaintenance(),
       loadDelegates(),
       loadCirculars(),
-      loadHandover(),
-      loadInvStations(),
     ]);
   }catch(e){
     toast('خطأ في تحميل البيانات: '+e.message,'err');
@@ -4531,7 +4428,7 @@ async function initApp(){
 
 function setCircle(id, pct){
   const el=document.getElementById(id); if(!el) return;
-  el.style.strokeDashoffset = 214 - 214*Math.min(pct,1);
+  el.style.strokeDashoffset = 239 - 239*Math.min(pct,1);
 }
 
 function updateDashboard(){
@@ -4569,12 +4466,6 @@ function updateDashboard(){
   if(invCountEl) invCountEl.textContent = invCount;
   if(invSubEl)   invSubEl.textContent   = invCount + ' محطة مسجلة';
   setCircle('circ-inv', Math.min(invCount/20, 1));
-  const _hov=allHandover||[];
-  const _hce=document.getElementById('s-handover-count');
-  const _hse=document.getElementById('s-handover-sub');
-  if(_hce)_hce.textContent=_hov.length||'—';
-  if(_hse)_hse.textContent=_hov.length?('تسليم:'+_hov.filter(x=>x.op_type==='deliver').length+' | استلام:'+_hov.filter(x=>x.op_type==='receive').length):'لا توجد سجلات';
-  setCircle('circ-handover',Math.min((_hov.length||0)/10,1));
 
   // ── احصائيات الكاميرات من الجرد أو من المحطات ──
   let camOk=0,camBad=0;
@@ -4940,15 +4831,13 @@ function openTourModal(id){
   document.getElementById('ov-tour').classList.add('open');
   document.getElementById('tour-eid').value=id||'';
   document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
-  // اسم الفني — تلقائي من الحساب
-  const techEl=document.getElementById('tour-tech');
-  if(techEl) techEl.value=t.technician||(CU?.fullname||CU?.username||'');
   const ds=document.getElementById('tour-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
   if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
   filterTourStations();
   if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
   document.getElementById('tour-type').value=t.visit_type||'كشف';
+  document.getElementById('tour-tech').value=t.technician||'';
   document.getElementById('tour-notes').value=t.notes||'';
 }
 async function saveTour(){
@@ -4962,20 +4851,10 @@ async function saveTour(){
   try{
     const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
     const tid=id||r.id;
-    // رفع الملفات على Supabase ثم حفظ الرابط في السيرفر
     for(const fk of ['tour_img','tour_rep','tour_doc']){
       if(UF[fk]){
-        try{
-          toast('⏳ جاري رفع '+fk+'...');
-          const url=await _sbUpload(UF[fk].data, UF[fk].mime||'image/jpeg');
-          await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name, data:url, mime:UF[fk].mime});
-          delete UF[fk];
-        }catch(fe){
-          // fallback — رفع مباشر للسيرفر
-          try{await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});}
-          catch(fe2){console.warn('file upload failed:',fe2);}
-          delete UF[fk];
-        }
+        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
+        delete UF[fk];
       }
     }
     closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
@@ -5055,7 +4934,6 @@ function renderMaint(){
     <td style="max-width:120px;overflow:hidden;text-overflow:ellipsis">${m.notes||'—'}</td>
     <td><button class="btn btn-o btn-sm" onclick="showMaintFiles(${m.id})" title="عرض الملفات المرفوعة">📎 ملفات</button></td>
     <td>${can('edit')?`<button class="btn btn-o btn-sm" onclick="editMaint(${m.id})">✏️</button>`:''}
-        <button class="btn btn-o btn-sm" onclick="printMaintRecord(${m.id})" title="طباعة">🖨️</button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delMaint(${m.id})">🗑️</button>`:''}</td>
   </tr>`).join(''):'<tr><td colspan="10" style="text-align:center;padding:30px;color:var(--t3)">لا توجد صيانة</td></tr>';
   renderPagination('pg-maint',sP_m,pages,p=>{sP_m=p;renderMaint();});
@@ -5108,7 +4986,7 @@ async function saveMaint(){
   if(!body.date||!body.district||!body.station_id){toast('أدخل التاريخ والقاطع والمحطة','err');return;}
   try{
     const r=id?await api('PUT','/api/maintenance/'+id,body):await api('POST','/api/maintenance',body);
-    const mid=id||(r.maintenance&&r.maintenance.id)||r.id;
+    const mid=id||r.id;
     const fileKeys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
     const toUpload = fileKeys.filter(k=>UF[k]);
     if(toUpload.length){
@@ -5130,8 +5008,8 @@ async function saveMaint(){
       else if(ok>0) toast('⚠️ رُفع '+ok+' — فشل '+fail, 'err');
     }
 
-    // ── تسجيل تلقائي في الاستلام والتسليم — فقط للمخولين وليس المدير ──
-    if(!id && devRows.length && CU?.role !== 'admin'){
+    // ── تسجيل تلقائي في الاستلام والتسليم (استلام معطوبة) — فقط للسجلات الجديدة ولها أجهزة ──
+    if(!id && devRows.length){
       const hovItems = devRows.map(r=>({
         name: r.device + (r.fault?' — '+r.fault:''),
         qty:  r.qty,
@@ -5302,7 +5180,7 @@ function updateGenCode(){
 
   // خريطة القواطع → كود ASCII
   const DIST_MAP={
-    'الشرقاط / الايمن':'SH-R','الشرقاط الايسر':'SH-L','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
+    'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
     'العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ',
   };
 
@@ -5586,42 +5464,45 @@ async function loadUsers(){
   }catch(e){toast('خطأ في تحميل المستخدمين','err');}
 }
 function renderUsers(){
-  const lbl=document.getElementById('users-count-lbl');
-  if(lbl) lbl.textContent=(allUsers||[]).length+' مستخدم مسجل';
   const cards=document.getElementById('users-cards');
   if(!cards)return;
-  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3);grid-column:1/-1">لا يوجد مستخدمون</div>';return;}
-  const tabs=['tours','maint','cameras','stations','inventory','handover','circulars'];
-  const tabNames={tours:'🚗',maint:'🔧',cameras:'📷',stations:'⛽',inventory:'📋',handover:'🔄',circulars:'📢'};
-  cards.innerHTML=(allUsers||[]).map(u=>{
-    const perms=u.perms||{};
-    const isAdmin=u.role==='admin';
-    const bg=isAdmin?'linear-gradient(135deg,#1e1b4b,#3730a3)':'linear-gradient(135deg,#0c4a6e,#0369a1)';
-    const activeTabs=isAdmin?tabs:tabs.filter(t=>perms['tab_'+t]!==false);
-    const tabHtml=activeTabs.map(t=>`<span style="background:rgba(255,255,255,.15);color:#fff;border-radius:5px;font-size:10px;padding:2px 6px">${tabNames[t]}</span>`).join('');
-    const permHtml=isAdmin?'<span style="background:#fbbf24;color:#000;border-radius:5px;font-size:9px;font-weight:700;padding:2px 6px">مدير</span>':
-      [perms.edit&&'✏️',perms.del&&'🗑️',perms.files&&'📎',perms.reports&&'📊'].filter(Boolean).map(p=>`<span style="background:rgba(255,255,255,.12);color:#fff;border-radius:5px;font-size:10px;padding:2px 5px">${p}</span>`).join('')||'<span style="color:rgba(255,255,255,.4);font-size:10px">قراءة فقط</span>';
-    return `<div style="background:${bg};border-radius:12px;overflow:hidden;box-shadow:0 2px 8px rgba(0,0,0,.12)">
-      <div style="padding:11px 13px;display:flex;align-items:center;gap:9px">
-        <div style="width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.18);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:15px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:800;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.fullname||'—'}</div>
-          <div style="font-size:10px;color:rgba(255,255,255,.6)">${u.username||'—'}${u.district?' · '+u.district:''}</div>
-        </div>
-        <div style="display:flex;gap:3px">
-          ${u.id!==CU?.id?`<button onclick="editUser(${u.id})" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:12px">✏️</button>`:''}
-          ${u.id!==CU?.id&&CU?.role==='admin'?`<button onclick="delUser(${u.id})" style="background:rgba(220,38,38,.35);border:none;color:#fff;border-radius:7px;width:26px;height:26px;cursor:pointer;font-size:12px">🗑️</button>`:''}
-        </div>
-      </div>
-      <div style="padding:6px 11px;background:rgba(0,0,0,.18);display:flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:space-between">
-        <div style="display:flex;gap:3px;flex-wrap:wrap">${permHtml}</div>
-        <span style="background:${u.active!==false?'#16a34a':'#dc2626'};color:#fff;border-radius:5px;font-size:9px;font-weight:700;padding:2px 6px">${u.active!==false?'فعّال':'موقوف'}</span>
-      </div>
-      <div style="padding:5px 11px 9px;display:flex;gap:3px;flex-wrap:wrap">${tabHtml||'<span style="color:rgba(255,255,255,.3);font-size:10px">لا أقسام</span>'}</div>
-    </div>`;
-  }).join('');
+  if(!allUsers.length){cards.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)">لا يوجد مستخدمون</div>';return;}
+  cards.innerHTML=`
+    <table width="100%" style="border-collapse:collapse;font-size:14px">
+      <thead><tr style="background:linear-gradient(135deg,#1e40af,#1d4ed8);color:#fff">
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الاسم</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">اسم المستخدم</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الدور</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">القاطع</th>
+        <th style="padding:10px 14px;text-align:right;font-weight:700">الصلاحيات</th>
+        <th style="padding:10px 14px;text-align:center;font-weight:700">الحالة</th>
+        <th style="padding:10px 14px;text-align:center;font-weight:700;width:90px">إجراءات</th>
+      </tr></thead>
+      <tbody>${allUsers.map(u=>{
+        const perms=u.perms||{};
+        const permBadges=u.role==='admin'?'<span class="badge b-navy">كل الصلاحيات</span>':
+          Object.entries({edit:'تعديل',del:'حذف',files:'ملفات',reports:'تقارير'})
+            .filter(([k])=>perms[k]).map(([,v])=>`<span class="badge b-blue" style="font-size:10px">${v}</span>`).join(' ')||'<span style="color:var(--t3);font-size:12px">قراءة فقط</span>';
+        return `<tr style="border-bottom:1px solid var(--border)">
+          <td style="padding:10px 14px;font-weight:700">
+            <div style="display:flex;align-items:center;gap:8px">
+              <div style="width:32px;height:32px;border-radius:8px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0">${(u.fullname||'م')[0]}</div>
+              ${u.fullname||'—'}
+            </div>
+          </td>
+          <td style="padding:10px 14px;font-family:monospace;color:var(--t2)">${u.username||'—'}</td>
+          <td style="padding:10px 14px"><span class="badge ${u.role==='admin'?'b-navy':'b-blue'}">${u.role==='admin'?'🔑 مدير':'👤 مخول'}</span></td>
+          <td style="padding:10px 14px"><span class="db">${u.district||'الكل'}</span></td>
+          <td style="padding:10px 14px">${permBadges}</td>
+          <td style="padding:10px 14px;text-align:center"><span class="badge ${u.active!==false?'b-ok':'b-bad'}">${u.active!==false?'✅ فعّال':'❌ موقوف'}</span></td>
+          <td style="padding:10px 14px;text-align:center">
+            <button class="btn btn-o btn-sm" onclick="editUser(${u.id})">✏️</button>
+            ${u.id!==CU?.id?`<button class="btn btn-r btn-sm" onclick="delUser(${u.id})">🗑️</button>`:''}
+          </td>
+        </tr>`;
+      }).join('')}</tbody>
+    </table>`;
 }
-
 function openUserModal(id){
   const u=id?allUsers.find(x=>x.id===id)||{}:{};
   document.getElementById('u-eid').value=id||'';
@@ -5644,10 +5525,6 @@ function openUserModal(id){
   ['edit','del','files','reports'].forEach(p=>{
     const el=document.getElementById('p-'+p);
     if(el) el.classList.toggle('on', perms[p]===true);
-  ['tours','maint','cameras','stations','inventory','handover','circulars'].forEach(t=>{
-    const el2=document.getElementById('p-'+t);
-    if(el2) el2.classList.toggle('on', perms['tab_'+t]!==false);
-  });
   });
   toggleUserPerms();
   document.getElementById('ov-user').classList.add('open');
@@ -5656,7 +5533,7 @@ function toggleUserPerms(){
   const role=document.getElementById('u-role')?.value;
   const permsDiv=document.getElementById('u-perms');
   const distRow=document.getElementById('u-district-row');
-  if(permsDiv) permsDiv.style.display=role==='admin'?'none':'';
+  if(permsDiv) permsDiv.style.display=role==='admin'?'none':'grid';
   if(distRow)  distRow.style.display=role==='admin'?'none':'block';
 }
 async function saveUser(){
@@ -5676,13 +5553,6 @@ async function saveUser(){
     del:   document.getElementById('p-del')?.classList.contains('on'),
     files: document.getElementById('p-files')?.classList.contains('on'),
     reports:document.getElementById('p-reports')?.classList.contains('on'),
-    tab_tours:document.getElementById('p-tours')?.classList.contains('on')!==false,
-    tab_maint:document.getElementById('p-maint')?.classList.contains('on')!==false,
-    tab_cameras:document.getElementById('p-cameras')?.classList.contains('on')!==false,
-    tab_stations:document.getElementById('p-stations')?.classList.contains('on')!==false,
-    tab_inventory:document.getElementById('p-inventory')?.classList.contains('on')!==false,
-    tab_handover:document.getElementById('p-handover')?.classList.contains('on')!==false,
-    tab_circulars:document.getElementById('p-circulars')?.classList.contains('on')!==false,
     };
   const body={fullname:fn,username:un,role,district,districts,perms};
   if(pw) body.password=pw;
@@ -5855,7 +5725,8 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    const _vs=_fileSrc(d);if(_isImg(d))openLB(_vs);else{const a=document.createElement('a');a.href=_vs;a.download=d.name||'file';a.target='_blank';a.click();}
+    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
+    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -5962,33 +5833,29 @@ function compressImage(file, maxW, maxH, quality){
   });
 }
 
-async function doUpload(event,key){
+async function doUpload(event, key){
   try{
-    const file=event.target.files[0];if(!file)return;
+    const file=event.target.files[0]; if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    const isPdf=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
-    let data,mime,finalName;
-    if(isPdf){
-      // PDF — احتفظ به كـ PDF أصلي وارفعه على Supabase
-      const r=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(file);});
-      data=r; mime='application/pdf'; finalName=file.name;
-    } else {
-      // صورة — اضغط وحوّل لـ JPG
-      const hiQ=document.getElementById('upload-quality')?.checked;
-      const res=await compressImage(file,hiQ?1920:1280,hiQ?1920:1280,hiQ?0.95:0.82);
-      data=res.data; mime='image/jpeg'; finalName=file.name.replace(/\.[^.]+$/,'')+'.jpg';
-    }
-    UF[key]={name:finalName,data,mime};
+    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
+    // جودة الرفع: عادي=82% | عالية=95%
+    const hiQ=document.getElementById('upload-quality')?.checked;
+    const quality=hiQ?0.95:0.82;
+    const maxPx=hiQ?1920:1280;
+    const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
+    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
+    const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
+    UF[key]={ name:finalName, data, mime:'image/jpeg' };
+    // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
-    if(key==='hov_doc'){
-      const nm=document.getElementById('hov-file-name');if(nm)nm.textContent=file.name+' ('+kb+'KB)';
-      const pv=document.getElementById('hov-file-preview');if(pv)pv.innerHTML=isPdf?`<div style="padding:8px;background:#fee2e2;border-radius:6px;font-size:12px;color:#dc2626;margin-top:4px">📄 ${file.name}</div>`:`<img src="data:image/jpeg;base64,${data}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:4px">`;
-      return;
-    }
     const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent=(isPdf?'📄 ':'📸 ')+file.name+' ('+kb+'KB)';
-    const box=event.target.closest('.up-box');if(box)box.classList.add('hf');
-  }catch(e){toast('خطأ في الرفع: '+e.message,'err');console.error(e);}
+    if(stat) stat.textContent=file.name+' ('+kb+'KB)';
+    const box=event.target.closest('.up-box');
+    if(box) box.classList.add('hf');
+  }catch(e){
+    toast('خطأ في رفع الملف: '+e.message,'err');
+    console.error('doUpload error:',e);
+  }
 }
 function rmFile(key, e){
   e?.stopPropagation();
@@ -6031,12 +5898,7 @@ function showMaintFiles(mid){
   ov.classList.add('open');
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){
-        // السيرفر يرجع {ok,file} أو {data,mime,name} مباشرة
-        const d=res.file||res;
-        if(!d||!d.data) return null;
-        return {k:k,d:d};
-      })
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
@@ -6047,12 +5909,8 @@ function showMaintFiles(mid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      // إذا data رابط Supabase — استخدمه مباشرة
-      const rawData=d.data||'';
-      const isSbUrl=typeof rawData==='string'&&(rawData.startsWith('http')||rawData.startsWith('https'));
-      const src=isSbUrl ? rawData : ('data:'+(d.mime||'image/jpeg')+';base64,'+rawData);
-      const isPdf=d.mime==='application/pdf'||(d.name||'').toLowerCase().endsWith('.pdf');
-      const isImg=!isPdf&&(isSbUrl||(d.mime&&d.mime.startsWith('image/'))||(!d.mime&&!isPdf));
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg=d.mime&&d.mime.startsWith('image/');
 
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
@@ -6081,8 +5939,7 @@ function showMaintFiles(mid){
       // تحميل
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+(isPdf?'.pdf':'.jpg');
-      dl.target='_blank';
+      dl.href=src; dl.download=(d.name||k)+'.jpg';
       dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
       dl.textContent='⬇️ حفظ';
       btns.appendChild(dl);
@@ -6113,20 +5970,15 @@ function showMaintFiles(mid){
       hdr.appendChild(btns);
       card.appendChild(hdr);
 
-      // عرض الصورة أو PDF
+      // عرض الصورة مباشرة
       if(isImg){
         const img=document.createElement('img');
         img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
+        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
         img.onclick=function(){openLB(src);};
-        img.onerror=function(){this.style.display='none';const e=document.createElement('div');e.style.cssText='padding:14px;text-align:center;color:#dc2626;font-size:12px';e.textContent='⚠️ تعذّر تحميل الصورة';card.appendChild(e);};
         card.appendChild(img);
-      } else if(isPdf){
-        const pdfDiv=document.createElement('div');
-        pdfDiv.style.cssText='padding:14px;text-align:center;background:#f8fafc';
-        pdfDiv.innerHTML='<div style="font-size:28px">📄</div><div style="font-size:12px;color:#64748b;margin-top:4px">'+(d.name||'ملف PDF')+'</div>';
-        card.appendChild(pdfDiv);
       }
+
       list.appendChild(card);
     });
   });
@@ -6170,7 +6022,7 @@ function printCamReport(type){
     +'th{background:#1d4ed8;color:#fff;padding:8px}td{border:1px solid #ddd;padding:7px}'
     +'@media print{button{display:none}}</style></head><body>'
     +'<h2 style="color:#1d4ed8">تقرير '+title+'</h2>'
-    +'<p>العدد: '+list.length+' محطة — '+fmtDate(new Date())+'</p>'
+    +'<p>العدد: '+list.length+' محطة — '+new Date().toLocaleDateString('ar-IQ')+'</p>'
     +'<button onclick="window.print()" style="margin-bottom:12px;padding:8px 20px;background:#1d4ed8;color:#fff;border:none;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">🖨️ طباعة</button>'
     +'<table><thead><tr><th>#</th><th>المحطة</th><th>القاطع</th><th>يعمل</th><th>معطل</th></tr></thead>'
     +'<tbody>'+list.map((s,i)=>'<tr><td>'+(i+1)+'</td><td>'+(s.name||'—')+'</td><td>'+(s.district||'—')+'</td>'
@@ -6215,7 +6067,8 @@ function viewCircFiles(cid){
     list.innerHTML='';
     found.forEach(function(item,idx){
       const k=item.k, d=item.d;
-      const src=_fileSrc(d);const isImg=_isImg(d);
+      const isImg=d.mime&&d.mime.startsWith('image/');
+      const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
       const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
 
       const card=document.createElement('div');
@@ -6277,7 +6130,7 @@ function _openPrintWindow(title, tableHTML, extraStyle){
     +'.badge-ok{background:#dcfce7;color:#16a34a;padding:2px 8px;border-radius:20px;font-size:11px}'
     +'.badge-bad{background:#fee2e2;color:#dc2626;padding:2px 8px;border-radius:20px;font-size:11px}'
     +'.btn-p{background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700}'
-    +'@media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}'
+    +'@media print{.no-print{display:none!important}@page{margin:10mm}}'
     +(extraStyle||'')
     +'</style></head><body>'
     +'<div class="no-print" style="margin-bottom:14px;display:flex;gap:8px;align-items:center">'
@@ -6285,7 +6138,7 @@ function _openPrintWindow(title, tableHTML, extraStyle){
     +'<button onclick="window.close()" style="padding:8px 16px;border:1px solid #ddd;border-radius:6px;cursor:pointer;font-family:Cairo,sans-serif">✕ إغلاق</button>'
     +'</div>'
     +'<h2>'+title+'</h2>'
-    +'<div class="sub">نظام إدارة كاميرات المراقبة — شعبة تقنية المعلومات — '+fmtDate(new Date())+'</div>'
+    +'<div class="sub">نظام إدارة كاميرات المراقبة — شعبة تقنية المعلومات — '+new Date().toLocaleDateString('ar-IQ')+'</div>'
     +tableHTML
     +'</body></html>');
   w.document.close();
@@ -6306,49 +6159,6 @@ function printToursTable(){
     +'</tbody></table>'
     +'<div style="margin-top:10px;font-size:12px;color:#64748b">الإجمالي: '+list.length+' زيارة</div>';
   _openPrintWindow('سجل الجولات الميدانية', tbl);
-}
-
-// ── طباعة سجل صيانة واحد ──
-function printMaintRecord(id){
-  const m=allMaint.find(x=>x.id===id);
-  if(!m){toast('السجل غير موجود','err');return;}
-  let devList='';
-  try{const devs=JSON.parse(m.devices||'[]');devList=devs.map((d,i)=>`<tr><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${i+1}</td><td style="padding:5px 10px;border:1px solid #ccc">${d.device||''}</td><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${d.qty||0}</td></tr>`).join('');}catch(e){devList=`<tr><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">1</td><td style="padding:5px 10px;border:1px solid #ccc">${m.device_type||'—'}</td><td style="text-align:center;padding:5px 10px;border:1px solid #ccc">${m.qty||0}</td></tr>`;}
-  const w=window.open('','_blank','width=750,height=600');
-  w.document.write(`<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>
-    body{font-family:Arial,sans-serif;padding:20px;direction:rtl;font-size:13px}
-    h2{text-align:center;font-size:16px;margin-bottom:4px}
-    .sub{text-align:center;color:#555;font-size:11px;margin-bottom:16px}
-    table{width:100%;border-collapse:collapse;margin-bottom:12px}
-    th{background:#1d4ed8;color:#fff;padding:7px 10px;text-align:right;font-size:12px}
-    td{padding:7px 10px;border:1px solid #ccc;font-size:12px}
-    .label{background:#f1f5f9;font-weight:700;width:150px}
-    .sig{display:flex;justify-content:space-between;margin-top:30px;padding-top:10px;border-top:1px solid #ccc}
-    .sig div{text-align:center;width:200px}
-    .sig .line{border-top:1px solid #333;margin-top:40px;padding-top:4px;font-size:11px}
-    @media print{.np{display:none}@page{margin:8mm;size:A4 landscape}}
-  </style></head><body>
-  <div class="np" style="margin-bottom:12px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>
-  <h2>استمارة صيانة كاميرات المراقبة</h2>
-  <div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>
-  <table>
-    <tr><td class="label">التاريخ</td><td>${m.date||'—'}</td><td class="label">القاطع</td><td>${m.district||'—'}</td></tr>
-    <tr><td class="label">المحطة</td><td>${m.station_name||'—'}</td><td class="label">الفني</td><td>${m.technician||'—'}</td></tr>
-    <tr><td class="label">سبب العطل</td><td colspan="3">${m.reason||'—'}</td></tr>
-    <tr><td class="label">الحالة بعد الصيانة</td><td colspan="3">${m.status_after||'—'}</td></tr>
-    <tr><td class="label">ملاحظات</td><td colspan="3">${m.notes||'—'}</td></tr>
-  </table>
-  <table>
-    <thead><tr><th>#</th><th>الجهاز / المادة</th><th style="text-align:center">الكمية</th></tr></thead>
-    <tbody>${devList}</tbody>
-  </table>
-  <div class="sig">
-    <div><div class="line">الفني المنفذ</div></div>
-    <div><div class="line">مسؤول المحطة</div></div>
-    <div><div class="line">مسؤول الشعبة</div></div>
-  </div>
-  </body></html>`);
-  w.document.close();
 }
 
 // ── طباعة الصيانة ──
@@ -6374,7 +6184,7 @@ function printCodingFormSingle(id){
   const d=allCoding.find(x=>x.id===id);
   if(!d){toast('لم يتم العثور على البيانات','err');return;}
   // استخدم نفس buildForm من printCodingForm
-  const today=fmtDate(new Date());
+  const today=new Date().toLocaleDateString('ar-IQ');
   const nvrs=d.nvrs||[];
   const hdds=d.hdds||[];
   const others=d.others||[];
@@ -6417,7 +6227,7 @@ function printCodingFormSingle(id){
     .sig-line{border-bottom:1px solid #333;margin:30px 10px 4px}
     .sig-label{font-size:11px;font-weight:700}
     .no-print{margin-bottom:12px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
+    @media print{.no-print{display:none!important}@page{margin:8mm}}
   </style></head><body>
   <div class="no-print">
     <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
@@ -6470,7 +6280,7 @@ function printCodingForm(){
   if(!list.length){toast('لا توجد بيانات','err');return;}
 
   // بناء استمارة لكل جهاز
-  const today=fmtDate(new Date());
+  const today=new Date().toLocaleDateString('ar-IQ');
 
   function buildForm(d,idx){
     const nvrs=d.nvrs||[];
@@ -6598,7 +6408,7 @@ function printCodingForm(){
     .sig-line{border-bottom:1px solid #333;margin:30px 10px 4px}
     .sig-label{font-size:11px;font-weight:700}
     .no-print{margin-bottom:12px;display:flex;gap:8px}
-    @media print{.no-print{display:none!important}@page{margin:8mm;size:A4 landscape}}
+    @media print{.no-print{display:none!important}@page{margin:8mm}}
   </style></head><body>
   <div class="no-print">
     <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-size:13px;font-weight:700">🖨️ طباعة</button>
@@ -6808,7 +6618,8 @@ function _loadMaintPreviews(mid, container){
       return;
     }
     found.forEach(({k,d})=>{
-      const src=_fileSrc(d);const isImg=_isImg(d);
+      const src = 'data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg = d.mime&&d.mime.startsWith('image/');
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
       if(isImg){
@@ -7079,8 +6890,8 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&_isImg(d)){
-        const src=_fileSrc(d);
+      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
+        const src='data:'+d.mime+';base64,'+d.data;
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
         const img=document.createElement('img');
@@ -7354,11 +7165,8 @@ function showTourFiles(tid){
     list.innerHTML='';
     found.forEach(function(item){
       const k=item.k; const d=item.d;
-      const rawData=d.data||'';
-      const isSbUrl=typeof rawData==='string'&&(rawData.startsWith('http')||rawData.startsWith('https'));
-      const src=isSbUrl ? rawData : ('data:'+(d.mime||'image/jpeg')+';base64,'+rawData);
-      const isPdf=d.mime==='application/pdf'||(d.name||'').toLowerCase().endsWith('.pdf');
-      const isImg=!isPdf;
+      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const isImg=d.mime&&d.mime.startsWith('image/');
       const card=document.createElement('div');
       card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
       // هيدر البطاقة
@@ -7381,8 +7189,7 @@ function showTourFiles(tid){
       // حفظ
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+(isPdf?'.pdf':'.jpg');
-      dl.target='_blank';
+      dl.href=src; dl.download=(d.name||k)+'.jpg';
       dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
       dl.textContent='⬇️ حفظ';
       btns.appendChild(dl);
@@ -7393,9 +7200,7 @@ function showTourFiles(tid){
         repInp.onchange=function(ev){
           const file=ev.target.files[0]; if(!file) return;
           compressImage(file,1280,1280,0.85).then(function(res){
-            return _sbUpload(res.data, res.mime||'image/jpeg').then(function(url){
-              return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:url,mime:res.mime});
-            });
+            return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-tour-files');
@@ -7412,19 +7217,13 @@ function showTourFiles(tid){
       }
       hdr.appendChild(btns);
       card.appendChild(hdr);
-      // عرض الصورة أو PDF
+      // عرض الصورة مباشرة
       if(isImg){
         const img=document.createElement('img');
         img.src=src;
-        img.style.cssText='width:100%;max-height:280px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
+        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
         img.onclick=function(){openLB(src);};
-        img.onerror=function(){this.style.display='none';const e=document.createElement('div');e.style.cssText='padding:14px;text-align:center;color:#dc2626;font-size:12px';e.textContent='⚠️ تعذّر تحميل الصورة';card.appendChild(e);};
         card.appendChild(img);
-      } else {
-        const pdfDiv=document.createElement('div');
-        pdfDiv.style.cssText='padding:16px;text-align:center;background:#f8fafc';
-        pdfDiv.innerHTML='<div style="font-size:32px">📄</div><div style="font-size:12px;color:#64748b;margin-top:4px">'+(d.name||'ملف PDF')+'</div>';
-        card.appendChild(pdfDiv);
       }
       list.appendChild(card);
     });
@@ -7443,47 +7242,34 @@ function startNotifPolling(){
 
 async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
-  if(!SERVER_ONLINE) return;
+  if(!SERVER_ONLINE) return;   // لا تستدعِ الـ API إذا offline
   try{
-    // تصفير كل 24 ساعة
-    const lr=parseInt(localStorage.getItem('tkr_reset')||'0');
-    if(Date.now()-lr>864e5){api('POST','/api/notifications/clear',{}).catch(()=>{});localStorage.setItem('tkr_reset',Date.now());}
-
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
     const tickerBar = document.getElementById('maint-ticker-bar');
     const tickerContent = document.getElementById('maint-ticker-content');
     if(!tickerBar || !tickerContent) return;
+
     if(!list.length){ tickerBar.style.display='none'; return; }
 
-    // فرز بالقاطع — جمّع الفعاليات لكل قاطع
-    const byDistrict={};
-    list.forEach(n=>{
-      const dist = n.district||n.details?.match(/قاطع: ([^|]+)/)?.[1]?.trim()||'عام';
-      if(!byDistrict[dist]) byDistrict[dist]=[];
-      byDistrict[dist].push(n);
+    // بناء نص الشريط من آخر 20 فعالية
+    const items = list.slice(0,20).map(n=>{
+      const icon = n.action.includes('جولة')?'🚗':
+                   n.action.includes('صيانة')?'🔧':
+                   n.action.includes('محطة')?'📍':'📋';
+      return `${icon} ${n.user}: ${n.action} — ${n.details} [${n.time}]`;
     });
-
-    // بناء نص مجمّع بالقواطع
-    const segments=Object.entries(byDistrict).map(([dist,notifs])=>{
-      const evts=notifs.slice(0,5).map(n=>{
-        const icon=n.action.includes('جولة')?'🚗':n.action.includes('صيانة')?'🔧':n.action.includes('محطة')?'📍':'📋';
-        return `${icon} ${n.user}: ${n.action} — ${n.details}`;
-      }).join('  •  ');
-      return `⬡ ${dist}  ${evts}`;
-    });
-    tickerContent.textContent = segments.join('     ◈◈◈     ');
+    tickerContent.textContent = items.join('   ◈   ');
     tickerBar.style.display = 'flex';
 
-    // زر تنبيه عاجل إذا جاءت فعالية جديدة من مخوّل
+    // تنبيه إذا جاءت فعالية جديدة
     const unread = d.unread || 0;
     if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
-      showUrgentBadge('فعالية جديدة من مخوّل');
-      // وميض الشريط
-      tickerBar.style.animation='urgentBar .4s ease 3';
-      setTimeout(()=>tickerBar.style.animation='',1500);
+      toast('📡 فعالية جديدة من مخوّل');
     }
     _lastNotifCount = unread;
+
+    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
 }
@@ -7664,45 +7450,68 @@ function _reindexInvDvr(){
   });
 }
 // ══ رفع ذكي مع إعادة ضغط تلقائية عند 502/413 ══
+async function smartUploadFile(endpoint, fileObj){
+  const steps = [
+    {maxPx:9999, q:0.92},  // المحاولة الأولى: جودة عالية
+    {maxPx:1600, q:0.82},  // المحاولة الثانية: ضغط متوسط
+    {maxPx:1200, q:0.72},  // المحاولة الثالثة: ضغط أكبر
+    {maxPx:900,  q:0.60},  // المحاولة الرابعة: ضغط قوي
+  ];
 
-// ══ Supabase ══
-const _SB_URL='https://vcgfmmdpjpiktkyorili.supabase.co';
-const _SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o';
-const _SB_BUCKET='Cam-files';
-async function _sbUpload(b64,mime){
-  const bin=atob(b64),arr=new Uint8Array(bin.length);
-  for(let i=0;i<bin.length;i++)arr[i]=bin.charCodeAt(i);
-  const blob=new Blob([arr],{type:mime});
-  const ext=mime==='application/pdf'?'pdf':'jpg';
-  const path=Date.now()+'_'+Math.random().toString(36).slice(2,8)+'.'+ext;
-  const res=await fetch(`${_SB_URL}/storage/v1/object/${_SB_BUCKET}/${path}`,{method:'POST',headers:{'Authorization':'Bearer '+_SB_KEY,'Content-Type':mime,'x-upsert':'true'},body:blob});
-  if(!res.ok)throw new Error('SB '+(await res.text()));
-  return `${_SB_URL}/storage/v1/object/public/${_SB_BUCKET}/${path}`;
-}
-async function _compress(b64,mime){
-  return new Promise((res,rej)=>{
-    const img=new Image();
-    img.onload=function(){
-      let w=img.width,h=img.height;
-      if(w>900||h>900){const s=Math.min(900/w,900/h);w=Math.round(w*s);h=Math.round(h*s);}
-      const c=document.createElement('canvas');c.width=w;c.height=h;
-      c.getContext('2d').drawImage(img,0,0,w,h);
-      res(c.toDataURL('image/jpeg',0.78).split(',')[1]);
-    };
-    img.onerror=()=>rej(new Error('err'));
-    img.src='data:'+mime+';base64,'+b64;
-  });
-}
-async function smartUploadFile(endpoint,fileObj){
-  let {data,mime,name}=fileObj;
-  if(mime&&mime.startsWith('image/')&&data){try{data=await _compress(data,mime);mime='image/jpeg';name=name.replace(/\.[^.]+$/,'.jpg');}catch(e){}}
-  try{const url=await _sbUpload(data,mime);await api('POST',endpoint,{name,data:url,mime});return{ok:true,url};}
-  catch(e){console.warn('[SB]',e.message);return await api('POST',endpoint,{name,data,mime});}
-}
-function _fileSrc(d){if(!d)return'';const v=d.data||d;if(typeof v==='string'&&v.startsWith('http'))return v;return'data:'+(d.mime||'image/jpeg')+';base64,'+v;}
-function _isImg(d){if(!d)return false;const v=d.data||d;if(typeof v==='string'&&v.startsWith('http'))return true;return!!(d.mime&&d.mime.startsWith('image/'));}
+  let {data, mime, name} = fileObj;
+  const isImage = mime && mime.startsWith('image/');
 
-// smartUploadFile moved above
+  for(let attempt=0; attempt<steps.length; attempt++){
+    const kb = Math.round(data.length * 0.75 / 1024);
+    try{
+      if(attempt > 0) toast('🔄 محاولة '+(attempt+1)+' — '+kb+'KB...');
+      const result = await api('POST', endpoint, {name, data, mime});
+      return result; // نجح
+    }catch(e){
+      const msg = (e.message||'').toLowerCase();
+      const is502 = msg.includes('502') || msg.includes('413')
+                 || msg.includes('body') || msg.includes('payload')
+                 || msg.includes('entity');
+
+      if(is502 && isImage && attempt < steps.length-1){
+        // ضغط الصورة أكثر وأعد المحاولة
+        const next = steps[attempt+1];
+        toast('⚠️ الملف كبير ('+kb+'KB) — جاري تصغيره تلقائياً...');
+        try{
+          // recompress من base64
+          const dataUrl = 'data:'+mime+';base64,'+data;
+          const compressed = await new Promise((res,rej)=>{
+            const img = new Image();
+            img.onload = function(){
+              let w=img.width, h=img.height;
+              const scale = Math.min(next.maxPx/w, next.maxPx/h, 1);
+              w=Math.round(w*scale); h=Math.round(h*scale);
+              const c = document.createElement('canvas');
+              c.width=w; c.height=h;
+              c.getContext('2d').drawImage(img,0,0,w,h);
+              const url = c.toDataURL('image/jpeg', next.q);
+              res({data:url.split(',')[1], mime:'image/jpeg'});
+            };
+            img.onerror = ()=>rej(new Error('فشل تحميل الصورة'));
+            img.src = dataUrl;
+          });
+          data = compressed.data;
+          mime = 'image/jpeg';
+          name = name.replace(/\.[^.]+$/, '.jpg');
+          continue; // أعد المحاولة
+        }catch(ce){ throw e; }
+      }
+
+      // خطأ آخر أو PDF كبير
+      if(is502){
+        const kbStr = kb > 1024 ? (Math.round(kb/102.4)/10)+'MB' : kb+'KB';
+        throw new Error('الملف كبير جداً ('+kbStr+') — حاول ضغطه خارجياً ثم أعد الرفع');
+      }
+      throw e;
+    }
+  }
+  throw new Error('فشل الرفع بعد '+steps.length+' محاولات');
+}
 
 // ══ HANDOVER — استلام وتسليم ══
 // ══ تصدير الجرد إلى Excel (CSV) ══
@@ -7818,17 +7627,8 @@ function renderHandover(){
       <td><span class="db">${x.district||'—'}</span></td>
       <td style="font-size:11px;max-width:180px;overflow:hidden;text-overflow:ellipsis" title="${itemNames}">${itemNames||'—'}</td>
       <td style="text-align:center;font-weight:800;color:#1d4ed8">${totalQty}</td>
-      <td style="text-align:center">
-        ${x.signed_at?
-          `<span style="background:#dcfce7;color:#16a34a;border-radius:8px;font-size:10px;font-weight:700;padding:3px 8px;display:inline-block">✅ موقّع<br><span style="font-size:9px;font-weight:400">${x.signed_at||''}</span></span>
-           ${x.signed_url?`<br><button onclick="viewHovSignature(${x.id})" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:2px 6px;border-radius:5px;cursor:pointer;font-size:10px;margin-top:3px">👁️ التوقيع</button>`:''}`:
-          `<span style="background:#fef3c7;color:#d97706;border-radius:8px;font-size:10px;font-weight:700;padding:3px 8px">⏳ بانتظار التوقيع</span>
-           ${(CU&&x.person&&(x.person===CU.fullname||x.person===CU.username))?`<br><button onclick="openSignModal(${x.id})" style="background:#16a34a;color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700;margin-top:4px">✍️ توقيع</button>`:''}`
-        }
-      </td>
       <td style="font-size:11px;color:#64748b">${x.notes||''}</td>
       <td>
-        <button onclick="openHandoverModal('${x.op_type}',${x.id})" style="background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">✏️</button>
         <button onclick="printHandover(${x.id})" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">📄</button>
         ${CU?.role==='admin'?`<button onclick="delHandover(${x.id})" style="background:#fff1f2;color:#dc2626;border:1px solid #fecaca;padding:3px 7px;border-radius:6px;cursor:pointer;font-size:11px">🗑️</button>`:''}
       </td>
@@ -7863,28 +7663,21 @@ function openHandoverModal(opType,id){
   if(!ov){
     ov=document.createElement('div');ov.id='ov-handover-simple';ov.className='overlay';
     ov.onclick=function(e){if(e.target===ov)closeModal('ov-handover-simple');};
-    ov.innerHTML=`<div class="modal" style="width:520px;direction:rtl">
+    ov.innerHTML=`<div class="modal" style="width:500px;direction:rtl">
       <div class="m-title" id="hov-s-title">📦 تسليم مواد</div>
       <input type="hidden" id="hov-s-eid"><input type="hidden" id="hov-s-type">
       <div class="fgrid">
         <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="hov-s-date" type="date"></div>
-        <div class="fg"><label class="fl">القاطع</label><select class="fi" dir="rtl" id="hov-s-district" onchange="filterHovUsers()"></select></div>
-        <div class="fg full"><label class="fl">المخول *</label>
-          <select class="fi" dir="rtl" id="hov-s-user-sel" onchange="onHovUserSelect()">
-            <option value="">— اختر مخول —</option>
-          </select>
-        </div>
-        <div class="fg full"><label class="fl">أو اكتب الجهة يدوياً</label><input class="fi" id="hov-s-person" type="text" placeholder="اسم المخول / الجهة..."></div>
+        <div class="fg"><label class="fl">القاطع</label><select class="fi" dir="rtl" id="hov-s-district"></select></div>
+        <div class="fg full"><label class="fl">المخول / الجهة *</label><input class="fi" id="hov-s-person" type="text" placeholder="اسم المخول..."></div>
       </div>
-      <div style="margin:10px 0 5px;font-size:12px;font-weight:700;color:#1d4ed8">📦 الأجهزة
-        <button type="button" id="btn-load-maint-items" onclick="loadMaintItemsToHov()" style="margin-right:10px;background:#fef3c7;color:#d97706;border:1px solid #fcd34d;padding:3px 10px;border-radius:6px;cursor:pointer;font-size:11px;font-weight:700">🔧 جلب من سجل الصيانة</button>
-      </div>
+      <div style="margin:10px 0 5px;font-size:12px;font-weight:700;color:#1d4ed8">📦 الأجهزة</div>
       <div id="hov-s-items"></div>
       <button type="button" onclick="addHovSItemRow()" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;margin-bottom:10px">➕ إضافة جهاز</button>
       <div class="fg"><label class="fl">ملاحظات</label><textarea class="fi" id="hov-s-notes" dir="rtl" rows="2" style="resize:vertical;text-align:right"></textarea></div>
       <div class="m-footer">
         <button class="btn btn-o" onclick="closeModal('ov-handover-simple')">إلغاء</button>
-        <button class="btn btn-p" onclick="saveHandover()">💾 حفظ وإرسال للمخول</button>
+        <button class="btn btn-p" onclick="saveHandover()">💾 حفظ</button>
       </div></div>`;
     document.body.appendChild(ov);
   }
@@ -7896,63 +7689,10 @@ function openHandoverModal(opType,id){
   document.getElementById('hov-s-notes').value=x.notes||'';
   const ds=document.getElementById('hov-s-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}"${x.district===d?' selected':''}>${d}</option>`).join('');
-  filterHovUsers();
-  if(x.person){const sel=document.getElementById('hov-s-user-sel');if(sel)[...sel.options].forEach(o=>{if(o.value===x.person)o.selected=true;});}
   const itemsDiv=document.getElementById('hov-s-items');itemsDiv.innerHTML='';
   const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
   if(items.length)items.forEach(r=>addHovSItemRow(r));else addHovSItemRow();
   ov.classList.add('open');
-}
-
-
-function filterHovUsers(){
-  const dist=document.getElementById('hov-s-district')?.value||'';
-  const sel=document.getElementById('hov-s-user-sel');
-  if(!sel)return;
-  const users=(allUsers||[]).filter(u=>u.role!=='admin'&&(!dist||u.district===dist||!u.district));
-  sel.innerHTML='<option value="">— اختر مخول —</option>'+users.map(u=>`<option value="${u.fullname||u.username}">${u.fullname||u.username} (${u.district||'كل القواطع'})</option>`).join('');
-  // جلب تلقائي من الصيانة عند تغيير القاطع
-  loadMaintItemsToHov();
-}
-
-function loadMaintItemsToHov(){
-  const dist=document.getElementById('hov-s-district')?.value||'';
-  const opType=document.getElementById('hov-s-type')?.value||'deliver';
-  if(!dist) return;
-
-  // جمع الأجهزة من سجلات الصيانة للقاطع المحدد
-  const maintList=(allMaint||[]).filter(m=>m.district===dist);
-  if(!maintList.length){toast('لا توجد سجلات صيانة لهذا القاطع','err');return;}
-
-  // تجميع الأجهزة وكمياتها
-  const devMap={};
-  maintList.forEach(m=>{
-    let devs=[];
-    try{devs=JSON.parse(m.devices||'[]');}catch(e){
-      if(m.device_type) devs=[{device:m.device_type,qty:m.qty||1}];
-    }
-    devs.forEach(d=>{
-      if(!d.device)return;
-      if(!devMap[d.device]) devMap[d.device]=0;
-      devMap[d.device]+=(+d.qty||1);
-    });
-  });
-
-  if(!Object.keys(devMap).length){toast('لا توجد أجهزة في سجلات الصيانة','err');return;}
-
-  // مسح الصفوف الحالية وإضافة الجديدة
-  const itemsDiv=document.getElementById('hov-s-items');
-  if(!itemsDiv)return;
-  itemsDiv.innerHTML='';
-  Object.entries(devMap).forEach(([name,qty])=>{
-    addHovSItemRow({name, qty, status: opType==='receive'?'معطوبة':'جديدة'});
-  });
-  toast('✅ تم جلب '+Object.keys(devMap).length+' جهاز من سجل الصيانة');
-}
-function onHovUserSelect(){
-  const sel=document.getElementById('hov-s-user-sel');
-  const inp=document.getElementById('hov-s-person');
-  if(sel&&inp&&sel.value) inp.value=sel.value;
 }
 
 function addHovSItemRow(data={}){
@@ -7974,138 +7714,12 @@ async function saveHandover(){
   if(!items.length){toast('أضف جهازاً واحداً على الأقل','err');return;}
   const body={op_type:opType,date:document.getElementById('hov-s-date')?.value||new Date().toISOString().split('T')[0],
     district:document.getElementById('hov-s-district')?.value||'',person:document.getElementById('hov-s-person')?.value||'',
-    notes:document.getElementById('hov-s-notes')?.value||'',items:JSON.stringify(items),created_by:CU?.fullname||'',status:'pending',signed_at:'',signed_url:''};
+    notes:document.getElementById('hov-s-notes')?.value||'',items:JSON.stringify(items),created_by:CU?.fullname||''};
   try{
     if(id)await api('PUT','/api/handover/'+id,body);
     else await api('POST','/api/handover',body);
     closeModal('ov-handover-simple');toast('تم الحفظ ✅');await loadHandover();
   }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-
-// ══ نظام التوقيع الرقمي ══
-let _signCanvas=null, _signCtx=null, _signDrawing=false, _signHovId=0;
-
-function openSignModal(hovId){
-  _signHovId=hovId;
-  const x=(allHandover||[]).find(r=>r.id===hovId)||{};
-  const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-  const isDeliver=x.op_type==='deliver';
-
-  // بناء HTML الاستمارة كاملاً داخل canvas لاحقاً
-  let ov=document.getElementById('ov-sign-modal');
-  if(ov) ov.remove();
-  ov=document.createElement('div');ov.id='ov-sign-modal';ov.className='overlay';
-  ov.onclick=function(e){if(e.target===ov)closeModal('ov-sign-modal');};
-
-  const itemRows=items.map((r,i)=>`<tr>
-    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${i+1}</td>
-    <td style="padding:5px 8px;border:1px solid #999;font-size:12px">${r.name||''}</td>
-    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${r.qty||0}</td>
-    <td style="text-align:center;padding:5px 8px;border:1px solid #999;font-size:12px">${r.status||''}</td>
-  </tr>`).join('');
-
-  ov.innerHTML=`<div class="modal" style="width:640px;max-height:92vh;overflow-y:auto;direction:rtl;padding:0">
-    <div style="background:#1d4ed8;padding:14px 20px;display:flex;justify-content:space-between;align-items:center">
-      <span style="font-size:15px;font-weight:900;color:#fff">✍️ توقيع استمارة ${isDeliver?'التسليم':'الاستلام'}</span>
-      <button onclick="closeModal('ov-sign-modal')" style="background:rgba(255,255,255,.2);border:none;color:#fff;border-radius:6px;width:28px;height:28px;cursor:pointer;font-size:16px">✕</button>
-    </div>
-    <!-- الاستمارة -->
-    <div id="form-to-sign" style="padding:20px;background:#fff;font-family:Arial,sans-serif;direction:rtl">
-      <div style="text-align:center;border-bottom:2px solid #1d4ed8;padding-bottom:10px;margin-bottom:14px">
-        <div style="font-size:15px;font-weight:900;color:#1d4ed8">استمارة ${isDeliver?'تسليم':'استلام'} أجهزة كاميرات المراقبة</div>
-        <div style="font-size:11px;color:#555;margin-top:2px">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>
-      </div>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:12px">
-        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px;width:100px">التاريخ</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px">${x.date||'—'}</td>
-            <td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px;width:80px">القاطع</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px">${x.district||'—'}</td></tr>
-        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">المخول</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.person||'—'}</td></tr>
-        <tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">المسؤول</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.created_by||'—'}</td></tr>
-        ${x.notes?`<tr><td style="background:#f1f5f9;font-weight:700;padding:6px 10px;border:1px solid #999;font-size:12px">ملاحظات</td><td style="padding:6px 10px;border:1px solid #999;font-size:12px" colspan="3">${x.notes}</td></tr>`:''}
-      </table>
-      <table style="width:100%;border-collapse:collapse;margin-bottom:16px">
-        <thead><tr>
-          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">#</th>
-          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:right;border:1px solid #999;font-size:12px">الجهاز / المادة</th>
-          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">الكمية</th>
-          <th style="background:#1d4ed8;color:#fff;padding:7px;text-align:center;border:1px solid #999;font-size:12px">الحالة</th>
-        </tr></thead>
-        <tbody>${itemRows}</tbody>
-      </table>
-      <!-- منطقة التوقيع -->
-      <div style="margin-top:8px">
-        <div style="font-size:12px;font-weight:700;color:#dc2626;margin-bottom:6px">✍️ توقيع المستلم (${x.person||'المخول'}):</div>
-        <div style="border:2px dashed #1d4ed8;border-radius:10px;overflow:hidden;background:#f8fafc;position:relative">
-          <canvas id="sign-canvas" width="580" height="160" style="width:100%;touch-action:none;cursor:crosshair;display:block"></canvas>
-          <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;color:#cbd5e1;font-size:13px" id="sign-hint">وقّع هنا بإصبعك أو الماوس</div>
-        </div>
-      </div>
-    </div>
-    <!-- أزرار -->
-    <div style="padding:12px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;display:flex;gap:8px;align-items:center">
-      <button onclick="clearSign()" style="background:#fff;border:1px solid #e2e8f0;padding:7px 14px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🗑️ مسح التوقيع</button>
-      <div style="flex:1"></div>
-      <button onclick="closeModal('ov-sign-modal')" class="btn btn-o">إلغاء</button>
-      <button onclick="submitSignature()" style="background:#16a34a;color:#fff;border:none;padding:9px 22px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">✅ وقّعت — إرسال للمدير</button>
-    </div>
-  </div>`;
-  document.body.appendChild(ov);
-  ov.classList.add('open');
-  _signCanvas=document.getElementById('sign-canvas');
-  _signCtx=_signCanvas.getContext('2d');
-  _signCtx.strokeStyle='#1d4ed8';_signCtx.lineWidth=2.5;_signCtx.lineCap='round';_signCtx.lineJoin='round';
-  const getPos=e=>{
-    const r=_signCanvas.getBoundingClientRect();
-    const sx=_signCanvas.width/r.width,sy=_signCanvas.height/r.height;
-    const s=e.touches?e.touches[0]:e;
-    return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};
-  };
-  const start=e=>{e.preventDefault();_signDrawing=true;const p=getPos(e);_signCtx.beginPath();_signCtx.moveTo(p.x,p.y);document.getElementById('sign-hint').style.display='none';};
-  const draw=e=>{e.preventDefault();if(!_signDrawing)return;const p=getPos(e);_signCtx.lineTo(p.x,p.y);_signCtx.stroke();};
-  const stop=e=>{e.preventDefault();_signDrawing=false;};
-  _signCanvas.addEventListener('mousedown',start);_signCanvas.addEventListener('mousemove',draw);
-  _signCanvas.addEventListener('mouseup',stop);_signCanvas.addEventListener('mouseleave',stop);
-  _signCanvas.addEventListener('touchstart',start,{passive:false});
-  _signCanvas.addEventListener('touchmove',draw,{passive:false});
-  _signCanvas.addEventListener('touchend',stop,{passive:false});
-}
-
-function clearSign(){
-  if(_signCtx&&_signCanvas){_signCtx.clearRect(0,0,_signCanvas.width,_signCanvas.height);const h=document.getElementById('sign-hint');if(h)h.style.display='';}
-}
-
-function isCanvasEmpty(){
-  if(!_signCanvas)return true;
-  return !_signCtx.getImageData(0,0,_signCanvas.width,_signCanvas.height).data.some(x=>x!==0);
-}
-
-async function submitSignature(){
-  if(isCanvasEmpty()){toast('يرجى التوقيع أولاً','err');return;}
-  try{
-    toast('⏳ جاري رفع الاستمارة الموقّعة...');
-    // تحويل الاستمارة كاملة (الـ div) إلى صورة عبر html2canvas
-    const formDiv=document.getElementById('form-to-sign');
-    let signedB64;
-    if(typeof html2canvas!=='undefined'){
-      const cvs=await html2canvas(formDiv,{scale:2,useCORS:true,backgroundColor:'#ffffff'});
-      signedB64=cvs.toDataURL('image/jpeg',0.92).split(',')[1];
-    } else {
-      // fallback: رفع التوقيع فقط
-      signedB64=_signCanvas.toDataURL('image/png').split(',')[1];
-    }
-    const url=await _sbUpload(signedB64,'image/jpeg');
-    const now=new Date().toLocaleString('ar-IQ');
-    await api('PUT','/api/handover/'+_signHovId,{status:'signed',signed_at:now,signed_by:CU?.fullname||CU?.username||'',signed_url:url});
-    closeModal('ov-sign-modal');
-    toast('✅ تم إرسال الاستمارة الموقّعة للمدير');
-    await loadHandover();updateDashboard();
-  }catch(e){toast('خطأ: '+e.message,'err');}
-}
-
-function viewHovSignature(hovId){
-  const x=(allHandover||[]).find(r=>r.id===hovId)||{};
-  if(!x.signed_url){toast('لا يوجد مرفق','err');return;}
-  openLB(x.signed_url);
 }
 
 async function delHandover(id){
@@ -8118,299 +7732,28 @@ function printHandover(id){
   const x=(allHandover||[]).find(r=>r.id===id)||{};
   const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
   const isDeliver=x.op_type==='deliver';
-  const w=window.open('','_blank','width=750,height=650');
-
-  const itemRows=items.map((r,i)=>'<tr style="background:'+(i%2===0?'#fffbeb':'#fef3c7')+'"><td style="text-align:center;border:1px solid #555;padding:8px;font-size:14px;font-weight:700">'+(i+1)+'</td><td style="border:1px solid #555;padding:8px;font-size:15px;font-weight:700">'+(r.name||'')+'</td><td style="text-align:center;border:1px solid #555;padding:8px;font-size:15px;font-weight:800;color:#1d4ed8">'+(r.qty||0)+'</td><td style="text-align:center;border:1px solid #555;padding:8px;font-size:13px">'+(r.status||'')+'</td></tr>').join('');
-
-  const existSign=x.signed_url?('<img src="'+x.signed_url+'" style="max-height:70px;max-width:100%;object-fit:contain">'):'<div style="color:#ccc;font-size:10px">_________________________</div>';
-
-  const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'body{font-family:Arial,sans-serif;padding:18px;direction:rtl;font-size:14px}'
-    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #555;padding:8px 10px;font-size:13px}'
-    +'th{background:#1d4ed8;color:#fff;font-weight:800;text-align:center;font-size:13px}'
-    +'.sig-box{flex:1;border:1px solid #555;padding:8px;text-align:center;min-height:100px}'
-    +'canvas{border:1px dashed #1d4ed8;cursor:crosshair;touch-action:none;display:block;width:100%}'
-    +'@media print{.np{display:none}canvas{border:1px solid #aaa}@page{margin:8mm;size:A4 landscape}}'
-    +'</style></head><body>'
-    +'<div class="np" style="margin-bottom:12px;display:flex;gap:8px">'
-    +'<button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">&#128424; طباعة</button>'
-    +'<button onclick="clearSig()" class="np" style="background:#f1f5f9;border:1px solid #ccc;padding:8px 14px;border-radius:6px;cursor:pointer">&#128465; مسح التوقيع</button>'
-    +'<span class="np" style="font-size:11px;color:#888;align-self:center">وقّع في خانة المستلم ثم اطبع</span>'
-    +'</div>'
-    +'<div style="text-align:center;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:12px">'
-    +'<div style="font-size:19px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
-    +'<div style="font-size:11px;color:#444;margin-top:2px">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>'
-    +'</div>'
-    +'<table style="margin-bottom:10px">'
-    +'<tr><td style="font-weight:700;background:#f5f5f5;width:80px">التاريخ</td><td>'+(x.date||'—')+'</td>'
-    +'<td style="font-weight:700;background:#f5f5f5;width:60px">النوع</td><td>'+(isDeliver?'تسليم':'استلام معطوب')+'</td></tr>'
-    +'<tr><td style="font-weight:700;background:#f5f5f5">المخول</td><td colspan="3">'+(x.person||'—')+'</td></tr>'
-    +'<tr><td style="font-weight:700;background:#f5f5f5">القاطع</td><td>'+(x.district||'—')+'</td>'
-    +'<td style="font-weight:700;background:#f5f5f5">المسؤول</td><td>'+(x.created_by||'—')+'</td></tr>'
-    +(x.notes?'<tr><td style="font-weight:700;background:#f5f5f5">ملاحظات</td><td colspan="3">'+x.notes+'</td></tr>':'')
-    +'</table>'
-    +'<table style="margin-bottom:16px"><thead><tr>'
-    +'<th style="width:40px">#</th><th>اسم الجهاز / المادة</th><th style="width:70px">الكمية</th><th style="width:90px">الحالة</th>'
-    +'</tr></thead><tbody>'+itemRows+'</tbody></table>'
-    +'<div style="display:flex;gap:16px;margin-top:16px">'
-    +'<div class="sig-box">'
-    +'<div style="font-size:11px;font-weight:700;margin-bottom:8px">توقيع المسؤول</div>'
-    +'<div style="min-height:60px;display:flex;align-items:center;justify-content:center">'+existSign+'</div>'
-    +'<div style="border-top:1px solid #555;margin-top:8px;padding-top:4px;font-size:10px">الاسم: '+(x.created_by||'_____________')+(x.signed_at?' &nbsp;/&nbsp; '+x.signed_at:'')+'</div>'
-    +'</div>'
-    +'<div class="sig-box">'
-    +'<div style="font-size:11px;font-weight:700;margin-bottom:4px">توقيع المستلم</div>'
-    +'<canvas id="sig-cv" width="280" height="80"></canvas>'
-    +'<div style="border-top:1px solid #555;margin-top:6px;padding-top:4px;font-size:10px">الاسم: '+(x.person||'_____________')+'</div>'
-    +'</div>'
-    +'</div>'
-    +'<scr'+'ipt>'
-    +'var cv=document.getElementById("sig-cv");'
-    +'var ctx=cv.getContext("2d");'
-    +'ctx.strokeStyle="#1d4ed8";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";'
-    +'var dr=false;'
-    +'function gp(e){var r=cv.getBoundingClientRect();var sx=cv.width/r.width,sy=cv.height/r.height;var s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};}'
-    +'cv.onmousedown=cv.ontouchstart=function(e){e.preventDefault();dr=true;var p=gp(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};'
-    +'cv.onmousemove=cv.ontouchmove=function(e){e.preventDefault();if(!dr)return;var p=gp(e);ctx.lineTo(p.x,p.y);ctx.stroke();};'
-    +'cv.onmouseup=cv.onmouseleave=cv.ontouchend=function(e){e.preventDefault();dr=false;};'
-    +'function clearSig(){ctx.clearRect(0,0,cv.width,cv.height);}'
-    +'</scr'+'ipt>'
-    +'</body></html>';
-
-  w.document.write(html);
-  w.document.close();
-}
-
-function generateHovReport(){
-  // تأكد من تحميل البيانات
-  if(!allHandover||!allHandover.length){
-    loadHandover().then(()=>_buildHovReport()).catch(()=>_buildHovReport());
-  } else {
-    _buildHovReport();
-  }
-}
-
-function _buildHovReport(){
-  const dist=document.getElementById('rhov-district')?.value||'';
-  const type=document.getElementById('rhov-type')?.value||'';
-  const status=document.getElementById('rhov-status')?.value||'';
-
-  // تعبئة قائمة القواطع
-  const dSel=document.getElementById('rhov-district');
-  if(dSel&&dSel.options.length<=1){
-    const dists=[...new Set((allHandover||[]).map(x=>x.district).filter(Boolean))];
-    dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;dSel.appendChild(o);});
-  }
-
-  let list=(allHandover||[]).filter(x=>{
-    if(dist&&x.district!==dist)return false;
-    if(type&&x.op_type!==type)return false;
-    if(status&&(x.status||'pending')!==status)return false;
-    return true;
-  });
-
-  // إحصائيات
-  const totalDel=list.filter(x=>x.op_type==='deliver').length;
-  const totalRec=list.filter(x=>x.op_type==='receive').length;
-  const totalSigned=list.filter(x=>x.status==='signed').length;
-  const totalItems=list.reduce((a,x)=>{const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);return a+it.reduce((b,r)=>b+(+r.qty||0),0);},0);
-
-  const stats=document.getElementById('hov-report-stats');
-  if(stats) stats.innerHTML=[
-    {bg:'#f0fdf4',c:'#16a34a',icon:'📦',val:totalDel,lbl:'تسليم'},
-    {bg:'#fff1f2',c:'#dc2626',icon:'📥',val:totalRec,lbl:'استلام'},
-    {bg:'#eff6ff',c:'#1d4ed8',icon:'📊',val:totalItems,lbl:'إجمالي القطع'},
-    {bg:'#f0fdf4',c:'#16a34a',icon:'✅',val:totalSigned+'/'+list.length,lbl:'موقّع'},
-  ].map(s=>`<div style="background:${s.bg};padding:12px;text-align:center"><div style="font-size:18px">${s.icon}</div><div style="font-size:22px;font-weight:900;color:${s.c}">${s.val}</div><div style="font-size:10px;color:#64748b;font-weight:700">${s.lbl}</div></div>`).join('');
-
-  // ملخص بالمخولين
-  const byPerson={};
-  list.forEach(x=>{
-    const p=x.person||'غير محدد';
-    if(!byPerson[p]) byPerson[p]={deliver:0,receive:0,items:0,signed:0,total:0};
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
-    byPerson[p][x.op_type==='deliver'?'deliver':'receive']++;
-    byPerson[p].items+=qty;
-    byPerson[p].total++;
-    if(x.status==='signed') byPerson[p].signed++;
-  });
-
-  // تجميع تفاصيل كل مخول
-  const personDetails={};
-  list.forEach(x=>{
-    const p=x.person||'غير محدد';
-    if(!personDetails[p]) personDetails[p]=[];
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    personDetails[p].push({...x,_items:it,_qty:it.reduce((a,r)=>a+(+r.qty||0),0)});
-  });
-
-  const personDiv=document.getElementById('hov-report-by-person');
-  if(personDiv) personDiv.innerHTML=Object.entries(personDetails).map(([person,records])=>{
-    const totDel=records.filter(r=>r.op_type==='deliver').length;
-    const totRec=records.filter(r=>r.op_type==='receive').length;
-    const totQty=records.reduce((a,r)=>a+r._qty,0);
-    const totSigned=records.filter(r=>r.status==='signed').length;
-    const rowsHtml=records.map((r,i)=>{
-      const names=r._items.map(d=>d.name+(d.qty>1?' ('+d.qty+')':'')).join('، ');
-      return `<tr style="background:${i%2===0?'#f8fafc':'#fff'}">
-        <td style="font-size:11px;padding:5px 8px">${r.date||'—'}</td>
-        <td style="text-align:center;padding:5px 8px"><span style="background:${r.op_type==='deliver'?'#dcfce7':'#fee2e2'};color:${r.op_type==='deliver'?'#16a34a':'#dc2626'};border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px">${r.op_type==='deliver'?'📦 تسليم':'📥 استلام'}</span></td>
-        <td style="font-size:11px;padding:5px 8px"><span class="db">${r.district||'—'}</span></td>
-        <td style="font-size:11px;padding:5px 8px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${names}">${names||'—'}</td>
-        <td style="text-align:center;font-weight:700;color:#1d4ed8;padding:5px 8px">${r._qty}</td>
-        <td style="text-align:center;padding:5px 8px"><span style="background:${r.status==='signed'?'#dcfce7':'#fef9c3'};color:${r.status==='signed'?'#16a34a':'#d97706'};border-radius:6px;font-size:10px;font-weight:700;padding:2px 7px">${r.status==='signed'?'✅ موقّع':'⏳ معلق'}</span></td>
-      </tr>`;
-    }).join('');
-    return `<div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;margin-bottom:16px;overflow:hidden">
-      <div style="background:linear-gradient(135deg,#1e3a5f,#1d4ed8);padding:12px 16px;display:flex;justify-content:space-between;align-items:center">
-        <div>
-          <div style="font-size:14px;font-weight:900;color:#fff">👤 ${person}</div>
-          <div style="font-size:11px;color:rgba(255,255,255,.7);margin-top:2px">
-            📦 تسليم: ${totDel} &nbsp;|&nbsp; 📥 استلام: ${totRec} &nbsp;|&nbsp; 📊 إجمالي قطع: ${totQty} &nbsp;|&nbsp; ✅ موقّع: ${totSigned}/${records.length}
-          </div>
-        </div>
-        <button onclick="printPersonHovReport('${person.replace(/'/g,"\'")}')" style="background:#fff;color:#1d4ed8;border:none;padding:6px 14px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🖨️ طباعة تقريره</button>
-      </div>
-      <div style="overflow-x:auto">
-        <table style="width:100%;border-collapse:collapse">
-          <thead><tr style="background:#f1f5f9">
-            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">التاريخ</th>
-            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">النوع</th>
-            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">القاطع</th>
-            <th style="padding:7px 8px;text-align:right;font-size:11px;border-bottom:1px solid #e2e8f0">الأجهزة</th>
-            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">الكمية</th>
-            <th style="padding:7px 8px;text-align:center;font-size:11px;border-bottom:1px solid #e2e8f0">الحالة</th>
-          </tr></thead>
-          <tbody>${rowsHtml}</tbody>
-        </table>
-      </div>
-    </div>`;
-  }).join('');
-
-  // الجدول التفصيلي
-  const tb=document.getElementById('hov-report-tbody');
-  if(tb) tb.innerHTML=list.length?list.map((x,i)=>{
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
-    const names=it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
-    const isSigned=x.status==='signed';
-    return `<tr>
-      <td><span class="snum">${i+1}</span></td>
-      <td style="font-size:12px">${x.date||'—'}</td>
-      <td><span style="background:${x.op_type==='deliver'?'#dcfce7':'#fee2e2'};color:${x.op_type==='deliver'?'#16a34a':'#dc2626'};border-radius:8px;font-size:10px;font-weight:700;padding:2px 8px">${x.op_type==='deliver'?'📦 تسليم':'📥 استلام'}</span></td>
-      <td style="font-weight:700">${x.person||'—'}</td>
-      <td><span class="db">${x.district||'—'}</span></td>
-      <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${names}">${names||'—'}</td>
-      <td style="text-align:center;font-weight:800;color:#1d4ed8">${qty}</td>
-      <td><span style="background:${isSigned?'#dcfce7':'#fef9c3'};color:${isSigned?'#16a34a':'#d97706'};border-radius:8px;font-size:10px;font-weight:700;padding:2px 8px">${isSigned?'✅ موقّع':'⏳ معلق'}</span></td>
-    </tr>`;
-  }).join(''):'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">لا توجد سجلات</td></tr>';
-}
-
-function printPersonHovReport(person){
-  const records=(allHandover||[]).filter(x=>x.person===person);
-  if(!records.length){toast('لا توجد سجلات','err');return;}
-  const totQty=records.reduce((a,x)=>{const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);return a+it.reduce((b,r)=>b+(+r.qty||0),0);},0);
-  const totSigned=records.filter(x=>x.status==='signed').length;
-
-  const rowsHtml=records.map((x,i)=>{
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    const names=it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
-    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
-    return '<tr style="background:'+(i%2===0?'#f8fafc':'#fff')+'">'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(x.date||'—')+'</td>'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">'+(x.op_type==='deliver'?'📦 تسليم':'📥 استلام')+'</td>'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(x.district||'—')+'</td>'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px">'+(names||'—')+'</td>'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center;font-weight:700;color:#1d4ed8">'+qty+'</td>'
-      +'<td style="padding:7px 10px;border:1px solid #ddd;font-size:12px;text-align:center">'+(x.status==='signed'?'✅ موقّع':'⏳ معلق')+'</td>'
-      +'</tr>';
-  }).join('');
-
-  // تجميع كل الأجهزة
-  const allItems={};
-  records.forEach(x=>{
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    it.forEach(r=>{if(!allItems[r.name])allItems[r.name]=0;allItems[r.name]+=(+r.qty||0);});
-  });
-  const itemsSummary=Object.entries(allItems).map(([name,qty])=>'<tr><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px">'+name+'</td><td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;text-align:center;font-weight:700;color:#1d4ed8">'+qty+'</td></tr>').join('');
-
-  const w=window.open('','_blank','width=800,height=600');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'body{font-family:Arial,sans-serif;padding:20px;direction:rtl;font-size:13px}'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:16px}'
-    +'th{background:#1d4ed8;color:#fff;padding:8px 10px;font-size:12px;text-align:right}'
-    +'@media print{.np{display:none}@page{margin:10mm;size:A4 landscape}}'
-    +'</style></head><body>'
-    +'<div class="np" style="margin-bottom:14px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
-    +'<div style="text-align:center;border-bottom:3px solid #1d4ed8;padding-bottom:10px;margin-bottom:16px">'
-    +'<div style="font-size:17px;font-weight:900">تقرير الاستلام والتسليم</div>'
-    +'<div style="font-size:12px;color:#555;margin-top:3px">شركة توزيع المنتجات النفطية / فرع صلاح الدين</div>'
-    +'</div>'
-    +'<table style="margin-bottom:16px">'
-    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd;width:120px">المخول</td><td style="padding:8px;border:1px solid #ddd;font-size:14px;font-weight:700">'+person+'</td>'
-    +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd;width:100px">إجمالي العمليات</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+records.length+'</td></tr>'
-    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">إجمالي القطع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#1d4ed8">'+totQty+'</td>'
-    +'<td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">الموقّع</td><td style="padding:8px;border:1px solid #ddd;font-weight:700;color:#16a34a">'+totSigned+'/'+records.length+'</td></tr>'
-    +'<tr><td style="background:#f1f5f9;font-weight:700;padding:8px;border:1px solid #ddd">تاريخ الطباعة</td><td colspan="3" style="padding:8px;border:1px solid #ddd">'+fmtDate(new Date())+'</td></tr>'
-    +'</table>'
-    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📦 ملخص الأجهزة الكلي</div>'
-    +'<table style="margin-bottom:16px">'
-    +'<thead><tr><th>اسم الجهاز / المادة</th><th style="width:100px;text-align:center">الكمية الكلية</th></tr></thead>'
-    +'<tbody>'+itemsSummary+'</tbody></table>'
-    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:8px">📋 تفاصيل العمليات</div>'
-    +'<table><thead><tr><th>التاريخ</th><th>النوع</th><th>القاطع</th><th>الأجهزة</th><th style="width:70px;text-align:center">الكمية</th><th style="width:80px;text-align:center">الحالة</th></tr></thead>'
-    +'<tbody>'+rowsHtml+'</tbody></table>'
-    +'</body></html>');
-  w.document.close();
-}
-
-function printHovReport(){
-  generateHovReport();
-  const table=document.getElementById('hov-report-table');
-  const stats=document.getElementById('hov-report-stats');
-  const byPerson=document.getElementById('hov-report-by-person');
-  if(!table)return;
-  const w=window.open('','_blank','width=800,height=600');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'body{font-family:Arial,sans-serif;padding:16px;direction:rtl;font-size:12px}'
-    +'table{width:100%;border-collapse:collapse;margin-bottom:14px}'
-    +'td,th{border:1px solid #555;padding:6px 8px;font-size:11px}'
-    +'th{background:#1d4ed8;color:#fff;font-weight:800;text-align:center}'
-    +'h2{text-align:center;font-size:15px;margin-bottom:4px}'
-    +'.sub{text-align:center;color:#555;font-size:11px;margin-bottom:12px}'
-    +'@media print{.np{display:none}@page{margin:8mm;size:A4 landscape}}'
-    +'</style></head><body>'
+  const w=window.open('','_blank','width=700,height=500');
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+    +'<style>body{font-family:Arial,sans-serif;padding:16px;direction:rtl}'
+    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #333;padding:4px 8px;font-size:11px}'
+    +'th{background:#d0d0d0;font-weight:800;text-align:center}'
+    +'@media print{.np{display:none}@page{margin:8mm}}</style></head><body>'
     +'<div class="np" style="margin-bottom:10px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
-    +'<h2>تقرير الاستلام والتسليم — أجهزة كاميرات المراقبة</h2>'
-    +'<div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — تاريخ الطباعة: '+fmtDate(new Date())+'</div>'
-    +(byPerson?byPerson.innerHTML:'')
-    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin:12px 0 8px">📋 التفاصيل الكاملة</div>'
-    +table.outerHTML
-    +'</body></html>');
+    +'<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px">'
+    +'<div style="font-size:14px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
+    +'<div style="font-size:11px;color:#555">شركة توزيع المنتجات النفطية / فرع صلاح الدين</div></div>'
+    +'<table style="margin-bottom:10px"><tr><td style="font-weight:700;background:#f5f5f5">التاريخ</td><td>'+(x.date||'—')+'</td>'
+    +'<td style="font-weight:700;background:#f5f5f5">النوع</td><td>'+(isDeliver?'📦 تسليم':'📥 استلام معطوب')+'</td></tr>'
+    +'<tr><td style="font-weight:700;background:#f5f5f5">المخول</td><td colspan="3">'+(x.person||'—')+'</td></tr>'
+    +'<tr><td style="font-weight:700;background:#f5f5f5">القاطع</td><td colspan="3">'+(x.district||'—')+'</td></tr></table>'
+    +'<table><thead><tr><th>#</th><th>اسم الجهاز</th><th>الكمية</th><th>الحالة</th></tr></thead><tbody>'
+    +items.map((r,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${r.name||''}</td><td style="text-align:center">${r.qty||0}</td><td style="text-align:center">${r.status||''}</td></tr>`).join('')
+    +'</tbody></table>'+(x.notes?'<div style="margin-top:8px;border:1px solid #ddd;padding:5px;font-size:11px"><b>ملاحظات:</b> '+x.notes+'</div>':'')
+    +'<div style="display:flex;justify-content:space-between;margin-top:24px;gap:20px">'
+    +'<div style="flex:1;border:1px solid #aaa;padding:5px;text-align:center"><div style="margin-bottom:20px;font-size:10px">توقيع المسؤول</div><div style="border-top:1px solid #333;padding-top:3px;font-size:10px">الاسم: ___________</div></div>'
+    +'<div style="flex:1;border:1px solid #aaa;padding:5px;text-align:center"><div style="margin-bottom:20px;font-size:10px">توقيع المستلم</div><div style="border-top:1px solid #333;padding-top:3px;font-size:10px">الاسم: '+(x.person||'___________')+'</div></div>'
+    +'</div></body></html>');
   w.document.close();
-}
-
-function exportHovCSV(){
-  generateHovReport();
-  const list=(allHandover||[]);
-  if(!list.length){toast('لا توجد بيانات','err');return;}
-  const rows=[['التاريخ','النوع','المخول','القاطع','الأجهزة','الكمية الكلية','الحالة','وقت التوقيع','الموقّع']];
-  list.forEach(x=>{
-    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
-    rows.push([
-      x.date||'', x.op_type==='deliver'?'تسليم':'استلام',
-      x.person||'', x.district||'',
-      it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join(' / '),
-      it.reduce((a,r)=>a+(+r.qty||0),0),
-      x.status==='signed'?'موقّع':'معلق',
-      x.signed_at||'', x.signed_by||''
-    ]);
-  });
-  const csv='\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
-  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
-  a.download='تقرير_الاستلام_والتسليم.csv';a.click();toast('تم التصدير ✅');
 }
 
 function exportHandoverCSV(){
@@ -8718,20 +8061,18 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:#0a0a0a;color:#fff;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -3px 20px rgba(0,0,0,.6);align-items:center;gap:0;border-top:2px solid #dc2626;height:36px">
-  <div style="background:#dc2626;padding:0 14px;font-size:11px;font-weight:900;white-space:nowrap;flex-shrink:0;letter-spacing:1px;height:100%;display:flex;align-items:center;gap:6px">
-    <span style="animation:blink 1s step-end infinite;font-size:10px">●</span> فعاليات القواطع
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
+  <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
+  <div style="overflow:hidden;flex:1;position:relative;height:20px">
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite"></div>
   </div>
-  <div style="width:2px;background:#dc2626;align-self:stretch;flex-shrink:0"></div>
-  <div style="overflow:hidden;flex:1;position:relative;height:100%">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;top:50%;transform:translateY(-50%);animation:tickerScroll 90s linear infinite;color:#f0f0f0;font-size:12px;letter-spacing:.3px"></div>
-  </div>
-  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:#dc2626;border:none;color:#fff;padding:0 14px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:18px;height:100%;display:flex;align-items:center">✕</button>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
 </div>
 <style>
-@keyframes tickerScroll{0%{transform:translateY(-50%) translateX(-100%)}100%{transform:translateY(-50%) translateX(100%)}}
-@keyframes urgentBar{0%,100%{border-top-color:#dc2626}50%{border-top-color:#fff}}
-@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+@keyframes tickerScroll{
+  0%{transform:translateX(-100%)}
+  100%{transform:translateX(100%)}
+}
 </style>
 
 <!-- نافذة معاينة الطباعة -->
@@ -8747,7 +8088,66 @@ document.addEventListener('DOMContentLoaded', function(){
 </div>
 <style>
 @media print{
-  body > *:not(#inv-print-overlay){display:none!important}
+  bod
+<!-- ═══ PWA ═══ -->
+<div id="pwa-banner" style="display:none;position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.72);backdrop-filter:blur(8px);align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl">
+  <div style="background:#fff;border-radius:22px;padding:28px 22px;max-width:320px;width:88%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.4)">
+    <div style="width:76px;height:76px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:20px;margin:0 auto 14px;display:flex;align-items:center;justify-content:center;font-size:40px;box-shadow:0 8px 24px rgba(29,78,216,.3)">&#x1F4F9;</div>
+    <div style="font-size:18px;font-weight:900;color:#1e293b;margin-bottom:4px">نظام كاميرات المراقبة</div>
+    <div style="font-size:12px;color:#64748b;margin-bottom:4px">شعبة تقنية المعلومات - OPDC صلاح الدين</div>
+    <div style="font-size:11px;color:#94a3b8;margin-bottom:22px">ثبّت التطبيق للوصول السريع من الشاشة الرئيسية</div>
+    <button id="pwa-btn-install" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;padding:14px;border-radius:12px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px;box-shadow:0 4px 16px rgba(29,78,216,.3)">&#x1F4F2; تثبيت التطبيق</button>
+    <button id="pwa-btn-skip" style="width:100%;background:#f1f5f9;color:#64748b;border:none;padding:12px;border-radius:12px;font-family:Cairo,sans-serif;font-size:13px;cursor:pointer">الاستمرار بالمتصفح</button>
+    <div id="pwa-ios-msg" style="display:none;margin-top:14px;padding:12px;background:#eff6ff;border-radius:10px;font-size:11px;color:#1d4ed8;line-height:2;text-align:right">
+      &#x1F4F1; على iPhone/iPad: اضغط &#x2B06; ثم <b>اضافة الى الشاشة الرئيسية</b>
+    </div>
+  </div>
+</div>
+<style>
+#pwa-banner.open{display:flex;animation:pwaIn .35s ease}
+@keyframes pwaIn{from{opacity:0}to{opacity:1}}
+</style>
+<script>
+(function(){
+  try{
+    if(localStorage.getItem('pwa_done')||
+       window.matchMedia('(display-mode:standalone)').matches||
+       window.navigator.standalone) return;
+    var B=document.getElementById('pwa-banner');
+    var ib=document.getElementById('pwa-btn-install');
+    var sb=document.getElementById('pwa-btn-skip');
+    var im=document.getElementById('pwa-ios-msg');
+    var dp=null;
+    function done(){if(B)B.className='';localStorage.setItem('pwa_done','1');}
+    var isIos=/iphone|ipad|ipod/i.test(navigator.userAgent);
+    var isSafari=isIos&&/safari/i.test(navigator.userAgent)&&!/crios|fxios/i.test(navigator.userAgent);
+    window.addEventListener('beforeinstallprompt',function(e){
+      e.preventDefault(); dp=e;
+      setTimeout(function(){if(B)B.className='open';},1200);
+    });
+    if(isSafari&&!navigator.standalone){
+      if(im) im.style.display='block';
+      if(ib) ib.style.display='none';
+      setTimeout(function(){if(B)B.className='open';},1200);
+    }
+    if(ib) ib.onclick=function(){
+      if(!dp) return;
+      dp.prompt();
+      dp.userChoice.then(function(r){if(r.outcome==='accepted')done(); dp=null;});
+    };
+    if(sb) sb.onclick=done;
+    window.addEventListener('appinstalled',done);
+    if('serviceWorker' in navigator){
+      var sw='self.addEventListener("fetch",function(e){'+
+        'e.respondWith(fetch(e.request).catch(function(){return caches.match(e.request);}));'+
+      '});';
+      var blob=new Blob([sw],{type:'application/javascript'});
+      navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(function(){});
+    }
+  }catch(ex){}
+})();
+</script>
+y > *:not(#inv-print-overlay){display:none!important}
   #inv-print-overlay{position:static!important;background:none!important;padding:0!important;overflow:visible!important}
   #inv-print-overlay > div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
   #inv-print-overlay > div > div:first-child{display:none!important}
