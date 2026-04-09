@@ -1247,10 +1247,13 @@ tr:hover td{background:rgba(30,58,95,.03);}
 
         <!-- Footer -->
         <div style="margin-top:8px;text-align:center;padding:20px;background:linear-gradient(135deg,#0c1e4a,#1d4ed8);border-radius:var(--r)">
-          <div style="font-size:11px;color:rgba(255,255,255,.4);letter-spacing:3px;margin-bottom:6px">— إعداد وبرمجة —</div>
-          <div style="font-size:20px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 0 24px rgba(96,165,250,.6)">Ghazwan Ali Alqaissi</div>
-          <div style="width:40px;height:3px;background:linear-gradient(90deg,#bfdbfe,#60a5fa);border-radius:4px;margin:8px auto"></div>
-          <div style="font-size:11px;color:rgba(255,255,255,.5)">شعبة تقنية المعلومات — V1.0.0</div>
+          <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap">
+            <div style="font-size:10px;color:rgba(255,255,255,.35);letter-spacing:2px">إعداد وبرمجة</div>
+            <div style="width:1px;height:16px;background:rgba(255,255,255,.2)"></div>
+            <div style="font-size:16px;font-weight:700;color:rgba(255,255,255,.85);font-family:monospace;letter-spacing:2px">Ghazwan A. Alqaissi</div>
+            <div style="width:1px;height:16px;background:rgba(255,255,255,.2)"></div>
+            <div style="font-size:10px;color:rgba(255,255,255,.35)">شعبة تقنية المعلومات — V1.0.0</div>
+          </div>
         </div>
       </div>
 
@@ -7357,34 +7360,45 @@ async function updateActivityTicker(){
   if(CU?.role !== 'admin') return;
   if(!SERVER_ONLINE) return;
   try{
+    // تصفير كل 24 ساعة
     const lr=parseInt(localStorage.getItem('tkr_reset')||'0');
     if(Date.now()-lr>864e5){api('POST','/api/notifications/clear',{}).catch(()=>{});localStorage.setItem('tkr_reset',Date.now());}
+
     const d = await api('GET','/api/notifications');
     const list = d.notifications || [];
     const tickerBar = document.getElementById('maint-ticker-bar');
     const tickerContent = document.getElementById('maint-ticker-content');
     if(!tickerBar || !tickerContent) return;
-
     if(!list.length){ tickerBar.style.display='none'; return; }
 
-    // بناء نص الشريط من آخر 20 فعالية
-    const items = list.slice(0,20).map(n=>{
-      const icon = n.action.includes('جولة')?'🚗':
-                   n.action.includes('صيانة')?'🔧':
-                   n.action.includes('محطة')?'📍':'📋';
-      return `${icon} ${n.user}: ${n.action} — ${n.details} [${n.time}]`;
+    // فرز بالقاطع — جمّع الفعاليات لكل قاطع
+    const byDistrict={};
+    list.forEach(n=>{
+      const dist = n.district||n.details?.match(/قاطع: ([^|]+)/)?.[1]?.trim()||'عام';
+      if(!byDistrict[dist]) byDistrict[dist]=[];
+      byDistrict[dist].push(n);
     });
-    tickerContent.textContent = items.join('   ◈   ');
+
+    // بناء نص مجمّع بالقواطع
+    const segments=Object.entries(byDistrict).map(([dist,notifs])=>{
+      const evts=notifs.slice(0,5).map(n=>{
+        const icon=n.action.includes('جولة')?'🚗':n.action.includes('صيانة')?'🔧':n.action.includes('محطة')?'📍':'📋';
+        return `${icon} ${n.user}: ${n.action} — ${n.details}`;
+      }).join('  •  ');
+      return `⬡ ${dist}  ${evts}`;
+    });
+    tickerContent.textContent = segments.join('     ◈◈◈     ');
     tickerBar.style.display = 'flex';
 
-    // تنبيه إذا جاءت فعالية جديدة
+    // زر تنبيه عاجل إذا جاءت فعالية جديدة من مخوّل
     const unread = d.unread || 0;
     if(unread > _lastNotifCount && _lastNotifCount >= 0 && _lastNotifCount !== 0){
-      toast('📡 فعالية جديدة من مخوّل');
+      showUrgentBadge('فعالية جديدة من مخوّل');
+      // وميض الشريط
+      tickerBar.style.animation='urgentBar .4s ease 3';
+      setTimeout(()=>tickerBar.style.animation='',1500);
     }
     _lastNotifCount = unread;
-
-    // تعليم كل مقروء تلقائياً بعد العرض
     if(unread > 0) api('POST','/api/notifications/read',{}).catch(()=>{});
   }catch(e){}
 }
@@ -8619,18 +8633,20 @@ document.addEventListener('DOMContentLoaded', function(){
 
 
 <!-- شريط إخباري لصيانة اليوم -->
-<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:linear-gradient(90deg,#1e3a5f,#1d4ed8);color:#fff;padding:7px 14px;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -2px 14px rgba(0,0,0,.25);align-items:center;gap:10px">
-  <span id="ticker-label" style="background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.25);border-radius:20px;padding:2px 10px;font-weight:800;font-size:10px;white-space:nowrap;flex-shrink:0">📡 فعاليات المخولين</span>
-  <div style="overflow:hidden;flex:1;position:relative;height:20px">
-    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;animation:tickerScroll 120s linear infinite"></div>
+<div id="maint-ticker-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:9000;background:#0a0a0a;color:#fff;font-family:'Cairo',sans-serif;font-size:12px;direction:rtl;box-shadow:0 -3px 20px rgba(0,0,0,.6);align-items:center;gap:0;border-top:2px solid #dc2626;height:36px">
+  <div style="background:#dc2626;padding:0 14px;font-size:11px;font-weight:900;white-space:nowrap;flex-shrink:0;letter-spacing:1px;height:100%;display:flex;align-items:center;gap:6px">
+    <span style="animation:blink 1s step-end infinite;font-size:10px">●</span> فعاليات القواطع
   </div>
-  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:rgba(255,255,255,.12);border:none;color:rgba(255,255,255,.8);border-radius:6px;padding:2px 8px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:12px">✕</button>
+  <div style="width:2px;background:#dc2626;align-self:stretch;flex-shrink:0"></div>
+  <div style="overflow:hidden;flex:1;position:relative;height:100%">
+    <div id="maint-ticker-content" style="white-space:nowrap;position:absolute;top:50%;transform:translateY(-50%);animation:tickerScroll 90s linear infinite;color:#f0f0f0;font-size:12px;letter-spacing:.3px"></div>
+  </div>
+  <button onclick="document.getElementById('maint-ticker-bar').style.display='none'" style="background:#dc2626;border:none;color:#fff;padding:0 14px;cursor:pointer;font-family:'Cairo',sans-serif;flex-shrink:0;font-size:18px;height:100%;display:flex;align-items:center">✕</button>
 </div>
 <style>
-@keyframes tickerScroll{
-  0%{transform:translateX(-100%)}
-  100%{transform:translateX(100%)}
-}
+@keyframes tickerScroll{0%{transform:translateY(-50%) translateX(-100%)}100%{transform:translateY(-50%) translateX(100%)}}
+@keyframes urgentBar{0%,100%{border-top-color:#dc2626}50%{border-top-color:#fff}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
 </style>
 
 <!-- نافذة معاينة الطباعة -->
