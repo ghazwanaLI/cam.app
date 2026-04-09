@@ -4962,10 +4962,20 @@ async function saveTour(){
   try{
     const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
     const tid=id||r.id;
+    // رفع الملفات على Supabase ثم حفظ الرابط في السيرفر
     for(const fk of ['tour_img','tour_rep','tour_doc']){
       if(UF[fk]){
-        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
-        delete UF[fk];
+        try{
+          toast('⏳ جاري رفع '+fk+'...');
+          const url=await _sbUpload(UF[fk].data, UF[fk].mime||'image/jpeg');
+          await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name, data:url, mime:UF[fk].mime});
+          delete UF[fk];
+        }catch(fe){
+          // fallback — رفع مباشر للسيرفر
+          try{await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});}
+          catch(fe2){console.warn('file upload failed:',fe2);}
+          delete UF[fk];
+        }
       }
     }
     closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
@@ -5956,19 +5966,29 @@ async function doUpload(event,key){
   try{
     const file=event.target.files[0];if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    const hiQ=document.getElementById('upload-quality')?.checked;
-    const {data,mime}=await compressImage(file,hiQ?1920:1280,hiQ?1920:1280,hiQ?0.95:0.82);
-    const finalName=file.name.replace(/\.[^.]+$/,'')+'.jpg';
-    UF[key]={name:finalName,data,mime:'image/jpeg'};
+    const isPdf=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
+    let data,mime,finalName;
+    if(isPdf){
+      // PDF — احتفظ به كـ PDF أصلي وارفعه على Supabase
+      const r=await new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(fr.result.split(',')[1]);fr.onerror=rej;fr.readAsDataURL(file);});
+      data=r; mime='application/pdf'; finalName=file.name;
+    } else {
+      // صورة — اضغط وحوّل لـ JPG
+      const hiQ=document.getElementById('upload-quality')?.checked;
+      const res=await compressImage(file,hiQ?1920:1280,hiQ?1920:1280,hiQ?0.95:0.82);
+      data=res.data; mime='image/jpeg'; finalName=file.name.replace(/\.[^.]+$/,'')+'.jpg';
+    }
+    UF[key]={name:finalName,data,mime};
     const kb=Math.round(data.length*0.75/1024);
     if(key==='hov_doc'){
       const nm=document.getElementById('hov-file-name');if(nm)nm.textContent=file.name+' ('+kb+'KB)';
-      const pv=document.getElementById('hov-file-preview');if(pv)pv.innerHTML=`<img src="data:image/jpeg;base64,${data}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:4px">`;
+      const pv=document.getElementById('hov-file-preview');if(pv)pv.innerHTML=isPdf?`<div style="padding:8px;background:#fee2e2;border-radius:6px;font-size:12px;color:#dc2626;margin-top:4px">📄 ${file.name}</div>`:`<img src="data:image/jpeg;base64,${data}" style="max-width:100%;max-height:120px;border-radius:8px;margin-top:4px">`;
       return;
     }
-    const stat=document.getElementById('us-'+key);if(stat)stat.textContent=file.name+' ('+kb+'KB)';
+    const stat=document.getElementById('us-'+key);
+    if(stat) stat.textContent=(isPdf?'📄 ':'📸 ')+file.name+' ('+kb+'KB)';
     const box=event.target.closest('.up-box');if(box)box.classList.add('hf');
-  }catch(e){toast('خطأ: '+e.message,'err');}
+  }catch(e){toast('خطأ في الرفع: '+e.message,'err');console.error(e);}
 }
 function rmFile(key, e){
   e?.stopPropagation();
