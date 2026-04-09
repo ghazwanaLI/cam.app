@@ -7922,25 +7922,25 @@ function printHandover(id){
   const isDeliver=x.op_type==='deliver';
   const w=window.open('','_blank','width=750,height=650');
 
-  const itemRows=items.map((r,i)=>'<tr><td style="text-align:center;border:1px solid #555;padding:5px">'+(i+1)+'</td><td style="border:1px solid #555;padding:5px">'+(r.name||'')+'</td><td style="text-align:center;border:1px solid #555;padding:5px">'+(r.qty||0)+'</td><td style="text-align:center;border:1px solid #555;padding:5px">'+(r.status||'')+'</td></tr>').join('');
+  const itemRows=items.map((r,i)=>'<tr style="background:'+(i%2===0?'#fffbeb':'#fef3c7')+'"><td style="text-align:center;border:1px solid #555;padding:8px;font-size:14px;font-weight:700">'+(i+1)+'</td><td style="border:1px solid #555;padding:8px;font-size:15px;font-weight:700">'+(r.name||'')+'</td><td style="text-align:center;border:1px solid #555;padding:8px;font-size:15px;font-weight:800;color:#1d4ed8">'+(r.qty||0)+'</td><td style="text-align:center;border:1px solid #555;padding:8px;font-size:13px">'+(r.status||'')+'</td></tr>').join('');
 
   const existSign=x.signed_url?('<img src="'+x.signed_url+'" style="max-height:70px;max-width:100%;object-fit:contain">'):'<div style="color:#ccc;font-size:10px">_________________________</div>';
 
   const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
-    +'body{font-family:Arial,sans-serif;padding:18px;direction:rtl;font-size:12px}'
-    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #555;padding:5px 8px;font-size:11px}'
-    +'th{background:#d0d0d0;font-weight:800;text-align:center}'
+    +'body{font-family:Arial,sans-serif;padding:18px;direction:rtl;font-size:14px}'
+    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #555;padding:8px 10px;font-size:13px}'
+    +'th{background:#1d4ed8;color:#fff;font-weight:800;text-align:center;font-size:13px}'
     +'.sig-box{flex:1;border:1px solid #555;padding:8px;text-align:center;min-height:100px}'
     +'canvas{border:1px dashed #1d4ed8;cursor:crosshair;touch-action:none;display:block;width:100%}'
-    +'@media print{.np{display:none}canvas{border:1px solid #aaa}@page{margin:8mm}}'
+    +'@media print{.np{display:none}canvas{border:1px solid #aaa}@page{margin:8mm;size:A4 landscape}}'
     +'</style></head><body>'
     +'<div class="np" style="margin-bottom:12px;display:flex;gap:8px">'
     +'<button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">&#128424; طباعة</button>'
-    +'<button onclick="clearSig()" style="background:#f1f5f9;border:1px solid #ccc;padding:8px 14px;border-radius:6px;cursor:pointer">&#128465; مسح التوقيع</button>'
-    +'<span style="font-size:11px;color:#888;align-self:center">وقّع في خانة المستلم ثم اطبع</span>'
+    +'<button onclick="clearSig()" class="np" style="background:#f1f5f9;border:1px solid #ccc;padding:8px 14px;border-radius:6px;cursor:pointer">&#128465; مسح التوقيع</button>'
+    +'<span class="np" style="font-size:11px;color:#888;align-self:center">وقّع في خانة المستلم ثم اطبع</span>'
     +'</div>'
     +'<div style="text-align:center;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:12px">'
-    +'<div style="font-size:15px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
+    +'<div style="font-size:19px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
     +'<div style="font-size:11px;color:#444;margin-top:2px">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>'
     +'</div>'
     +'<table style="margin-bottom:10px">'
