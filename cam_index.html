@@ -2686,7 +2686,7 @@ function lsApi(method,path,body){
 
   if(method==='GET'){
     if(res==='me')        return {user:CU||{id:1,fullname:'مدير النظام',username:'admin',role:'admin',district:'',active:true,perms:{view:true,edit:true,del:true,files:true,reports:true}}};
-    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
+    if(res==='districts') return {districts:lsGetList('districts').length?lsGetList('districts'):['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل']};
     if(res==='logs')      return {logs:[]};
     if(res==='files')     return LS.get('file_'+seg.slice(3).join('_'))||{};
     const list=lsGetList(res);
@@ -4403,7 +4403,7 @@ async function initApp(){
     const d=await api('GET','/api/districts');
     DISTRICTS_LIST=d.districts||[];
   }catch(e){
-    DISTRICTS_LIST=['الشرقاط','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
+    DISTRICTS_LIST=['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل'];
   }
 
   try{
@@ -5200,7 +5200,7 @@ function updateGenCode(){
 
   // خريطة القواطع → كود ASCII
   const DIST_MAP={
-    'الشرقاط':'SH','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
+    'الشرقاط / الايمن':'SH-R','الشرقاط الايسر':'SH-L','بيجي':'BJ','تكريت':'TK','سامراء':'SM',
     'العلم':'AL','الدور':'DR','بلد':'BL','الدجيل':'DJ',
   };
 
