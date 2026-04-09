@@ -1586,6 +1586,49 @@ tr:hover td{background:rgba(30,58,95,.03);}
           <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📍 ملخص القواطع</div></div>
           <div id="district-summary" style="padding:16px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px"></div>
         </div>
+
+        <!-- تقرير الاستلام والتسليم -->
+        <div class="section" style="margin-top:16px">
+          <div class="sec-hdr">
+            <div class="sec-title"><div class="sdot" style="background:#ea580c"></div>🔄 تقرير الاستلام والتسليم</div>
+            <div class="sec-actions">
+              <select class="fi btn-sm" id="rhov-district" style="width:130px">
+                <option value="">كل القواطع</option>
+              </select>
+              <select class="fi btn-sm" id="rhov-type" style="width:120px">
+                <option value="">كل العمليات</option>
+                <option value="deliver">📦 تسليم</option>
+                <option value="receive">📥 استلام</option>
+              </select>
+              <select class="fi btn-sm" id="rhov-status" style="width:120px">
+                <option value="">كل الحالات</option>
+                <option value="signed">✅ موقّع</option>
+                <option value="pending">⏳ معلق</option>
+              </select>
+              <button class="btn btn-p btn-sm" onclick="generateHovReport()">📊 توليد</button>
+              <button class="btn btn-o btn-sm" onclick="printHovReport()">🖨️ طباعة</button>
+              <button class="btn btn-o btn-sm" onclick="exportHovCSV()">📤 CSV</button>
+            </div>
+          </div>
+          <!-- إحصائيات سريعة -->
+          <div id="hov-report-stats" style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#e2e8f0;border-bottom:1px solid #e2e8f0"></div>
+          <!-- جدول تفصيلي بالمخولين -->
+          <div style="padding:14px 16px">
+            <div id="hov-report-by-person" style="margin-bottom:16px"></div>
+            <!-- جدول كل المواد -->
+            <div class="table-wrap">
+              <table id="hov-report-table">
+                <thead><tr>
+                  <th>#</th><th>التاريخ</th><th>النوع</th><th>المخول</th><th>القاطع</th>
+                  <th>الأجهزة</th><th>الكمية</th><th>الحالة</th>
+                </tr></thead>
+                <tbody id="hov-report-tbody">
+                  <tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">اضغط "توليد" لعرض التقرير</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
       </div>
 
       <!-- DELEGATES TAB -->
@@ -7981,6 +8024,135 @@ function printHandover(id){
 
   w.document.write(html);
   w.document.close();
+}
+
+function generateHovReport(){
+  const dist=document.getElementById('rhov-district')?.value||'';
+  const type=document.getElementById('rhov-type')?.value||'';
+  const status=document.getElementById('rhov-status')?.value||'';
+
+  // تعبئة قائمة القواطع
+  const dSel=document.getElementById('rhov-district');
+  if(dSel&&dSel.options.length<=1){
+    const dists=[...new Set((allHandover||[]).map(x=>x.district).filter(Boolean))];
+    dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;dSel.appendChild(o);});
+  }
+
+  let list=(allHandover||[]).filter(x=>{
+    if(dist&&x.district!==dist)return false;
+    if(type&&x.op_type!==type)return false;
+    if(status&&(x.status||'pending')!==status)return false;
+    return true;
+  });
+
+  // إحصائيات
+  const totalDel=list.filter(x=>x.op_type==='deliver').length;
+  const totalRec=list.filter(x=>x.op_type==='receive').length;
+  const totalSigned=list.filter(x=>x.status==='signed').length;
+  const totalItems=list.reduce((a,x)=>{const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);return a+it.reduce((b,r)=>b+(+r.qty||0),0);},0);
+
+  const stats=document.getElementById('hov-report-stats');
+  if(stats) stats.innerHTML=[
+    {bg:'#f0fdf4',c:'#16a34a',icon:'📦',val:totalDel,lbl:'تسليم'},
+    {bg:'#fff1f2',c:'#dc2626',icon:'📥',val:totalRec,lbl:'استلام'},
+    {bg:'#eff6ff',c:'#1d4ed8',icon:'📊',val:totalItems,lbl:'إجمالي القطع'},
+    {bg:'#f0fdf4',c:'#16a34a',icon:'✅',val:totalSigned+'/'+list.length,lbl:'موقّع'},
+  ].map(s=>`<div style="background:${s.bg};padding:12px;text-align:center"><div style="font-size:18px">${s.icon}</div><div style="font-size:22px;font-weight:900;color:${s.c}">${s.val}</div><div style="font-size:10px;color:#64748b;font-weight:700">${s.lbl}</div></div>`).join('');
+
+  // ملخص بالمخولين
+  const byPerson={};
+  list.forEach(x=>{
+    const p=x.person||'غير محدد';
+    if(!byPerson[p]) byPerson[p]={deliver:0,receive:0,items:0,signed:0,total:0};
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
+    byPerson[p][x.op_type==='deliver'?'deliver':'receive']++;
+    byPerson[p].items+=qty;
+    byPerson[p].total++;
+    if(x.status==='signed') byPerson[p].signed++;
+  });
+
+  const personDiv=document.getElementById('hov-report-by-person');
+  if(personDiv) personDiv.innerHTML=`
+    <div style="font-size:13px;font-weight:700;color:#1d4ed8;margin-bottom:10px">📋 ملخص بالمخولين</div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
+    ${Object.entries(byPerson).map(([person,d])=>`
+      <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:10px;padding:12px">
+        <div style="font-weight:700;font-size:13px;color:#1e293b;margin-bottom:8px">👤 ${person}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;font-size:11px">
+          <div style="background:#f0fdf4;border-radius:6px;padding:5px;text-align:center"><div style="color:#16a34a;font-weight:700;font-size:16px">${d.deliver}</div><div style="color:#64748b">تسليم</div></div>
+          <div style="background:#fff1f2;border-radius:6px;padding:5px;text-align:center"><div style="color:#dc2626;font-weight:700;font-size:16px">${d.receive}</div><div style="color:#64748b">استلام</div></div>
+          <div style="background:#eff6ff;border-radius:6px;padding:5px;text-align:center"><div style="color:#1d4ed8;font-weight:700;font-size:16px">${d.items}</div><div style="color:#64748b">إجمالي قطع</div></div>
+          <div style="background:${d.signed===d.total?'#f0fdf4':'#fef9c3'};border-radius:6px;padding:5px;text-align:center"><div style="color:${d.signed===d.total?'#16a34a':'#d97706'};font-weight:700;font-size:16px">${d.signed}/${d.total}</div><div style="color:#64748b">موقّع</div></div>
+        </div>
+      </div>`).join('')}
+    </div>`;
+
+  // الجدول التفصيلي
+  const tb=document.getElementById('hov-report-tbody');
+  if(tb) tb.innerHTML=list.length?list.map((x,i)=>{
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    const qty=it.reduce((a,r)=>a+(+r.qty||0),0);
+    const names=it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
+    const isSigned=x.status==='signed';
+    return `<tr>
+      <td><span class="snum">${i+1}</span></td>
+      <td style="font-size:12px">${x.date||'—'}</td>
+      <td><span style="background:${x.op_type==='deliver'?'#dcfce7':'#fee2e2'};color:${x.op_type==='deliver'?'#16a34a':'#dc2626'};border-radius:8px;font-size:10px;font-weight:700;padding:2px 8px">${x.op_type==='deliver'?'📦 تسليم':'📥 استلام'}</span></td>
+      <td style="font-weight:700">${x.person||'—'}</td>
+      <td><span class="db">${x.district||'—'}</span></td>
+      <td style="font-size:11px;max-width:200px;overflow:hidden;text-overflow:ellipsis" title="${names}">${names||'—'}</td>
+      <td style="text-align:center;font-weight:800;color:#1d4ed8">${qty}</td>
+      <td><span style="background:${isSigned?'#dcfce7':'#fef9c3'};color:${isSigned?'#16a34a':'#d97706'};border-radius:8px;font-size:10px;font-weight:700;padding:2px 8px">${isSigned?'✅ موقّع':'⏳ معلق'}</span></td>
+    </tr>`;
+  }).join(''):'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--t3)">لا توجد سجلات</td></tr>';
+}
+
+function printHovReport(){
+  generateHovReport();
+  const table=document.getElementById('hov-report-table');
+  const stats=document.getElementById('hov-report-stats');
+  const byPerson=document.getElementById('hov-report-by-person');
+  if(!table)return;
+  const w=window.open('','_blank','width=800,height=600');
+  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
+    +'body{font-family:Arial,sans-serif;padding:16px;direction:rtl;font-size:12px}'
+    +'table{width:100%;border-collapse:collapse;margin-bottom:14px}'
+    +'td,th{border:1px solid #555;padding:6px 8px;font-size:11px}'
+    +'th{background:#1d4ed8;color:#fff;font-weight:800;text-align:center}'
+    +'h2{text-align:center;font-size:15px;margin-bottom:4px}'
+    +'.sub{text-align:center;color:#555;font-size:11px;margin-bottom:12px}'
+    +'@media print{.np{display:none}@page{margin:8mm;size:A4 landscape}}'
+    +'</style></head><body>'
+    +'<div class="np" style="margin-bottom:10px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
+    +'<h2>تقرير الاستلام والتسليم — أجهزة كاميرات المراقبة</h2>'
+    +'<div class="sub">شركة توزيع المنتجات النفطية / فرع صلاح الدين — تاريخ الطباعة: '+new Date().toLocaleDateString('ar-IQ')+'</div>'
+    +(byPerson?byPerson.innerHTML:'')
+    +'<div style="font-size:13px;font-weight:700;color:#1d4ed8;margin:12px 0 8px">📋 التفاصيل الكاملة</div>'
+    +table.outerHTML
+    +'</body></html>');
+  w.document.close();
+}
+
+function exportHovCSV(){
+  generateHovReport();
+  const list=(allHandover||[]);
+  if(!list.length){toast('لا توجد بيانات','err');return;}
+  const rows=[['التاريخ','النوع','المخول','القاطع','الأجهزة','الكمية الكلية','الحالة','وقت التوقيع','الموقّع']];
+  list.forEach(x=>{
+    const it=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+    rows.push([
+      x.date||'', x.op_type==='deliver'?'تسليم':'استلام',
+      x.person||'', x.district||'',
+      it.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join(' / '),
+      it.reduce((a,r)=>a+(+r.qty||0),0),
+      x.status==='signed'?'موقّع':'معلق',
+      x.signed_at||'', x.signed_by||''
+    ]);
+  });
+  const csv='\uFEFF'+rows.map(r=>r.map(c=>'"'+String(c).replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);
+  a.download='تقرير_الاستلام_والتسليم.csv';a.click();toast('تم التصدير ✅');
 }
 
 function exportHandoverCSV(){
