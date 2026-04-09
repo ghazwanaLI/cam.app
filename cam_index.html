@@ -7920,27 +7920,66 @@ function printHandover(id){
   const x=(allHandover||[]).find(r=>r.id===id)||{};
   const items=Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
   const isDeliver=x.op_type==='deliver';
-  const w=window.open('','_blank','width=700,height=500');
-  w.document.write('<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
-    +'<style>body{font-family:Arial,sans-serif;padding:16px;direction:rtl}'
-    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #333;padding:4px 8px;font-size:11px}'
+  const w=window.open('','_blank','width=750,height=650');
+
+  const itemRows=items.map((r,i)=>'<tr><td style="text-align:center;border:1px solid #555;padding:5px">'+(i+1)+'</td><td style="border:1px solid #555;padding:5px">'+(r.name||'')+'</td><td style="text-align:center;border:1px solid #555;padding:5px">'+(r.qty||0)+'</td><td style="text-align:center;border:1px solid #555;padding:5px">'+(r.status||'')+'</td></tr>').join('');
+
+  const existSign=x.signed_url?('<img src="'+x.signed_url+'" style="max-height:70px;max-width:100%;object-fit:contain">'):'<div style="color:#ccc;font-size:10px">_________________________</div>';
+
+  const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8"><style>'
+    +'body{font-family:Arial,sans-serif;padding:18px;direction:rtl;font-size:12px}'
+    +'table{width:100%;border-collapse:collapse}td,th{border:1px solid #555;padding:5px 8px;font-size:11px}'
     +'th{background:#d0d0d0;font-weight:800;text-align:center}'
-    +'@media print{.np{display:none}@page{margin:8mm}}</style></head><body>'
-    +'<div class="np" style="margin-bottom:10px"><button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button></div>'
-    +'<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:6px;margin-bottom:10px">'
-    +'<div style="font-size:14px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
-    +'<div style="font-size:11px;color:#555">شركة توزيع المنتجات النفطية / فرع صلاح الدين</div></div>'
-    +'<table style="margin-bottom:10px"><tr><td style="font-weight:700;background:#f5f5f5">التاريخ</td><td>'+(x.date||'—')+'</td>'
-    +'<td style="font-weight:700;background:#f5f5f5">النوع</td><td>'+(isDeliver?'📦 تسليم':'📥 استلام معطوب')+'</td></tr>'
+    +'.sig-box{flex:1;border:1px solid #555;padding:8px;text-align:center;min-height:100px}'
+    +'canvas{border:1px dashed #1d4ed8;cursor:crosshair;touch-action:none;display:block;width:100%}'
+    +'@media print{.np{display:none}canvas{border:1px solid #aaa}@page{margin:8mm}}'
+    +'</style></head><body>'
+    +'<div class="np" style="margin-bottom:12px;display:flex;gap:8px">'
+    +'<button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:8px 20px;border-radius:6px;cursor:pointer;font-weight:700">&#128424; طباعة</button>'
+    +'<button onclick="clearSig()" style="background:#f1f5f9;border:1px solid #ccc;padding:8px 14px;border-radius:6px;cursor:pointer">&#128465; مسح التوقيع</button>'
+    +'<span style="font-size:11px;color:#888;align-self:center">وقّع في خانة المستلم ثم اطبع</span>'
+    +'</div>'
+    +'<div style="text-align:center;border-bottom:3px solid #000;padding-bottom:8px;margin-bottom:12px">'
+    +'<div style="font-size:15px;font-weight:900">استمارة '+(isDeliver?'تسليم':'استلام')+' أجهزة كاميرات المراقبة</div>'
+    +'<div style="font-size:11px;color:#444;margin-top:2px">شركة توزيع المنتجات النفطية / فرع صلاح الدين — شعبة تقنية المعلومات</div>'
+    +'</div>'
+    +'<table style="margin-bottom:10px">'
+    +'<tr><td style="font-weight:700;background:#f5f5f5;width:80px">التاريخ</td><td>'+(x.date||'—')+'</td>'
+    +'<td style="font-weight:700;background:#f5f5f5;width:60px">النوع</td><td>'+(isDeliver?'تسليم':'استلام معطوب')+'</td></tr>'
     +'<tr><td style="font-weight:700;background:#f5f5f5">المخول</td><td colspan="3">'+(x.person||'—')+'</td></tr>'
-    +'<tr><td style="font-weight:700;background:#f5f5f5">القاطع</td><td colspan="3">'+(x.district||'—')+'</td></tr></table>'
-    +'<table><thead><tr><th>#</th><th>اسم الجهاز</th><th>الكمية</th><th>الحالة</th></tr></thead><tbody>'
-    +items.map((r,i)=>`<tr><td style="text-align:center">${i+1}</td><td>${r.name||''}</td><td style="text-align:center">${r.qty||0}</td><td style="text-align:center">${r.status||''}</td></tr>`).join('')
-    +'</tbody></table>'+(x.notes?'<div style="margin-top:8px;border:1px solid #ddd;padding:5px;font-size:11px"><b>ملاحظات:</b> '+x.notes+'</div>':'')
-    +'<div style="display:flex;justify-content:space-between;margin-top:24px;gap:20px">'
-    +'<div style="flex:1;border:1px solid #aaa;padding:5px;text-align:center"><div style="margin-bottom:20px;font-size:10px">توقيع المسؤول</div><div style="border-top:1px solid #333;padding-top:3px;font-size:10px">الاسم: ___________</div></div>'
-    +'<div style="flex:1;border:1px solid #aaa;padding:5px;text-align:center"><div style="margin-bottom:20px;font-size:10px">توقيع المستلم</div><div style="border-top:1px solid #333;padding-top:3px;font-size:10px">الاسم: '+(x.person||'___________')+'</div></div>'
-    +'</div></body></html>');
+    +'<tr><td style="font-weight:700;background:#f5f5f5">القاطع</td><td>'+(x.district||'—')+'</td>'
+    +'<td style="font-weight:700;background:#f5f5f5">المسؤول</td><td>'+(x.created_by||'—')+'</td></tr>'
+    +(x.notes?'<tr><td style="font-weight:700;background:#f5f5f5">ملاحظات</td><td colspan="3">'+x.notes+'</td></tr>':'')
+    +'</table>'
+    +'<table style="margin-bottom:16px"><thead><tr>'
+    +'<th style="width:40px">#</th><th>اسم الجهاز / المادة</th><th style="width:70px">الكمية</th><th style="width:90px">الحالة</th>'
+    +'</tr></thead><tbody>'+itemRows+'</tbody></table>'
+    +'<div style="display:flex;gap:16px;margin-top:16px">'
+    +'<div class="sig-box">'
+    +'<div style="font-size:11px;font-weight:700;margin-bottom:8px">توقيع المسؤول</div>'
+    +'<div style="min-height:60px;display:flex;align-items:center;justify-content:center">'+existSign+'</div>'
+    +'<div style="border-top:1px solid #555;margin-top:8px;padding-top:4px;font-size:10px">الاسم: '+(x.created_by||'_____________')+(x.signed_at?' &nbsp;/&nbsp; '+x.signed_at:'')+'</div>'
+    +'</div>'
+    +'<div class="sig-box">'
+    +'<div style="font-size:11px;font-weight:700;margin-bottom:4px">توقيع المستلم</div>'
+    +'<canvas id="sig-cv" width="280" height="80"></canvas>'
+    +'<div style="border-top:1px solid #555;margin-top:6px;padding-top:4px;font-size:10px">الاسم: '+(x.person||'_____________')+'</div>'
+    +'</div>'
+    +'</div>'
+    +'<scr'+'ipt>'
+    +'var cv=document.getElementById("sig-cv");'
+    +'var ctx=cv.getContext("2d");'
+    +'ctx.strokeStyle="#1d4ed8";ctx.lineWidth=2;ctx.lineCap="round";ctx.lineJoin="round";'
+    +'var dr=false;'
+    +'function gp(e){var r=cv.getBoundingClientRect();var sx=cv.width/r.width,sy=cv.height/r.height;var s=e.touches?e.touches[0]:e;return{x:(s.clientX-r.left)*sx,y:(s.clientY-r.top)*sy};}'
+    +'cv.onmousedown=cv.ontouchstart=function(e){e.preventDefault();dr=true;var p=gp(e);ctx.beginPath();ctx.moveTo(p.x,p.y);};'
+    +'cv.onmousemove=cv.ontouchmove=function(e){e.preventDefault();if(!dr)return;var p=gp(e);ctx.lineTo(p.x,p.y);ctx.stroke();};'
+    +'cv.onmouseup=cv.onmouseleave=cv.ontouchend=function(e){e.preventDefault();dr=false;};'
+    +'function clearSig(){ctx.clearRect(0,0,cv.width,cv.height);}'
+    +'</scr'+'ipt>'
+    +'</body></html>';
+
+  w.document.write(html);
   w.document.close();
 }
 
