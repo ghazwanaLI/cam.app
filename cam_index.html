@@ -2169,7 +2169,7 @@ window.addEventListener('load',function(){
 
           <!-- Add Circular Form - admin only -->
           <!-- نموذج الإضافة — لوحة جانبية من اليمين -->
-          <div id="circ-add-form" style="
+          <div id="circ-add-form" onclick="event.stopPropagation()" style="
             display:none;
             position:fixed;top:0;right:0;bottom:0;
             width:min(420px,100vw);
@@ -2219,7 +2219,7 @@ window.addEventListener('load',function(){
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 1</div>
                     <div class="up-box" id="ub-qcirc-1" style="min-height:65px">
-                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_1')">
+                      <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_1')">
                       <button class="up-rm" onclick="rmFile('qcirc_1',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_1" style="font-size:9px">اختر ملف</div>
@@ -2228,7 +2228,7 @@ window.addEventListener('load',function(){
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 2</div>
                     <div class="up-box" id="ub-qcirc-2" style="min-height:65px">
-                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_2')">
+                      <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_2')">
                       <button class="up-rm" onclick="rmFile('qcirc_2',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_2" style="font-size:9px">اختر ملف</div>
@@ -2237,7 +2237,7 @@ window.addEventListener('load',function(){
                   <div>
                     <div style="font-size:10px;color:var(--t3);margin-bottom:3px">مرفق 3</div>
                     <div class="up-box" id="ub-qcirc-3" style="min-height:65px">
-                      <input type="file" accept="image/*,.pdf" capture="environment" onchange="doUpload(event,'qcirc_3')">
+                      <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'qcirc_3')">
                       <button class="up-rm" onclick="rmFile('qcirc_3',event)">✕</button>
                       <div class="up-ico" style="font-size:16px">📷</div>
                       <div class="up-stat" id="us-qcirc_3" style="font-size:9px">اختر ملف</div>
@@ -6464,7 +6464,8 @@ async function loadCirculars(){
       const newCircs=allCirculars.filter(c=>{
         if(_shownCircIds.has(c.id)) return false;
         const myDist=CU?.district||'';
-        return !myDist || c.district==='الكل' || c.district===myDist;
+        // يعرض فقط تعاميم "الكل" أو قاطع المستخدم تحديداً
+        return c.district==='الكل' || (myDist && c.district===myDist);
       });
       if(newCircs.length>0){
         newCircs.forEach(c=>_shownCircIds.add(c.id));
@@ -6586,18 +6587,16 @@ function showCircularNotifPopup(c, onDone){
   });
 }
 
-// فحص التعاميم غير المقروءة وعرضها إجبارياً عند الدخول
 async function checkUnreadCirculars(){
   if(!CU || CU.role==='admin') return; // المدير معفى
   try{
     const myDist = CU.district||'';
-    // التعاميم الخاصة بالمستخدم التي لم يقرأها
     const unread = allCirculars.filter(c=>{
-      if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
+      // يعرض فقط تعاميم "الكل" أو قاطع المستخدم تحديداً
+      if(c.district!=='الكل' && !(myDist && c.district===myDist)) return false;
       return !_circReads[c.id];
-    }).sort((a,b)=>a.date>b.date?1:-1); // من الأقدم للأحدث
+    }).sort((a,b)=>a.date>b.date?1:-1);
     if(!unread.length) return;
-    // عرض التعاميم واحد تلو الآخر
     function showNext(idx){
       if(idx>=unread.length) return;
       showCircularNotifPopup(unread[idx], ()=>showNext(idx+1));
