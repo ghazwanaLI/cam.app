@@ -6449,40 +6449,7 @@ let allCirculars=[];
 let _lastCircCount=-1;
 let _shownCircIds=new Set(JSON.parse(localStorage.getItem('_shownCircIds')||'[]'));
 
-async function loadCirculars(){
-  try{
-    const d=await api('GET','/api/circulars');
-    const prevCount=allCirculars.length;
-    allCirculars=d.circulars||[];
-    renderCirculars();
-    const unread=allCirculars.filter(c=>!(d.reads||[]).includes(c.id)).length;
-    const badge=document.getElementById('circulars-badge');
-    if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
-    // badge الموبايل
-    const bnBadge=document.getElementById('bn-circ-badge');
-    if(bnBadge){bnBadge.style.display=unread?'':'none';bnBadge.textContent=unread;}
-
-    // إشعار للمستخدمين بتعميم جديد — إجباري
-    if(CU?.role!=='admin' && _lastCircCount>=0){
-      const newCircs=allCirculars.filter(c=>{
-        if(_shownCircIds.has(c.id)) return false;
-        const myDists=getUserDistricts();
-        return c.district==='الكل' || myDists.includes(c.district);
-      });
-      if(newCircs.length>0){
-        newCircs.forEach(c=>_shownCircIds.add(c.id));
-        localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
-        // عرض إجباري واحد تلو الآخر
-        function _showNextNew(idx){
-          if(idx>=newCircs.length) return;
-          showCircularNotifPopup(newCircs[idx], ()=>_showNextNew(idx+1));
-        }
-        _showNextNew(0);
-      }
-    }
-    _lastCircCount=allCirculars.length;
-  }catch(e){}
-}
+async function _loadCircOld_unused(){}
 
 function showCircularNotifPopup(c, onDone){
   const existing=document.getElementById('circ-notif-popup');
@@ -7998,17 +7965,48 @@ async function loadCirculars(){
   try{
     const d = await api('GET','/api/circulars');
     allCirculars = d.circulars||[];
+
     // تحميل حالة القراءة للمستخدم الحالي
     _circReads = {};
     await Promise.all(allCirculars.map(c=>
       api('GET','/api/circulars/'+c.id+'/reads')
         .then(r=>{
-          const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id);
+          const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id||x.username===CU?.username);
           if(myRead) _circReads[c.id]=myRead;
         }).catch(()=>{})
     ));
     renderCirculars();
-  }catch(e){ toast('خطأ في تحميل التعاميم: '+e.message,'err'); }
+
+    // تحديث badges غير المقروءة
+    const myDists=getUserDistricts();
+    const unread=allCirculars.filter(c=>{
+      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
+      return !_circReads[c.id];
+    }).length;
+    const badge=document.getElementById('circulars-badge');
+    if(badge){badge.style.display=unread?'':'none';badge.textContent=unread;}
+    const bnBadge=document.getElementById('bn-circ-badge');
+    if(bnBadge){bnBadge.style.display=unread?'':'none';bnBadge.textContent=unread;}
+
+    // إشعار للمكلفين بتعاميم جديدة — إجباري
+    if(CU?.role!=='admin' && _lastCircCount>=0){
+      const newCircs=allCirculars.filter(c=>{
+        if(_shownCircIds.has(c.id)) return false;
+        return c.district==='الكل' || myDists.includes(c.district);
+      });
+      if(newCircs.length>0){
+        newCircs.forEach(c=>_shownCircIds.add(c.id));
+        localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
+        let _ni=0;
+        function _showNextNew(){
+          if(_ni>=newCircs.length) return;
+          showCircularNotifPopup(newCircs[_ni++], _showNextNew);
+        }
+        _showNextNew();
+      }
+    }
+    _lastCircCount=allCirculars.length;
+  }catch(e){ console.error('loadCirculars:',e); }
 }
 
 // تسجيل الاطلاع
