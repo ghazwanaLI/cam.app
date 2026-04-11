@@ -6501,71 +6501,79 @@ function showCircularNotifPopup(c, onDone){
   // تحميل صورة التعميم تلقائياً إن وجدت
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
     const d=extractFile(res);
+    const sw=document.getElementById('circ-save-btn-'+c.id);
+    const rw=document.getElementById('circ-read-wrap-'+c.id);
+    const imgCont=document.getElementById('circ-popup-img-'+c.id);
+
     if(!hasFileData(d)){
       // لا توجد صورة — أظهر زر اطلعت مباشرة
-      const sw=document.getElementById('circ-save-btn-'+c.id);
-      const rw=document.getElementById('circ-read-wrap-'+c.id);
       if(sw) sw.style.display='none';
       if(rw) rw.style.display='flex';
+      window._downloadCircPdf=null;
       return;
     }
-    const imgCont=document.getElementById('circ-popup-img-'+c.id);
-    if(!imgCont) return;
+
     const mime=d.mime||'image/jpeg';
     const src=buildSrc(d);
-    const img=document.createElement('img');
-    img.src=src;
-    img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
-    img.title='اضغط للتكبير';
-    img.onclick=function(){openLB(src);};
-    const zbBtn=document.createElement('button');
-    zbBtn.className='btn btn-o btn-sm';
-    zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
-    zbBtn.textContent='🔍 تكبير الصورة';
-    zbBtn.onclick=function(){openLB(src);};
-    imgCont.appendChild(img);
-    imgCont.appendChild(zbBtn);
+
+    if(imgCont && src){
+      const img=document.createElement('img');
+      img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
+      img.title='اضغط للتكبير';
+      img.onclick=function(){openLB(img.src);};
+      // إذا فشل تحميل الصورة — أظهر زر اطلعت مباشرة
+      img.onerror=function(){
+        this.onerror=null;
+        if(sw) sw.style.display='none';
+        if(rw) rw.style.display='flex';
+      };
+      loadImgWithFallback(img, src, '/api/files/circ_'+c.id+'_circ_1');
+      const zbBtn=document.createElement('button');
+      zbBtn.className='btn btn-o btn-sm';
+      zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
+      zbBtn.textContent='🔍 تكبير الصورة';
+      zbBtn.onclick=function(){openLB(img.src);};
+      imgCont.appendChild(img);
+      imgCont.appendChild(zbBtn);
+    }
+
     // ربط زر الحفظ — مع دعم المشاركة للموبايل (حفظ في المعرض)
     window._downloadCircPdf=function(cid){
       const ext=mime.includes('pdf')?'pdf':(mime.includes('png')?'png':'jpg');
       const filename='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.'+ext;
-      // محاولة الحفظ عبر Share API (موبايل → معرض الصور)
+      const finalSrc=imgCont?.querySelector('img')?.src||src;
       if(navigator.canShare){
-        fetch(src).then(r=>r.blob()).then(blob=>{
+        fetch(finalSrc).then(r=>r.blob()).then(blob=>{
           const file=new File([blob],filename,{type:mime});
           if(navigator.canShare({files:[file]})){
             navigator.share({files:[file],title:'تعميم '+cid}).catch(()=>{
-              // لو رفض المستخدم أو فشل — نرجع للتنزيل العادي
-              const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+              const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
             });
             return;
           }
-          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
-        }).catch(()=>{
-          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
-        });
+          const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
+        }).catch(()=>{ const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click(); });
       } else {
-        const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+        const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
       }
     };
   }).catch(function(){
-    // لا توجد صورة — زر الحفظ يحفظ نص التعميم كملف HTML
+    // API فشل — أظهر زر اطلعت وزر حفظ نصي
+    const sw=document.getElementById('circ-save-btn-'+c.id);
+    const rw=document.getElementById('circ-read-wrap-'+c.id);
+    if(sw) sw.style.display='none';
+    if(rw) rw.style.display='flex';
     window._downloadCircPdf=function(cid){
       const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
         +'<style>body{font-family:Cairo,sans-serif;padding:30px;direction:rtl;max-width:700px;margin:auto}'
-        +'h1{color:#1d4ed8;font-size:22px;margin-bottom:8px}'
-        +'.meta{font-size:12px;color:#64748b;margin-bottom:16px}'
-        +'.body{font-size:15px;line-height:2;border:1px solid #e2e8f0;border-radius:10px;padding:16px;background:#f8fafc}'
-        +'</style></head><body>'
-        +'<h1>📢 '+( c.title||'' )+'</h1>'
-        +'<div class="meta">📅 '+(c.date||'')+'  ·  ✍️ '+(c.added_by||'')+'  ·  '+(c.type||'')+'</div>'
-        +'<div class="body">'+(c.body||'—')+'</div>'
+        +'h1{color:#1d4ed8;font-size:22px}p{line-height:2}</style></head><body>'
+        +'<h1>📢 '+(c.title||'')+'</h1>'
+        +'<p>'+( c.body||'—')+'</p>'
+        +'<small>📅 '+(c.date||'')+' · '+(c.added_by||'')+'</small>'
         +'</body></html>';
       const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-      const a=document.createElement('a');
-      a.href=URL.createObjectURL(blob);
-      a.download='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.html';
-      a.click();
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+      a.download='تعميم_'+cid+'.html';a.click();
       setTimeout(()=>URL.revokeObjectURL(a.href),3000);
     };
   });
@@ -6580,6 +6588,9 @@ async function checkUnreadCirculars(){
       return !_circReads[c.id];
     }).sort((a,b)=>a.date>b.date?1:-1);
     if(!unread.length) return;
+    // إضافة كلهم لـ _shownCircIds حتى الـ polling ما يكررهم
+    unread.forEach(c=>_shownCircIds.add(c.id));
+    localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
     function showNext(idx){
       if(idx>=unread.length) return;
       showCircularNotifPopup(unread[idx], ()=>showNext(idx+1));
@@ -7989,20 +8000,29 @@ async function loadCirculars(){
     if(bnBadge){bnBadge.style.display=unread?'':'none';bnBadge.textContent=unread;}
 
     // إشعار للمكلفين بتعاميم جديدة — إجباري
-    if(CU?.role!=='admin' && _lastCircCount>=0){
-      const newCircs=allCirculars.filter(c=>{
-        if(_shownCircIds.has(c.id)) return false;
-        return c.district==='الكل' || myDists.includes(c.district);
-      });
-      if(newCircs.length>0){
-        newCircs.forEach(c=>_shownCircIds.add(c.id));
+    if(CU?.role!=='admin'){
+      if(_lastCircCount < 0){
+        // أول تحميل — سجّل كل التعاميم الموجودة كـ "مرئية سابقاً"
+        // حتى لا تظهر كجديدة عند الـ polling
+        // (checkUnreadCirculars يتولى عرض الغير مقروءة عند الدخول)
+        allCirculars.forEach(c=>_shownCircIds.add(c.id));
         localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
-        let _ni=0;
-        function _showNextNew(){
-          if(_ni>=newCircs.length) return;
-          showCircularNotifPopup(newCircs[_ni++], _showNextNew);
+      } else {
+        // polling — عرض فقط التعاميم الجديدة الفعلية
+        const newCircs=allCirculars.filter(c=>{
+          if(_shownCircIds.has(c.id)) return false;
+          return c.district==='الكل' || myDists.includes(c.district);
+        });
+        if(newCircs.length>0){
+          newCircs.forEach(c=>_shownCircIds.add(c.id));
+          localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
+          let _ni=0;
+          function _showNextNew(){
+            if(_ni>=newCircs.length) return;
+            showCircularNotifPopup(newCircs[_ni++], _showNextNew);
+          }
+          _showNextNew();
         }
-        _showNextNew();
       }
     }
     _lastCircCount=allCirculars.length;
