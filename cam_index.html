@@ -2981,51 +2981,46 @@ window.addEventListener('load',function(){
       <div class="fg"><label class="fl">نوع الزيارة</label>
         <select class="fi" dir="rtl" id="tour-type">
           <option value="كشف">كشف</option>
+          <option value="زيارة ميدانية">زيارة ميدانية</option>
           <option value="صيانة">صيانة</option>
-          <option value="تركيب">تركيب</option>
-          <option value="متابعة">متابعة</option>
         </select>
       </div>
-      <div class="fg"><label class="fl">اسم الفني</label><input class="fi" id="tour-tech" type="text" placeholder="اسم الفني"></div>
+      <div class="fg"><label class="fl">👤 المكلف</label>
+        <input class="fi" id="tour-tech" type="text" placeholder="اسم المكلف" readonly style="background:var(--bg2);color:var(--t2)">
+      </div>
       <div class="fg full"><label class="fl">ملاحظات</label>
         <textarea class="fi" dir="rtl" style="text-align:right" id="tour-notes" rows="3"></textarea></div>
       <div class="fg full" style="border-top:1px solid var(--border);padding-top:14px">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-          <label class="fl" style="margin:0">📎 المرفقات والمستندات</label>
-          <label style="display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t3);cursor:pointer;background:var(--bg2);border-radius:8px;padding:4px 10px;border:1px solid var(--border)">
-            <input type="checkbox" id="upload-quality" style="width:14px;height:14px;cursor:pointer">
-            <span>🖨️ جودة عالية</span>
-          </label>
-        </div>
+        <label class="fl" style="margin-bottom:10px;display:block">📎 المرفقات</label>
         <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px">
           <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 صورة من الموقع</div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 شاشة الكاميرات الرئيسية</div>
             <div class="up-box" id="ub-tour">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_img')">
+              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'tour_img')">
               <button class="up-rm" onclick="rmFile('tour_img',event)">✕</button>
               <div class="up-ico">📸</div>
-              <div class="up-lbl">صورة الموقع</div>
+              <div class="up-lbl">الكاميرات الرئيسية</div>
               <div class="up-stat" id="us-tour_img">صورة أو PDF</div>
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 تقرير الزيارة</div>
-            <div class="up-box" id="ub-tour-rep">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_rep')">
-              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
-              <div class="up-ico">📄</div>
-              <div class="up-lbl">تقرير الزيارة</div>
-              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📸 شاشة الكاميرات الساندة</div>
+            <div class="up-box" id="ub-tour-img2">
+              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'tour_img2')">
+              <button class="up-rm" onclick="rmFile('tour_img2',event)">✕</button>
+              <div class="up-ico">📸</div>
+              <div class="up-lbl">الكاميرات الساندة</div>
+              <div class="up-stat" id="us-tour_img2">صورة أو PDF</div>
             </div>
           </div>
           <div>
-            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📋 مستند إضافي</div>
-            <div class="up-box" id="ub-tour-doc">
-              <input type="file" accept=".jpg,.jpeg,.png,.pdf" onchange="doUpload(event,'tour_doc')">
-              <button class="up-rm" onclick="rmFile('tour_doc',event)">✕</button>
-              <div class="up-ico">📋</div>
-              <div class="up-lbl">مستند إضافي</div>
-              <div class="up-stat" id="us-tour_doc">PDF أو صورة</div>
+            <div style="font-size:10px;color:var(--t3);margin-bottom:5px;font-weight:700">📄 سجل اشتغال الزيارة</div>
+            <div class="up-box" id="ub-tour-rep">
+              <input type="file" accept="image/*,.pdf" onchange="doUpload(event,'tour_rep')">
+              <button class="up-rm" onclick="rmFile('tour_rep',event)">✕</button>
+              <div class="up-ico">📄</div>
+              <div class="up-lbl">سجل الاشتغال</div>
+              <div class="up-stat" id="us-tour_rep">PDF أو صورة</div>
             </div>
           </div>
         </div>
@@ -5562,9 +5557,9 @@ async function initApp(){
     // زر إضافة صيانة — يظهر لجميع المستخدمين
     const btnMaint=document.getElementById('btn-add-maint');
     if(btnMaint) btnMaint.style.display='inline-block';
-    // زر إضافة جولة — مدير فقط
+    // زر إضافة جولة — للمدير والمكلفين
     const btnAddTour=document.getElementById('btn-add-tour');
-    if(btnAddTour) btnAddTour.style.display=showTours&&can('edit')?'inline-block':'none';
+    if(btnAddTour) btnAddTour.style.display='inline-block';
     const circBtn=document.getElementById('btn-add-circ');
     if(circBtn) circBtn.style.display=CU?.role==='admin'?'inline-block':'none';
     const circActions=document.getElementById('circ-sec-actions');
@@ -6033,7 +6028,10 @@ function openTourModal(id){
   filterTourStations();
   if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
   document.getElementById('tour-type').value=t.visit_type||'كشف';
-  document.getElementById('tour-tech').value=t.technician||'';
+  // اسم المكلف تلقائياً من الحساب
+  const techEl=document.getElementById('tour-tech');
+  techEl.value=t.technician||(CU?.fullname||CU?.username||'');
+  techEl.readOnly=!id; // للتعديل يُسمح بالتغيير، للإضافة يكون readonly
   document.getElementById('tour-notes').value=t.notes||'';
 }
 async function saveTour(){
@@ -6047,10 +6045,12 @@ async function saveTour(){
   try{
     const r=id?await api('PUT','/api/tours/'+id,body):await api('POST','/api/tours',body);
     const tid=id||r.id;
-    for(const fk of ['tour_img','tour_rep','tour_doc']){
+    for(const fk of ['tour_img','tour_img2','tour_rep']){
       if(UF[fk]){
-        await api('POST','/api/files/tour_'+tid+'_'+fk,{name:UF[fk].name,data:UF[fk].data,mime:UF[fk].mime});
-        delete UF[fk];
+        try{
+          await smartUploadFile('/api/files/tour_'+tid+'_'+fk, UF[fk]);
+          delete UF[fk];
+        }catch(fe){toast('خطأ رفع الملف: '+fe.message,'err');}
       }
     }
     closeModal('ov-tour'); toast('تم الحفظ ✅'); await loadTours(); updateDashboard();
@@ -7164,21 +7164,30 @@ async function doUpload(event, key){
   try{
     const file=event.target.files[0]; if(!file)return;
     if(file.size>15*1024*1024){toast('حجم الملف كبير جداً — الحد 15MB','err');event.target.value='';return;}
-    // ضغط الصور تلقائياً: أقصى 1280×960 بجودة 82%
-    // جودة الرفع: عادي=82% | عالية=95%
     const hiQ=document.getElementById('upload-quality')?.checked;
     const quality=hiQ?0.95:0.82;
     const maxPx=hiQ?1920:1280;
     const {data,mime}=await compressImage(file,maxPx,maxPx,quality);
-    // بعد التحويل — دائماً JPG (الصور والـ PDF محوّلة)
     const finalName=file.name.replace(/\.[^.]+$/, '')+'.jpg';
     UF[key]={ name:finalName, data, mime:'image/jpeg' };
-    // حجم بعد الضغط
     const kb=Math.round(data.length*0.75/1024);
+    const szTxt=kb>1024?Math.round(kb/102.4)/10+'MB':kb+'KB';
+    // تحديث نص الحالة
     const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent=file.name+' ('+kb+'KB)';
-    const box=event.target.closest('.up-box');
+    if(stat) stat.textContent='✅ '+file.name.substring(0,18)+' ('+szTxt+')';
+    // تحديث البوكس البصري — سواء كان الـ input داخله أو خارجه
+    let box=event.target.closest('.up-box');
+    if(!box){
+      // البحث عن البوكس بواسطة الـ key
+      const keyMap={
+        'maint_img':'ub-maint','maint_rep':'ub-maint-rep','maint_rep2':'ub-maint-rep2',
+        'maint_rep3':'ub-maint-rep3','maint_tawkeef':'ub-maint-tawkeef','maint_tawkeef2':'ub-maint-tawkeef2',
+        'tour_img':'ub-tour','tour_img2':'ub-tour-img2','tour_rep':'ub-tour-rep'
+      };
+      if(keyMap[key]) box=document.getElementById(keyMap[key]);
+    }
     if(box) box.classList.add('hf');
+    toast('📎 تم اختيار الملف: '+szTxt);
   }catch(e){
     toast('خطأ في رفع الملف: '+e.message,'err');
     console.error('doUpload error:',e);
@@ -8486,103 +8495,94 @@ function showStationDetail(sid){
 }
 
 function showTourFiles(tid){
-  const labels={tour_img:'صورة الجولة',tour_rep:'التقرير',tour_doc:'المستند'};
-  const keys=['tour_img','tour_rep','tour_doc'];
+  const labels={tour_img:'📸 شاشة الكاميرات الرئيسية', tour_img2:'📸 شاشة الكاميرات الساندة', tour_rep:'📄 سجل اشتغال الزيارة', tour_doc:'📋 مستند'};
+  const keys=['tour_img','tour_img2','tour_rep','tour_doc'];
   let ov=document.getElementById('ov-tour-files');
-  if(!ov){
-    ov=document.createElement('div');
-    ov.id='ov-tour-files';
-    ov.className='overlay';
-    ov.onclick=function(e){if(e.target===ov)closeModal('ov-tour-files');};
-    const inner=document.createElement('div');
-    inner.className='modal modal-sm';
-    inner.innerHTML='<div class="m-title">📎 ملفات الجولة الميدانية</div>'
-      +'<div id="tour-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"></div>'
-      +'<div class="m-footer"><button class="btn btn-o" onclick="closeModal(\'ov-tour-files\')">إغلاق</button></div>';
-    ov.appendChild(inner);
-    document.body.appendChild(ov);
-  }
-  const list=document.getElementById('tour-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:12px">⏳ جاري التحميل...</div>';
+  if(ov) ov.remove(); // إعادة بناء كل مرة لتحديث المحتوى
+  ov=document.createElement('div');
+  ov.id='ov-tour-files';
+  ov.className='overlay';
+  ov.onclick=function(e){if(e.target===ov)closeModal('ov-tour-files');};
+  ov.innerHTML=`<div class="modal" style="width:min(720px,96vw);max-height:92vh;display:flex;flex-direction:column">
+    <div class="m-title">📎 ملفات الجولة الميدانية</div>
+    <div id="tour-files-list" style="flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:12px;padding:4px 2px"></div>
+    <div class="m-footer"><button class="btn btn-o" onclick="closeModal('ov-tour-files')">إغلاق</button></div>
+  </div>`;
+  document.body.appendChild(ov);
   ov.classList.add('open');
+
+  const list=document.getElementById('tour-files-list');
+  list.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)">⏳ جاري التحميل...</div>';
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/tour_'+tid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
     if(!found.length){
-      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
+      list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:36px;margin-bottom:8px">📂</div>لا توجد ملفات مرفوعة</div>';
       return;
     }
     list.innerHTML='';
     found.forEach(function(item){
-      const k=item.k; const d=item.d;
-      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg=d.mime&&d.mime.startsWith('image/');
+      const k=item.k, d=item.d;
+      const mime=d.mime||'image/jpeg';
+      const src='data:'+mime+';base64,'+d.data;
+      const isImg=mime.startsWith('image/');
+      const isPdf=mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
+
       const card=document.createElement('div');
-      card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:8px';
-      // هيدر البطاقة
+      card.style.cssText='background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;overflow:hidden';
+
       const hdr=document.createElement('div');
-      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3,#f1f5f9)';
+      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3,#f1f5f9);border-bottom:1px solid var(--border)';
       const lbl=document.createElement('span');
-      lbl.style.cssText='font-weight:700;font-size:13px';
+      lbl.style.cssText='font-weight:800;font-size:13px';
       lbl.textContent=labels[k]||k;
       hdr.appendChild(lbl);
+
       const btns=document.createElement('div');
       btns.style.cssText='display:flex;gap:6px';
-      // تكبير
       if(isImg){
         const zb=document.createElement('button');
-        zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px';
-        zb.textContent='🔍 تكبير';
-        zb.onclick=function(){openLB(src);};
-        btns.appendChild(zb);
+        zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px'; zb.textContent='🔍 تكبير';
+        zb.onclick=function(){openLB(src);}; btns.appendChild(zb);
       }
-      // حفظ
+      const ext=isPdf?'pdf':isImg?'jpg':'bin';
       const dl=document.createElement('a');
-      dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.jpg';
-      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
-      dl.textContent='⬇️ حفظ';
+      dl.className='btn btn-p btn-sm'; dl.href=src; dl.download=(d.name||k)+'.'+ext;
+      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center'; dl.textContent='⬇️ تنزيل';
       btns.appendChild(dl);
-      // استبدال — للمخولين والمدير
       if(can('edit')){
-        const repInp=document.createElement('input');
-        repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
-        repInp.onchange=function(ev){
-          const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,1280,1280,0.85).then(function(res){
-            return api('POST','/api/files/tour_'+tid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
-          }).then(function(){
-            toast('تم الاستبدال ✅');
-            closeModal('ov-tour-files');
-            showTourFiles(tid);
-          }).catch(function(e){toast('خطأ: '+e.message,'err');});
+        const ri=document.createElement('input'); ri.type='file'; ri.accept='image/*,.pdf'; ri.style.display='none';
+        ri.onchange=function(ev){
+          const f=ev.target.files[0]; if(!f) return;
+          compressImage(f,1600,1600,0.85).then(function(res){
+            return api('POST','/api/files/tour_'+tid+'_'+k,{name:f.name,data:res.data,mime:res.mime});
+          }).then(function(){toast('تم الاستبدال ✅');showTourFiles(tid);}).catch(function(e){toast('خطأ: '+e.message,'err');});
         };
-        const repBtn=document.createElement('button');
-        repBtn.className='btn btn-o btn-sm';
-        repBtn.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
-        repBtn.textContent='🔄 استبدال';
-        repBtn.onclick=function(){repInp.click();};
-        btns.appendChild(repBtn);
-        btns.appendChild(repInp);
+        const rb=document.createElement('button');
+        rb.className='btn btn-o btn-sm'; rb.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)'; rb.textContent='🔄 استبدال';
+        rb.onclick=function(){ri.click();}; btns.appendChild(rb); btns.appendChild(ri);
       }
-      hdr.appendChild(btns);
-      card.appendChild(hdr);
-      // عرض الصورة مباشرة
+      hdr.appendChild(btns); card.appendChild(hdr);
+
+      // عرض الملف مباشرة
       if(isImg){
         const img=document.createElement('img');
-        img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
-        img.onclick=function(){openLB(src);};
-        card.appendChild(img);
+        img.src=src; img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#fff';
+        img.onclick=function(){openLB(src);}; card.appendChild(img);
+      } else if(isPdf){
+        const embed=document.createElement('embed');
+        embed.src=src; embed.type='application/pdf'; embed.style.cssText='width:100%;height:480px;border:none;display:block';
+        card.appendChild(embed);
       }
       list.appendChild(card);
     });
   });
 }
+
 
 // ══ شريط فعاليات المخولين ══
 let _activityTimer = null;
