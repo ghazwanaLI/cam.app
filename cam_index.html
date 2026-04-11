@@ -3344,15 +3344,7 @@ window.addEventListener('load',function(){
             <tbody id="inv-dvr-body"></tbody>
           </table>
         </div>
-        <!-- مصدر الطاقة -->
-        <div style="padding:8px 14px;background:#eff6ff;border-top:1px solid #bfdbfe;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة :</span>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="كهرباء وطني" class="inv-pw-cb"> كهرباء وطني</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="مولد" class="inv-pw-cb"> مولد</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="عاكسة 4KVA" class="inv-pw-cb"> عاكسة 4KVA</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="UPS" class="inv-pw-cb"> UPS</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:11px;cursor:pointer"><input type="checkbox" value="طاقة شمسية" class="inv-pw-cb"> طاقة شمسية</label>
-        </div>
+        <!-- مصدر الطاقة انتقل لكل صف NVR -->
       </div>
 
       <!-- ملاحظات -->
@@ -5186,7 +5178,11 @@ function openInvForm(id){
   let dvrRows=[];
   try{const dr=m.dvr_rows;dvrRows=Array.isArray(dr)?dr:(dr?JSON.parse(dr):[]);}catch(e){}
   if(!dvrRows.length&&(m.dvr_model||m.dvr_spec)){
-    dvrRows=[{model:m.dvr_model||'',conn:m.dvr_spec||'IP شبكي',hdd_size:m.hdd_size||'',hdd_count:m.hdd_count||0,storage:m.storage_days||''}];
+    dvrRows=[{model:m.dvr_model||'',conn:m.dvr_spec||'IP شبكي',hdd_size:m.hdd_size||'',hdd_count:m.hdd_count||0,storage:m.storage_days||'',power_source:m.power_source||''}];
+  }
+  // للبيانات القديمة — نحوّل power_source العام للصف الأول
+  if(dvrRows.length && !dvrRows[0].power_source && m.power_source){
+    dvrRows[0].power_source = m.power_source;
   }
   if(dvrRows.length) dvrRows.forEach(r=>addInvDvrRow(r));
   else addInvDvrRow();
@@ -5201,15 +5197,20 @@ async function saveInv(){
   const st=allStations.find(s=>s.id===stId)||{};
   const v=id=>document.getElementById(id)?.value||'';
   const camRows=getCamRows();
-  // قراءة صفوف DVR الديناميكية
-  const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr')].map(tr=>({
-    model: tr.querySelector('.inv-dvr-model-inp')?.value||'',
-    conn:  tr.querySelector('.inv-dvr-spec-sel')?.value||'IP شبكي',
-    hdd_size: tr.querySelector('.inv-hdd-size-inp')?.value||'',
-    hdd_count: parseInt(tr.querySelector('.inv-hdd-count-inp')?.value)||0,
-    storage: tr.querySelector('.inv-storage-sel')?.value||'',
-    note: tr.querySelector('.inv-dvr-note-inp')?.value||''
-  })).filter(r=>r.model||r.hdd_size||r.storage);
+  // قراءة صفوف DVR الديناميكية — فقط صفوف NVR (ليس صفوف مصدر الطاقة)
+  const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr[data-dvr-idx]')].map(tr=>{
+    const idx=tr.dataset.dvrIdx;
+    const pwCbs=document.querySelectorAll(`.dvr-pw-cb-${idx}:checked`);
+    return {
+      model: tr.querySelector('.inv-dvr-model-inp')?.value||'',
+      conn:  tr.querySelector('.inv-dvr-spec-sel')?.value||'IP شبكي',
+      hdd_size: tr.querySelector('.inv-hdd-size-inp')?.value||'',
+      hdd_count: parseInt(tr.querySelector('.inv-hdd-count-inp')?.value)||0,
+      storage: tr.querySelector('.inv-storage-sel')?.value||'',
+      note: tr.querySelector('.inv-dvr-note-inp')?.value||'',
+      power_source: [...pwCbs].map(c=>c.value).join(' + ')
+    };
+  }).filter(r=>r.model||r.hdd_size||r.storage);
   const dvr1=dvrRows[0]||{};
   const body={
     station_id:stId,station_name:st.name||'',district:st.district||'',
@@ -5308,7 +5309,21 @@ function printInvSingle(id){
   if(!filledDvrs.length){
     dvrRows='<tr><td colspan="8" style="text-align:center;padding:10px;color:#999;border:1px solid #ddd">لا توجد بيانات أجهزة تسجيل</td></tr>';
   } else {
+    var pwList2=['كهرباء وطني','مولد','عاكسة 4KVA','UPS','طاقة شمسية'];
     filledDvrs.forEach(function(r,i){
+      // مصدر طاقة هذا الـ NVR — جديد: per-row، أو قديم: من power_source العام
+      var rowPwSaved=(r.power_source||'').split('+').map(function(s){return s.trim();}).filter(Boolean);
+      if(!rowPwSaved.length && i===0) rowPwSaved=pwSaved; // fallback للبيانات القديمة
+      var rowPwHtml='<div style="display:flex;flex-wrap:wrap;gap:3px 8px">';
+      pwList2.forEach(function(p){
+        if(rowPwSaved.indexOf(p)>=0){
+          rowPwHtml+='<span style="font-size:9px;display:inline-flex;align-items:center;gap:2px">'+
+            '<span style="background:#166534;color:#fff;width:11px;height:11px;display:inline-flex;align-items:center;justify-content:center;font-size:8px;border-radius:2px">✓</span>'+p+'</span>';
+        }
+      });
+      rowPwHtml+='</div>';
+      if(!rowPwSaved.length) rowPwHtml='<span style="color:#999;font-size:9px">—</span>';
+
       dvrRows+='<tr>'+
         '<td style="text-align:center;border:1px solid #555;font-weight:800;font-size:10px">'+(i+1)+'</td>'+
         '<td style="border:1px solid #555;padding:2px 6px;font-weight:700;font-size:10px">'+(r.model||'')+'</td>'+
@@ -5316,7 +5331,7 @@ function printInvSingle(id){
         '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#1d4ed8">'+(r.hdd_size||'')+'</td>'+
         '<td style="text-align:center;border:1px solid #555;font-weight:700;font-size:10px;color:#7c3aed">'+(r.hdd_count||'')+'</td>'+
         '<td style="text-align:center;border:1px solid #555;font-size:10px">'+(r.storage||'')+'</td>'+
-        '<td style="padding:2px 6px;border:1px solid #555">'+(i===0?pwHtml:'')+'</td>'+
+        '<td style="padding:2px 6px;border:1px solid #555">'+rowPwHtml+'</td>'+
         '<td style="border:1px solid #555;font-size:10px;padding:2px 5px">'+(r.note||'')+'</td>'+
       '</tr>';
     });
@@ -5611,6 +5626,9 @@ async function initApp(){
   // بدء التحديث التلقائي والنسخ الاحتياطي
   startAutoRefresh();
   setTimeout(_saveBackup, 8000); // حفظ بعد 8 ثوانٍ من التحميل
+
+  // فحص التعاميم غير المقروءة وإجبار المستخدم على قراءتها
+  setTimeout(checkUnreadCirculars, 1200);
 
   // إذا جاء من مسح QR مباشر
   if(window._scanCode){
@@ -6463,7 +6481,7 @@ async function loadCirculars(){
     const bnBadge=document.getElementById('bn-circ-badge');
     if(bnBadge){bnBadge.style.display=unread?'':'none';bnBadge.textContent=unread;}
 
-    // إشعار للمستخدمين بتعميم جديد
+    // إشعار للمستخدمين بتعميم جديد — إجباري
     if(CU?.role!=='admin' && _lastCircCount>=0){
       const newCircs=allCirculars.filter(c=>{
         if(_shownCircIds.has(c.id)) return false;
@@ -6473,35 +6491,141 @@ async function loadCirculars(){
       if(newCircs.length>0){
         newCircs.forEach(c=>_shownCircIds.add(c.id));
         localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
-        showCircularNotifPopup(newCircs[0]);
+        // عرض إجباري واحد تلو الآخر
+        function _showNextNew(idx){
+          if(idx>=newCircs.length) return;
+          showCircularNotifPopup(newCircs[idx], ()=>_showNextNew(idx+1));
+        }
+        _showNextNew(0);
       }
     }
     _lastCircCount=allCirculars.length;
   }catch(e){}
 }
 
-function showCircularNotifPopup(c){
+function showCircularNotifPopup(c, onDone){
   const existing=document.getElementById('circ-notif-popup');
   if(existing) existing.remove();
   const typeColor={'تعميم':'#1d4ed8','تبليغ':'#d97706','أمر إداري':'#dc2626','عام':'#059669'};
   const color=typeColor[c.type]||'#1d4ed8';
   const ov=document.createElement('div');
   ov.id='circ-notif-popup';
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl';
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl;padding:16px;box-sizing:border-box';
   ov.innerHTML=`
-    <div style="background:#fff;border-radius:20px;padding:28px 24px;width:360px;max-width:94vw;box-shadow:0 24px 60px rgba(0,0,0,.3);text-align:center;direction:rtl;animation:popIn .3s ease">
-      <div style="font-size:42px;margin-bottom:10px">📢</div>
+    <div style="background:#fff;border-radius:20px;padding:24px 22px;width:420px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.4);text-align:center;direction:rtl;animation:popIn .3s ease">
+      <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
+        <span style="font-size:20px">🔒</span>
+        <span style="font-size:12px;font-weight:700;color:#dc2626">يجب الاطلاع على هذا التعميم قبل متابعة استخدام النظام</span>
+      </div>
+      <div style="font-size:38px;margin-bottom:8px">📢</div>
       <div style="font-size:11px;font-weight:700;color:${color};background:${color}18;border-radius:20px;padding:3px 12px;display:inline-block;margin-bottom:10px">${c.type||'تعميم'}</div>
-      <div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:8px;line-height:1.4">${c.title||''}</div>
-      ${c.body?`<div style="font-size:13px;color:#64748b;background:#f8fafc;border-radius:10px;padding:10px 14px;margin-bottom:12px;line-height:1.7;text-align:right">${c.body}</div>`:''}
+      <div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:10px;line-height:1.4">${c.title||''}</div>
+      ${c.body?`<div style="font-size:13px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px;line-height:1.8;text-align:right">${c.body}</div>`:''}
+      <div id="circ-popup-img-${c.id}" style="margin-bottom:12px"></div>
       <div style="font-size:11px;color:#94a3b8;margin-bottom:18px">📅 ${c.date||''} · ✍️ ${c.added_by||''}</div>
-      <div style="display:flex;gap:8px;justify-content:center">
-        <button onclick="markCircRead(${c.id});document.getElementById('circ-notif-popup').remove()" style="flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:10px;padding:11px;font-family:Cairo,sans-serif;font-size:14px;font-weight:700;cursor:pointer">✅ تم الاطلاع</button>
-        <button onclick="document.getElementById('circ-notif-popup').remove()" style="flex:1;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;padding:11px;font-family:Cairo,sans-serif;font-size:14px;font-weight:600;cursor:pointer">لاحقاً</button>
+      <div style="display:flex;gap:8px;margin-bottom:0">
+        <button id="circ-read-btn-${c.id}" onclick="(async()=>{
+          this.disabled=true;this.textContent='⏳...';
+          await markCircRead(${c.id});
+          if(typeof window._downloadCircPdf==='function') window._downloadCircPdf(${c.id});
+          document.getElementById('circ-notif-popup')?.remove();
+          if(typeof window._circOnDone==='function'){const fn=window._circOnDone;window._circOnDone=null;fn();}
+        })()" style="flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
+          ✅ اطلعت
+        </button>
+        <button id="circ-dl-btn-${c.id}" onclick="window._downloadCircPdf&&window._downloadCircPdf(${c.id})" style="background:#f1f5f9;color:#1d4ed8;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
+          ⬇️ حفظ
+        </button>
       </div>
     </div>`;
   document.body.appendChild(ov);
-  ov.addEventListener('click',function(e){if(e.target===ov)ov.remove();});
+  if(typeof onDone==='function') window._circOnDone=onDone;
+  ov.addEventListener('click',function(e){e.stopPropagation();});
+
+  // تحميل صورة التعميم تلقائياً إن وجدت
+  api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
+    const d=res&&res.file?res.file:res;
+    if(!d||!d.data) return;
+    const imgCont=document.getElementById('circ-popup-img-'+c.id);
+    if(!imgCont) return;
+    const mime=d.mime||'image/jpeg';
+    const src='data:'+mime+';base64,'+d.data;
+    const img=document.createElement('img');
+    img.src=src;
+    img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
+    img.title='اضغط للتكبير';
+    img.onclick=function(){openLB(src);};
+    const zbBtn=document.createElement('button');
+    zbBtn.className='btn btn-o btn-sm';
+    zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
+    zbBtn.textContent='🔍 تكبير الصورة';
+    zbBtn.onclick=function(){openLB(src);};
+    imgCont.appendChild(img);
+    imgCont.appendChild(zbBtn);
+    // ربط زر الحفظ — مع دعم المشاركة للموبايل (حفظ في المعرض)
+    window._downloadCircPdf=function(cid){
+      const ext=mime.includes('pdf')?'pdf':(mime.includes('png')?'png':'jpg');
+      const filename='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.'+ext;
+      // محاولة الحفظ عبر Share API (موبايل → معرض الصور)
+      if(navigator.canShare){
+        fetch(src).then(r=>r.blob()).then(blob=>{
+          const file=new File([blob],filename,{type:mime});
+          if(navigator.canShare({files:[file]})){
+            navigator.share({files:[file],title:'تعميم '+cid}).catch(()=>{
+              // لو رفض المستخدم أو فشل — نرجع للتنزيل العادي
+              const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+            });
+            return;
+          }
+          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+        }).catch(()=>{
+          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+        });
+      } else {
+        const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+      }
+    };
+  }).catch(function(){
+    // لا توجد صورة — زر الحفظ يحفظ نص التعميم كملف HTML
+    window._downloadCircPdf=function(cid){
+      const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
+        +'<style>body{font-family:Cairo,sans-serif;padding:30px;direction:rtl;max-width:700px;margin:auto}'
+        +'h1{color:#1d4ed8;font-size:22px;margin-bottom:8px}'
+        +'.meta{font-size:12px;color:#64748b;margin-bottom:16px}'
+        +'.body{font-size:15px;line-height:2;border:1px solid #e2e8f0;border-radius:10px;padding:16px;background:#f8fafc}'
+        +'</style></head><body>'
+        +'<h1>📢 '+( c.title||'' )+'</h1>'
+        +'<div class="meta">📅 '+(c.date||'')+'  ·  ✍️ '+(c.added_by||'')+'  ·  '+(c.type||'')+'</div>'
+        +'<div class="body">'+(c.body||'—')+'</div>'
+        +'</body></html>';
+      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
+      const a=document.createElement('a');
+      a.href=URL.createObjectURL(blob);
+      a.download='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.html';
+      a.click();
+      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
+    };
+  });
+}
+
+// فحص التعاميم غير المقروءة وعرضها إجبارياً عند الدخول
+async function checkUnreadCirculars(){
+  if(!CU || CU.role==='admin') return; // المدير معفى
+  try{
+    const myDist = CU.district||'';
+    // التعاميم الخاصة بالمستخدم التي لم يقرأها
+    const unread = allCirculars.filter(c=>{
+      if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
+      return !_circReads[c.id];
+    }).sort((a,b)=>a.date>b.date?1:-1); // من الأقدم للأحدث
+    if(!unread.length) return;
+    // عرض التعاميم واحد تلو الآخر
+    function showNext(idx){
+      if(idx>=unread.length) return;
+      showCircularNotifPopup(unread[idx], ()=>showNext(idx+1));
+    }
+    showNext(0);
+  }catch(e){}
 }
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
@@ -8669,7 +8793,13 @@ function addInvDvrRow(data={}){
   if(!tb) return;
   const storOpts = ['','90 يوم فما فوق','6 أشهر فما فوق','30 يوم','60 يوم','سنة فما فوق']
     .map(o=>`<option value="${o}"${(data.storage||'')===o?' selected':''}>${o||'— اختر —'}</option>`).join('');
+  const pwList=[{v:'كهرباء وطني',l:'كهرباء وطني'},{v:'مولد',l:'مولد'},{v:'عاكسة 4KVA',l:'عاكسة 4KVA'},{v:'UPS',l:'UPS'},{v:'طاقة شمسية',l:'طاقة شمسية'}];
+  const savedPw=(data.power_source||'').split('+').map(s=>s.trim()).filter(Boolean);
+  const pwChecks=pwList.map(p=>`<label style="display:inline-flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;white-space:nowrap">
+    <input type="checkbox" class="dvr-pw-cb-${i}" value="${p.v}"${savedPw.includes(p.v)?' checked':''}> ${p.l}</label>`).join('');
+
   const tr = document.createElement('tr');
+  tr.dataset.dvrIdx=i;
   tr.innerHTML=`
     <td style="padding:3px 6px;border:1px solid #dbeafe;text-align:center;font-weight:800;color:#1d4ed8;font-size:11px">${i}</td>
     <td style="padding:2px 4px;border:1px solid #dbeafe">
@@ -8694,9 +8824,20 @@ function addInvDvrRow(data={}){
       <input class="fi inv-dvr-note-inp" type="text" value="${data.note||''}" placeholder="ملاحظة..." style="width:100%;font-size:11px;padding:3px 6px">
     </td>
     <td style="padding:2px 4px;border:1px solid #dbeafe;text-align:center">
-      <button type="button" onclick="this.closest('tr').remove();_reindexInvDvr()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
+      <button type="button" onclick="this.closest('tr').nextElementSibling?.remove();this.closest('tr').remove();_reindexInvDvr()" style="background:#fee2e2;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;color:#dc2626;font-size:12px;font-weight:900">✕</button>
     </td>`;
   tb.appendChild(tr);
+
+  // صف مصدر الطاقة أسفل كل NVR مباشرة
+  const pwTr=document.createElement('tr');
+  pwTr.dataset.pwFor=i;
+  pwTr.innerHTML=`<td colspan="8" style="padding:5px 10px;background:#eff6ff;border:1px solid #bfdbfe;border-top:none">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <span style="font-size:11px;font-weight:700;color:#1d4ed8">⚡ مصدر الطاقة NVR ${i} :</span>
+      ${pwChecks}
+    </div>
+  </td>`;
+  tb.appendChild(pwTr);
 }
 function _reindexInvDvr(){
   document.querySelectorAll('#inv-dvr-body tr').forEach((tr,i)=>{
