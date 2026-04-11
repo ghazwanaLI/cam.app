@@ -6464,8 +6464,7 @@ async function loadCirculars(){
       const newCircs=allCirculars.filter(c=>{
         if(_shownCircIds.has(c.id)) return false;
         const myDist=CU?.district||'';
-        // يعرض فقط تعاميم "الكل" أو قاطع المستخدم تحديداً
-        return c.district==='الكل' || (myDist && c.district===myDist);
+        return c.district==='الكل' || c.district===myDist;
       });
       if(newCircs.length>0){
         newCircs.forEach(c=>_shownCircIds.add(c.id));
@@ -6592,8 +6591,8 @@ async function checkUnreadCirculars(){
   try{
     const myDist = CU.district||'';
     const unread = allCirculars.filter(c=>{
-      // يعرض فقط تعاميم "الكل" أو قاطع المستخدم تحديداً
-      if(c.district!=='الكل' && !(myDist && c.district===myDist)) return false;
+      // يرى فقط تعاميم "الكل" أو قاطعه تحديداً
+      if(c.district!=='الكل' && c.district!==myDist) return false;
       return !_circReads[c.id];
     }).sort((a,b)=>a.date>b.date?1:-1);
     if(!unread.length) return;
@@ -6609,8 +6608,12 @@ function renderCirculars(){
   const typeF=document.getElementById('f-circ-type')?.value||'';
   const search=(document.getElementById('sq-circ')?.value||'').toLowerCase().trim();
   const myDist = CU?.role!=='admin'?CU?.district||'':'';
+  const isAdmin2 = CU?.role==='admin';
   let list=[...allCirculars].filter(c=>{
-    if(myDist && c.district!=='الكل' && c.district!==myDist) return false;
+    // غير المدير: يرى فقط تعاميم "الكل" أو قاطعه تحديداً
+    if(!isAdmin2){
+      if(c.district!=='الكل' && c.district!==myDist) return false;
+    }
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
     if(search&&!(c.title||'').toLowerCase().includes(search)&&!(c.body||'').toLowerCase().includes(search)&&!(c.type||'').includes(search)) return false;
