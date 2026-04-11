@@ -3127,21 +3127,15 @@ window.addEventListener('load',function(){
           </label>
         </div>
 
-        <!-- صور الجهاز العاطل -->
+        <!-- رفع صور للسجل -->
         <div style="margin-bottom:14px">
-          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 صور الجهاز العاطل</div>
-          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
-            <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:16px;cursor:pointer;background:rgba(220,38,38,.03);gap:6px;transition:background .2s" onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'" title="التقاط من الكاميرا">
-              <input type="file" accept="image/*" capture="environment" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
-              <div style="font-size:24px">📷</div>
-              <div style="font-size:12px;font-weight:700;color:var(--a2)">كاميرا الهاتف</div>
-            </label>
-            <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:16px;cursor:pointer;background:rgba(220,38,38,.03);gap:6px;transition:background .2s" onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'" title="اختيار من الملفات">
-              <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
-              <div style="font-size:24px">🖼️</div>
-              <div style="font-size:12px;font-weight:700;color:var(--a2)">الاستوديو / ملفات</div>
-            </label>
-          </div>
+          <div style="font-size:13px;font-weight:700;color:var(--a2);margin-bottom:8px">📸 رفع صور للسجل</div>
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px dashed rgba(220,38,38,.4);border-radius:12px;padding:20px;cursor:pointer;background:rgba(220,38,38,.03);gap:8px;transition:background .2s" onmouseover="this.style.background='rgba(220,38,38,.07)'" onmouseout="this.style.background='rgba(220,38,38,.03)'">
+            <input type="file" accept="image/*,.pdf" multiple style="display:none" onchange="doMultiUpload(event,'maint_img')">
+            <div style="font-size:28px">🖼️</div>
+            <div style="font-size:13px;font-weight:700;color:var(--a2)">اضغط لرفع الصور</div>
+            <div style="font-size:11px;color:var(--t3)">يمكن اختيار عدة صور دفعة واحدة</div>
+          </label>
           <div id="maint-img-preview" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:10px"></div>
         </div>
 
@@ -3152,59 +3146,44 @@ window.addEventListener('load',function(){
 
             <!-- سجل المحطة -->
             <div>
-              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">📄 سجل اشتغال المحطة</div>
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">📄 رفع صور للسجل — المحطة</div>
               <div class="up-box" id="ub-maint-rep" style="min-height:80px">
                 <button class="up-rm" onclick="rmFile('maint_rep',event)">✕</button>
                 <div class="up-ico">📄</div>
                 <div class="up-lbl">سجل المحطة</div>
-                <div class="up-stat" id="us-maint_rep">اختر الطريقة</div>
+                <div class="up-stat" id="us-maint_rep">صورة أو PDF</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#1d4ed8">
-                  <input type="file" accept="image/*" capture="environment" style="display:none" onchange="doUpload(event,'maint_rep')">📷 كاميرا
-                </label>
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#166534">
-                  <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep')">📁 ملفات
-                </label>
-              </div>
+              <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;color:#166534;margin-top:5px;width:100%;box-sizing:border-box">
+                <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep')">📁 رفع صور للسجل
+              </label>
             </div>
 
             <!-- سجل الصيانة -->
             <div>
-              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">🔧 سجل اشتغال الصيانة</div>
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">🔧 رفع صور للسجل — الصيانة</div>
               <div class="up-box" id="ub-maint-rep2" style="min-height:80px">
                 <button class="up-rm" onclick="rmFile('maint_rep2',event)">✕</button>
                 <div class="up-ico">📄</div>
                 <div class="up-lbl">سجل الصيانة</div>
-                <div class="up-stat" id="us-maint_rep2">اختر الطريقة</div>
+                <div class="up-stat" id="us-maint_rep2">صورة أو PDF</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#1d4ed8">
-                  <input type="file" accept="image/*" capture="environment" style="display:none" onchange="doUpload(event,'maint_rep2')">📷 كاميرا
-                </label>
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#166534">
-                  <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep2')">📁 ملفات
-                </label>
-              </div>
+              <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;color:#166534;margin-top:5px;width:100%;box-sizing:border-box">
+                <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep2')">📁 رفع صور للسجل
+              </label>
             </div>
 
             <!-- سجل آخر -->
             <div>
-              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">📎 سجل آخر (اختياري)</div>
+              <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">📎 رفع صور للسجل — آخر</div>
               <div class="up-box" id="ub-maint-rep3" style="min-height:80px">
                 <button class="up-rm" onclick="rmFile('maint_rep3',event)">✕</button>
                 <div class="up-ico">📄</div>
                 <div class="up-lbl">سجل إضافي</div>
-                <div class="up-stat" id="us-maint_rep3">اختر الطريقة</div>
+                <div class="up-stat" id="us-maint_rep3">صورة أو PDF</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#1d4ed8">
-                  <input type="file" accept="image/*" capture="environment" style="display:none" onchange="doUpload(event,'maint_rep3')">📷 كاميرا
-                </label>
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#166534">
-                  <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep3')">📁 ملفات
-                </label>
-              </div>
+              <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;color:#166534;margin-top:5px;width:100%;box-sizing:border-box">
+                <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_rep3')">📁 رفع صور للسجل
+              </label>
             </div>
           </div>
         </div>
@@ -3219,16 +3198,11 @@ window.addEventListener('load',function(){
                 <button class="up-rm" onclick="rmFile('maint_tawkeef',event)">✕</button>
                 <div class="up-ico">📝</div>
                 <div class="up-lbl">وثيقة التكليف</div>
-                <div class="up-stat" id="us-maint_tawkeef">اختر الطريقة</div>
+                <div class="up-stat" id="us-maint_tawkeef">صورة أو PDF</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#1d4ed8">
-                  <input type="file" accept="image/*" capture="environment" style="display:none" onchange="doUpload(event,'maint_tawkeef')">📷 كاميرا
-                </label>
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#166534">
-                  <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_tawkeef')">📁 ملفات
-                </label>
-              </div>
+              <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;color:#166534;margin-top:5px;width:100%;box-sizing:border-box">
+                <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_tawkeef')">📁 رفع صور للسجل
+              </label>
             </div>
             <div>
               <div style="font-size:11px;font-weight:700;color:var(--t2);margin-bottom:5px">تكليف إضافي</div>
@@ -3236,16 +3210,11 @@ window.addEventListener('load',function(){
                 <button class="up-rm" onclick="rmFile('maint_tawkeef2',event)">✕</button>
                 <div class="up-ico">📝</div>
                 <div class="up-lbl">تكليف إضافي</div>
-                <div class="up-stat" id="us-maint_tawkeef2">اختر الطريقة</div>
+                <div class="up-stat" id="us-maint_tawkeef2">صورة أو PDF</div>
               </div>
-              <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:5px">
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#1d4ed8">
-                  <input type="file" accept="image/*" capture="environment" style="display:none" onchange="doUpload(event,'maint_tawkeef2')">📷 كاميرا
-                </label>
-                <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:5px 4px;cursor:pointer;font-size:10px;font-weight:700;color:#166534">
-                  <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_tawkeef2')">📁 ملفات
-                </label>
-              </div>
+              <label style="display:flex;align-items:center;justify-content:center;gap:4px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:7px;padding:6px;cursor:pointer;font-size:11px;font-weight:700;color:#166534;margin-top:5px;width:100%;box-sizing:border-box">
+                <input type="file" accept="image/*,.pdf" style="display:none" onchange="doUpload(event,'maint_tawkeef2')">📁 رفع صور للسجل
+              </label>
             </div>
           </div>
         </div>
@@ -5493,6 +5462,13 @@ function goTab(name, el){
       tab.style.display = 'none';
     }
   });
+  // إخفاء صريح للتبويبات الفرعية عند الخروج من تبويب الجولات والصيانة
+  if(name !== 'field'){
+    const subTours = document.getElementById('tab-tours');
+    const subMaint = document.getElementById('tab-maintenance');
+    if(subTours) subTours.style.display = 'none';
+    if(subMaint) subMaint.style.display = 'none';
+  }
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
   if(name==='field')      { loadTours(); loadMaintenance(); if(CU?.role!=='admin'){setTimeout(()=>switchField('maintenance',document.getElementById('sub-maint')),50);} }
@@ -5500,7 +5476,7 @@ function goTab(name, el){
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
   if(name==='coding')     { loadCoding(); populateGenStations(); loadLabelSizes(); }
-  if(name==='reports')    { populateReportDistricts(); generateReport(); }
+  if(name==='reports')    { populateDistrictFilters(); generateReport(); }
   if(name==='delegates')  { loadDelegates(); }
   if(name==='circulars')  { loadCirculars(); }
   if(name==='users')      { loadUsers(); }
@@ -7121,115 +7097,142 @@ function rmFile(key, e){
 
 function showMaintFiles(mid){
   const keys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
-  const labels={maint_img:'صورة 1',maint_img2:'صورة 2',maint_img3:'صورة 3',
-    maint_rep:'سجل 1',maint_rep2:'سجل 2',maint_rep3:'سجل 3',
-    maint_tawkeef:'تكليف 1',maint_tawkeef2:'تكليف 2'};
+  const labels={
+    maint_img:'📸 صورة الجهاز 1', maint_img2:'📸 صورة الجهاز 2', maint_img3:'📸 صورة الجهاز 3',
+    maint_rep:'📄 سجل اشتغال المحطة', maint_rep2:'🔧 سجل اشتغال الصيانة', maint_rep3:'📎 سجل آخر',
+    maint_tawkeef:'📝 وثيقة التكليف', maint_tawkeef2:'📝 تكليف إضافي'
+  };
+
+  // بناء الـ overlay مرة واحدة
   let ov=document.getElementById('ov-maint-files');
   if(!ov){
     ov=document.createElement('div');
     ov.id='ov-maint-files';
     ov.className='overlay';
     ov.onclick=function(e){if(e.target===ov)closeModal('ov-maint-files');};
-    const inner=document.createElement('div');
-    inner.className='modal modal-sm';
-    const titleEl=document.createElement('div'); titleEl.className='m-title'; titleEl.textContent='📎 ملفات الصيانة';
-    const bodyEl=document.createElement('div'); bodyEl.id='maint-files-list'; bodyEl.style.cssText='display:flex;flex-direction:column;gap:8px;padding:4px 0';
-    const footerEl=document.createElement('div'); footerEl.className='m-footer';
-    const closeBtn=document.createElement('button'); closeBtn.className='btn btn-o'; closeBtn.textContent='إغلاق';
-    closeBtn.onclick=function(){closeModal('ov-maint-files');};
-    footerEl.appendChild(closeBtn);
-    inner.appendChild(titleEl); inner.appendChild(bodyEl); inner.appendChild(footerEl);
-    ov.appendChild(inner);
+    ov.innerHTML=`
+      <div class="modal" style="width:min(780px,96vw);max-height:92vh;display:flex;flex-direction:column">
+        <div class="m-title" style="flex-shrink:0">📎 ملفات الصيانة</div>
+        <div id="maint-files-list" style="flex:1;overflow-y:auto;padding:4px 2px;display:flex;flex-direction:column;gap:14px"></div>
+        <div class="m-footer" style="flex-shrink:0">
+          <button class="btn btn-o" onclick="closeModal('ov-maint-files')">إغلاق</button>
+        </div>
+      </div>`;
     document.body.appendChild(ov);
   }
+
   const list=document.getElementById('maint-files-list');
-  list.innerHTML='<div style="color:var(--t3);text-align:center;padding:10px">جاري التحميل...</div>';
+  list.innerHTML='<div style="text-align:center;padding:30px;color:var(--t3)"><div style="font-size:28px;margin-bottom:8px">⏳</div>جاري تحميل الملفات...</div>';
   ov.classList.add('open');
+
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&r.d.data;});
     if(!found.length){
-      list.innerHTML='<div style="color:var(--t3);text-align:center;padding:20px">لا توجد ملفات مرفوعة</div>';
+      list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:40px;margin-bottom:10px">📂</div><div style="font-size:14px;font-weight:600">لا توجد ملفات مرفوعة لهذه العملية</div></div>';
       return;
     }
     list.innerHTML='';
     found.forEach(function(item){
-      const k=item.k; const d=item.d;
-      const src='data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
-      const isImg=d.mime&&d.mime.startsWith('image/');
+      const k=item.k, d=item.d;
+      const mime=d.mime||'image/jpeg';
+      const src='data:'+mime+';base64,'+d.data;
+      const isImg=mime.startsWith('image/');
+      const isPdf=mime==='application/pdf'||mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
 
       const card=document.createElement('div');
-      card.style.cssText='background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:10px';
+      card.style.cssText='background:var(--bg2);border:1.5px solid var(--border);border-radius:14px;overflow:hidden';
 
-      // عنوان البطاقة
+      // ─── هيدر البطاقة ───
       const hdr=document.createElement('div');
-      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:8px 12px;background:var(--bg3,#f1f5f9)';
+      hdr.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg3,#f1f5f9);border-bottom:1px solid var(--border)';
       const lbl=document.createElement('span');
-      lbl.style.cssText='font-weight:700;font-size:13px';
-      lbl.textContent=(labels[k]||k);
+      lbl.style.cssText='font-weight:800;font-size:13px;color:var(--text)';
+      lbl.textContent=labels[k]||k;
       hdr.appendChild(lbl);
 
-      // أزرار الهيدر
       const btns=document.createElement('div');
-      btns.style.cssText='display:flex;gap:6px';
+      btns.style.cssText='display:flex;gap:6px;align-items:center';
 
-      // تكبير
+      // زر تكبير للصور
       if(isImg){
         const zb=document.createElement('button');
         zb.className='btn btn-o btn-sm'; zb.style.fontSize='11px';
-        zb.textContent='🔍 تكبير';
+        zb.innerHTML='🔍 تكبير';
         zb.onclick=function(){openLB(src);};
         btns.appendChild(zb);
       }
 
-      // تحميل
+      // زر حفظ/تنزيل
+      const ext=isPdf?'pdf':isImg?'jpg':'bin';
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.jpg';
-      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center';
-      dl.textContent='⬇️ حفظ';
+      dl.href=src; dl.download=(d.name||k)+'.'+ext;
+      dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px';
+      dl.innerHTML='⬇️ تنزيل';
       btns.appendChild(dl);
 
-      // استبدال
+      // زر استبدال
       if(can('edit')){
-        const repInp=document.createElement('input');
-        repInp.type='file'; repInp.accept='image/*,.pdf'; repInp.style.display='none';
-        repInp.onchange=function(ev){
-          const file=ev.target.files[0]; if(!file) return;
-          compressImage(file,1280,1280,0.85).then(function(res){
-            return api('POST','/api/files/maint_'+mid+'_'+k,{name:file.name,data:res.data,mime:res.mime});
+        const ri=document.createElement('input');
+        ri.type='file'; ri.accept='image/*,.pdf'; ri.style.display='none';
+        ri.onchange=function(ev){
+          const f=ev.target.files[0]; if(!f) return;
+          compressImage(f,1600,1600,0.85).then(function(res){
+            return api('POST','/api/files/maint_'+mid+'_'+k,{name:f.name,data:res.data,mime:res.mime});
           }).then(function(){
             toast('تم الاستبدال ✅');
             closeModal('ov-maint-files');
             showMaintFiles(mid);
           }).catch(function(e){toast('خطأ: '+e.message,'err');});
         };
-        const repBtn=document.createElement('button');
-        repBtn.className='btn btn-o btn-sm';
-        repBtn.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
-        repBtn.textContent='🔄 استبدال';
-        repBtn.onclick=function(){repInp.click();};
-        btns.appendChild(repBtn);
-        btns.appendChild(repInp);
+        const rb=document.createElement('button');
+        rb.className='btn btn-o btn-sm';
+        rb.style.cssText='font-size:11px;color:#d97706;border-color:rgba(217,119,6,.3)';
+        rb.innerHTML='🔄 استبدال';
+        rb.onclick=function(){ri.click();};
+        btns.appendChild(rb);
+        btns.appendChild(ri);
       }
 
       hdr.appendChild(btns);
       card.appendChild(hdr);
 
-      // عرض الصورة مباشرة
+      // ─── جسم البطاقة: عرض الملف مباشرة ───
+      const body=document.createElement('div');
+      body.style.cssText='background:#fff;display:flex;align-items:center;justify-content:center;min-height:80px';
+
       if(isImg){
+        // صورة — تُعرض مباشرة بحجم كامل قابلة للتكبير
         const img=document.createElement('img');
         img.src=src;
-        img.style.cssText='width:100%;max-height:260px;object-fit:contain;display:block;background:#fff;cursor:zoom-in';
+        img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in';
+        img.title='اضغط للتكبير';
         img.onclick=function(){openLB(src);};
-        card.appendChild(img);
+        body.style.minHeight='0';
+        body.appendChild(img);
+      } else if(isPdf){
+        // PDF — يُعرض بـ embed مباشرة داخل البطاقة
+        const embed=document.createElement('embed');
+        embed.src=src;
+        embed.type='application/pdf';
+        embed.style.cssText='width:100%;height:500px;border:none;display:block';
+        body.style.minHeight='0';
+        body.style.background='#f8fafc';
+        body.appendChild(embed);
+      } else {
+        // نوع غير معروف
+        body.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3)"><div style="font-size:32px;margin-bottom:8px">📄</div><div style="font-size:12px">'+(d.name||k)+'</div></div>';
       }
 
+      card.appendChild(body);
       list.appendChild(card);
     });
+  }).catch(function(e){
+    list.innerHTML='<div style="text-align:center;padding:30px;color:#dc2626">❌ خطأ في تحميل الملفات</div>';
   });
 }
 
@@ -9400,11 +9403,14 @@ document.addEventListener('DOMContentLoaded', function(){
   }catch(ex){}
 })();
 </script>
+<style>
+@media print{
   #inv-print-overlay{position:static!important;background:none!important;padding:0!important;overflow:visible!important}
-  #inv-print-overlay &gt; div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
-  #inv-print-overlay &gt; div &gt; div:first-child{display:none!important}
+  #inv-print-overlay > div{padding:0!important;box-shadow:none!important;border-radius:0!important;max-width:none!important}
+  #inv-print-overlay > div > div:first-child{display:none!important}
   @page{margin:6mm;size:A4 landscape}
 }
+</style>
 
 
 
