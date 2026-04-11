@@ -6522,7 +6522,7 @@ function showCircularNotifPopup(c, onDone){
 
   // تحميل صورة التعميم تلقائياً إن وجدت
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
-    const d=res&&res.file?res.file:res;
+    const d=extractFile(res);
     if(!hasFileData(d)) return;
     const imgCont=document.getElementById('circ-popup-img-'+c.id);
     if(!imgCont) return;
@@ -7120,19 +7120,39 @@ function _pdfToJpg(file, quality){
   });
 }
 
-// بناء src للصور — يدعم URL مباشر من Supabase وbase64
-function buildSrc(d){
-  // إذا كان الـ data أو url يبدأ بـ http فهو رابط مباشر من Supabase
-  const raw = d.url || d.data || d;
-  if(typeof raw==='string' && (raw.startsWith('http')||raw.startsWith('/'))){
-    return raw;
-  }
-  const mime = d.mime||'image/jpeg';
-  return 'data:'+mime+';base64,'+(raw||'');
+// استخراج بيانات الملف من أي صيغة response
+function extractFile(res){
+  if(!res) return null;
+  // {file: {...}}
+  if(res.file && typeof res.file === 'object') return res.file;
+  // {data:..., mime:...} or {url:..., mime:...}
+  if(res.data || res.url || res.mime) return res;
+  // plain string URL
+  if(typeof res === 'string' && res.length > 4) return {data: res, mime:'image/jpeg'};
+  return null;
 }
+
 // هل يوجد بيانات ملف صالحة؟
 function hasFileData(d){
-  return d && (d.url || d.data);
+  if(!d) return false;
+  if(typeof d === 'string') return d.length > 4;
+  return !!(d.url || d.data);
+}
+
+// بناء src للصور — يدعم URL مباشر من Supabase وbase64
+function buildSrc(d){
+  if(!d) return '';
+  // plain string
+  if(typeof d === 'string'){
+    return (d.startsWith('http') || d.startsWith('/')) ? d : 'data:image/jpeg;base64,'+d;
+  }
+  // URL في d.url أو d.data
+  const raw = d.url || d.data || '';
+  if(typeof raw === 'string' && (raw.startsWith('http') || raw.startsWith('/'))){
+    return raw; // Supabase URL مباشر
+  }
+  const mime = d.mime || 'image/jpeg';
+  return raw ? 'data:'+mime+';base64,'+raw : '';
 }
 
 function compressImage(file, maxW, maxH, quality){
@@ -7255,7 +7275,11 @@ function showMaintFiles(mid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
+      .then(function(res){
+        const d=extractFile(res);
+        if(d) console.log('📁 maint file',k,'→',typeof d==='object'?{url:d.url,data:(d.data||'').substring(0,60),mime:d.mime}:d);
+        return hasFileData(d)?{k,d}:null;
+      })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
@@ -7436,7 +7460,7 @@ function viewCircFiles(cid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/circ_'+cid+'_'+k)
-      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k:k,d:d}:null; })
+      .then(function(res){ const d=extractFile(res); return hasFileData(d)?{k:k,d:d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
@@ -7988,7 +8012,7 @@ function _loadMaintPreviews(mid, container){
   };
   Promise.all(allKeys.map(k=>
     api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(res=>{ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
+      .then(res=>{ const d=extractFile(res); return hasFileData(d)?{k,d}:null; })
       .catch(()=>null)
   )).then(results=>{
     const found = results.filter(Boolean);
@@ -8269,7 +8293,7 @@ function viewCircImageInline(cid, btn){
   if(btn){ btn.textContent='⏳'; btn.disabled=true; }
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
-      const d=res.file||res;
+      const d=extractFile(res);
       if(hasFileData(d)){
         const src=buildSrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
@@ -8324,7 +8348,7 @@ function toggleCircImg(cid, btn){
 
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
-      const d = (res&&res.file) ? res.file : res;
+      const d=extractFile(res);
       if(!hasFileData(d)){
         if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=false; }
         return;
@@ -8533,7 +8557,7 @@ function showTourFiles(tid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/tour_'+tid+'_'+k)
-      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
+      .then(function(res){ const d=extractFile(res); return hasFileData(d)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
     const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
@@ -9336,8 +9360,19 @@ function downloadOfflineCopy(){
     const dataScript = '\n<script id="__offline_data__">\n'
       +'window.__OFFLINE_DATA__ = '+JSON.stringify(bk)+';\n'
       +'<\/script>';
-    const fullHtml = document.documentElement.outerHTML
+    let fullHtml = document.documentElement.outerHTML
       .replace('</head>', dataScript+'</head>');
+
+    // تنظيف: حذف overlays الملفات الديناميكية التي تحتوي صور Supabase غير صالحة
+    fullHtml = fullHtml
+      // حذف ov-tour-files المضمّن ديناميكياً
+      .replace(/<div id="ov-tour-files"[\s\S]*?<\/div>\s*(?=<\/body>)/,'')
+      .replace(/<div id="ov-maint-files"[\s\S]*?<\/div>\s*(?=<\/body>)/,'')
+      // تصليح أي img src بصيغة data:image/...;base64,https://
+      .replace(/src="data:image\/[^;]+;base64,(https?:\/\/[^"]+)"/g, 'src="$1"')
+      // تصليح أي href بنفس الصيغة
+      .replace(/href="data:image\/[^;]+;base64,(https?:\/\/[^"]+)"/g, 'href="$1"');
+
     const blob = new Blob([fullHtml], {type:'text/html;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -9549,7 +9584,4 @@ document.addEventListener('DOMContentLoaded', function(){
 </style>
 
 
-
-
-</rect><div id="ov-tour-files" class="overlay"><div class="modal modal-sm"><div class="m-title">📎 ملفات الجولة الميدانية</div><div id="tour-files-list" style="display:flex;flex-direction:column;gap:8px;padding:4px 0"><div style="background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 8px;"><div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: var(--bg3,#f1f5f9);"><span style="font-weight: 700; font-size: 13px;">صورة الجولة</span><div style="display: flex; gap: 6px;"><button class="btn btn-o btn-sm" style="font-size: 11px;">🔍 تكبير</button><a class="btn btn-p btn-sm" href="data:image/jpeg;base64,https://vcgfmmdpjpiktkyorili.supabase.co/storage/v1/object/public/Cam-files/7a8fc31887f9.jpg" download="ضفاف دجلة نصب منظومة ساندة001.jpg.jpg" style="font-size: 11px; text-decoration: none; display: inline-flex; align-items: center;">⬇️ حفظ</a><button class="btn btn-o btn-sm" style="font-size: 11px; color: rgb(217, 119, 6); border-color: rgba(217, 119, 6, 0.3);">🔄 استبدال</button><input type="file" accept="image/*,.pdf" style="display: none;"></div></div><img src="data:image/jpeg;base64,https://vcgfmmdpjpiktkyorili.supabase.co/storage/v1/object/public/Cam-files/7a8fc31887f9.jpg" style="width: 100%; max-height: 260px; object-fit: contain; display: block; background: rgb(255, 255, 255); cursor: zoom-in;"></div></div><div class="m-footer"><button class="btn btn-o" onclick="closeModal('ov-tour-files')">إغلاق</button></div></div></div>
 </body></html>
