@@ -6524,11 +6524,11 @@ function showCircularNotifPopup(c, onDone){
   // تحميل صورة التعميم تلقائياً إن وجدت
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
     const d=res&&res.file?res.file:res;
-    if(!d||!d.data) return;
+    if(!hasFileData(d)) return;
     const imgCont=document.getElementById('circ-popup-img-'+c.id);
     if(!imgCont) return;
     const mime=d.mime||'image/jpeg';
-    const src='data:'+mime+';base64,'+d.data;
+    const src=buildSrc(d);
     const img=document.createElement('img');
     img.src=src;
     img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
@@ -7051,8 +7051,8 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    if(d.mime?.startsWith('image/')) openLB('data:'+d.mime+';base64,'+d.data);
-    else{ const a=document.createElement('a');a.href='data:'+d.mime+';base64,'+d.data;a.download=d.name;a.click(); }
+    if(d.mime?.startsWith('image/') || buildSrc(d).startsWith('http')) openLB(buildSrc(d));
+    else{ const a=document.createElement('a');a.href=buildSrc(d);a.download=d.name;a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -7115,6 +7115,21 @@ function _pdfToJpg(file, quality){
       r.readAsDataURL(file);
     });
   });
+}
+
+// بناء src للصور — يدعم URL مباشر من Supabase وbase64
+function buildSrc(d){
+  // إذا كان الـ data أو url يبدأ بـ http فهو رابط مباشر من Supabase
+  const raw = d.url || d.data || d;
+  if(typeof raw==='string' && (raw.startsWith('http')||raw.startsWith('/'))){
+    return raw;
+  }
+  const mime = d.mime||'image/jpeg';
+  return 'data:'+mime+';base64,'+(raw||'');
+}
+// هل يوجد بيانات ملف صالحة؟
+function hasFileData(d){
+  return d && (d.url || d.data);
 }
 
 function compressImage(file, maxW, maxH, quality){
@@ -7237,10 +7252,10 @@ function showMaintFiles(mid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
+      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
     if(!found.length){
       list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:40px;margin-bottom:10px">📂</div><div style="font-size:14px;font-weight:600">لا توجد ملفات مرفوعة لهذه العملية</div></div>';
       return;
@@ -7249,8 +7264,8 @@ function showMaintFiles(mid){
     found.forEach(function(item){
       const k=item.k, d=item.d;
       const mime=d.mime||'image/jpeg';
-      const src='data:'+mime+';base64,'+d.data;
-      const isImg=mime.startsWith('image/');
+      const src=buildSrc(d);
+      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d)||"");
       const isPdf=mime==='application/pdf'||mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
 
       const card=document.createElement('div');
@@ -7418,10 +7433,10 @@ function viewCircFiles(cid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/circ_'+cid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k:k,d:d}:null; })
+      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k:k,d:d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
     if(!found.length){
       list.innerHTML='<div style="color:var(--t3);text-align:center;padding:30px;font-size:14px">لا توجد مرفقات</div>';
       return;
@@ -7429,8 +7444,8 @@ function viewCircFiles(cid){
     list.innerHTML='';
     found.forEach(function(item,idx){
       const k=item.k, d=item.d;
-      const isImg=d.mime&&d.mime.startsWith('image/');
-      const src='data:'+(d.mime||'application/octet-stream')+';base64,'+d.data;
+      const isImg=(d.mime&&d.mime.startsWith("image/"))||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d));
+      const src=buildSrc(d);
       const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
 
       const card=document.createElement('div');
@@ -7970,7 +7985,7 @@ function _loadMaintPreviews(mid, container){
   };
   Promise.all(allKeys.map(k=>
     api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(res=>{ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
+      .then(res=>{ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
       .catch(()=>null)
   )).then(results=>{
     const found = results.filter(Boolean);
@@ -7980,7 +7995,7 @@ function _loadMaintPreviews(mid, container){
       return;
     }
     found.forEach(({k,d})=>{
-      const src = 'data:'+(d.mime||'image/jpeg')+';base64,'+d.data;
+      const src = buildSrc(d);
       const isImg = d.mime&&d.mime.startsWith('image/');
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
@@ -8252,8 +8267,8 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=res.file||res;
-      if(d&&d.data&&d.mime&&d.mime.startsWith('image/')){
-        const src='data:'+d.mime+';base64,'+d.data;
+      if(hasFileData(d)){
+        const src=buildSrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
         const img=document.createElement('img');
@@ -8307,12 +8322,12 @@ function toggleCircImg(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d = (res&&res.file) ? res.file : res;
-      if(!d || !d.data){
+      if(!hasFileData(d)){
         if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=false; }
         return;
       }
       const mime = d.mime || 'image/jpeg';
-      const src  = 'data:'+mime+';base64,'+d.data;
+      const src = buildSrc(d);
       imgDiv.innerHTML = '';
 
       // الصورة
@@ -8515,10 +8530,10 @@ function showTourFiles(tid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/tour_'+tid+'_'+k)
-      .then(function(res){ const d=res.file||res; return (d&&d.data)?{k,d}:null; })
+      .then(function(res){ const d=res.file||res; return hasFileData(d)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&r.d.data;});
+    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
     if(!found.length){
       list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:36px;margin-bottom:8px">📂</div>لا توجد ملفات مرفوعة</div>';
       return;
@@ -8527,8 +8542,8 @@ function showTourFiles(tid){
     found.forEach(function(item){
       const k=item.k, d=item.d;
       const mime=d.mime||'image/jpeg';
-      const src='data:'+mime+';base64,'+d.data;
-      const isImg=mime.startsWith('image/');
+      const src=buildSrc(d);
+      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d)||"");
       const isPdf=mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
 
       const card=document.createElement('div');
