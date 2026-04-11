@@ -5882,7 +5882,7 @@ function renderStations(){
 function filterStations(){ renderStations(); }
 
 // حالة الإخفاء/الإظهار
-const _stToggle = {gov:true, priv:true};
+const _stToggle = {gov:false, priv:true};
 
 function toggleStSection(which){
   _stToggle[which] = !_stToggle[which];
@@ -5902,7 +5902,15 @@ function toggleStSection(which){
 function _fixToggleHeights(){
   ['gov','priv'].forEach(w=>{
     const body = document.getElementById(w+'-section-body');
-    if(body && _stToggle[w]) body.style.maxHeight = body.scrollHeight + 2000 + 'px';
+    const icon = document.getElementById(w+'-toggle-icon');
+    if(!body) return;
+    if(_stToggle[w]){
+      body.style.maxHeight = body.scrollHeight + 2000 + 'px';
+      if(icon) icon.textContent = '▲';
+    } else {
+      body.style.maxHeight = '0';
+      if(icon) icon.textContent = '▼';
+    }
   });
 }
 
