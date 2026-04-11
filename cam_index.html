@@ -7246,19 +7246,43 @@ async function doUpload(event, key){
     const szTxt=kb>1024?Math.round(kb/102.4)/10+'MB':kb+'KB';
     // تحديث نص الحالة
     const stat=document.getElementById('us-'+key);
-    if(stat) stat.textContent='✅ '+file.name.substring(0,18)+' ('+szTxt+')';
-    // تحديث البوكس البصري — سواء كان الـ input داخله أو خارجه
+    if(stat) stat.textContent='✅ '+file.name.substring(0,16)+' ('+szTxt+')';
+    // تحديث البوكس البصري
+    const keyMap={
+      'maint_img':'ub-maint','maint_rep':'ub-maint-rep','maint_rep2':'ub-maint-rep2',
+      'maint_rep3':'ub-maint-rep3','maint_tawkeef':'ub-maint-tawkeef','maint_tawkeef2':'ub-maint-tawkeef2',
+      'tour_img':'ub-tour','tour_img2':'ub-tour-img2','tour_rep':'ub-tour-rep'
+    };
     let box=event.target.closest('.up-box');
-    if(!box){
-      // البحث عن البوكس بواسطة الـ key
-      const keyMap={
-        'maint_img':'ub-maint','maint_rep':'ub-maint-rep','maint_rep2':'ub-maint-rep2',
-        'maint_rep3':'ub-maint-rep3','maint_tawkeef':'ub-maint-tawkeef','maint_tawkeef2':'ub-maint-tawkeef2',
-        'tour_img':'ub-tour','tour_img2':'ub-tour-img2','tour_rep':'ub-tour-rep'
-      };
-      if(keyMap[key]) box=document.getElementById(keyMap[key]);
+    if(!box && keyMap[key]) box=document.getElementById(keyMap[key]);
+    if(box){
+      box.classList.add('hf');
+      // عرض صورة مصغّرة داخل البوكس
+      const src='data:image/jpeg;base64,'+data;
+      // إزالة preview سابق إن وجد
+      box.querySelectorAll('.up-preview-img,.up-preview-bar').forEach(el=>el.remove());
+      // صورة مصغّرة
+      const prevImg=document.createElement('img');
+      prevImg.src=src;
+      prevImg.className='up-preview-img';
+      prevImg.style.cssText='width:100%;max-height:120px;object-fit:cover;border-radius:6px;margin-top:6px;cursor:zoom-in;display:block';
+      prevImg.onclick=function(){openLB(src);};
+      // شريط حفظ
+      const bar=document.createElement('div');
+      bar.className='up-preview-bar';
+      bar.style.cssText='display:flex;gap:6px;margin-top:5px';
+      const dlBtn=document.createElement('a');
+      dlBtn.href=src; dlBtn.download=finalName;
+      dlBtn.style.cssText='flex:1;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:7px;padding:4px;font-size:10px;font-weight:700;text-align:center;text-decoration:none;font-family:Cairo,sans-serif';
+      dlBtn.textContent='⬇️ حفظ ('+szTxt+')';
+      const zbBtn=document.createElement('button');
+      zbBtn.type='button';
+      zbBtn.style.cssText='background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;border-radius:7px;padding:4px 8px;font-size:10px;font-weight:700;cursor:pointer;font-family:Cairo,sans-serif';
+      zbBtn.textContent='🔍';
+      zbBtn.onclick=function(){openLB(src);};
+      bar.appendChild(dlBtn); bar.appendChild(zbBtn);
+      box.appendChild(prevImg); box.appendChild(bar);
     }
-    if(box) box.classList.add('hf');
     toast('📎 تم اختيار الملف: '+szTxt);
   }catch(e){
     toast('خطأ في رفع الملف: '+e.message,'err');
@@ -7271,7 +7295,10 @@ function rmFile(key, e){
   const stat=document.getElementById('us-'+key);
   if(stat) stat.textContent='صورة أو PDF';
   const box=e?.target?.closest('.up-box');
-  if(box) box.classList.remove('hf');
+  if(box){
+    box.classList.remove('hf');
+    box.querySelectorAll('.up-preview-img,.up-preview-bar').forEach(el=>el.remove());
+  }
 }
 
 
