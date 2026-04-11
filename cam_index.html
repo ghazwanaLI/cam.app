@@ -6501,18 +6501,26 @@ function showCircularNotifPopup(c, onDone){
       ${c.body?`<div style="font-size:13px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px;line-height:1.8;text-align:right">${c.body}</div>`:''}
       <div id="circ-popup-img-${c.id}" style="margin-bottom:12px"></div>
       <div style="font-size:11px;color:#94a3b8;margin-bottom:18px">📅 ${c.date||''} · ✍️ ${c.added_by||''}</div>
-      <div style="display:flex;gap:8px;margin-bottom:0">
+
+      <!-- زر حفظ الصورة — يظهر أولاً -->
+      <button id="circ-save-btn-${c.id}" onclick="window._downloadCircPdf&&window._downloadCircPdf(${c.id});setTimeout(()=>{
+        const rb=document.getElementById('circ-read-wrap-${c.id}');
+        if(rb){rb.style.display='flex';}
+        this.style.background='#f0fdf4';this.style.color='#16a34a';this.style.borderColor='#bbf7d0';
+        this.innerHTML='✅ تم حفظ الصورة';this.disabled=true;
+      },400)" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">
+        ⬇️ حفظ الصورة أولاً
+      </button>
+
+      <!-- زر اطلعت — مخفي حتى بعد الحفظ -->
+      <div id="circ-read-wrap-${c.id}" style="display:none">
         <button id="circ-read-btn-${c.id}" onclick="(async()=>{
           this.disabled=true;this.textContent='⏳...';
           await markCircRead(${c.id});
-          if(typeof window._downloadCircPdf==='function') window._downloadCircPdf(${c.id});
           document.getElementById('circ-notif-popup')?.remove();
           if(typeof window._circOnDone==='function'){const fn=window._circOnDone;window._circOnDone=null;fn();}
-        })()" style="flex:1;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
-          ✅ اطلعت
-        </button>
-        <button id="circ-dl-btn-${c.id}" onclick="window._downloadCircPdf&&window._downloadCircPdf(${c.id})" style="background:#f1f5f9;color:#1d4ed8;border:1.5px solid #bfdbfe;border-radius:12px;padding:14px 16px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
-          ⬇️ حفظ
+        })()" style="width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
+          ✅ اطلعت — إغلاق
         </button>
       </div>
     </div>`;
@@ -6523,7 +6531,14 @@ function showCircularNotifPopup(c, onDone){
   // تحميل صورة التعميم تلقائياً إن وجدت
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
     const d=extractFile(res);
-    if(!hasFileData(d)) return;
+    if(!hasFileData(d)){
+      // لا توجد صورة — أظهر زر اطلعت مباشرة
+      const sw=document.getElementById('circ-save-btn-'+c.id);
+      const rw=document.getElementById('circ-read-wrap-'+c.id);
+      if(sw) sw.style.display='none';
+      if(rw) rw.style.display='flex';
+      return;
+    }
     const imgCont=document.getElementById('circ-popup-img-'+c.id);
     if(!imgCont) return;
     const mime=d.mime||'image/jpeg';
@@ -6659,8 +6674,12 @@ function toggleCircForm(){
   const isOpen=f&&f.style.display!=='none';
   if(isOpen){ cancelQuickCirc(); return; }
   const ds=document.getElementById('q-circ-district');
-  if(ds) ds.innerHTML='<option value="الكل">— جميع القواطع —</option>'
-    +DISTRICTS_LIST.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(ds){
+    const dlist = DISTRICTS_LIST.length>=8 ? DISTRICTS_LIST :
+      ['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز'];
+    ds.innerHTML='<option value="الكل">— جميع القواطع —</option>'
+      +dlist.map(d=>`<option value="${d}">${d}</option>`).join('');
+  }
   if(f) f.style.display='block';
   if(ov) ov.style.display='block';
   setTimeout(()=>document.getElementById('q-circ-title')?.focus(),100);
@@ -7006,18 +7025,16 @@ function generateMaintReport(){
 // ══════════════════════════════════════════
 
 function populateDistrictFilters(){
-  const isAdm=CU?.role==='admin';
-  const uDists=!isAdm?(CU?.districts?.length?CU.districts:(CU?.district?[CU.district]:[])):[];
-  const distOptions=uDists.length?uDists:DISTRICTS_LIST;
+  const FULL_DISTS = DISTRICTS_LIST.length>=8 ? DISTRICTS_LIST :
+    ['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز'];
   ['f-tour-district','f-maint-district','f-st-district','f-inv-district','f-circ-district','f-coding-district','r-district'].forEach(id=>{
     const sel=document.getElementById(id);
     if(!sel)return;
     const cur=sel.value;
-    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:DISTRICTS_LIST;
+    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:FULL_DISTS;
     sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
     if(cur) sel.value=cur;
   });
-
 }
 
 function renderPagination(containerId, current, total, onChange){
