@@ -4220,7 +4220,7 @@ function openCodingModal(type){
   ds.innerHTML='<option value="">— اختر القاطع —</option>';
   const dists=CU?.role!=='admin'&&CU?.district?[CU.district]:(CU?.role!=='admin'&&CU?.districts?.length?CU.districts:DISTRICTS_LIST);
   dists.forEach(d=>{const o=document.createElement('option');o.value=d;o.textContent=d;ds.appendChild(o);});
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   _codingStationType=stType;
   document.getElementById('coding-station').innerHTML='<option value="">— اختر المحطة —</option>';
   filterCodingStations();
@@ -5508,7 +5508,7 @@ async function initApp(){
     if(av) av.textContent = (CU.fullname||'م')[0];
     if(nm) nm.textContent = CU.fullname||'';
     if(rl) rl.textContent = CU.role==='admin' ? '🔑 مدير النظام' : 'مستخدم';
-    if(dt) dt.textContent = CU.district||'';
+    if(dt) dt.textContent = getUserDistricts().join(' · ') || CU.district || '';
     // تشغيل الإشعارات للمدير
     if(CU.role==='admin') startNotifPolling(); else { const tb=document.getElementById('maint-ticker-bar'); if(tb) tb.style.display='none'; }
     // polling التعاميم للمستخدمين كل 60 ثانية
@@ -5784,7 +5784,7 @@ function renderStations(){
   const search=(document.getElementById('sq-stations')?.value||'').toLowerCase();
   const distF=document.getElementById('f-st-district')?.value||'';
   let list=allStations.filter(s=>{
-    if(CU?.role!=='admin'&&CU?.district&&s.district!==CU.district) return false;
+    if(!userCanSeeDistrict(s.district)) return false;
     if(distF&&s.district!==distF) return false;
     if(search&&!(s.name||'').toLowerCase().includes(search)&&!s.district?.includes(search)) return false;
     return true;
@@ -5921,7 +5921,7 @@ function openStationModal(id){
   // القاطع
   const ds=document.getElementById('st-district');
   ds.innerHTML='<option value="">— اختر القاطع —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${s.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   // النوع
   document.getElementById('st-type').value=s.type||'حكومية';
   toggleSandaField();
@@ -5990,7 +5990,7 @@ function renderTours(){
   const distF=document.getElementById('f-tour-district')?.value||'';
   const typeF=document.getElementById('f-tour-type')?.value||'';
   let list=allTours.filter(t=>{
-    if(CU?.role!=='admin'&&CU?.district&&t.district!==CU.district)return false;
+    if(!userCanSeeDistrict(t.district))return false;
     if(distF&&t.district!==distF)return false;
     if(typeF&&t.visit_type!==typeF)return false;
     if(search&&!JSON.stringify(t).toLowerCase().includes(search))return false;
@@ -6025,7 +6025,7 @@ function openTourModal(id){
   document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('tour-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   filterTourStations();
   if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
   document.getElementById('tour-type').value=t.visit_type||'كشف';
@@ -6109,7 +6109,7 @@ function renderMaint(){
   const search=(document.getElementById('sq-maint')?.value||'').toLowerCase();
   const distF=document.getElementById('f-maint-district')?.value||'';
   let list=allMaint.filter(m=>{
-    if(CU?.role!=='admin'&&CU?.district&&m.district!==CU.district)return false;
+    if(!userCanSeeDistrict(m.district))return false;
     if(distF&&m.district!==distF)return false;
     if(search&&!JSON.stringify(m).toLowerCase().includes(search))return false;
     return true;
@@ -6143,7 +6143,7 @@ function openMaintModal(id){
   document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('maint-district');
   ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
-  if(CU?.role!=='admin'&&CU?.district){ds.value=CU.district;ds.disabled=true;}else{ds.disabled=false;}
+  const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   filterMaintStations();
   if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
   document.getElementById('maint-reason').value=m.reason||'';
@@ -6283,7 +6283,7 @@ function renderCams(){
   const search=(document.getElementById('sq-cams')?.value||'').toLowerCase();
   const stF=document.getElementById('f-cam-status')?.value||'';
   let list=allCams.filter(c=>{
-    if(CU?.role!=='admin'&&CU?.district&&c.district!==CU.district)return false;
+    if(!userCanSeeDistrict(c.district))return false;
     if(stF==='working'&&c.status!=='يعمل')return false;
     if(stF==='broken'&&c.status==='يعمل')return false;
     if(search&&!JSON.stringify(c).toLowerCase().includes(search))return false;
@@ -6464,8 +6464,8 @@ async function loadCirculars(){
     if(CU?.role!=='admin' && _lastCircCount>=0){
       const newCircs=allCirculars.filter(c=>{
         if(_shownCircIds.has(c.id)) return false;
-        const myDist=CU?.district||'';
-        return c.district==='الكل' || c.district===myDist;
+        const myDists=getUserDistricts();
+        return c.district==='الكل' || myDists.includes(c.district);
       });
       if(newCircs.length>0){
         newCircs.forEach(c=>_shownCircIds.add(c.id));
@@ -6605,10 +6605,9 @@ function showCircularNotifPopup(c, onDone){
 async function checkUnreadCirculars(){
   if(!CU || CU.role==='admin') return; // المدير معفى
   try{
-    const myDist = CU.district||'';
+    const myDists = getUserDistricts();
     const unread = allCirculars.filter(c=>{
-      // يرى فقط تعاميم "الكل" أو قاطعه تحديداً
-      if(c.district!=='الكل' && c.district!==myDist) return false;
+      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
       return !_circReads[c.id];
     }).sort((a,b)=>a.date>b.date?1:-1);
     if(!unread.length) return;
@@ -6623,12 +6622,12 @@ function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
   const typeF=document.getElementById('f-circ-type')?.value||'';
   const search=(document.getElementById('sq-circ')?.value||'').toLowerCase().trim();
-  const myDist = CU?.role!=='admin'?CU?.district||'':'';
   const isAdmin2 = CU?.role==='admin';
+  const myDists = getUserDistricts();
   let list=[...allCirculars].filter(c=>{
-    // غير المدير: يرى فقط تعاميم "الكل" أو قاطعه تحديداً
+    // غير المدير: يرى فقط تعاميم "الكل" أو أي من قواطعه
     if(!isAdmin2){
-      if(c.district!=='الكل' && c.district!==myDist) return false;
+      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
     }
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
@@ -6903,7 +6902,8 @@ async function saveUser(){
   const role=document.getElementById('u-role').value;
   // جمع القواطع المختارة
   const checkedDistricts=Array.from(document.querySelectorAll('#u-districts-wrap input[type=checkbox]:checked')).map(x=>x.value);
-  const district=checkedDistricts.length===1?checkedDistricts[0]:(checkedDistricts.length===0?'':'');
+  // district = أول قاطع (للتوافق مع الكود القديم) — districts = كل القواطع
+  const district=checkedDistricts[0]||'';
   const districts=checkedDistricts;
   if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
   if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
@@ -7039,6 +7039,21 @@ function generateMaintReport(){
 //  HELPERS
 // ══════════════════════════════════════════
 
+// قائمة قواطع المستخدم الحالي
+function getUserDistricts(){
+  if(!CU || CU.role==='admin') return [];
+  if(Array.isArray(CU.districts) && CU.districts.length) return CU.districts;
+  if(CU.district) return [CU.district];
+  return [];
+}
+// هل يحق للمستخدم رؤية بيانات هذا القاطع؟
+function userCanSeeDistrict(dist){
+  if(!CU || CU.role==='admin') return true;
+  const uDists = getUserDistricts();
+  if(!uDists.length) return true; // لا قيود
+  return uDists.includes(dist);
+}
+
 function populateDistrictFilters(){
   const FULL_DISTS = DISTRICTS_LIST.length>=8 ? DISTRICTS_LIST :
     ['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز'];
@@ -7046,7 +7061,7 @@ function populateDistrictFilters(){
     const sel=document.getElementById(id);
     if(!sel)return;
     const cur=sel.value;
-    const opts=CU?.role!=='admin'&&CU?.district?[CU.district]:FULL_DISTS;
+    const opts = CU?.role!=='admin' ? (getUserDistricts().length ? getUserDistricts() : FULL_DISTS) : FULL_DISTS;
     sel.innerHTML='<option value="">كل القواطع</option>'+opts.map(d=>`<option value="${d}">${d}</option>`).join('');
     if(cur) sel.value=cur;
   });
@@ -7155,7 +7170,34 @@ function _pdfToJpg(file, quality){
   });
 }
 
-// استخراج بيانات الملف من أي صيغة response
+// تحميل صورة مع fallback إذا فشل URL مباشر
+function loadImgWithFallback(img, src, apiPath){
+  img.src = src;
+  if(src.startsWith('http')){
+    img.onerror = function(){
+      // فشل تحميل URL مباشرة — جرّب عبر API proxy
+      if(apiPath){
+        api('GET', apiPath).then(function(res){
+          const d=extractFile(res);
+          if(hasFileData(d)){
+            const raw=d.url||d.data||'';
+            // لو رجع نفس URL — جرب fetch لتحويله base64
+            if(raw.startsWith('http')){
+              fetch(raw).then(r=>r.blob()).then(blob=>{
+                const reader=new FileReader();
+                reader.onload=function(e){ img.onerror=null; img.src=e.target.result; };
+                reader.readAsDataURL(blob);
+              }).catch(()=>{ img.onerror=null; img.alt='⚠️ تعذّر تحميل الصورة'; });
+            } else if(raw){
+              img.onerror=null;
+              img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+            }
+          }
+        }).catch(()=>{ img.onerror=null; });
+      }
+    };
+  }
+}
 function extractFile(res){
   if(!res) return null;
   // {file: {...}}
@@ -7422,7 +7464,7 @@ function showMaintFiles(mid){
       if(isImg){
         // صورة — تُعرض مباشرة بحجم كامل قابلة للتكبير
         const img=document.createElement('img');
-        img.src=src;
+        loadImgWithFallback(img, src, null);
         img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in';
         img.title='اضغط للتكبير';
         img.onclick=function(){openLB(src);};
@@ -7543,7 +7585,7 @@ function viewCircFiles(cid){
       // عرض الصورة مباشرة بحجم كبير
       if(isImg){
         const img=document.createElement('img');
-        img.src=src;
+        loadImgWithFallback(img, src, null);
         img.style.cssText='width:100%;max-height:300px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
         img.title='اضغط للتكبير';
         img.onclick=function(){openLB(src);};
@@ -8421,10 +8463,10 @@ function toggleCircImg(cid, btn){
 
       // الصورة
       const img = document.createElement('img');
-      img.src = src;
       img.style.cssText = 'width:100%;max-height:340px;object-fit:contain;border-radius:10px;cursor:zoom-in;background:#f8fafc;display:block;margin-bottom:8px';
       img.title = 'اضغط للتكبير';
       img.onclick = function(){ openLB(src); };
+      loadImgWithFallback(img, src, '/api/files/circ_'+cid+'_circ_1');
       imgDiv.appendChild(img);
 
       // زر حفظ JPG مباشر
@@ -8674,7 +8716,7 @@ function showTourFiles(tid){
       // عرض الملف مباشرة
       if(isImg){
         const img=document.createElement('img');
-        img.src=src; img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#fff';
+        loadImgWithFallback(img, src, null); img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#fff';
         img.onclick=function(){openLB(src);}; card.appendChild(img);
       } else if(isPdf){
         const embed=document.createElement('embed');
