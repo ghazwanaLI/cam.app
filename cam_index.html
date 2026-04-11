@@ -3506,8 +3506,10 @@ window.addEventListener('load',function(){
         </select>
       </div>
       <div class="fg full" id="u-district-row">
-        <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span></label>
-        <div id="u-districts-wrap" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:10px;max-height:140px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px">
+        <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span>
+          <span id="u-dist-count" style="background:#1d4ed8;color:#fff;border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700;margin-right:6px"></span>
+        </label>
+        <div id="u-districts-wrap" style="background:var(--bg2);border:1.5px solid var(--border);border-radius:8px;padding:10px;max-height:180px;overflow-y:auto;display:flex;flex-wrap:wrap;gap:8px" onchange="const c=this.querySelectorAll(':checked').length;document.getElementById('u-dist-count').textContent=c?c+' قاطع مختار':''">
           <!-- تُملأ ديناميكياً -->
         </div>
         <input type="hidden" id="u-district" value="">
@@ -6862,8 +6864,10 @@ function openUserModal(id){
   document.getElementById('u-pw').value='';
   document.getElementById('u-role').value=u.role||'viewer';
 
-  // دعم عدة قواطع
-  const userDistricts = Array.isArray(u.districts)?u.districts:(u.district?[u.district]:[]);
+  // دعم عدة قواطع — يقرأ مصفوفة districts أو يفكّ "بيجي|العلم"
+  let userDistricts=[];
+  if(Array.isArray(u.districts)&&u.districts.length) userDistricts=u.districts;
+  else if(u.district) userDistricts=u.district.includes('|')?u.district.split('|').map(d=>d.trim()).filter(Boolean):[u.district];
   const wrap=document.getElementById('u-districts-wrap');
   if(wrap){
     // قائمة القواطع الشاملة — مع fallback لو DISTRICTS_LIST فاضية
@@ -6874,6 +6878,8 @@ function openUserModal(id){
         <input type="checkbox" value="${d}" ${userDistricts.includes(d)?'checked':''} style="width:15px;height:15px;cursor:pointer">
         ${d}
       </label>`).join('');
+    const cnt=document.getElementById('u-dist-count');
+    if(cnt) cnt.textContent=userDistricts.length?userDistricts.length+' قاطع مختار':'';
   }
   const perms=u.perms||{};
   ['edit','del','files','reports'].forEach(p=>{
@@ -6902,9 +6908,10 @@ async function saveUser(){
   const role=document.getElementById('u-role').value;
   // جمع القواطع المختارة
   const checkedDistricts=Array.from(document.querySelectorAll('#u-districts-wrap input[type=checkbox]:checked')).map(x=>x.value);
-  // district = أول قاطع (للتوافق مع الكود القديم) — districts = كل القواطع
-  const district=checkedDistricts[0]||'';
-  const districts=checkedDistricts;
+  if(!checkedDistricts.length && role!=='admin'){toast('اختر قاطعاً واحداً على الأقل','err');return;}
+  // نخزن القواطع المتعددة كـ "بيجي|العلم|تكريت" في حقل district الواحد
+  const district = checkedDistricts.join('|');
+  const districts = checkedDistricts;
   if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
   if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
   const perms={
@@ -7039,11 +7046,15 @@ function generateMaintReport(){
 //  HELPERS
 // ══════════════════════════════════════════
 
-// قائمة قواطع المستخدم الحالي
+// قائمة قواطع المستخدم الحالي — يدعم "بيجي|العلم" و array
 function getUserDistricts(){
   if(!CU || CU.role==='admin') return [];
+  // مصفوفة districts (من السيرفر إذا دعمها)
   if(Array.isArray(CU.districts) && CU.districts.length) return CU.districts;
-  if(CU.district) return [CU.district];
+  // قيمة district مفكوكة (قد تكون "بيجي|العلم" أو "بيجي")
+  if(CU.district){
+    return CU.district.includes('|') ? CU.district.split('|').map(d=>d.trim()).filter(Boolean) : [CU.district];
+  }
   return [];
 }
 // هل يحق للمستخدم رؤية بيانات هذا القاطع؟
