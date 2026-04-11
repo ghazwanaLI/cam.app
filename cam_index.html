@@ -2163,6 +2163,7 @@ window.addEventListener('load',function(){
                 <input type="text" id="sq-circ" placeholder="بحث في التعاميم..." oninput="filterCirculars()" style="width:160px">
               </div>
               <button class="btn btn-o btn-sm" onclick="loadCirculars()">🔄</button>
+              <button class="btn btn-r btn-sm" onclick="delAllCirculars()" style="font-size:11px">🗑️ حذف الكل</button>
               <button class="btn btn-p btn-sm" id="btn-add-circ" onclick="toggleCircForm()" style="display: inline-block; background: linear-gradient(135deg, rgb(217, 119, 6), rgb(245, 158, 11));">➕ إضافة تعميم</button>
             </div>
           </div>
@@ -6778,6 +6779,20 @@ async function delCircular(id){
   if(!confirm('حذف التعميم؟'))return;
   try{await api('DELETE','/api/circulars/'+id);toast('تم الحذف');await loadCirculars();}
   catch(e){toast('خطأ: '+e.message,'err');}
+}
+async function delAllCirculars(){
+  if(!allCirculars.length){toast('لا توجد تعاميم','err');return;}
+  if(!confirm('هل تريد حذف جميع التعاميم ('+allCirculars.length+')؟ لا يمكن التراجع عن هذا الإجراء.'))return;
+  const btn=document.querySelector('[onclick="delAllCirculars()"]');
+  if(btn){btn.disabled=true;btn.textContent='⏳ جاري الحذف...';}
+  let ok=0,fail=0;
+  for(const c of allCirculars){
+    try{await api('DELETE','/api/circulars/'+c.id);ok++;}
+    catch(e){fail++;}
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='🗑️ حذف الكل';}
+  toast(ok>0?'✅ تم حذف '+ok+' تعميم'+(fail?' — فشل '+fail:''):'فشل الحذف','err');
+  await loadCirculars();
 }
 
 // ══════════════════════════════════════════
