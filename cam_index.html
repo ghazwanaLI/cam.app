@@ -7478,22 +7478,20 @@ function showMaintFiles(mid){
       const body=document.createElement('div');
       body.style.cssText='background:#fff;display:flex;align-items:center;justify-content:center;min-height:80px';
 
-      if(isImg){
-        // صورة — تُعرض مباشرة بحجم كامل قابلة للتكبير
-        const img=document.createElement('img');
-        loadImgWithFallback(img, src, null);
-        img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in';
-        img.title='اضغط للتكبير';
-        img.onclick=function(){openLB(src);};
-        body.style.minHeight='0';
-        body.appendChild(img);
-      } else if(isPdf){
-        body.style.minHeight='0';
+      // كل الملفات محوّلة لـ JPG — نجرب كصورة دائماً أولاً
+      const img=document.createElement('img');
+      img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc';
+      img.title='اضغط للتكبير';
+      img.onclick=function(){openLB(img.src);};
+      img.onerror=function(){
+        this.onerror=null;
+        // فشل كصورة — جرب كـ PDF
+        body.innerHTML='';
         body.appendChild(buildPdfViewer(src, d.name||k));
-      } else {
-        // نوع غير معروف
-        body.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3)"><div style="font-size:32px;margin-bottom:8px">📄</div><div style="font-size:12px">'+(d.name||k)+'</div></div>';
-      }
+      };
+      loadImgWithFallback(img, src, null);
+      body.style.minHeight='0';
+      body.appendChild(img);
 
       card.appendChild(body);
       list.appendChild(card);
@@ -8764,14 +8762,16 @@ function showTourFiles(tid){
       }
       hdr.appendChild(btns); card.appendChild(hdr);
 
-      // عرض الملف مباشرة
-      if(isImg){
-        const img=document.createElement('img');
-        loadImgWithFallback(img, src, null); img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#fff';
-        img.onclick=function(){openLB(src);}; card.appendChild(img);
-      } else if(isPdf){
-        card.appendChild(buildPdfViewer(src, d.name||k));
-      }
+      // عرض الملف — نجرب كصورة دائماً أولاً
+      const img=document.createElement('img');
+      img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc';
+      img.onclick=function(){openLB(img.src);};
+      img.onerror=function(){
+        this.onerror=null;
+        img.replaceWith(buildPdfViewer(src, d.name||k));
+      };
+      loadImgWithFallback(img, src, null);
+      card.appendChild(img);
       list.appendChild(card);
     });
   });
