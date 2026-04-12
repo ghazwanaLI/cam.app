@@ -7167,24 +7167,23 @@ function loadImgWithFallback(img, src, apiPath, onFail){
   if(!src){ if(onFail) onFail(); return; }
 
   // لو URL خارجي (Supabase) — لا نحاول كصورة مباشرة (CORS/400)
-  // نجيب البيانات عبر API السيرفر أولاً
-  if(src.startsWith('http') && apiPath){
-    api('GET', apiPath).then(function(res){
-      const d=extractFile(res);
-      const raw=d&&d.data;
-      if(raw && typeof raw==='string' && !raw.startsWith('http')){
-        // base64 حقيقي من السيرفر
-        const b64src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
-        img.onerror=function(){ if(onFail) onFail(); };
-        img.src=b64src;
-      } else {
-        // السيرفر رجّع URL فقط — اعرض بديل مباشرة
-        if(onFail) onFail();
-      }
-    }).catch(function(){
-      // API فشل — اعرض بديل
+  if(src.startsWith('http')){
+    if(apiPath){
+      api('GET', apiPath).then(function(res){
+        const d=extractFile(res);
+        const raw=d&&d.data;
+        if(raw && typeof raw==='string' && !raw.startsWith('http')){
+          const b64src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+          img.onerror=function(){ if(onFail) onFail(); };
+          img.src=b64src;
+        } else {
+          if(onFail) onFail();
+        }
+      }).catch(function(){ if(onFail) onFail(); });
+    } else {
+      // لا يوجد apiPath — لا نحاول تحميل URL خارجي
       if(onFail) onFail();
-    });
+    }
     return;
   }
 
@@ -8176,17 +8175,23 @@ function _loadMaintPreviews(mid, container){
     }
     found.forEach(({k,d})=>{
       const src = buildSrc(d);
-      const isImg = d.mime&&d.mime.startsWith('image/');
+      const isImg = d.mime&&(d.mime.startsWith('image/')||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(src));
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
-      if(isImg){
+      // لو URL خارجي — اعرض رابط تحميل بدل صورة (تجنب 400)
+      if(src.startsWith('http')){
+        const a = document.createElement('a');
+        a.href=src; a.target='_blank'; a.rel='noopener';
+        a.style.cssText='display:flex;flex-direction:column;align-items:center;gap:3px;text-decoration:none;background:#eff6ff;border-radius:8px;padding:8px;width:72px;border:1px solid #bfdbfe';
+        a.innerHTML='<span style="font-size:20px">🖼️</span><span style="font-size:9px;text-align:center;color:#1d4ed8;font-weight:700">'+(labels[k]||k)+'</span><span style="font-size:9px;color:#16a34a">👁️ عرض</span>';
+        wrap.appendChild(a);
+      } else if(isImg){
         const img = document.createElement('img');
         img.src = src;
         img.title = labels[k]||k;
         img.style.cssText = 'width:80px;height:80px;object-fit:cover;border-radius:8px;border:2px solid #e2e8f0;cursor:zoom-in';
         img.onclick = ()=>openLB(src);
         wrap.appendChild(img);
-        // label
         const lbl = document.createElement('div');
         lbl.textContent = labels[k]||k;
         lbl.style.cssText = 'font-size:9px;text-align:center;color:#64748b;margin-top:2px';
