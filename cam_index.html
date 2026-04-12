@@ -7338,6 +7338,32 @@ function rmFile(key, e){
 
 
 
+
+// عرض PDF — لو URL خارجي (Supabase) نفتح في تاب جديد، لو base64 نعرضه inline
+function buildPdfViewer(src, name){
+  const isExternalUrl = src.startsWith('http');
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'padding:20px;text-align:center;background:#f8fafc';
+
+  if(isExternalUrl){
+    // Supabase URL — نوفر رابط فتح + تحميل
+    wrap.innerHTML = '<div style="font-size:40px;margin-bottom:10px">📄</div>'
+      + '<div style="font-size:13px;font-weight:700;color:#374151;margin-bottom:14px">'+(name||'ملف PDF')+'</div>'
+      + '<div style="display:flex;gap:8px;justify-content:center">'
+      + '<a href="'+src+'" target="_blank" rel="noopener" style="background:#1d4ed8;color:#fff;border-radius:10px;padding:10px 20px;text-decoration:none;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">🔗 فتح في تاب جديد</a>'
+      + '<a href="'+src+'" download style="background:#f1f5f9;color:#374151;border:1.5px solid #e2e8f0;border-radius:10px;padding:10px 20px;text-decoration:none;font-family:Cairo,sans-serif;font-size:13px;font-weight:700">⬇️ تحميل</a>'
+      + '</div>';
+  } else {
+    // base64 — نعرضه inline بـ object
+    const obj = document.createElement('object');
+    obj.data = src; obj.type = 'application/pdf';
+    obj.style.cssText = 'width:100%;height:500px;border:none;display:block';
+    obj.innerHTML = '<div style="padding:20px;text-align:center">'
+      + '<a href="'+src+'" download style="color:#1d4ed8;font-size:13px;font-weight:700">⬇️ تحميل PDF</a></div>';
+    return obj;
+  }
+  return wrap;
+}
 function showMaintFiles(mid){
   const keys=['maint_img','maint_img2','maint_img3','maint_rep','maint_rep2','maint_rep3','maint_tawkeef','maint_tawkeef2'];
   const labels={
@@ -7462,14 +7488,8 @@ function showMaintFiles(mid){
         body.style.minHeight='0';
         body.appendChild(img);
       } else if(isPdf){
-        // PDF — يُعرض بـ embed مباشرة داخل البطاقة
-        const embed=document.createElement('embed');
-        embed.src=src;
-        embed.type='application/pdf';
-        embed.style.cssText='width:100%;height:500px;border:none;display:block';
         body.style.minHeight='0';
-        body.style.background='#f8fafc';
-        body.appendChild(embed);
+        body.appendChild(buildPdfViewer(src, d.name||k));
       } else {
         // نوع غير معروف
         body.innerHTML='<div style="padding:20px;text-align:center;color:var(--t3)"><div style="font-size:32px;margin-bottom:8px">📄</div><div style="font-size:12px">'+(d.name||k)+'</div></div>';
@@ -8750,9 +8770,7 @@ function showTourFiles(tid){
         loadImgWithFallback(img, src, null); img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#fff';
         img.onclick=function(){openLB(src);}; card.appendChild(img);
       } else if(isPdf){
-        const embed=document.createElement('embed');
-        embed.src=src; embed.type='application/pdf'; embed.style.cssText='width:100%;height:480px;border:none;display:block';
-        card.appendChild(embed);
+        card.appendChild(buildPdfViewer(src, d.name||k));
       }
       list.appendChild(card);
     });
