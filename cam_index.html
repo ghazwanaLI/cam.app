@@ -9530,28 +9530,89 @@ function downloadOfflineCopy(){
 /* ── Auto-Refresh كل 60 ثانية ── */
 let _arInterval = null;
 let _arCount = 0;
+let _arLastHash = {};
+
+// hash سريع للكشف عن التغيير بدون مقارنة عميقة
+function _quickHash(arr){ return arr.length+'|'+(arr[0]?.id||'')+'|'+(arr[arr.length-1]?.id||''); }
 
 async function _autoRefreshTick(){
   if(!SERVER_ONLINE || !CU) return;
   _arCount++;
+  let changed = false;
+
   try{
-    // كل دورة: تحديث الصيانة
-    const dm = await api('GET','/api/maintenance');
-    const nm = dm.maintenance||dm.items||[];
-    if(nm.length !== allMaint.length || JSON.stringify(nm.slice(0,3)) !== JSON.stringify(allMaint.slice(0,3))){
-      allMaint = nm;
-      if(typeof renderMaint==='function') renderMaint();
-      if(typeof updateDashboard==='function') updateDashboard();
-      _showUpdateToast('تم تحديث بيانات الصيانة');
+    // ── كل دورة (30 ث): الصيانة + الجولات + التعاميم ──
+    const [dm, dt, dc] = await Promise.all([
+      api('GET','/api/maintenance').catch(()=>null),
+      api('GET','/api/tours').catch(()=>null),
+      api('GET','/api/circulars').catch(()=>null),
+    ]);
+
+    if(dm){
+      const nm=dm.maintenance||dm.items||[];
+      const h=_quickHash(nm);
+      if(h !== _arLastHash.maint){
+        _arLastHash.maint=h; allMaint=nm;
+        if(typeof renderMaint==='function') renderMaint();
+        changed=true;
+      }
     }
-    // كل 3 دورات (3 دقائق): تحديث المحطات والجرد
-    if(_arCount % 3 === 0){
-      const ds = await api('GET','/api/stations');
-      allStations = ds.stations||[];
-      if(typeof renderStations==='function') renderStations();
+    if(dt){
+      const nt=dt.tours||[];
+      const h=_quickHash(nt);
+      if(h !== _arLastHash.tours){
+        _arLastHash.tours=h; allTours=nt;
+        if(typeof renderTours==='function') renderTours();
+        changed=true;
+      }
     }
-    // حفظ نسخة احتياطية بعد كل تحديث
-    _saveBackup();
+    if(dc){
+      const nc=dc.circulars||[];
+      const h=_quickHash(nc);
+      if(h !== _arLastHash.circs){
+        _arLastHash.circs=h;
+        const oldLen=allCirculars.length;
+        allCirculars=nc;
+        // لو تعاميم جديدة للمكلفين — أظهرها
+        if(CU?.role!=='admin' && nc.length > oldLen){
+          const newOnes=nc.filter(c=>!_shownCircIds.has(c.id) && userCanSeeDistrict(c.district));
+          if(newOnes.length){
+            newOnes.forEach(c=>_shownCircIds.add(c.id));
+            localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
+            let _ni=0;
+            function _snn(){ if(_ni<newOnes.length) showCircularNotifPopup(newOnes[_ni++],_snn); }
+            _snn();
+          }
+        }
+        if(typeof renderCirculars==='function') renderCirculars();
+        // تحديث badge
+        const myUnread=nc.filter(c=>userCanSeeDistrict(c.district)&&!_circReads[c.id]).length;
+        ['circulars-badge','bn-circ-badge'].forEach(id=>{
+          const b=document.getElementById(id);
+          if(b){b.style.display=myUnread?'':'none';b.textContent=myUnread;}
+        });
+        changed=true;
+      }
+    }
+
+    // ── كل 4 دورات (2 د): المحطات + الكاميرات + الجرد ──
+    if(_arCount % 4 === 0){
+      const [ds, dca, di] = await Promise.all([
+        api('GET','/api/stations').catch(()=>null),
+        api('GET','/api/cameras').catch(()=>null),
+        api('GET','/api/inventory').catch(()=>null),
+      ]);
+      if(ds){ allStations=ds.stations||[]; if(typeof renderStations==='function') renderStations(); }
+      if(dca){ allCams=dca.cameras||[]; if(typeof renderCams==='function') renderCams(); }
+      if(di){ allInventory=di.inventory||[]; if(typeof renderInvList==='function') renderInvList(); }
+      if(ds||dca||di) changed=true;
+    }
+
+    if(changed){
+      updateDashboard();
+      _saveBackup();
+      _showUpdateToast('تم التحديث');
+    }
   }catch(e){
     console.warn('auto-refresh error:', e.message);
   }
@@ -9573,13 +9634,22 @@ function _showUpdateToast(msg){
   el.textContent = '🔄 '+msg;
   el.style.opacity = '1';
   clearTimeout(_updateToastTimer);
-  _updateToastTimer = setTimeout(()=>{ el.style.opacity='0'; }, 3000);
+  _updateToastTimer = setTimeout(()=>{ el.style.opacity='0'; }, 2500);
 }
 
 function startAutoRefresh(){
   if(_arInterval) clearInterval(_arInterval);
-  _arInterval = setInterval(_autoRefreshTick, 60000); // كل دقيقة
+  _arLastHash = {};
+  _arCount = 0;
+  _arInterval = setInterval(_autoRefreshTick, 30000); // كل 30 ثانية
 }
+
+// تحديث فوري عند رجوع التبويب للواجهة
+document.addEventListener('visibilitychange', function(){
+  if(!document.hidden && SERVER_ONLINE && CU){
+    _autoRefreshTick();
+  }
+});
 
 /* ── Online/Offline Events ── */
 window.addEventListener('online', function(){
