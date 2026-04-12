@@ -17,6 +17,39 @@ _SB_KEY    = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZ
 _SB_BUCKET = "Cam-files"
 
 
+# ── Web Push (VAPID) ──
+VAPID_PUBLIC  = "BDYjEFbxOkILMKSDeuXlQKe57smrqZp-dv8T_5FVTL3z0E0pQBrhCRcFml6TnPyQTDkW-h10TGTTAEOquMAGc-8"
+VAPID_PRIVATE = "gQE828S4hWsEJ1on07e-sjLJec-1LvafA3CjybkIyfk"
+VAPID_CLAIMS  = {"sub": "mailto:admin@opdc-cam.iq"}
+
+def send_push_notification(subscription, title, body_text, tag="circ"):
+    try:
+        from pywebpush import webpush
+        import json as _j
+        webpush(subscription_info=subscription,
+                data=_j.dumps({"title":title,"body":body_text,"tag":tag,"icon":"/icon-192.png"}),
+                vapid_private_key=VAPID_PRIVATE, vapid_claims=VAPID_CLAIMS)
+        return True
+    except Exception as e:
+        print(f"[PUSH] {e}"); return False
+
+def send_push_to_district(db, district, title, body_text, tag="circ"):
+    subs = db.get("push_subscriptions", {})
+    users = db.get("users", [])
+    sent = 0
+    for uid_str, sub_data in list(subs.items()):
+        uid = int(uid_str)
+        user = next((u2 for u2 in users if u2["id"]==uid), None)
+        if not user: continue
+        u_dists = get_user_dists(user)
+        if district != "الكل" and u_dists and district not in u_dists: continue
+        threading.Thread(target=send_push_notification,
+            args=(sub_data.get("subscription", sub_data), title, body_text, tag),
+            daemon=True).start()
+        sent += 1
+    print(f"[PUSH] Queued {sent} notifications for district={district}")
+
+
 def get_user_dists(u):
     """استخراج قواطع المستخدم — يدعم pipe-separated 'بيجي|العلم' والمصفوفة"""
     if u.get("role") == "admin":
@@ -271,7 +304,7 @@ def default_db():
         "inventory":[],
         "next_inventory_id":1,
         "circulars":[],
-        "circular_reads":[],
+        "circular_reads":[],"push_subscriptions":{},
         "next_circular_id":1,
         
         "custom_districts":[],
@@ -417,6 +450,12 @@ class Handler(BaseHTTPRequestHandler):
             reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
             self.send_json({"ok":True,"reads":reads})
 
+        elif p=="/api/push/key":
+            self.send_json({"ok":True,"publicKey":VAPID_PUBLIC})
+
+        elif p=="/api/push/subscribe":
+            self.send_json({"ok":True,"publicKey":VAPID_PUBLIC})
+
 
 
         elif p=="/api/delegates": self.send_json({"ok":True,"delegates":db.get("delegates",[])})
@@ -449,6 +488,12 @@ class Handler(BaseHTTPRequestHandler):
             cid=int(p.split("/")[3])
             reads=[r for r in db.get("circular_reads",[]) if r.get("circ_id")==cid]
             self.send_json({"ok":True,"reads":reads})
+
+        elif p=="/api/push/key":
+            self.send_json({"ok":True,"publicKey":VAPID_PUBLIC})
+
+        elif p=="/api/push/subscribe":
+            self.send_json({"ok":True,"publicKey":VAPID_PUBLIC})
 
         elif p=="/api/circulars":
             circs=db.get("circulars",[])
@@ -555,6 +600,41 @@ class Handler(BaseHTTPRequestHandler):
         elif p.startswith("/api/files/"):
             key="/".join(p.split("/")[3:])
             self.send_json({"ok":True,"file":load_file(key)})
+
+        elif p=="/sw.js":
+            sw_code = b"""
+self.addEventListener('push', function(e){
+  var data = {};
+  try{ data = e.data.json(); }catch(ex){}
+  e.waitUntil(self.registration.showNotification(data.title||'\u062a\u0639\u0645\u064a\u0645 \u062c\u062f\u064a\u062f', {
+    body: data.body||'',
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    tag: data.tag||'circ',
+    dir: 'rtl',
+    lang: 'ar',
+    requireInteraction: true,
+    vibrate: [200,100,200]
+  }));
+});
+self.addEventListener('notificationclick', function(e){
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(cs){
+    for(var i=0;i<cs.length;i++){ if(cs[i].url&&'focus' in cs[i]) return cs[i].focus(); }
+    return clients.openWindow('/');
+  }));
+});
+self.addEventListener('install', function(e){ self.skipWaiting(); });
+self.addEventListener('activate', function(e){ e.waitUntil(clients.claim()); });
+"""
+            self.send_response(200)
+            self.send_header('Content-Type','application/javascript; charset=utf-8')
+            self.send_header('Service-Worker-Allowed','/')
+            self.send_header('Cache-Control','no-cache')
+            self.end_headers()
+            self.wfile.write(sw_code.strip())
+            return
+
         else: self.send_json({"error":"غير موجود"},404)
 
     def do_POST(self):
@@ -715,7 +795,25 @@ class Handler(BaseHTTPRequestHandler):
                 "has_file3":body.get("has_file3",False),
             }
             db["circulars"].append(circ); save_db(db)
+            # إرسال push notification للمكلفين
+            threading.Thread(target=send_push_to_district,
+                args=(db, circ["district"], "📢 تعميم جديد: "+circ["title"],
+                      circ.get("body","")[:80] or circ["type"], "circ_"+str(cid)),
+                daemon=True).start()
             self.send_json({"ok":True,"circular":circ})
+
+        elif p=="/api/push/subscribe":
+            if not u: self.send_json({"error":"غير مصرح"},401); return
+            sub = body.get("subscription") or body
+            if "push_subscriptions" not in db: db["push_subscriptions"]={}
+            db["push_subscriptions"][str(u["id"])] = {"subscription":sub,"username":u.get("username",""),"district":u.get("district","")}
+            save_db(db)
+            self.send_json({"ok":True})
+
+        elif p=="/api/push/unsubscribe":
+            if not u: self.send_json({"error":"غير مصرح"},401); return
+            db.get("push_subscriptions",{}).pop(str(u["id"]),None)
+            save_db(db); self.send_json({"ok":True})
 
         elif p=="/api/inventory":
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
