@@ -602,31 +602,16 @@ class Handler(BaseHTTPRequestHandler):
             self.send_json({"ok":True,"file":load_file(key)})
 
         elif p=="/sw.js":
-            sw_code = b"""
-self.addEventListener('push', function(e){
-  var data = {};
-  try{ data = e.data.json(); }catch(ex){}
-  e.waitUntil(self.registration.showNotification(data.title||'\u062a\u0639\u0645\u064a\u0645 \u062c\u062f\u064a\u062f', {
-    body: data.body||'',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
-    tag: data.tag||'circ',
-    dir: 'rtl',
-    lang: 'ar',
-    requireInteraction: true,
-    vibrate: [200,100,200]
-  }));
-});
-self.addEventListener('notificationclick', function(e){
-  e.notification.close();
-  e.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(function(cs){
-    for(var i=0;i<cs.length;i++){ if(cs[i].url&&'focus' in cs[i]) return cs[i].focus(); }
-    return clients.openWindow('/');
-  }));
-});
-self.addEventListener('install', function(e){ self.skipWaiting(); });
-self.addEventListener('activate', function(e){ e.waitUntil(clients.claim()); });
-"""
+            sw_code = (
+                "self.addEventListener('push',function(e){"
+                "var d={};try{d=e.data.json();}catch(x){}"
+                "e.waitUntil(self.registration.showNotification(d.title||'\u062a\u0639\u0645\u064a\u0645',{"
+                "body:d.body||'',tag:d.tag||'circ',dir:'rtl',lang:'ar',"
+                "requireInteraction:true,vibrate:[200,100,200]}));});"
+                "self.addEventListener('notificationclick',function(e){"
+                "e.notification.close();"
+                "e.waitUntil(clients.openWindow('/'));});"
+            ).encode('utf-8')
             self.send_response(200)
             self.send_header('Content-Type','application/javascript; charset=utf-8')
             self.send_header('Service-Worker-Allowed','/')
