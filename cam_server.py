@@ -130,6 +130,8 @@ def pg_load_file(key):
             b64, fetched_mime = _sb_fetch_b64(data)
             if b64:
                 return {"name": name, "data": b64, "mime": fetched_mime or mime}
+            # فشل الجلب — نرجع بدون data حتى الفرونت يعرض بديل مناسب
+            return {"name": name, "data": None, "mime": mime, "url": data}
         return {"name": name, "data": data, "mime": mime}
     finally: _rel(c)
 
@@ -198,6 +200,7 @@ def load_file(key):
         b64, fetched_mime = _sb_fetch_b64(result["data"])
         if b64:
             return {"name": result.get("name",""), "data": b64, "mime": fetched_mime or result.get("mime","")}
+        return {"name": result.get("name",""), "data": None, "mime": result.get("mime",""), "url": result["data"]}
     return result
 
 def del_file(key):
