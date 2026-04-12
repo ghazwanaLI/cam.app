@@ -106,12 +106,31 @@ def pg_save_file(key,name,data,mime):
         c.commit(); cur.close()
     finally: _rel(c)
 
+def _sb_fetch_b64(url):
+    """جلب ملف من Supabase URL وتحويله لـ base64"""
+    try:
+        req = urllib.request.Request(url)
+        req.add_header("Authorization", f"Bearer {_SB_KEY}")
+        with urllib.request.urlopen(req, timeout=20) as r:
+            raw = r.read()
+            mime = r.headers.get("Content-Type", "image/jpeg").split(";")[0].strip()
+        return base64.b64encode(raw).decode(), mime
+    except Exception as e:
+        print(f"[SB_FETCH] {e}"); return None, None
+
 def pg_load_file(key):
     c=get_conn()
     try:
         cur=c.cursor(); cur.execute("SELECT name,data,mime FROM cam_files WHERE key=%s",[key])
         row=cur.fetchone(); cur.close()
-        return {"name":row[0],"data":row[1],"mime":row[2]} if row else None
+        if not row: return None
+        name, data, mime = row[0], row[1], row[2]
+        # لو المحفوظ URL من Supabase — نجلبه ونحوّله base64
+        if data and data.startswith("http"):
+            b64, fetched_mime = _sb_fetch_b64(data)
+            if b64:
+                return {"name": name, "data": b64, "mime": fetched_mime or mime}
+        return {"name": name, "data": data, "mime": mime}
     finally: _rel(c)
 
 def pg_del_file(key):
@@ -174,7 +193,12 @@ def save_file(key,name,data,mime):
 
 def load_file(key):
     if USE_DB: return pg_load_file(key)
-    return load_db()["files"].get(key)
+    result = load_db()["files"].get(key)
+    if result and result.get("data","").startswith("http"):
+        b64, fetched_mime = _sb_fetch_b64(result["data"])
+        if b64:
+            return {"name": result.get("name",""), "data": b64, "mime": fetched_mime or result.get("mime","")}
+    return result
 
 def del_file(key):
     if USE_DB: pg_del_file(key); return
