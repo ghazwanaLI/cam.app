@@ -16,6 +16,19 @@ _SB_URL    = "https://vcgfmmdpjpiktkyorili.supabase.co"
 _SB_KEY    = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZjZ2ZtbWRwanBpa3RreW9yaWxpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUyMzk1NzksImV4cCI6MjA5MDgxNTU3OX0.b0vlvL0uHmpQVACq2lWujQdJ54M_P60kWuhGP2_8S8o"
 _SB_BUCKET = "Cam-files"
 
+
+def get_user_dists(u):
+    """استخراج قواطع المستخدم — يدعم pipe-separated 'بيجي|العلم' والمصفوفة"""
+    if u.get("role") == "admin":
+        return []
+    dists = u.get("districts")
+    if dists and isinstance(dists, list) and len(dists):
+        return [d.strip() for d in dists if d.strip()]
+    raw = u.get("district", "")
+    if not raw:
+        return []
+    return [d.strip() for d in raw.split("|") if d.strip()]
+
 def _sb_upload(name, b64data, mime):
     try:
         raw = base64.b64decode(b64data)
@@ -382,7 +395,7 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/stations":
             sts=db["stations"]
             if u["role"]!="admin":
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: sts=[s for s in sts if s.get("district") in u_dists]
             self.send_json({"ok":True,"stations":sts})
         elif p=="/api/districts":
@@ -410,19 +423,19 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/tours":
             tours=db.get("tours",[])
             if u["role"]!="admin":
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: tours=[t for t in tours if t.get("district") in u_dists]
             self.send_json({"ok":True,"tours":tours})
         elif p=="/api/maintenance":
             maint=db.get("maintenance",[])
             if u["role"]!="admin":
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: maint=[m for m in maint if m.get("district") in u_dists]
             self.send_json({"ok":True,"maintenance":maint})
         elif p=="/api/cameras":
             cams=db.get("cameras",[])
             if u["role"]!="admin":
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: cams=[c for c in cams if c.get("district") in u_dists]
             self.send_json({"ok":True,"cameras":cams})
         elif p=="/api/users":
@@ -439,10 +452,13 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/circulars":
             circs=db.get("circulars",[])
-            # Filter by district for non-admin
-            if u["role"]!="admin" and u.get("district"):
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
-                circs=[c2 for c2 in circs if c2.get("district")=="الكل" or not u_dists or c2.get("district") in u_dists]
+            # Filter by district for non-admin — يدعم القواطع المتعددة "بيجي|العلم"
+            if u["role"]!="admin":
+                raw_dist = u.get("district","")
+                u_dists = u.get("districts") or (raw_dist.split("|") if "|" in raw_dist else ([raw_dist] if raw_dist else []))
+                u_dists = [d.strip() for d in u_dists if d.strip()]
+                if u_dists:
+                    circs=[c2 for c2 in circs if c2.get("district")=="الكل" or c2.get("district") in u_dists]
             self.send_json({"ok":True,"circulars":list(reversed(circs))})
 
         elif p=="/api/coding":
@@ -460,19 +476,19 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/handover":
             items=db.get("handover",[])
             if u["role"]!="admin" and u.get("district"):
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: items=[x for x in items if x.get("district") in u_dists]
             self.send_json({"ok":True,"items":items})
         elif p=="/api/inv_buildings":
             items=db.get("inv_buildings",[])
             if u["role"]!="admin" and u.get("district"):
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: items=[x for x in items if x.get("district") in u_dists]
             self.send_json({"ok":True,"items":items})
         elif p=="/api/inv_private":
             items=db.get("inv_private",[])
             if u["role"]!="admin" and u.get("district"):
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: items=[x for x in items if x.get("district") in u_dists]
             self.send_json({"ok":True,"items":items})
 
@@ -493,7 +509,7 @@ class Handler(BaseHTTPRequestHandler):
         elif p=="/api/inventory":
             inv=db.get("inventory",[])
             if u["role"]!="admin":
-                u_dists=u.get("districts") or ([u["district"]] if u.get("district") else [])
+                u_dists=get_user_dists(u)
                 if u_dists: inv=[x for x in inv if x.get("district") in u_dists]
             self.send_json({"ok":True,"inventory":inv})
 
@@ -744,6 +760,7 @@ class Handler(BaseHTTPRequestHandler):
             nu={"id":uid,"fullname":body.get("fullname",""),"username":body.get("username",""),
                 "password":hash_pw(body.get("password","")),"role":role,"active":True,
                 "district":body.get("district",""),
+                "districts":body.get("districts",[]),
                 "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True} if role=="admin"
                     else body.get("perms",{"view":True,"edit":False,"del":False,"files":False,"reports":False})}
             db["users"].append(nu); save_db(db)
@@ -857,7 +874,7 @@ class Handler(BaseHTTPRequestHandler):
                     if db["users"][idx]["password"]!=hash_pw(body["old_password"]):
                         self.send_json({"error":"كلمة المرور الحالية غير صحيحة"},400); return
                 db["users"][idx]["password"]=hash_pw(body["password"])
-            for f in ["fullname","username","role","active","perms","district"]:
+            for f in ["fullname","username","role","active","perms","district","districts"]:
                 if f in body: db["users"][idx][f]=body[f]
             save_db(db); self.send_json({"ok":True})
 
