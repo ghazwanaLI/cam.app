@@ -7594,7 +7594,7 @@ function viewCircFiles(cid){
       // عرض الصورة مباشرة بحجم كبير
       if(isImg){
         const img=document.createElement('img');
-        loadImgWithFallback(img, src, null);
+        loadImgWithFallback(img, src, null, null);
         img.style.cssText='width:100%;max-height:300px;object-fit:contain;display:block;background:#f8fafc;cursor:zoom-in';
         img.title='اضغط للتكبير';
         img.onclick=function(){openLB(src);};
@@ -8766,12 +8766,8 @@ function showTourFiles(tid){
       const img=document.createElement('img');
       img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc';
       img.onclick=function(){openLB(img.src);};
-
-
-
-
-
       card.appendChild(img);
+      loadImgWithFallback(img, src, '/api/files/tour_'+tid+'_'+k, function(){ img.replaceWith(buildPdfViewer(src, d.name||k)); });
       list.appendChild(card);
     });
   });
