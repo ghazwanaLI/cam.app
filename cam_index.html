@@ -7193,36 +7193,33 @@ function loadImgWithFallback(img, src, apiPath, onFail){
 }
 function extractFile(res){
   if(!res) return null;
-  // {file: {...}}
   if(res.file && typeof res.file === 'object') return res.file;
-  // {data:..., mime:...} or {url:..., mime:...}
-  if(res.data || res.url || res.mime) return res;
-  // plain string URL
+  if(res.data !== undefined || res.mime) return res;
   if(typeof res === 'string' && res.length > 4) return {data: res, mime:'image/jpeg'};
   return null;
 }
 
-// هل يوجد بيانات ملف صالحة؟
+// هل يوجد بيانات base64 صالحة للعرض؟ (لا نقبل URLs خارجية)
 function hasFileData(d){
   if(!d) return false;
-  if(typeof d === 'string') return d.length > 4;
-  return !!(d.url || d.data);
+  if(typeof d === 'string') return d.length > 4 && !d.startsWith('http');
+  const raw = d.data;
+  if(!raw) return false;
+  if(typeof raw === 'string' && raw.startsWith('http')) return false; // URL خارجي — نرفضه
+  return raw.length > 4;
 }
 
-// بناء src للصور — يدعم URL مباشر من Supabase وbase64
+// بناء src للصور — فقط base64، لا URLs خارجية
 function buildSrc(d){
   if(!d) return '';
-  // plain string
   if(typeof d === 'string'){
-    return (d.startsWith('http') || d.startsWith('/')) ? d : 'data:image/jpeg;base64,'+d;
+    if(d.startsWith('http')) return ''; // لا نبني src من URL خارجي
+    return 'data:image/jpeg;base64,'+d;
   }
-  // URL في d.url أو d.data
-  const raw = d.url || d.data || '';
-  if(typeof raw === 'string' && (raw.startsWith('http') || raw.startsWith('/'))){
-    return raw; // Supabase URL مباشر
-  }
+  const raw = d.data || '';
+  if(!raw || raw.startsWith('http')) return ''; // نرفض URLs
   const mime = d.mime || 'image/jpeg';
-  return raw ? 'data:'+mime+';base64,'+raw : '';
+  return 'data:'+mime+';base64,'+raw;
 }
 
 function compressImage(file, maxW, maxH, quality){
@@ -7440,11 +7437,12 @@ function showMaintFiles(mid){
         btns.appendChild(zb);
       }
 
-      // زر حفظ/تنزيل
       const ext=isPdf?'pdf':isImg?'jpg':'bin';
+      const dlSrc = src || d.url || ''; // للتحميل: نستخدم URL المباشر إذا ما في base64
       const dl=document.createElement('a');
       dl.className='btn btn-p btn-sm';
-      dl.href=src; dl.download=(d.name||k)+'.'+ext;
+      dl.href=dlSrc; dl.download=(d.name||k)+'.'+ext;
+      if(d.url && !src) dl.target='_blank'; // فتح في تاب جديد لو URL خارجي
       dl.style.cssText='font-size:11px;text-decoration:none;display:inline-flex;align-items:center;gap:4px';
       dl.innerHTML='⬇️ تنزيل';
       btns.appendChild(dl);
@@ -7487,9 +7485,8 @@ function showMaintFiles(mid){
       body.style.minHeight='0';
       body.appendChild(img);
       loadImgWithFallback(img, src, '/api/files/maint_'+mid+'_'+k, function(){
-        // كل المحاولات فشلت — أظهر بديل PDF
         body.innerHTML='';
-        body.appendChild(buildPdfViewer(src, d.name||k));
+        body.appendChild(buildPdfViewer(d.url||src, d.name||k));
       });
 
       card.appendChild(body);
