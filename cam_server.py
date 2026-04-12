@@ -40,21 +40,27 @@ def send_push_notification(subscription, title, body_text, tag="circ"):
         print(f"[PUSH] FAILED {type(e).__name__}: {e}")
         return False
 
-def send_push_to_district(db, district, title, body_text, tag="circ"):
-    subs = db.get("push_subscriptions", {})
-    users = db.get("users", [])
-    sent = 0
-    for uid_str, sub_data in list(subs.items()):
-        uid = int(uid_str)
-        user = next((u2 for u2 in users if u2["id"]==uid), None)
-        if not user: continue
-        u_dists = get_user_dists(user)
-        if district != "الكل" and u_dists and district not in u_dists: continue
-        threading.Thread(target=send_push_notification,
-            args=(sub_data.get("subscription", sub_data), title, body_text, tag),
-            daemon=True).start()
-        sent += 1
-    print(f"[PUSH] Queued {sent} notifications for district={district}")
+def send_push_to_district(district, title, body_text, tag="circ"):
+    try:
+        db = load_db()
+        subs = db.get("push_subscriptions", {})
+        users = db.get("users", [])
+        print(f"[PUSH] {len(subs)} subscriptions total, district={district}")
+        sent = 0
+        for uid_str, sub_data in list(subs.items()):
+            uid = int(uid_str)
+            user = next((u2 for u2 in users if u2["id"]==uid), None)
+            if not user:
+                print(f"[PUSH] User {uid} not found"); continue
+            u_dists = get_user_dists(user)
+            if district != "الكل" and u_dists and district not in u_dists:
+                print(f"[PUSH] Skip user {uid}: dists={u_dists} vs {district}"); continue
+            sub = sub_data.get("subscription", sub_data)
+            result = send_push_notification(sub, title, body_text, tag)
+            if result: sent += 1
+        print(f"[PUSH] Sent {sent}/{len(subs)} notifications")
+    except Exception as e:
+        print(f"[PUSH] send_push_to_district error: {e}")
 
 
 def get_user_dists(u):
@@ -789,7 +795,7 @@ class Handler(BaseHTTPRequestHandler):
             db["circulars"].append(circ); save_db(db)
             # إرسال push notification للمكلفين
             threading.Thread(target=send_push_to_district,
-                args=(db, circ["district"], "📢 تعميم جديد: "+circ["title"],
+                args=(circ["district"], "📢 تعميم جديد: "+circ["title"],
                       circ.get("body","")[:80] or circ["type"], "circ_"+str(cid)),
                 daemon=True).start()
             self.send_json({"ok":True,"circular":circ})
@@ -808,14 +814,15 @@ class Handler(BaseHTTPRequestHandler):
             save_db(db); self.send_json({"ok":True})
 
         elif p=="/api/push/test":
-            # إرسال إشعار تجريبي للمستخدم الحالي
             subs = db.get("push_subscriptions",{})
+            print(f"[PUSH TEST] All subs: {list(subs.keys())}")
             sub_data = subs.get(str(u["id"]))
             if not sub_data:
-                self.send_json({"error":"لا يوجد اشتراك، افتح البرنامج مرة أخرى وافعل الاشتراك","subs":list(subs.keys())}); return
+                self.send_json({"error":"لا يوجد اشتراك للمستخدم "+str(u['id']),"all_subs":list(subs.keys())}); return
             sub = sub_data.get("subscription", sub_data)
+            print(f"[PUSH TEST] Sub keys: {list(sub.keys()) if isinstance(sub,dict) else type(sub)}")
             result = send_push_notification(sub, "🔔 اختبار الإشعارات", "إذا وصلك هذا الإشعار فالنظام يعمل ✅", "test")
-            self.send_json({"ok":result, "sub_keys": list(sub.keys()) if isinstance(sub,dict) else "not dict"})
+            self.send_json({"ok":result, "uid":u["id"], "sub_endpoint":str(sub.get("endpoint",""))[:50] if isinstance(sub,dict) else "?"})
 
         elif p=="/api/inventory":
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
