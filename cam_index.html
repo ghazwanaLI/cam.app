@@ -7166,50 +7166,30 @@ function _pdfToJpg(file, quality){
 function loadImgWithFallback(img, src, apiPath, onFail){
   if(!src){ if(onFail) onFail(); return; }
 
-  function handleAllFailed(){
-    img.onerror=null;
-    if(onFail) onFail();
-  }
-
-  function tryViaApi(){
-    if(!apiPath){ handleAllFailed(); return; }
+  // لو URL خارجي (Supabase) — لا نحاول كصورة مباشرة (CORS/400)
+  // نجيب البيانات عبر API السيرفر أولاً
+  if(src.startsWith('http') && apiPath){
     api('GET', apiPath).then(function(res){
       const d=extractFile(res);
-      if(hasFileData(d)){
-        const raw=d.data||'';
-        if(raw && !raw.startsWith('http')){
-          // base64 حقيقي من السيرفر
-          img.onerror=function(){ handleAllFailed(); };
-          img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
-          return;
-        }
+      const raw=d&&d.data;
+      if(raw && typeof raw==='string' && !raw.startsWith('http')){
+        // base64 حقيقي من السيرفر
+        const b64src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+        img.onerror=function(){ if(onFail) onFail(); };
+        img.src=b64src;
+      } else {
+        // السيرفر رجّع URL فقط — اعرض بديل مباشرة
+        if(onFail) onFail();
       }
-      handleAllFailed();
-    }).catch(handleAllFailed);
+    }).catch(function(){
+      // API فشل — اعرض بديل
+      if(onFail) onFail();
+    });
+    return;
   }
 
-  function tryFetchBlob(){
-    fetch(src, {mode:'cors'}).then(function(r){
-      if(!r.ok) throw new Error('status '+r.status);
-      return r.blob();
-    }).then(function(blob){
-      const reader=new FileReader();
-      reader.onload=function(e){
-        img.onerror=function(){ handleAllFailed(); };
-        img.src=e.target.result;
-      };
-      reader.readAsDataURL(blob);
-    }).catch(tryViaApi);
-  }
-
-  img.onerror=function(){
-    this.onerror=null;
-    if(src.startsWith('http')){
-      tryFetchBlob();
-    } else {
-      handleAllFailed();
-    }
-  };
+  // base64 محلي — حمّل مباشرة
+  img.onerror=function(){ this.onerror=null; if(onFail) onFail(); };
   img.src=src;
 }
 function extractFile(res){
