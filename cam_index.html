@@ -6510,83 +6510,68 @@ function showCircularNotifPopup(c, onDone){
   ov.addEventListener('click',function(e){e.stopPropagation();});
 
   // تحميل صورة التعميم تلقائياً إن وجدت
+  const sw=document.getElementById('circ-save-btn-'+c.id);
+  const rw=document.getElementById('circ-read-wrap-'+c.id);
+  const imgCont=document.getElementById('circ-popup-img-'+c.id);
+
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
     const d=extractFile(res);
-    const sw=document.getElementById('circ-save-btn-'+c.id);
-    const rw=document.getElementById('circ-read-wrap-'+c.id);
-    const imgCont=document.getElementById('circ-popup-img-'+c.id);
 
-    if(!hasFileData(d)){
-      // لا توجد صورة — أظهر زر اطلعت مباشرة
+    // لو السيرفر رجّع base64 حقيقي
+    if(d && d.data && typeof d.data==='string' && !d.data.startsWith('http') && d.data.length > 10){
+      const mime=d.mime||'image/jpeg';
+      const src='data:'+mime+';base64,'+d.data;
+
+      if(imgCont){
+        const img=document.createElement('img');
+        img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
+        img.title='اضغط للتكبير';
+        img.onclick=function(){openLB(img.src);};
+        img.onerror=function(){
+          this.onerror=null;
+          // فشل تحميل الصورة — أظهر اطلعت مباشرة
+          if(sw) sw.style.display='none';
+          if(rw) rw.style.display='flex';
+        };
+        img.src=src;
+        const zbBtn=document.createElement('button');
+        zbBtn.className='btn btn-o btn-sm';
+        zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
+        zbBtn.textContent='🔍 تكبير الصورة';
+        zbBtn.onclick=function(){openLB(img.src);};
+        imgCont.appendChild(img);
+        imgCont.appendChild(zbBtn);
+      }
+
+      // زر الحفظ
+      window._downloadCircPdf=function(cid){
+        const ext=mime.includes('pdf')?'pdf':(mime.includes('png')?'png':'jpg');
+        const filename='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.'+ext;
+        if(navigator.canShare){
+          fetch(src).then(r=>r.blob()).then(blob=>{
+            const file=new File([blob],filename,{type:mime});
+            if(navigator.canShare({files:[file]})){
+              navigator.share({files:[file],title:'تعميم '+cid}).catch(()=>{
+                const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+              }); return;
+            }
+            const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+          }).catch(()=>{const a=document.createElement('a');a.href=src;a.download=filename;a.click();});
+        } else {
+          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
+        }
+      };
+    } else {
+      // لا توجد صورة أو لم يُرجع base64 — أظهر زر اطلعت مباشرة
       if(sw) sw.style.display='none';
       if(rw) rw.style.display='flex';
       window._downloadCircPdf=null;
-      return;
     }
-
-    const mime=d.mime||'image/jpeg';
-    const src=buildSrc(d);
-
-    if(imgCont && src){
-      const img=document.createElement('img');
-      img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
-      img.title='اضغط للتكبير';
-      img.onclick=function(){openLB(img.src);};
-      // إذا فشل تحميل الصورة — أظهر زر اطلعت مباشرة
-      img.onerror=function(){
-        this.onerror=null;
-        if(sw) sw.style.display='none';
-        if(rw) rw.style.display='flex';
-      };
-      loadImgWithFallback(img, src, '/api/files/circ_'+c.id+'_circ_1');
-      const zbBtn=document.createElement('button');
-      zbBtn.className='btn btn-o btn-sm';
-      zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
-      zbBtn.textContent='🔍 تكبير الصورة';
-      zbBtn.onclick=function(){openLB(img.src);};
-      imgCont.appendChild(img);
-      imgCont.appendChild(zbBtn);
-    }
-
-    // ربط زر الحفظ — مع دعم المشاركة للموبايل (حفظ في المعرض)
-    window._downloadCircPdf=function(cid){
-      const ext=mime.includes('pdf')?'pdf':(mime.includes('png')?'png':'jpg');
-      const filename='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.'+ext;
-      const finalSrc=imgCont?.querySelector('img')?.src||src;
-      if(navigator.canShare){
-        fetch(finalSrc).then(r=>r.blob()).then(blob=>{
-          const file=new File([blob],filename,{type:mime});
-          if(navigator.canShare({files:[file]})){
-            navigator.share({files:[file],title:'تعميم '+cid}).catch(()=>{
-              const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
-            });
-            return;
-          }
-          const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
-        }).catch(()=>{ const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click(); });
-      } else {
-        const a=document.createElement('a');a.href=finalSrc;a.download=filename;a.click();
-      }
-    };
   }).catch(function(){
-    // API فشل — أظهر زر اطلعت وزر حفظ نصي
-    const sw=document.getElementById('circ-save-btn-'+c.id);
-    const rw=document.getElementById('circ-read-wrap-'+c.id);
+    // API فشل — أظهر اطلعت مباشرة
     if(sw) sw.style.display='none';
     if(rw) rw.style.display='flex';
-    window._downloadCircPdf=function(cid){
-      const html='<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">'
-        +'<style>body{font-family:Cairo,sans-serif;padding:30px;direction:rtl;max-width:700px;margin:auto}'
-        +'h1{color:#1d4ed8;font-size:22px}p{line-height:2}</style></head><body>'
-        +'<h1>📢 '+(c.title||'')+'</h1>'
-        +'<p>'+( c.body||'—')+'</p>'
-        +'<small>📅 '+(c.date||'')+' · '+(c.added_by||'')+'</small>'
-        +'</body></html>';
-      const blob=new Blob([html],{type:'text/html;charset=utf-8'});
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);
-      a.download='تعميم_'+cid+'.html';a.click();
-      setTimeout(()=>URL.revokeObjectURL(a.href),3000);
-    };
+    window._downloadCircPdf=null;
   });
 }
 
