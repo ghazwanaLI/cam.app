@@ -1020,7 +1020,8 @@ window.addEventListener('load',function(){
       <div class="drw-item" onclick="downloadOfflineCopy();closeMobDrawer()" style="color:#0891b2"><span>💾</span>نسخة احتياطية offline</div>
       <div class="drw-item" onclick="_autoRefreshTick();toast('🔄 جاري تحديث البيانات...');closeMobDrawer()"><span>🔄</span>تحديث البيانات الآن</div>
       <div class="drw-item" style="color:#dc2626" onclick="doLogout()"><span>🚪</span>تسجيل الخروج</div>
-    <div id="_backup-btn-added"><div style="height:1px;background:#f1f5f9;margin:6px"></div><div class="drw-item" onclick="downloadOfflineCopy()" style="color:#0891b2"><span>💾</span>نسخة احتياطية offline</div><div class="drw-item" onclick="_autoRefreshTick();toast('جاري التحديث...')"><span>🔄</span>تحديث البيانات الآن</div></div></div>
+    <div id="_backup-btn-added"><div style="height:1px;background:#f1f5f9;margin:6px"></div><div class="drw-item" onclick="downloadOfflineCopy()" style="color:#0891b2"><span>💾</span>نسخة احتياطية offline</div>
+<div class="drw-item" onclick="testPushNotification()" style="color:#7c3aed"><span>🔔</span>اختبار الإشعارات</div><div class="drw-item" onclick="_autoRefreshTick();toast('جاري التحديث...')"><span>🔄</span>تحديث البيانات الآن</div></div></div>
   </div>
 
   <!-- TOP NAVBAR (ديسكتوب فقط) -->
@@ -9712,6 +9713,13 @@ async function initPushNotifications(){
   }
 }
 
+async function testPushNotification(){
+  try{
+    const r = await api('POST', '/api/push/test', {});
+    if(r.ok) toast('✅ تم إرسال إشعار تجريبي — تحقق من شاشتك');
+    else toast('❌ ' + (r.error||'فشل الإرسال'), 'err');
+  }catch(e){ toast('❌ ' + e.message, 'err'); }
+}
 function _urlBase64ToUint8(base64String){
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
   const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
