@@ -9503,7 +9503,7 @@ function _restoreFromBackup(){
 function downloadOfflineCopy(){
   try{
     const bk = JSON.parse(localStorage.getItem('cam_app_backup')||'{}');
-    const dataScript = '\n<script id="__offline_data__">\n'
+    const dataScript = '\n<scr'+'ipt id="__offline_data__">\n'
       +'window.__OFFLINE_DATA__ = '+JSON.stringify(bk)+';\n'
       +'<\/script>';
     let fullHtml = document.documentElement.outerHTML
