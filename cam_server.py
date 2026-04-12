@@ -26,12 +26,19 @@ def send_push_notification(subscription, title, body_text, tag="circ"):
     try:
         from pywebpush import webpush
         import json as _j
-        webpush(subscription_info=subscription,
-                data=_j.dumps({"title":title,"body":body_text,"tag":tag,"icon":"/icon-192.png"}),
-                vapid_private_key=VAPID_PRIVATE, vapid_claims=VAPID_CLAIMS)
+        ep = str(subscription.get('endpoint',''))[:80]
+        print(f"[PUSH] Sending to: {ep}")
+        webpush(
+            subscription_info=subscription,
+            data=_j.dumps({"title":title,"body":body_text,"tag":tag}),
+            vapid_private_key=VAPID_PRIVATE,
+            vapid_claims=VAPID_CLAIMS
+        )
+        print(f"[PUSH] OK: {title}")
         return True
     except Exception as e:
-        print(f"[PUSH] {e}"); return False
+        print(f"[PUSH] FAILED {type(e).__name__}: {e}")
+        return False
 
 def send_push_to_district(db, district, title, body_text, tag="circ"):
     subs = db.get("push_subscriptions", {})
@@ -799,6 +806,16 @@ class Handler(BaseHTTPRequestHandler):
             if not u: self.send_json({"error":"غير مصرح"},401); return
             db.get("push_subscriptions",{}).pop(str(u["id"]),None)
             save_db(db); self.send_json({"ok":True})
+
+        elif p=="/api/push/test":
+            # إرسال إشعار تجريبي للمستخدم الحالي
+            subs = db.get("push_subscriptions",{})
+            sub_data = subs.get(str(u["id"]))
+            if not sub_data:
+                self.send_json({"error":"لا يوجد اشتراك، افتح البرنامج مرة أخرى وافعل الاشتراك","subs":list(subs.keys())}); return
+            sub = sub_data.get("subscription", sub_data)
+            result = send_push_notification(sub, "🔔 اختبار الإشعارات", "إذا وصلك هذا الإشعار فالنظام يعمل ✅", "test")
+            self.send_json({"ok":result, "sub_keys": list(sub.keys()) if isinstance(sub,dict) else "not dict"})
 
         elif p=="/api/inventory":
             if not self.can(u,"edit") and not u.get("perms",{}).get("inventory"): self.send_json({"error":"لا صلاحية"},403); return
