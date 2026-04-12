@@ -5596,6 +5596,7 @@ async function initApp(){
   updateMobNav();
   // بدء التحديث التلقائي والنسخ الاحتياطي
   startAutoRefresh();
+  if(CU?.role!=='admin') setTimeout(initPushNotifications, 2000);
   setTimeout(_saveBackup, 8000); // حفظ بعد 8 ثوانٍ من التحميل
 
   // فحص التعاميم غير المقروءة وإجبار المستخدم على قراءتها
@@ -9637,6 +9638,74 @@ function _showUpdateToast(msg){
   _updateToastTimer = setTimeout(()=>{ el.style.opacity='0'; }, 2500);
 }
 
+
+// ══ Web Push Notifications ══
+// Service Worker code served by /sw.js
+const _SW_CODE_UNUSED = `
+self.addEventListener('push', function(e){
+  const data = e.data ? e.data.json() : {};
+  e.waitUntil(self.registration.showNotification(data.title||'تعميم جديد', {
+    body: data.body||'',
+    icon: '/favicon.ico',
+    badge: '/favicon.ico',
+    tag: data.tag||'circ',
+    dir: 'rtl',
+    lang: 'ar',
+    requireInteraction: true,
+    vibrate: [200,100,200]
+  }));
+});
+self.addEventListener('notificationclick', function(e){
+  e.notification.close();
+  e.waitUntil(clients.matchAll({type:'window'}).then(function(cs){
+    if(cs.length) return cs[0].focus();
+    return clients.openWindow('/');
+  }));
+});
+`;
+
+let _swReg = null;
+
+async function initPushNotifications(){
+  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+  if(CU?.role==='admin') return; // المدير ما يحتاج push
+
+  try{
+    // سجّل Service Worker من السيرفر
+    _swReg = await navigator.serviceWorker.register('/sw.js', {scope:'/'});
+    await navigator.serviceWorker.ready;
+
+    // اطلب إذن الإشعارات
+    const perm = await Notification.requestPermission();
+    if(perm !== 'granted') return;
+
+    // اجلب الـ VAPID public key
+    const keyRes = await api('GET', '/api/push/key');
+    if(!keyRes?.publicKey) return;
+
+    // اشترك في Push
+    const existing = await _swReg.pushManager.getSubscription();
+    if(existing) await existing.unsubscribe();
+
+    const sub = await _swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: _urlBase64ToUint8(keyRes.publicKey)
+    });
+
+    // أرسل الاشتراك للسيرفر
+    await api('POST', '/api/push/subscribe', {subscription: sub.toJSON()});
+    console.log('[PUSH] Subscribed successfully');
+  }catch(e){
+    console.warn('[PUSH] Init failed:', e.message);
+  }
+}
+
+function _urlBase64ToUint8(base64String){
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g,'+').replace(/_/g,'/');
+  const rawData = window.atob(base64);
+  return Uint8Array.from([...rawData].map(c=>c.charCodeAt(0)));
+}
 function startAutoRefresh(){
   if(_arInterval) clearInterval(_arInterval);
   _arLastHash = {};
