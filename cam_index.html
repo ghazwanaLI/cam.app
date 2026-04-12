@@ -6576,15 +6576,14 @@ function showCircularNotifPopup(c, onDone){
 }
 
 async function checkUnreadCirculars(){
-  if(!CU || CU.role==='admin') return; // المدير معفى
+  if(!CU || CU.role==='admin') return;
   try{
-    const myDists = getUserDistricts();
     const unread = allCirculars.filter(c=>{
-      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
+      if(!userCanSeeDistrict(c.district)) return false;
       return !_circReads[c.id];
     }).sort((a,b)=>a.date>b.date?1:-1);
     if(!unread.length) return;
-    // إضافة كلهم لـ _shownCircIds حتى الـ polling ما يكررهم
+    // سجّل كلهم حتى الـ polling ما يكررهم
     unread.forEach(c=>_shownCircIds.add(c.id));
     localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
     function showNext(idx){
@@ -6599,12 +6598,8 @@ function renderCirculars(){
   const typeF=document.getElementById('f-circ-type')?.value||'';
   const search=(document.getElementById('sq-circ')?.value||'').toLowerCase().trim();
   const isAdmin2 = CU?.role==='admin';
-  const myDists = getUserDistricts();
   let list=[...allCirculars].filter(c=>{
-    // غير المدير: يرى فقط تعاميم "الكل" أو أي من قواطعه
-    if(!isAdmin2){
-      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
-    }
+    if(!isAdmin2 && !userCanSeeDistrict(c.district)) return false;
     if(distF&&c.district!==distF&&c.district!=='الكل')return false;
     if(typeF&&c.type!==typeF)return false;
     if(search&&!(c.title||'').toLowerCase().includes(search)&&!(c.body||'').toLowerCase().includes(search)&&!(c.type||'').includes(search)) return false;
@@ -7986,21 +7981,28 @@ async function loadCirculars(){
     const d = await api('GET','/api/circulars');
     allCirculars = d.circulars||[];
 
-    // تحميل حالة القراءة للمستخدم الحالي
+    // تحميل حالة القراءة — من الـ response مباشرة لو متاحة، وإلا API واحد
     _circReads = {};
-    await Promise.all(allCirculars.map(c=>
-      api('GET','/api/circulars/'+c.id+'/reads')
-        .then(r=>{
-          const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id||x.username===CU?.username);
-          if(myRead) _circReads[c.id]=myRead;
-        }).catch(()=>{})
-    ));
+    if(d.reads && Array.isArray(d.reads)){
+      // السيرفر يرجع reads في نفس الـ response
+      d.reads.forEach(r=>{ if(r.circular_id) _circReads[r.circular_id]=r; });
+    } else {
+      // fallback: API منفصل لكل تعميم (بطيء)
+      await Promise.all(allCirculars.map(c=>
+        api('GET','/api/circulars/'+c.id+'/reads')
+          .then(r=>{
+            const myRead=(r.reads||[]).find(x=>x.user_id===CU?.id||x.username===CU?.username);
+            if(myRead) _circReads[c.id]=myRead;
+          }).catch(()=>{})
+      ));
+    }
+
     renderCirculars();
 
     // تحديث badges غير المقروءة
-    const myDists=getUserDistricts();
-    const unread=allCirculars.filter(c=>{
-      if(c.district!=='الكل' && !myDists.includes(c.district)) return false;
+    const myDists = getUserDistricts();
+    const unread = allCirculars.filter(c=>{
+      if(!userCanSeeDistrict(c.district)) return false;
       return !_circReads[c.id];
     }).length;
     const badge=document.getElementById('circulars-badge');
@@ -8011,18 +8013,16 @@ async function loadCirculars(){
     // إشعار للمكلفين بتعاميم جديدة — إجباري
     if(CU?.role!=='admin'){
       if(_lastCircCount < 0){
-        // أول تحميل — سجّل كل التعاميم الموجودة كـ "مرئية سابقاً"
-        // حتى لا تظهر كجديدة عند الـ polling
-        // (checkUnreadCirculars يتولى عرض الغير مقروءة عند الدخول)
-        allCirculars.forEach(c=>_shownCircIds.add(c.id));
+        // أول تحميل — سجّل المقروءة فقط كـ "مرئية"، والغير مقروءة تظهر بـ checkUnreadCirculars
+        allCirculars.filter(c=>_circReads[c.id]).forEach(c=>_shownCircIds.add(c.id));
         localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
       } else {
-        // polling — عرض فقط التعاميم الجديدة الفعلية
-        const newCircs=allCirculars.filter(c=>{
+        // polling — عرض التعاميم الجديدة فقط
+        const newCircs = allCirculars.filter(c=>{
           if(_shownCircIds.has(c.id)) return false;
-          return c.district==='الكل' || myDists.includes(c.district);
+          return userCanSeeDistrict(c.district);
         });
-        if(newCircs.length>0){
+        if(newCircs.length > 0){
           newCircs.forEach(c=>_shownCircIds.add(c.id));
           localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
           let _ni=0;
@@ -8034,7 +8034,7 @@ async function loadCirculars(){
         }
       }
     }
-    _lastCircCount=allCirculars.length;
+    _lastCircCount = allCirculars.length;
   }catch(e){ console.error('loadCirculars:',e); }
 }
 
