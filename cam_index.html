@@ -6029,7 +6029,7 @@ function openTourModal(id){
   document.getElementById('tour-eid').value=id||'';
   document.getElementById('tour-date').value=t.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('tour-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
+  const _tDL=getUserDistricts().length&&CU?.role!=='admin'?getUserDistricts():DISTRICTS_LIST;ds.innerHTML='<option value="">— اختر —</option>'+_tDL.map(d=>`<option value="${d}" ${t.district===d?'selected':''}>${d}</option>`).join('');
   const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   filterTourStations();
   if(t.station_id) setTimeout(()=>document.getElementById('tour-station').value=t.station_id,50);
@@ -6072,7 +6072,11 @@ function filterTourStations(){
   const d=document.getElementById('tour-district')?.value||'';
   const sel=document.getElementById('tour-station');
   if(!sel)return;
-  const list=allStations.filter(s=>!d||s.district===d);
+  const list=allStations.filter(s=>{
+    if(!userCanSeeDistrict(s.district)) return false;
+    if(d && s.district!==d) return false;
+    return true;
+  });
   sel.innerHTML='<option value="">— اختر المحطة —</option>'+list.map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 }
 function exportToursCSV(){
@@ -6147,7 +6151,7 @@ function openMaintModal(id){
   document.getElementById('maint-eid').value=id||'';
   document.getElementById('maint-date').value=m.date||new Date().toISOString().split('T')[0];
   const ds=document.getElementById('maint-district');
-  ds.innerHTML='<option value="">— اختر —</option>'+DISTRICTS_LIST.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
+  const _mDL=getUserDistricts().length&&CU?.role!=='admin'?getUserDistricts():DISTRICTS_LIST;ds.innerHTML='<option value="">— اختر —</option>'+_mDL.map(d=>`<option value="${d}" ${m.district===d?'selected':''}>${d}</option>`).join('');
   const _uDists=getUserDistricts();if(_uDists.length===1){ds.value=_uDists[0];ds.disabled=true;}else if(_uDists.length>1){ds.querySelectorAll('option').forEach(o=>{if(o.value&&!_uDists.includes(o.value))o.style.display='none';});ds.disabled=false;}else{ds.disabled=false;}
   filterMaintStations();
   if(m.station_id)setTimeout(()=>document.getElementById('maint-station').value=m.station_id,50);
@@ -6253,7 +6257,11 @@ function filterMaintStations(){
   const d=document.getElementById('maint-district')?.value||'';
   const sel=document.getElementById('maint-station');
   if(!sel)return;
-  sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>!d||s.district===d).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  sel.innerHTML='<option value="">— اختر المحطة —</option>'+allStations.filter(s=>{
+    if(!userCanSeeDistrict(s.district)) return false;
+    if(d && s.district!==d) return false;
+    return true;
+  }).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
 }
 function exportMaintCSV(){
   const loadXLSX=()=>new Promise((res,rej)=>{
