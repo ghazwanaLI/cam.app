@@ -9667,34 +9667,46 @@ self.addEventListener('notificationclick', function(e){
 let _swReg = null;
 
 async function initPushNotifications(){
-  if(!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-  if(CU?.role==='admin') return; // المدير ما يحتاج push
+  if(!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) return;
+  if(CU?.role==='admin') return;
 
   try{
-    // سجّل Service Worker من السيرفر
+    // اطلب إذن الإشعارات أولاً
+    const perm = Notification.permission==='granted'
+      ? 'granted'
+      : await Notification.requestPermission();
+    if(perm !== 'granted'){ console.log('[PUSH] Permission denied'); return; }
+
+    // سجّل Service Worker
     _swReg = await navigator.serviceWorker.register('/sw.js', {scope:'/'});
-    await navigator.serviceWorker.ready;
 
-    // اطلب إذن الإشعارات
-    const perm = await Notification.requestPermission();
-    if(perm !== 'granted') return;
+    // انتظر جاهزية SW بمهلة 5 ثواني
+    const ready = await Promise.race([
+      navigator.serviceWorker.ready,
+      new Promise((_,rej)=>setTimeout(()=>rej(new Error('SW timeout')),5000))
+    ]);
 
-    // اجلب الـ VAPID public key
-    const keyRes = await api('GET', '/api/push/key');
-    if(!keyRes?.publicKey) return;
+    // اجلب VAPID public key
+    const keyRes = await api('GET', '/api/push/key').catch(()=>null);
+    if(!keyRes?.publicKey){ console.warn('[PUSH] No VAPID key'); return; }
 
-    // اشترك في Push
-    const existing = await _swReg.pushManager.getSubscription();
-    if(existing) await existing.unsubscribe();
+    // تحقق من اشتراك موجود
+    const existing = await ready.pushManager.getSubscription();
+    if(existing){
+      // جدّد الاشتراك على السيرفر
+      await api('POST', '/api/push/subscribe', {subscription: existing.toJSON()}).catch(()=>{});
+      console.log('[PUSH] Already subscribed');
+      return;
+    }
 
-    const sub = await _swReg.pushManager.subscribe({
+    // اشتراك جديد
+    const sub = await ready.pushManager.subscribe({
       userVisibleOnly: true,
       applicationServerKey: _urlBase64ToUint8(keyRes.publicKey)
     });
-
-    // أرسل الاشتراك للسيرفر
     await api('POST', '/api/push/subscribe', {subscription: sub.toJSON()});
-    console.log('[PUSH] Subscribed successfully');
+    console.log('[PUSH] Subscribed ✅');
+    toast('🔔 تم تفعيل إشعارات التعاميم');
   }catch(e){
     console.warn('[PUSH] Init failed:', e.message);
   }
