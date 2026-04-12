@@ -7163,44 +7163,54 @@ function _pdfToJpg(file, quality){
 }
 
 // تحميل صورة مع fallback إذا فشل URL مباشر
-function loadImgWithFallback(img, src, apiPath){
-  if(!src){ return; }
-  img.src = src;
+function loadImgWithFallback(img, src, apiPath, onFail){
+  if(!src){ if(onFail) onFail(); return; }
 
-  function tryFetchAsBlob(url){
-    // جلب الصورة كـ blob وتحويلها base64
-    fetch(url, {mode:'cors'}).then(function(r){
+  function handleAllFailed(){
+    img.onerror=null;
+    if(onFail) onFail();
+  }
+
+  function tryViaApi(){
+    if(!apiPath){ handleAllFailed(); return; }
+    api('GET', apiPath).then(function(res){
+      const d=extractFile(res);
+      if(hasFileData(d)){
+        const raw=d.data||'';
+        if(raw && !raw.startsWith('http')){
+          // base64 حقيقي من السيرفر
+          img.onerror=function(){ handleAllFailed(); };
+          img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+          return;
+        }
+      }
+      handleAllFailed();
+    }).catch(handleAllFailed);
+  }
+
+  function tryFetchBlob(){
+    fetch(src, {mode:'cors'}).then(function(r){
       if(!r.ok) throw new Error('status '+r.status);
       return r.blob();
     }).then(function(blob){
       const reader=new FileReader();
-      reader.onload=function(e){ img.onerror=null; img.src=e.target.result; };
+      reader.onload=function(e){
+        img.onerror=function(){ handleAllFailed(); };
+        img.src=e.target.result;
+      };
       reader.readAsDataURL(blob);
-    }).catch(function(){
-      // fetch فشل — جرب عبر API
-      if(apiPath){
-        api('GET', apiPath).then(function(res){
-          const d=extractFile(res);
-          if(hasFileData(d)){
-            const raw=d.url||d.data||'';
-            if(raw && !raw.startsWith('http')){
-              img.onerror=null;
-              img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
-            }
-          }
-        }).catch(()=>{ img.onerror=null; });
-      } else {
-        img.onerror=null;
-      }
-    });
+    }).catch(tryViaApi);
   }
 
-  if(src.startsWith('http')){
-    img.onerror = function(){
-      this.onerror=null;
-      tryFetchAsBlob(src);
-    };
-  }
+  img.onerror=function(){
+    this.onerror=null;
+    if(src.startsWith('http')){
+      tryFetchBlob();
+    } else {
+      handleAllFailed();
+    }
+  };
+  img.src=src;
 }
 function extractFile(res){
   if(!res) return null;
@@ -7495,15 +7505,13 @@ function showMaintFiles(mid){
       img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc';
       img.title='اضغط للتكبير';
       img.onclick=function(){openLB(img.src);};
-      img.onerror=function(){
-        this.onerror=null;
-        // فشل كصورة — جرب كـ PDF
-        body.innerHTML='';
-        body.appendChild(buildPdfViewer(src, d.name||k));
-      };
-      loadImgWithFallback(img, src, '/api/files/maint_'+mid+'_'+k);
       body.style.minHeight='0';
       body.appendChild(img);
+      loadImgWithFallback(img, src, '/api/files/maint_'+mid+'_'+k, function(){
+        // كل المحاولات فشلت — أظهر بديل PDF
+        body.innerHTML='';
+        body.appendChild(buildPdfViewer(src, d.name||k));
+      });
 
       card.appendChild(body);
       list.appendChild(card);
@@ -8778,11 +8786,11 @@ function showTourFiles(tid){
       const img=document.createElement('img');
       img.style.cssText='width:100%;max-height:420px;object-fit:contain;display:block;cursor:zoom-in;background:#f8fafc';
       img.onclick=function(){openLB(img.src);};
-      img.onerror=function(){
-        this.onerror=null;
-        img.replaceWith(buildPdfViewer(src, d.name||k));
-      };
-      loadImgWithFallback(img, src, "/api/files/tour_"+tid+"_"+k);
+
+
+
+
+
       card.appendChild(img);
       list.appendChild(card);
     });
