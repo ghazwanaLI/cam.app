@@ -6580,13 +6580,17 @@ function showCircularNotifPopup(c, onDone){
 async function checkUnreadCirculars(){
   if(!CU || CU.role==='admin') return;
   try{
-    // امسح الـ _shownCircIds حتى تظهر كل التعاميم الغير مقروءة
     _shownCircIds = new Set();
     localStorage.removeItem('_shownCircIds');
 
     const unread = allCirculars.filter(c=>
       userCanSeeDistrict(c.district) && !_circReads[c.id]
     ).sort((a,b)=>a.date>b.date?1:-1);
+
+    console.log('🔔 checkUnread: total circs:', allCirculars.length,
+      '| unread:', unread.length,
+      '| reads:', Object.keys(_circReads),
+      '| myDists:', getUserDistricts());
 
     if(!unread.length) return;
 
@@ -6653,12 +6657,16 @@ function toggleCircForm(){
   const ov=document.getElementById('circ-form-overlay');
   const isOpen=f&&f.style.display!=='none';
   if(isOpen){ cancelQuickCirc(); return; }
+  // إعادة بناء قائمة القواطع في كل مرة
   const ds=document.getElementById('q-circ-district');
   if(ds){
     const dlist = DISTRICTS_LIST.length>=8 ? DISTRICTS_LIST :
       ['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز'];
     ds.innerHTML='<option value="الكل">— جميع القواطع —</option>'
       +dlist.map(d=>`<option value="${d}">${d}</option>`).join('');
+    // تأكد أن القيمة الافتراضية هي "الكل"
+    ds.value='الكل';
+    console.log('📋 toggleCircForm: district options:', ds.options.length, '| values:', [...ds.options].map(o=>o.value));
   }
   if(f) f.style.display='block';
   if(ov) ov.style.display='block';
@@ -6673,10 +6681,13 @@ function cancelQuickCirc(){
 async function saveQuickCircular(){
   const title=document.getElementById('q-circ-title')?.value.trim();
   if(!title){toast('أدخل عنوان التعميم','err');return;}
+  const distEl=document.getElementById('q-circ-district');
+  const distVal=distEl?.value||'الكل';
+  console.log('📢 saveQuickCircular: district=', distVal, '| options:', distEl?.options?.length);
   const body={
     title,
     type:document.getElementById('q-circ-type')?.value||'تعميم',
-    district:document.getElementById('q-circ-district')?.value||'الكل',
+    district:distVal,
     body:document.getElementById('q-circ-body')?.value||'',
     date:new Date().toISOString().split('T')[0]
   };
@@ -8022,6 +8033,8 @@ async function loadCirculars(){
   try{
     const d = await api('GET','/api/circulars');
     allCirculars = d.circulars||[];
+    console.log('📢 loadCirculars: got', allCirculars.length, 'circulars, user district:', CU?.district, '| dists:', getUserDistricts());
+    allCirculars.forEach(c=>console.log('  circ:', c.id, c.title, '→ district:', c.district));
 
     // تحميل حالة القراءة
     _circReads = {};
