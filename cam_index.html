@@ -7052,9 +7052,13 @@ function getUserDistricts(){
 // هل يحق للمستخدم رؤية بيانات هذا القاطع؟
 function userCanSeeDistrict(dist){
   if(!CU || CU.role==='admin') return true;
+  const d = (dist||'').trim();
+  // فحص "الكل" بطريقة مرنة تتجاوز فروقات Unicode
+  if(!d) return true;
+  if(d.length <= 5 && /ك/.test(d) && /ل/.test(d)) return true; // الكل بأي ترميز
   const uDists = getUserDistricts();
-  if(!uDists.length) return true; // لا قيود
-  return uDists.includes(dist);
+  if(!uDists.length) return true;
+  return uDists.some(x=>x.trim()===d);
 }
 
 function populateDistrictFilters(){
