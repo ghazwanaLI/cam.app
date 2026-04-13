@@ -2034,6 +2034,23 @@ window.addEventListener('load',function(){
 
       <!-- REPORTS TAB -->
       <div id="tab-reports" style="display:none">
+
+        <!-- بحث عن محطة -->
+        <div class="section" style="margin-bottom:16px">
+          <div class="sec-hdr"><div class="sec-title"><div class="sdot" style="background:#7c3aed"></div>🔍 بحث عن محطة</div></div>
+          <div style="padding:16px">
+            <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px">
+              <input class="fi" id="r-station-search" type="text" placeholder="اكتب اسم المحطة..." dir="rtl"
+                oninput="searchStationReport()" style="flex:1;font-size:14px">
+              <button class="btn btn-o btn-sm" onclick="document.getElementById('r-station-search').value='';searchStationReport()">✕</button>
+            </div>
+            <!-- نتائج البحث -->
+            <div id="r-station-dropdown" style="display:none;background:var(--bg2);border:1px solid var(--border);border-radius:10px;max-height:200px;overflow-y:auto;margin-bottom:12px"></div>
+            <!-- بطاقة المحطة -->
+            <div id="r-station-card" style="display:none"></div>
+          </div>
+        </div>
+
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
           <div class="section">
             <div class="sec-hdr"><div class="sec-title"><div class="sdot"></div>📊 تقرير الجولات</div></div>
@@ -6987,6 +7004,93 @@ function populateReportDistricts(){
   });
   generateReport();
 }
+function searchStationReport(){
+  const q=(document.getElementById('r-station-search')?.value||'').trim().toLowerCase();
+  const dd=document.getElementById('r-station-dropdown');
+  const card=document.getElementById('r-station-card');
+  if(!q){dd.style.display='none';card.style.display='none';return;}
+  const matches=allStations.filter(s=>(s.name||'').toLowerCase().includes(q)||(s.district||'').includes(q));
+  if(!matches.length){
+    dd.style.display='block';
+    dd.innerHTML='<div style="padding:12px;text-align:center;color:var(--t3);font-size:13px">لا توجد نتائج</div>';
+    return;
+  }
+  dd.style.display='block';
+  dd.innerHTML=matches.map(s=>`
+    <div onclick="showStationReportCard(${s.id})" style="padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--border);direction:rtl;display:flex;justify-content:space-between;align-items:center"
+      onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+      <span style="font-weight:700;font-size:13px">${s.name||'—'}</span>
+      <span class="db" style="font-size:11px">${s.district||'—'}</span>
+    </div>`).join('');
+}
+
+function showStationReportCard(sid){
+  const s=allStations.find(x=>x.id===sid);
+  if(!s) return;
+  document.getElementById('r-station-search').value=s.name||'';
+  document.getElementById('r-station-dropdown').style.display='none';
+
+  const tours=[...allTours].filter(t=>t.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
+  const maints=[...allMaint].filter(m=>m.station_id===sid).sort((a,b)=>b.date>a.date?1:-1);
+  const inv=allInventory.find(x=>String(x.station_id)===String(sid)||x.station_name===s.name);
+  const lastTour=tours[0];
+  const lastMaint=maints[0];
+
+  const card=document.getElementById('r-station-card');
+  card.style.display='block';
+  card.innerHTML=`
+    <div style="border:1.5px solid var(--border);border-radius:14px;overflow:hidden;direction:rtl">
+      <!-- هيدر -->
+      <div style="background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font-size:16px;font-weight:900">${s.name||'—'}</div>
+          <div style="font-size:12px;opacity:.85">📍 ${s.district||'—'} · ${s.type||'—'}</div>
+        </div>
+        <button onclick="showStationDetail(${sid})" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">تفاصيل كاملة ←</button>
+      </div>
+      <!-- إحصاءات -->
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border)">
+        ${[
+          ['📷','الكاميرات الشغالة',s.cam_working||0,'#16a34a'],
+          ['🔴','الكاميرات العاطلة',s.cam_broken||0,'#dc2626'],
+          ['🚗','عدد الجولات',tours.length,'#1d4ed8'],
+          ['🔧','عدد الصيانات',maints.length,'#d97706'],
+        ].map(([ic,lb,val,col])=>`
+          <div style="padding:12px 8px;text-align:center;border-left:1px solid var(--border)">
+            <div style="font-size:11px;color:var(--t3);margin-bottom:4px">${ic} ${lb}</div>
+            <div style="font-size:20px;font-weight:900;color:${col}">${val}</div>
+          </div>`).join('')}
+      </div>
+      <!-- آخر جولة وصيانة -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        <div style="padding:12px 14px;border-left:1px solid var(--border)">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:700">🚗 آخر جولة</div>
+          ${lastTour?`
+            <div style="font-size:12px;font-weight:700">${lastTour.date||'—'}</div>
+            <div style="font-size:11px;color:var(--t3)">${lastTour.visit_type||''} · ${lastTour.tech||''}</div>
+          `:'<div style="font-size:12px;color:var(--t3)">لا توجد جولات</div>'}
+        </div>
+        <div style="padding:12px 14px">
+          <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:700">🔧 آخر صيانة</div>
+          ${lastMaint?`
+            <div style="font-size:12px;font-weight:700">${lastMaint.date||'—'}</div>
+            <div style="font-size:11px;color:var(--t3)">${lastMaint.device_type||''} · ${lastMaint.tech||''}</div>
+          `:'<div style="font-size:12px;color:var(--t3)">لا توجد صيانات</div>'}
+        </div>
+      </div>
+      ${inv?`
+      <!-- الجرد -->
+      <div style="padding:12px 14px;border-top:1px solid var(--border);background:var(--bg2)">
+        <div style="font-size:11px;color:var(--t3);margin-bottom:6px;font-weight:700">📋 الجرد</div>
+        <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:12px">
+          <span>📷 الكاميرات: <b>${inv.cam_count||0}</b></span>
+          <span>📼 النوع: <b>${inv.dvr_model||'—'}</b></span>
+          <span>💾 التسجيل: <b>${inv.storage_days||'—'} يوم</b></span>
+        </div>
+      </div>`:''}
+    </div>`;
+}
+
 function generateReport(){
   const from=document.getElementById('r-from')?.value||'';
   const to=document.getElementById('r-to')?.value||'9999';
