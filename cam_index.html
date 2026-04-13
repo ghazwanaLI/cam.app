@@ -2011,14 +2011,14 @@ window.addEventListener('load',function(){
             <div class="table-wrap">
               <table id="inv-list-table" style="direction:rtl;width:100%;border-collapse:collapse">
                 <thead>
-                  <tr style="background:#1e3a8a;color:#fff">
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:40px">#</th>
-                    <th style="padding:8px 12px;border:1px solid #1e40af;font-size:11px;text-align:right">اسم المحطة</th>
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">القاطع</th>
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:70px">الكاميرات</th>
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:120px">نوع الجهاز</th>
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:90px">فترة التسجيل</th>
-                    <th style="padding:8px 10px;border:1px solid #1e40af;font-size:11px;text-align:center;width:85px">إجراءات</th>
+                  <tr style="background:linear-gradient(135deg,#0f4c81,#1d6fa8);color:#fff">
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:40px;font-weight:700">#</th>
+                    <th style="padding:10px 12px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:right;font-weight:700">اسم المحطة</th>
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:90px;font-weight:700">القاطع</th>
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:70px;font-weight:700">الكاميرات</th>
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:120px;font-weight:700">نوع الجهاز</th>
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:90px;font-weight:700">فترة التسجيل</th>
+                    <th style="padding:10px 10px;border:1px solid rgba(255,255,255,.2);font-size:12px;text-align:center;width:85px;font-weight:700">إجراءات</th>
                   </tr>
                 </thead>
                 <tbody id="inv-list-body">
@@ -3975,6 +3975,7 @@ function doGuestLogin(){
 async function doLogout(){
   try{await api('POST','/api/logout');}catch(e){}
   TOKEN='';CU=null;
+  window._circChecked = false; // السماح بعرض التعاميم عند الدخول مجدداً
   localStorage.removeItem('cam_token');
   LS.del('login_creds');
   showMiniLogin();
@@ -5101,18 +5102,19 @@ function renderInvList(){
   const tb=document.getElementById('inv-list-body');
   if(!tb)return;
   if(!list.length){tb.innerHTML='<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--t3)">لا توجد بيانات جرد</td></tr>';return;}
-  const B='border:1px solid #e2e8f0';
+  const B='border:1px solid #cbd5e1';
   tb.innerHTML=list.map((x,i)=>{
     let camRows=[];try{camRows=x.cam_rows?JSON.parse(x.cam_rows):[];}catch(e){}
     const totalCams=camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0)||+x.cam_count||0;
-    return `<tr style="direction:rtl;background:${i%2?'#f8fafc':'#fff'}">
-      <td style="padding:7px 8px;text-align:center;${B};font-size:11px;color:#94a3b8">${i+1}</td>
-      <td style="padding:7px 12px;font-weight:700;${B};font-size:12px">${x.station_name||'—'}</td>
-      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.district||'—'}</td>
-      <td style="padding:7px 8px;text-align:center;${B};font-weight:800;font-size:14px;color:#166534">${totalCams}</td>
-      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.dvr_model||'—'}</td>
-      <td style="padding:7px 8px;text-align:center;${B};font-size:11px">${x.storage_days||'—'}</td>
-      <td style="padding:5px 6px;text-align:center;${B}">
+    const rowBg=i%2?'#f0f7ff':'#ffffff';
+    return `<tr style="direction:rtl;background:${rowBg};transition:background .15s" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='${rowBg}'">
+      <td style="padding:9px 8px;text-align:center;${B};font-size:12px;color:#64748b;font-weight:600">${i+1}</td>
+      <td style="padding:9px 12px;font-weight:800;${B};font-size:13px;color:#1e293b">${x.station_name||'—'}</td>
+      <td style="padding:9px 8px;text-align:center;${B};font-size:12px;color:#334155;font-weight:600">${x.district||'—'}</td>
+      <td style="padding:9px 8px;text-align:center;${B};font-weight:900;font-size:16px;color:#15803d;background:#f0fdf4">${totalCams}</td>
+      <td style="padding:9px 8px;text-align:center;${B};font-size:12px;color:#334155;font-weight:600">${x.dvr_model||'—'}</td>
+      <td style="padding:9px 8px;text-align:center;${B};font-size:12px;color:#334155;font-weight:600">${x.storage_days||'—'}</td>
+      <td style="padding:6px 6px;text-align:center;${B}">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();exportInvExcel(${x.id})" style="padding:3px 6px;font-size:10px;color:#16a34a" title="تصدير Excel">📊</button>
@@ -6590,25 +6592,22 @@ function showCircularNotifPopup(c, onDone){
 
 async function checkUnreadCirculars(){
   if(!CU || CU.role==='admin') return;
+  // تشتغل مرة واحدة فقط عند الدخول
+  if(window._circChecked) return;
+  window._circChecked = true;
   try{
-    _shownCircIds = new Set();
-    localStorage.removeItem('_shownCircIds');
+    // امسح _shownCircIds فقط للتعاميم المقروءة — الغير مقروءة تظهر
+    _shownCircIds = new Set(
+      allCirculars.filter(c=>_circReads[c.id]).map(c=>c.id)
+    );
 
-    const unread = allCirculars.filter(c=>{
-      const canSee = userCanSeeDistrict(c.district);
-      const notRead = !_circReads[c.id];
-      const distMatch = !c.district || c.district==='الكل' || userCanSeeDistrict(c.district);
-      console.log('  ► circ',c.id,'dist:['+c.district+'] len:'+c.district?.length,
-        '| canSee:',canSee,'| notRead:',notRead,'| inReads:',_circReads[c.id],'| myDists:',getUserDistricts());
-      return canSee && notRead;
-    }).sort((a,b)=>a.date>b.date?1:-1);
-
-    console.log('🔔 checkUnread: total:',allCirculars.length,'| unread:',unread.length,
-      '| reads:',Object.keys(_circReads),'| myDists:',getUserDistricts());
+    const unread = allCirculars.filter(c=>
+      userCanSeeDistrict(c.district) && !_circReads[c.id]
+    ).sort((a,b)=>a.date>b.date?1:-1);
 
     if(!unread.length) return;
 
-    // سجّل كلهم حتى الـ polling ما يكررهم لاحقاً
+    // سجّل كلهم حتى الـ polling ما يكررهم
     unread.forEach(c=>_shownCircIds.add(c.id));
     localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
 
@@ -8098,9 +8097,6 @@ async function loadCirculars(){
       }
     }
     _lastCircCount = allCirculars.length;
-
-    // عرض الغير مقروءة عند أول تحميل — مباشرة بعد تحميل القراءات
-    if(CU?.role!=='admin') setTimeout(checkUnreadCirculars, 500);
 
   }catch(e){ console.error('loadCirculars:',e); }
 }
