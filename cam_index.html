@@ -7191,6 +7191,24 @@ function loadImgWithFallback(img, src, apiPath, onFail){
   img.onerror=function(){ this.onerror=null; if(onFail) onFail(); };
   img.src=src;
 }
+
+// بناء src من أي صيغة — URL مباشر أو base64
+function buildAnySrc(d){
+  if(!d) return '';
+  const raw = d.data||'';
+  const url = d.url||'';
+  if(url.startsWith('http')) return url;
+  if(raw.startsWith('http')) return raw;
+  if(raw.length > 10) return 'data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+  return '';
+}
+// هل يوجد أي بيانات ملف (URL أو base64)؟
+function hasAnyFileData(d){
+  if(!d) return false;
+  const raw = d.data||'';
+  const url = d.url||'';
+  return url.startsWith('http') || raw.startsWith('http') || raw.length > 10;
+}
 function extractFile(res){
   if(!res) return null;
   if(res.file && typeof res.file === 'object') return res.file;
@@ -7574,10 +7592,10 @@ function viewCircFiles(cid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/circ_'+cid+'_'+k)
-      .then(function(res){ const d=extractFile(res); return hasFileData(d)?{k:k,d:d}:null; })
+      .then(function(res){ const d=extractFile(res); return hasAnyFileData(d)?{k:k,d:d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
+    const found=results.filter(function(r){return r&&r.d&&hasAnyFileData(r.d);});
     if(!found.length){
       list.innerHTML='<div style="color:var(--t3);text-align:center;padding:30px;font-size:14px">لا توجد مرفقات</div>';
       return;
@@ -7585,8 +7603,8 @@ function viewCircFiles(cid){
     list.innerHTML='';
     found.forEach(function(item,idx){
       const k=item.k, d=item.d;
-      const isImg=(d.mime&&d.mime.startsWith("image/"))||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d));
-      const src=buildSrc(d);
+      const src=buildAnySrc(d);
+      const isImg=(d.mime&&d.mime.startsWith('image/'))||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(src);
       const fname=d.name||(isImg?'صورة_'+(idx+1)+'.jpg':'ملف_'+(idx+1));
 
       const card=document.createElement('div');
@@ -8161,7 +8179,7 @@ function _loadMaintPreviews(mid, container){
   };
   Promise.all(allKeys.map(k=>
     api('GET','/api/files/maint_'+mid+'_'+k)
-      .then(res=>{ const d=extractFile(res); return hasFileData(d)?{k,d}:null; })
+      .then(res=>{ const d=extractFile(res); return hasAnyFileData(d)?{k,d}:null; })
       .catch(()=>null)
   )).then(results=>{
     const found = results.filter(Boolean);
@@ -8171,7 +8189,7 @@ function _loadMaintPreviews(mid, container){
       return;
     }
     found.forEach(({k,d})=>{
-      const src = buildSrc(d);
+      const src = buildAnySrc(d);
       const isImg = d.mime&&(d.mime.startsWith('image/')||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(src));
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;display:inline-block;vertical-align:top';
@@ -8449,8 +8467,8 @@ function viewCircImageInline(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=extractFile(res);
-      if(hasFileData(d)){
-        const src=buildSrc(d);
+      if(hasAnyFileData(d)){
+        const src=buildAnySrc(d);
         // حفظ الصورة في متغير لاستخدامها بالأحداث
         window['_cimg_'+cid]=src;
         const img=document.createElement('img');
@@ -8504,7 +8522,7 @@ function toggleCircImg(cid, btn){
   api('GET','/api/files/circ_'+cid+'_circ_1')
     .then(function(res){
       const d=extractFile(res);
-      if(!hasFileData(d)){
+      if(!hasAnyFileData(d)){
         if(btn){ btn.textContent='لا توجد صورة'; btn.disabled=false; }
         return;
       }
@@ -8712,10 +8730,10 @@ function showTourFiles(tid){
 
   Promise.all(keys.map(function(k){
     return api('GET','/api/files/tour_'+tid+'_'+k)
-      .then(function(res){ const d=extractFile(res); return hasFileData(d)?{k,d}:null; })
+      .then(function(res){ const d=extractFile(res); return hasAnyFileData(d)?{k,d}:null; })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
+    const found=results.filter(function(r){return r&&r.d&&hasAnyFileData(r.d);});
     if(!found.length){
       list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:36px;margin-bottom:8px">📂</div>لا توجد ملفات مرفوعة</div>';
       return;
