@@ -7038,6 +7038,13 @@ function showStationReportCard(sid){
 
   const card=document.getElementById('r-station-card');
   card.style.display='block';
+
+  // بيانات السجل الكامل للطباعة
+  const toursRows = tours.slice(0,10).map(t=>`
+    <tr><td>${t.date||'—'}</td><td>${t.visit_type||'—'}</td><td>${t.tech||'—'}</td><td>${t.notes||'—'}</td></tr>`).join('');
+  const maintsRows = maints.slice(0,10).map(m=>`
+    <tr><td>${m.date||'—'}</td><td>${m.device_type||'—'}</td><td>${m.tech||'—'}</td><td>${m.status||'—'}</td></tr>`).join('');
+
   card.innerHTML=`
     <div style="border:1.5px solid var(--border);border-radius:14px;overflow:hidden;direction:rtl">
       <!-- هيدر -->
@@ -7046,7 +7053,10 @@ function showStationReportCard(sid){
           <div style="font-size:16px;font-weight:900">${s.name||'—'}</div>
           <div style="font-size:12px;opacity:.85">📍 ${s.district||'—'} · ${s.type||'—'}</div>
         </div>
-        <button onclick="showStationDetail(${sid})" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">تفاصيل كاملة ←</button>
+        <div style="display:flex;gap:8px">
+          <button onclick="printStationReport(${sid})" style="background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">🖨️ طباعة</button>
+          <button onclick="showStationDetail(${sid})" style="background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:8px;padding:6px 12px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">تفاصيل ←</button>
+        </div>
       </div>
       <!-- إحصاءات -->
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-bottom:1px solid var(--border)">
@@ -7089,6 +7099,77 @@ function showStationReportCard(sid){
         </div>
       </div>`:''}
     </div>`;
+
+  // حفظ بيانات الطباعة
+  window._stationPrintData = {s, tours, maints, inv, toursRows, maintsRows};
+}
+
+function printStationReport(sid){
+  const p = window._stationPrintData;
+  if(!p) return;
+  const {s, tours, maints, inv, toursRows, maintsRows} = p;
+  const date = new Date().toLocaleDateString('ar-IQ');
+  const html = `<!DOCTYPE html><html dir="rtl" lang="ar">
+<head><meta charset="UTF-8">
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap');
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:Cairo,sans-serif;direction:rtl;padding:20px;color:#1e293b;font-size:13px}
+  .logo{text-align:center;margin-bottom:16px;padding-bottom:12px;border-bottom:2px solid #1d4ed8}
+  .logo h1{font-size:18px;font-weight:900;color:#1d4ed8}
+  .logo p{font-size:12px;color:#64748b}
+  .title{background:#1d4ed8;color:#fff;padding:10px 16px;border-radius:8px;margin-bottom:14px}
+  .title h2{font-size:16px;font-weight:900}
+  .title p{font-size:11px;opacity:.85}
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+  .stat{border:1px solid #e2e8f0;border-radius:8px;padding:10px;text-align:center}
+  .stat .val{font-size:22px;font-weight:900}
+  .stat .lbl{font-size:10px;color:#64748b;margin-top:2px}
+  table{width:100%;border-collapse:collapse;margin-bottom:14px;font-size:12px}
+  th{background:#1e3a8a;color:#fff;padding:7px 10px;text-align:right;font-weight:700}
+  td{padding:6px 10px;border-bottom:1px solid #e2e8f0}
+  tr:nth-child(even) td{background:#f8fafc}
+  .sec-title{font-size:13px;font-weight:900;color:#1d4ed8;margin:12px 0 6px;border-right:3px solid #1d4ed8;padding-right:8px}
+  .footer{margin-top:16px;padding-top:10px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;font-size:11px;color:#94a3b8}
+  @media print{body{padding:10px}.no-print{display:none}}
+</style>
+</head><body>
+  <div class="logo">
+    <h1>شركة توزيع المنتجات النفطية — صلاح الدين</h1>
+    <p>شعبة تقنية المعلومات</p>
+  </div>
+  <div class="title">
+    <h2>تقرير محطة: ${s.name||'—'}</h2>
+    <p>📍 ${s.district||'—'} · ${s.type||'—'} · تاريخ التقرير: ${date}</p>
+  </div>
+  <div class="stats">
+    <div class="stat"><div class="val" style="color:#16a34a">${s.cam_working||0}</div><div class="lbl">📷 كاميرات شغالة</div></div>
+    <div class="stat"><div class="val" style="color:#dc2626">${s.cam_broken||0}</div><div class="lbl">🔴 كاميرات عاطلة</div></div>
+    <div class="stat"><div class="val" style="color:#1d4ed8">${tours.length}</div><div class="lbl">🚗 إجمالي الجولات</div></div>
+    <div class="stat"><div class="val" style="color:#d97706">${maints.length}</div><div class="lbl">🔧 إجمالي الصيانات</div></div>
+  </div>
+  ${inv?`
+  <div class="sec-title">📋 بيانات الجرد</div>
+  <table><tr><th>الكاميرات</th><th>نوع الجهاز</th><th>فترة التسجيل</th></tr>
+  <tr><td>${inv.cam_count||0}</td><td>${inv.dvr_model||'—'}</td><td>${inv.storage_days||'—'} يوم</td></tr></table>`:''}
+  ${toursRows?`
+  <div class="sec-title">🚗 سجل الجولات (آخر 10)</div>
+  <table><thead><tr><th>التاريخ</th><th>نوع الزيارة</th><th>الفني</th><th>الملاحظات</th></tr></thead>
+  <tbody>${toursRows}</tbody></table>`:''}
+  ${maintsRows?`
+  <div class="sec-title">🔧 سجل الصيانات (آخر 10)</div>
+  <table><thead><tr><th>التاريخ</th><th>الجهاز</th><th>الفني</th><th>الحالة</th></tr></thead>
+  <tbody>${maintsRows}</tbody></table>`:''}
+  <div class="footer">
+    <span>نظام كاميرات المراقبة — OPDC صلاح الدين</span>
+    <span>طُبع بتاريخ: ${date}</span>
+  </div>
+  <script>window.onload=function(){window.print();}<\/script>
+</body></html>`;
+
+  const w = window.open('','_blank','width=800,height=600');
+  w.document.write(html);
+  w.document.close();
 }
 
 function generateReport(){
