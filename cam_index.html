@@ -5602,6 +5602,11 @@ async function initApp(){
 
   // فحص التعاميم غير المقروءة وإجبار المستخدم على قراءتها
   setTimeout(checkUnreadCirculars, 1200);
+  // لو البرنامج فُتح من إشعار — أظهر التعاميم فوراً
+  if(window._openCircOnLoad){
+    window._openCircOnLoad = false;
+    setTimeout(checkUnreadCirculars, 800);
+  }
 
   // إذا جاء من مسح QR مباشر
   if(window._scanCode){
@@ -9702,28 +9707,30 @@ function _showUpdateToast(msg){
 
 // ══ Web Push Notifications ══
 // Service Worker code served by /sw.js
-const _SW_CODE_UNUSED = `
-self.addEventListener('push', function(e){
-  const data = e.data ? e.data.json() : {};
-  e.waitUntil(self.registration.showNotification(data.title||'تعميم جديد', {
-    body: data.body||'',
-    icon: '/favicon.ico',
-    badge: '/favicon.ico',
-    tag: data.tag||'circ',
-    dir: 'rtl',
-    lang: 'ar',
-    requireInteraction: true,
-    vibrate: [200,100,200]
-  }));
-});
-self.addEventListener('notificationclick', function(e){
-  e.notification.close();
-  e.waitUntil(clients.matchAll({type:'window'}).then(function(cs){
-    if(cs.length) return cs[0].focus();
-    return clients.openWindow('/');
-  }));
-});
-`;
+
+// استقبال رسائل من Service Worker (عند الضغط على الإشعار)
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.addEventListener('message', function(event){
+    if(event.data && event.data.type==='circ_notif'){
+      // أعد تحميل التعاميم وأظهر البوبب
+      loadCirculars().then(function(){
+        setTimeout(checkUnreadCirculars, 300);
+      }).catch(function(){});
+    }
+  });
+}
+
+// فحص URL params عند فتح البرنامج من إشعار
+(function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('circ_notif')){
+    // أزل الـ param من URL بدون reload
+    const url = window.location.pathname;
+    window.history.replaceState({}, '', url);
+    // عند جاهزية البرنامج، أظهر التعاميم
+    window._openCircOnLoad = true;
+  }
+})();
 
 let _swReg = null;
 
