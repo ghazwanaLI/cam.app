@@ -7163,28 +7163,31 @@ function _pdfToJpg(file, quality){
 function loadImgWithFallback(img, src, apiPath, onFail){
   if(!src){ if(onFail) onFail(); return; }
 
-  // لو URL خارجي (Supabase) — لا نحاول كصورة مباشرة (CORS/400)
   if(src.startsWith('http')){
-    if(apiPath){
-      api('GET', apiPath).then(function(res){
-        const d=extractFile(res);
-        const raw=d&&d.data;
-        if(raw && typeof raw==='string' && !raw.startsWith('http')){
-          const b64src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
-          img.onerror=function(){ if(onFail) onFail(); };
-          img.src=b64src;
-        } else {
-          if(onFail) onFail();
-        }
-      }).catch(function(){ if(onFail) onFail(); });
-    } else {
-      // لا يوجد apiPath — لا نحاول تحميل URL خارجي
-      if(onFail) onFail();
-    }
+    // جرب URL مباشرة أولاً (الـ bucket public)
+    img.onerror=function(){
+      this.onerror=null;
+      // فشل URL مباشرة — جرب عبر API السيرفر (يرجع base64)
+      if(apiPath){
+        api('GET', apiPath).then(function(res){
+          const d=extractFile(res);
+          const raw=d&&d.data;
+          if(raw && typeof raw==='string' && !raw.startsWith('http') && raw.length>10){
+            img.onerror=function(){ if(onFail) onFail(); };
+            img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+          } else {
+            if(onFail) onFail();
+          }
+        }).catch(function(){ if(onFail) onFail(); });
+      } else {
+        if(onFail) onFail();
+      }
+    };
+    img.src=src;
     return;
   }
 
-  // base64 محلي — حمّل مباشرة
+  // base64 محلي
   img.onerror=function(){ this.onerror=null; if(onFail) onFail(); };
   img.src=src;
 }
@@ -7394,11 +7397,13 @@ function showMaintFiles(mid){
       .then(function(res){
         const d=extractFile(res);
         if(d) console.log('📁 maint file',k,'→',typeof d==='object'?{url:d.url,data:(d.data||'').substring(0,60),mime:d.mime}:d);
-        return hasFileData(d)?{k,d}:null;
+        // اقبل الملف لو عنده data (base64 أو URL) أو url
+        const hasAny = d && (d.data || d.url);
+        return hasAny?{k,d}:null;
       })
       .catch(function(){return null;});
   })).then(function(results){
-    const found=results.filter(function(r){return r&&r.d&&hasFileData(r.d);});
+    const found=results.filter(function(r){return r&&r.d;});
     if(!found.length){
       list.innerHTML='<div style="text-align:center;padding:40px;color:var(--t3)"><div style="font-size:40px;margin-bottom:10px">📂</div><div style="font-size:14px;font-weight:600">لا توجد ملفات مرفوعة لهذه العملية</div></div>';
       return;
@@ -7407,8 +7412,11 @@ function showMaintFiles(mid){
     found.forEach(function(item){
       const k=item.k, d=item.d;
       const mime=d.mime||'image/jpeg';
-      const src=buildSrc(d);
-      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d)||"");
+      // src: لو base64 حقيقي استخدمه، لو URL استخدمه مباشرة للعرض
+      const rawData = d.data||'';
+      const isUrl = rawData.startsWith('http') || (d.url||'').startsWith('http');
+      const src = isUrl ? (d.url||rawData) : (rawData ? 'data:'+mime+';base64,'+rawData : '');
+      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(src);
       const isPdf=mime==='application/pdf'||mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
 
       const card=document.createElement('div');
