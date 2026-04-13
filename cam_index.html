@@ -6662,11 +6662,10 @@ function toggleCircForm(){
   if(ds){
     const dlist = DISTRICTS_LIST.length>=8 ? DISTRICTS_LIST :
       ['الشرقاط / الايمن','الشرقاط الايسر','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز'];
-    ds.innerHTML='<option value="الكل">— جميع القواطع —</option>'
+    ds.innerHTML='<option value="" disabled selected>— اختر القاطع —</option>'
+      +'<option value="الكل">📢 جميع القواطع</option>'
       +dlist.map(d=>`<option value="${d}">${d}</option>`).join('');
-    // تأكد أن القيمة الافتراضية هي "الكل"
-    ds.value='الكل';
-    console.log('📋 toggleCircForm: district options:', ds.options.length, '| values:', [...ds.options].map(o=>o.value));
+    ds.value='';  // يجبر المستخدم على الاختيار
   }
   if(f) f.style.display='block';
   if(ov) ov.style.display='block';
@@ -6683,7 +6682,8 @@ async function saveQuickCircular(){
   if(!title){toast('أدخل عنوان التعميم','err');return;}
   const distEl=document.getElementById('q-circ-district');
   const distVal=distEl?.value||'الكل';
-  console.log('📢 saveQuickCircular: district=', distVal, '| options:', distEl?.options?.length);
+  if(!distVal){toast('⚠️ اختر القاطع أولاً','err'); distEl?.focus(); return;}
+  console.log('📢 saveQuickCircular: district=', distVal);
   const body={
     title,
     type:document.getElementById('q-circ-type')?.value||'تعميم',
