@@ -5477,7 +5477,7 @@ function goTab(name, el){
   }
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if(el) el.classList.add('active');
-  if(name==='field')      { loadTours(); loadMaintenance(); if(CU?.role!=='admin'){setTimeout(()=>switchField('maintenance',document.getElementById('sub-maint')),50);} }
+  if(name==='field')      { loadTours(); loadMaintenance(); setTimeout(()=>{ const defSub=CU?.role!=='admin'?'maintenance':'tours'; const btn=document.getElementById(defSub==='tours'?'sub-tours':'sub-maint'); switchField(defSub,btn); },50); }
   if(name==='handover')   { loadHandover(); }
   if(name==='stations')   { loadStations(); }
   if(name==='cameras')    { loadCameras(); }
