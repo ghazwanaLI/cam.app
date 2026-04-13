@@ -6583,14 +6583,17 @@ async function checkUnreadCirculars(){
     _shownCircIds = new Set();
     localStorage.removeItem('_shownCircIds');
 
-    const unread = allCirculars.filter(c=>
-      userCanSeeDistrict(c.district) && !_circReads[c.id]
-    ).sort((a,b)=>a.date>b.date?1:-1);
+    const unread = allCirculars.filter(c=>{
+      const canSee = userCanSeeDistrict(c.district);
+      const notRead = !_circReads[c.id];
+      const distMatch = !c.district || c.district==='الكل' || userCanSeeDistrict(c.district);
+      console.log('  ► circ',c.id,'dist:['+c.district+'] len:'+c.district?.length,
+        '| canSee:',canSee,'| notRead:',notRead,'| inReads:',_circReads[c.id],'| myDists:',getUserDistricts());
+      return canSee && notRead;
+    }).sort((a,b)=>a.date>b.date?1:-1);
 
-    console.log('🔔 checkUnread: total circs:', allCirculars.length,
-      '| unread:', unread.length,
-      '| reads:', Object.keys(_circReads),
-      '| myDists:', getUserDistricts());
+    console.log('🔔 checkUnread: total:',allCirculars.length,'| unread:',unread.length,
+      '| reads:',Object.keys(_circReads),'| myDists:',getUserDistricts());
 
     if(!unread.length) return;
 
@@ -8080,6 +8083,10 @@ async function loadCirculars(){
       }
     }
     _lastCircCount = allCirculars.length;
+
+    // عرض الغير مقروءة عند أول تحميل — مباشرة بعد تحميل القراءات
+    if(CU?.role!=='admin') setTimeout(checkUnreadCirculars, 500);
+
   }catch(e){ console.error('loadCirculars:',e); }
 }
 
