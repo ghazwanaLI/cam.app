@@ -6471,109 +6471,115 @@ function showCircularNotifPopup(c, onDone){
   const color=typeColor[c.type]||'#1d4ed8';
   const ov=document.createElement('div');
   ov.id='circ-notif-popup';
-  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.75);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl;padding:16px;box-sizing:border-box';
-  ov.innerHTML=`
-    <div style="background:#fff;border-radius:20px;padding:24px 22px;width:420px;max-width:96vw;max-height:92vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,.4);text-align:center;direction:rtl;animation:popIn .3s ease">
-      <div style="background:#fef2f2;border:1.5px solid #fecaca;border-radius:14px;padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:8px">
-        <span style="font-size:20px">🔒</span>
-        <span style="font-size:12px;font-weight:700;color:#dc2626">يجب الاطلاع على هذا التعميم قبل متابعة استخدام النظام</span>
-      </div>
-      <div style="font-size:38px;margin-bottom:8px">📢</div>
-      <div style="font-size:11px;font-weight:700;color:${color};background:${color}18;border-radius:20px;padding:3px 12px;display:inline-block;margin-bottom:10px">${c.type||'تعميم'}</div>
-      <div style="font-size:17px;font-weight:800;color:#1e293b;margin-bottom:10px;line-height:1.4">${c.title||''}</div>
-      ${c.body?`<div style="font-size:13px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:12px 14px;margin-bottom:12px;line-height:1.8;text-align:right">${c.body}</div>`:''}
-      <div id="circ-popup-img-${c.id}" style="margin-bottom:12px"></div>
-      <div style="font-size:11px;color:#94a3b8;margin-bottom:18px">📅 ${c.date||''} · ✍️ ${c.added_by||''}</div>
+  ov.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(15,23,42,.82);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;font-family:Cairo,sans-serif;direction:rtl;padding:0;box-sizing:border-box';
 
-      <!-- زر حفظ الصورة — يظهر أولاً -->
-      <button id="circ-save-btn-${c.id}" onclick="window._downloadCircPdf&&window._downloadCircPdf(${c.id});setTimeout(()=>{
-        const rb=document.getElementById('circ-read-wrap-${c.id}');
-        if(rb){rb.style.display='flex';}
-        this.style.background='#f0fdf4';this.style.color='#16a34a';this.style.borderColor='#bbf7d0';
-        this.innerHTML='✅ تم حفظ الصورة';this.disabled=true;
-      },400)" style="width:100%;background:linear-gradient(135deg,#1d4ed8,#3b82f6);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">
-        ⬇️ حفظ الصورة أولاً
-      </button>
-
-      <!-- زر اطلعت — مخفي حتى بعد الحفظ -->
-      <div id="circ-read-wrap-${c.id}" style="display:none">
-        <button id="circ-read-btn-${c.id}" onclick="(async()=>{
-          this.disabled=true;this.textContent='⏳...';
-          await markCircRead(${c.id});
-          document.getElementById('circ-notif-popup')?.remove();
-          if(typeof window._circOnDone==='function'){const fn=window._circOnDone;window._circOnDone=null;fn();}
-        })()" style="width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:12px;padding:14px;font-family:Cairo,sans-serif;font-size:15px;font-weight:800;cursor:pointer">
-          ✅ اطلعت — إغلاق
-        </button>
-      </div>
+  const card=document.createElement('div');
+  card.style.cssText='background:#fff;border-radius:24px 24px 0 0;padding:20px 18px 28px;width:100%;max-width:480px;max-height:92vh;overflow-y:auto;box-shadow:0 -8px 40px rgba(0,0,0,.3);text-align:center;direction:rtl;animation:slideUp .35s ease';
+  card.innerHTML=`
+    <div style="width:44px;height:5px;background:#e2e8f0;border-radius:20px;margin:0 auto 16px"></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;justify-content:center">
+      <span style="font-size:11px;font-weight:700;color:${color};background:${color}18;border-radius:20px;padding:3px 12px">${c.type||'تعميم'}</span>
+      <span style="font-size:11px;color:#94a3b8">📅 ${c.date||''}</span>
+    </div>
+    <div style="font-size:18px;font-weight:900;color:#1e293b;margin-bottom:8px;line-height:1.4">${c.title||''}</div>
+    ${c.body?`<div style="font-size:13px;color:#374151;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:10px 12px;margin-bottom:12px;line-height:1.8;text-align:right">${c.body}</div>`:''}
+    <div id="circ-popup-img-${c.id}" style="margin-bottom:14px"></div>
+    <div id="circ-popup-actions-${c.id}">
+      <div style="color:#94a3b8;font-size:12px;padding:20px">⏳ جاري تحميل التعميم...</div>
     </div>`;
+  ov.appendChild(card);
   document.body.appendChild(ov);
   if(typeof onDone==='function') window._circOnDone=onDone;
   ov.addEventListener('click',function(e){e.stopPropagation();});
 
-  // تحميل صورة التعميم تلقائياً إن وجدت
-  const sw=document.getElementById('circ-save-btn-'+c.id);
-  const rw=document.getElementById('circ-read-wrap-'+c.id);
-  const imgCont=document.getElementById('circ-popup-img-'+c.id);
+  // إضافة style الـ slideUp
+  if(!document.getElementById('_circ-popup-style')){
+    const st=document.createElement('style');
+    st.id='_circ-popup-style';
+    st.textContent='@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}';
+    document.head.appendChild(st);
+  }
 
+  function _closePopup(){
+    ov.style.animation='slideUp .25s ease reverse';
+    setTimeout(()=>{
+      ov.remove();
+      if(typeof window._circOnDone==='function'){const fn=window._circOnDone;window._circOnDone=null;fn();}
+    },250);
+  }
+
+  function _markAndClose(){
+    markCircRead(c.id).then(_closePopup).catch(_closePopup);
+  }
+
+  function _buildActions(imgSrc, mime){
+    const acts=document.getElementById('circ-popup-actions-'+c.id);
+    if(!acts) return;
+    acts.innerHTML='';
+
+    const btn=document.createElement('button');
+    btn.style.cssText='width:100%;background:linear-gradient(135deg,#16a34a,#22c55e);color:#fff;border:none;border-radius:14px;padding:16px;font-family:Cairo,sans-serif;font-size:17px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px';
+    btn.innerHTML='<span style="font-size:24px">✅</span> اطلعت';
+    btn.onclick=async function(){
+      btn.disabled=true;
+      btn.innerHTML='<span>⏳</span> جاري...';
+      // حفظ الصورة تلقائياً إذا وجدت
+      if(imgSrc){
+        try{
+          const fname='تعميم_'+c.id+'_'+(c.date||new Date().toISOString().split('T')[0])+'.jpg';
+          const blob=await fetch(imgSrc).then(r=>r.blob()).catch(()=>null);
+          if(blob && navigator.canShare){
+            const file=new File([blob],fname,{type:'image/jpeg'});
+            if(navigator.canShare({files:[file]})){
+              await navigator.share({files:[file],title:c.title||'تعميم'}).catch(()=>{});
+            } else { const a=document.createElement('a');a.href=imgSrc;a.download=fname;a.click(); }
+          } else if(blob){
+            const url=URL.createObjectURL(blob);
+            const a=document.createElement('a');a.href=url;a.download=fname;a.click();
+            setTimeout(()=>URL.revokeObjectURL(url),3000);
+          }
+        }catch(e){}
+      }
+      await markCircRead(c.id).catch(()=>{});
+      _closePopup();
+    };
+    acts.appendChild(btn);
+  }
+
+  // تحميل صورة التعميم
   api('GET','/api/files/circ_'+c.id+'_circ_1').then(function(res){
     const d=extractFile(res);
+    const rawData=d&&d.data||'';
+    const rawUrl=d&&d.url||'';
+    const isB64=rawData && !rawData.startsWith('http') && rawData.length>10;
+    const imgSrc=isB64?('data:'+(d.mime||'image/jpeg')+';base64,'+rawData):(rawUrl||rawData||'');
+    const mime=d&&d.mime||'image/jpeg';
+    const imgCont=document.getElementById('circ-popup-img-'+c.id);
 
-    // لو السيرفر رجّع base64 حقيقي
-    if(d && d.data && typeof d.data==='string' && !d.data.startsWith('http') && d.data.length > 10){
-      const mime=d.mime||'image/jpeg';
-      const src='data:'+mime+';base64,'+d.data;
-
-      if(imgCont){
-        const img=document.createElement('img');
-        img.style.cssText='width:100%;max-height:360px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0;margin-bottom:6px';
-        img.title='اضغط للتكبير';
-        img.onclick=function(){openLB(img.src);};
+    if(imgSrc && imgCont){
+      const img=document.createElement('img');
+      img.style.cssText='width:100%;max-height:340px;object-fit:contain;border-radius:12px;cursor:zoom-in;background:#f8fafc;display:block;border:1px solid #e2e8f0';
+      img.onclick=function(){openLB(img.src);};
+      img.onerror=function(){ this.onerror=null; _buildActions('',mime); };
+      if(imgSrc.startsWith('http')){
         img.onerror=function(){
           this.onerror=null;
-          // فشل تحميل الصورة — أظهر اطلعت مباشرة
-          if(sw) sw.style.display='none';
-          if(rw) rw.style.display='flex';
+          fetch(imgSrc,{mode:'cors',credentials:'omit'})
+            .then(r=>r.blob()).then(b=>{
+              const reader=new FileReader();
+              reader.onload=function(ev){ img.onerror=null; img.src=ev.target.result; };
+              reader.readAsDataURL(b);
+            }).catch(()=>_buildActions('',mime));
         };
-        img.src=src;
-        const zbBtn=document.createElement('button');
-        zbBtn.className='btn btn-o btn-sm';
-        zbBtn.style.cssText='font-size:11px;margin-bottom:4px';
-        zbBtn.textContent='🔍 تكبير الصورة';
-        zbBtn.onclick=function(){openLB(img.src);};
-        imgCont.appendChild(img);
-        imgCont.appendChild(zbBtn);
       }
-
-      // زر الحفظ
-      window._downloadCircPdf=function(cid){
-        const ext=mime.includes('pdf')?'pdf':(mime.includes('png')?'png':'jpg');
-        const filename='تعميم_'+cid+'_'+new Date().toISOString().split('T')[0]+'.'+ext;
-        if(navigator.canShare){
-          fetch(src).then(r=>r.blob()).then(blob=>{
-            const file=new File([blob],filename,{type:mime});
-            if(navigator.canShare({files:[file]})){
-              navigator.share({files:[file],title:'تعميم '+cid}).catch(()=>{
-                const a=document.createElement('a');a.href=src;a.download=filename;a.click();
-              }); return;
-            }
-            const a=document.createElement('a');a.href=src;a.download=filename;a.click();
-          }).catch(()=>{const a=document.createElement('a');a.href=src;a.download=filename;a.click();});
-        } else {
-          const a=document.createElement('a');a.href=src;a.download=filename;a.click();
-        }
-      };
+      img.src=imgSrc;
+      img.onload=function(){ _buildActions(img.src, mime); };
+      imgCont.appendChild(img);
     } else {
-      // لا توجد صورة أو لم يُرجع base64 — أظهر زر اطلعت مباشرة
-      if(sw) sw.style.display='none';
-      if(rw) rw.style.display='flex';
-      window._downloadCircPdf=null;
+      _buildActions('', mime);
     }
   }).catch(function(){
-    // API فشل — أظهر اطلعت مباشرة
-    if(sw) sw.style.display='none';
-    if(rw) rw.style.display='flex';
-    window._downloadCircPdf=null;
+    _buildActions('','image/jpeg');
   });
 }
 
