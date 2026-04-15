@@ -903,6 +903,48 @@ tr:hover td{background:rgba(30,58,95,.03);}
 <div class="sb-overlay" id="sb-overlay" onclick="toggleSidebar()"></div>
 
 <!-- LOGIN -->
+<!-- ══ SPLASH SCREEN ══ -->
+<div id="splash-screen" style="position:fixed;inset:0;z-index:999999;background:#0f172a;display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:Cairo,sans-serif;direction:rtl">
+  <style>
+    @keyframes splashPulse{0%,100%{opacity:.3;transform:scale(.95)}50%{opacity:1;transform:scale(1.05)}}
+    @keyframes splashSpin{to{transform:rotate(360deg)}}
+    @keyframes splashFadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes splashBar{from{width:0}to{width:100%}}
+    @keyframes splashDot{0%,80%,100%{transform:scale(0);opacity:.3}40%{transform:scale(1);opacity:1}}
+  </style>
+
+  <!-- Logo -->
+  <div style="animation:splashFadeUp .6s ease both">
+    <div style="width:90px;height:90px;background:linear-gradient(135deg,#1d4ed8,#3b82f6);border-radius:24px;display:flex;align-items:center;justify-content:center;font-size:48px;box-shadow:0 0 40px rgba(59,130,246,.4);margin-bottom:20px">
+      📹
+    </div>
+  </div>
+
+  <!-- Title -->
+  <div style="animation:splashFadeUp .6s .15s ease both;text-align:center;margin-bottom:6px">
+    <div style="font-size:20px;font-weight:900;color:#f1f5f9;letter-spacing:.5px">نظام كاميرات المراقبة</div>
+    <div style="font-size:13px;color:#94a3b8;margin-top:4px">شركة توزيع المنتجات النفطية — صلاح الدين</div>
+  </div>
+
+  <!-- Dots loader -->
+  <div style="animation:splashFadeUp .6s .3s ease both;display:flex;gap:8px;margin:28px 0">
+    <div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;animation:splashDot 1.4s .0s infinite ease-in-out"></div>
+    <div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;animation:splashDot 1.4s .2s infinite ease-in-out"></div>
+    <div style="width:10px;height:10px;background:#3b82f6;border-radius:50%;animation:splashDot 1.4s .4s infinite ease-in-out"></div>
+  </div>
+
+  <!-- Progress bar -->
+  <div style="animation:splashFadeUp .6s .4s ease both;width:200px">
+    <div style="height:3px;background:rgba(255,255,255,.1);border-radius:10px;overflow:hidden">
+      <div id="splash-bar" style="height:100%;background:linear-gradient(90deg,#1d4ed8,#60a5fa);border-radius:10px;width:0;transition:width .4s ease"></div>
+    </div>
+    <div id="splash-msg" style="text-align:center;font-size:11px;color:#64748b;margin-top:8px">جاري التحميل...</div>
+  </div>
+
+  <!-- Version -->
+  <div style="position:absolute;bottom:24px;font-size:11px;color:#334155">v1.0.0 · شعبة تقنية المعلومات</div>
+</div>
+
 <div id="login-screen" style="display: none;">
   <div class="lbox">
     <div class="licon">📹</div>
@@ -3997,7 +4039,25 @@ async function doLogout(){
   LS.del('login_creds');
   showMiniLogin();
 }
+// ══ Splash Screen Controller ══
+function splashProgress(pct, msg){
+  const bar = document.getElementById('splash-bar');
+  const txt = document.getElementById('splash-msg');
+  if(bar) bar.style.width = pct + '%';
+  if(txt) txt.textContent = msg || '';
+}
+function splashHide(){
+  const s = document.getElementById('splash-screen');
+  if(!s) return;
+  s.style.transition = 'opacity .5s ease';
+  s.style.opacity = '0';
+  setTimeout(() => s.remove(), 500);
+}
+// بدء الـ splash فور تحميل الصفحة
+splashProgress(20, 'تهيئة النظام...');
+
 async function tryAutoLogin(){
+  splashProgress(35, 'التحقق من الجلسة...');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
 
@@ -4005,28 +4065,40 @@ async function tryAutoLogin(){
   if(TOKEN){
     try{
       const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
-      if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true; document.getElementById('app').style.display='block'; await initApp(); return; }
+      if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true;
+        splashProgress(70,'جاري تحميل البيانات...');
+        document.getElementById('app').style.display='block'; await initApp();
+        splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
     }catch(e){}
     TOKEN=''; localStorage.removeItem('cam_token');
   }
 
   // 2. جرب بيانات الدخول المحفوظة
+  splashProgress(50, 'جاري تسجيل الدخول...');
   const saved=LS.get('login_creds');
   if(saved){
     const ok=await silentLoginWith(saved.u, saved.p);
-    if(ok){ SERVER_ONLINE=true; document.getElementById('app').style.display='block'; await initApp(); return; }
+    if(ok){ SERVER_ONLINE=true;
+      splashProgress(70,'جاري تحميل البيانات...');
+      document.getElementById('app').style.display='block'; await initApp();
+      splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
   }
 
-  // 3. جرب الدخول التلقائي بالبيانات الافتراضية
+  // 3. جرب الدخول التلقائي
   const autoOk=await silentLoginWith(AUTO_USER, AUTO_PASS);
-  if(autoOk){ SERVER_ONLINE=true; document.getElementById('app').style.display='block'; await initApp(); return; }
+  if(autoOk){ SERVER_ONLINE=true;
+    splashProgress(70,'جاري تحميل البيانات...');
+    document.getElementById('app').style.display='block'; await initApp();
+    splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
 
-  // 4. كل المحاولات فشلت — دخول تلقائي كضيف لعرض الواجهة
+  // 4. دخول كضيف
+  splashProgress(80,'وضع عدم الاتصال...');
   SERVER_ONLINE=false;
   CU={id:0,fullname:'ضيف',username:'guest',role:'viewer',district:'',active:true,
       perms:{view:true,edit:false,del:false,files:false,reports:true}};
   document.getElementById('app').style.display='block';
   await initApp();
+  splashProgress(100,'وضع عدم الاتصال'); setTimeout(splashHide,2500);
   showOfflineBanner();
 }
 
