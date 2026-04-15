@@ -7378,8 +7378,8 @@ async function doChangePw(){
 async function viewFile(key){
   try{
     const d=await api('GET','/api/files/'+key);
-    if(d.mime?.startsWith('image/') || buildSrc(d).startsWith('http')) openLB(buildSrc(d));
-    else{ const a=document.createElement('a');a.href=buildSrc(d);a.download=d.name;a.click(); }
+    if(d.mime?.startsWith('image/') || buildAnySrc(d).startsWith('http')) openLB(buildAnySrc(d));
+    else{ const a=document.createElement('a');a.href=buildAnySrc(d);a.download=d.name;a.click(); }
   }catch(e){toast('خطأ في تحميل الملف','err');}
 }
 
@@ -8818,7 +8818,7 @@ function toggleCircImg(cid, btn){
         return;
       }
       const mime = d.mime || 'image/jpeg';
-      const src = buildSrc(d);
+      const src = buildAnySrc(d);
       imgDiv.innerHTML = '';
 
       // الصورة
@@ -9033,8 +9033,8 @@ function showTourFiles(tid){
     found.forEach(function(item){
       const k=item.k, d=item.d;
       const mime=d.mime||'image/jpeg';
-      const src=buildSrc(d);
-      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(buildSrc(d)||"");
+      const src=buildAnySrc(d);
+      const isImg=mime.startsWith("image/")||/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i.test(src||"");
       const isPdf=mime.includes('pdf')||(d.name||'').toLowerCase().endsWith('.pdf');
 
       const card=document.createElement('div');
