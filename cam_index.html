@@ -7449,33 +7449,29 @@ function loadImgWithFallback(img, src, apiPath, onFail){
   if(!src){ if(onFail) onFail(); return; }
 
   if(src.startsWith('http')){
-    img.onerror=function(){
-      this.onerror=null;
-      // جرب fetch → blob (يتجاوز مشكلة الـ img tag مع Supabase)
-      fetch(src, {mode:'cors', credentials:'omit'})
-        .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.blob(); })
-        .then(function(blob){
-          var reader=new FileReader();
-          reader.onload=function(ev){
+    // fetch().blob() مباشرة — أكثر موثوقية من img.src مع Supabase
+    fetch(src, {mode:'cors', credentials:'omit'})
+      .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.blob(); })
+      .then(function(blob){
+        var reader=new FileReader();
+        reader.onload=function(ev){
+          img.onerror=function(){ if(onFail) onFail(); };
+          img.src=ev.target.result;
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(function(){
+        // fetch فشل — جرب API السيرفر
+        if(!apiPath){ if(onFail) onFail(); return; }
+        api('GET', apiPath).then(function(res){
+          var d=extractFile(res);
+          var raw=d&&d.data;
+          if(raw && typeof raw==='string' && !raw.startsWith('http') && raw.length>10){
             img.onerror=function(){ if(onFail) onFail(); };
-            img.src=ev.target.result;
-          };
-          reader.readAsDataURL(blob);
-        })
-        .catch(function(){
-          // fetch فشل — جرب API السيرفر (يرجع base64)
-          if(!apiPath){ if(onFail) onFail(); return; }
-          api('GET', apiPath).then(function(res){
-            var d=extractFile(res);
-            var raw=d&&d.data;
-            if(raw && typeof raw==='string' && !raw.startsWith('http') && raw.length>10){
-              img.onerror=function(){ if(onFail) onFail(); };
-              img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
-            } else { if(onFail) onFail(); }
-          }).catch(function(){ if(onFail) onFail(); });
-        });
-    };
-    img.src=src;
+            img.src='data:'+(d.mime||'image/jpeg')+';base64,'+raw;
+          } else { if(onFail) onFail(); }
+        }).catch(function(){ if(onFail) onFail(); });
+      });
     return;
   }
 
