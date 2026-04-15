@@ -184,14 +184,16 @@ def pg_load_file(key):
         row=cur.fetchone(); cur.close()
         if not row: return None
         name, data, mime = row[0], row[1], row[2]
-        # لو المحفوظ URL من Supabase — نجلبه ونحوّله base64
+        # الملفات الجديدة: base64 مباشر
+        if data and not data.startswith("http"):
+            return {"name": name, "data": data, "mime": mime}
+        # الملفات القديمة: URL من Supabase — نجلبه ونحوّله base64
         if data and data.startswith("http"):
             b64, fetched_mime = _sb_fetch_b64(data)
             if b64:
                 return {"name": name, "data": b64, "mime": fetched_mime or mime}
-            # فشل الجلب — نرجع بدون data حتى الفرونت يعرض بديل مناسب
             return {"name": name, "data": None, "mime": mime, "url": data}
-        return {"name": name, "data": data, "mime": mime}
+        return None
     finally: _rel(c)
 
 def pg_del_file(key):
@@ -242,25 +244,13 @@ def _pgw(db):
     except Exception as e: print(f"[DB] {e}")
 
 def save_file(key,name,data,mime):
-    # إذا الـ data هو URL → حفظ مباشرة
-    if data and data.startswith("http"):
-        if USE_DB: pg_save_file(key,name,data,mime); return
-        db=load_db(); db["files"][key]={"name":name,"data":data,"mime":mime}; save_db(db); return
-    # محاولة رفع لـ Supabase (fallback من السيرفر)
-    url = _sb_upload(name,data,mime or "image/jpeg") if data else None
-    save_val = url if url else data
-    if USE_DB: pg_save_file(key,name,save_val,mime); return
-    db=load_db(); db["files"][key]={"name":name,"data":save_val,"mime":mime}; save_db(db)
+    # حفظ base64 مباشرة في قاعدة البيانات — بدون Supabase
+    if USE_DB: pg_save_file(key,name,data,mime); return
+    db=load_db(); db["files"][key]={"name":name,"data":data,"mime":mime}; save_db(db)
 
 def load_file(key):
     if USE_DB: return pg_load_file(key)
-    result = load_db()["files"].get(key)
-    if result and result.get("data","").startswith("http"):
-        b64, fetched_mime = _sb_fetch_b64(result["data"])
-        if b64:
-            return {"name": result.get("name",""), "data": b64, "mime": fetched_mime or result.get("mime","")}
-        return {"name": result.get("name",""), "data": None, "mime": result.get("mime",""), "url": result["data"]}
-    return result
+    return load_db()["files"].get(key)
 
 def del_file(key):
     if USE_DB: pg_del_file(key); return
