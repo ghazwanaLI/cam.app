@@ -602,7 +602,9 @@ class Handler(BaseHTTPRequestHandler):
             })
         elif p.startswith("/api/files/"):
             key="/".join(p.split("/")[3:])
-            self.send_json({"ok":True,"file":load_file(key)})
+            result = load_file(key)
+            print(f"[FILE LOAD] key={key} found={result is not None} data_len={len((result or {}).get('data','') or '')}")
+            self.send_json({"ok":True,"file":result})
 
         elif p=="/sw.js":
             sw_code = (
@@ -874,9 +876,14 @@ class Handler(BaseHTTPRequestHandler):
             if not self.can(u,"files"): self.send_json({"error":"لا صلاحية"},403); return
             key="/".join(p.split("/")[3:])
             try:
-                save_file(key,body.get("name",""),body.get("data",""),body.get("mime",""))
+                data=body.get("data","")
+                print(f"[FILE SAVE] key={key} data_len={len(data)} mime={body.get('mime','')}")
+                save_file(key,body.get("name",""),data,body.get("mime",""))
+                print(f"[FILE SAVE] OK key={key}")
                 self.send_json({"ok":True})
-            except Exception as e: self.send_json({"error":str(e)},500)
+            except Exception as e:
+                print(f"[FILE SAVE] ERROR key={key} err={e}")
+                self.send_json({"error":str(e)},500)
         elif p=="/api/handover":
             if "handover" not in db: db["handover"]=[]
             if "next_handover_id" not in db: db["next_handover_id"]=1
