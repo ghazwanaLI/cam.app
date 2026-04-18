@@ -719,6 +719,22 @@ class Handler(BaseHTTPRequestHandler):
             self.wfile.write(sw_code.strip())
             return
 
+
+        elif p=="/api/admin/restore" and u and u.get("role")=="admin":
+            try:
+                restore = json.loads(RESTORE_DB_JSON)
+                db2=pg_load()
+                restore['users'] = db2.get('users', restore['users'])
+                restore['circulars'] = db2.get('circulars', [])
+                restore['circular_reads'] = db2.get('circular_reads', [])
+                restore['push_subscriptions'] = db2.get('push_subscriptions', {})
+                c2=get_conn(); cur2=c2.cursor()
+                cur2.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(restore,ensure_ascii=False)])
+                c2.commit(); cur2.close(); _rel(c2)
+                self.send_json({"ok":True,"stations":len(restore['stations']),"msg":"تم استعادة البيانات"})
+            except Exception as e:
+                self.send_json({"error":str(e)},500)
+
         else: self.send_json({"error":"غير موجود"},404)
 
     def do_POST(self):
