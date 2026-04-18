@@ -137,9 +137,41 @@ def init_pg():
     ]: cur.execute(sql)
     c.commit()
     cur.execute("SELECT value FROM cam_store WHERE key='data'")
-    if not cur.fetchone():
+    row = cur.fetchone()
+    if not row:
+        # قاعدة البيانات فارغة — أدخل البيانات الافتراضية
         cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[json.dumps(default_db(),ensure_ascii=False)])
         c.commit()
+        print(f"[INIT] Created new DB with {len(STATIONS)} stations")
+    else:
+        # قاعدة البيانات موجودة — تحديث المحطات دائماً من STATIONS
+        try:
+            db = json.loads(row[0])
+            db_stations = {s['id']:s for s in db.get('stations',[])}
+            updated = False
+            for st in STATIONS:
+                if st['id'] not in db_stations:
+                    db.setdefault('stations',[]).append(st)
+                    updated = True
+                    print(f"[INIT] Added station: {st['name']}")
+                else:
+                    # حدّث الاسم والقاطع لو تغيّرا
+                    old = db_stations[st['id']]
+                    if old.get('name') != st['name'] or old.get('district') != st['district']:
+                        for i,s in enumerate(db['stations']):
+                            if s['id'] == st['id']:
+                                db['stations'][i].update({'name':st['name'],'district':st['district'],'type':st['type']})
+                                updated = True
+            if len(db.get('stations',[])) == 0:
+                db['stations'] = STATIONS[:]
+                updated = True
+                print(f"[INIT] Restored {len(STATIONS)} stations")
+            if updated:
+                cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
+                c.commit()
+                print(f"[INIT] DB updated, total stations: {len(db['stations'])}")
+        except Exception as e:
+            print(f"[INIT] Sync error: {e}")
     cur.close(); _rel(c)
 
 def pg_load():
