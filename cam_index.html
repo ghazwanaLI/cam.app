@@ -2047,7 +2047,13 @@ window.addEventListener('load',function(){
 
       <!-- INVENTORY TAB -->
       <div id="tab-inventory" style="display:none">
-        <!-- تبويب وحيد: جرد المحطات -->
+        <!-- تبويبات فرعية للجرد -->
+        <div style="display:flex;gap:6px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;background:#f8fafc">
+          <button class="inv-type-tab active" onclick="switchInvType('gov_stations',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:none;background:#fff;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1d4ed8">⛽ محطات حكومية</button>
+          <button class="inv-type-tab" onclick="switchInvType('private_stations',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏪 محطات أهلية</button>
+          <button class="inv-type-tab" onclick="switchInvType('gov_buildings',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏢 بنايات حكومية</button>
+          <button class="inv-type-tab" onclick="switchInvType('factories',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏭 معامل القطاع الخاص</button>
+        </div>
 
         <!-- محتوى: جرد المحطات -->
         <div id="inv-sub-inv-stations" class="inv-sub-content">
@@ -3320,13 +3326,38 @@ window.addEventListener('load',function(){
     <input type="hidden" id="inv-eid">
     <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
 
+      <!-- نوع الموقع -->
+      <div class="fg full">
+        <label class="fl">🏷️ نوع الموقع *</label>
+        <select class="fi" dir="rtl" id="inv-location-type" onchange="updateInvLocationList()" style="font-size:13px">
+          <option value="gov_stations">⛽ محطات حكومية</option>
+          <option value="private_stations">🏪 محطات أهلية</option>
+          <option value="gov_buildings">🏢 بنايات حكومية</option>
+          <option value="factories">🏭 معامل القطاع الخاص</option>
+        </select>
+      </div>
+
       <!-- المحطة + الهاتف + الإحداثيات -->
       <div class="fgrid" style="grid-template-columns:1fr 1fr;gap:10px">
         <div class="fg full" style="grid-column:1/-1">
-          <label class="fl">⛽ اسم المحطة *</label>
-          <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="font-size:13px">
+          <label class="fl" id="inv-station-lbl">⛽ اسم الموقع *</label>
+          <select class="fi" dir="rtl" id="inv-station" onchange="updateInvAddress()" style="font-size:13px;display:none">
             <option value="">— اختر المحطة —</option>
           </select>
+          <input class="fi" id="inv-custom-name" type="text" placeholder="اسم الموقع..." style="font-size:13px;display:none">
+          <div id="inv-factory-type-wrap" style="display:none;margin-top:6px">
+            <select class="fi" dir="rtl" id="inv-factory-type" style="font-size:13px;width:100%">
+              <option value="">— نوع المعمل —</option>
+              <option value="معمل اسفلت">معمل اسفلت</option>
+              <option value="معمل طابوق">معمل طابوق</option>
+              <option value="معمل اسمنت">معمل اسمنت</option>
+              <option value="معمل جص">معمل جص</option>
+              <option value="معمل حديد">معمل حديد</option>
+              <option value="معمل خرسانة">معمل خرسانة</option>
+              <option value="معمل بلاستيك">معمل بلاستيك</option>
+              <option value="معمل آخر">معمل آخر</option>
+            </select>
+          </div>
         </div>
         <div class="fg">
           <label class="fl">📞 الهاتف</label>
@@ -5178,6 +5209,63 @@ function setCamRows(rows){
 }
 
 let allInventory=[];
+
+const INV_FACTORY_TYPES = ['معمل اسفلت','معمل طابوق','معمل اسمنت','معمل جص','معمل حديد','معمل خرسانة','معمل بلاستيك','معمل آخر'];
+let _currentInvType = 'gov_stations';
+
+function switchInvType(type, btn){
+  _currentInvType = type;
+  document.querySelectorAll('.inv-type-tab').forEach(t=>{
+    t.style.background = 'transparent';
+    t.style.border = '1px solid transparent';
+    t.style.borderBottom = 'none';
+    t.style.color = '#64748b';
+  });
+  if(btn){
+    btn.style.background = '#fff';
+    btn.style.border = '1px solid #e2e8f0';
+    btn.style.borderBottom = 'none';
+    btn.style.color = '#1d4ed8';
+  }
+  renderInvList();
+}
+
+function updateInvLocationList(){
+  const type = document.getElementById('inv-location-type')?.value || 'gov_stations';
+  const stSel = document.getElementById('inv-station');
+  const customInp = document.getElementById('inv-custom-name');
+  const factoryWrap = document.getElementById('inv-factory-type-wrap');
+  const lbl = document.getElementById('inv-station-lbl');
+
+  if(type === 'gov_stations'){
+    stSel.style.display = '';
+    customInp.style.display = 'none';
+    factoryWrap.style.display = 'none';
+    if(lbl) lbl.textContent = '⛽ اسم المحطة *';
+    stSel.innerHTML = '<option value="">— اختر المحطة —</option>' +
+      allStations.filter(s=>s.type==='حكومية'||!s.type).map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  } else if(type === 'private_stations'){
+    stSel.style.display = '';
+    customInp.style.display = 'none';
+    factoryWrap.style.display = 'none';
+    if(lbl) lbl.textContent = '🏪 اسم المحطة الأهلية *';
+    stSel.innerHTML = '<option value="">— اختر المحطة —</option>' +
+      allStations.filter(s=>s.type==='أهلية').map(s=>`<option value="${s.id}">${s.name}</option>`).join('');
+  } else if(type === 'gov_buildings'){
+    stSel.style.display = 'none';
+    customInp.style.display = '';
+    factoryWrap.style.display = 'none';
+    if(lbl) lbl.textContent = '🏢 اسم البناية *';
+    customInp.placeholder = 'اسم البناية الحكومية...';
+  } else if(type === 'factories'){
+    stSel.style.display = 'none';
+    customInp.style.display = '';
+    factoryWrap.style.display = '';
+    if(lbl) lbl.textContent = '🏭 اسم المعمل *';
+    customInp.placeholder = 'اسم المعمل...';
+  }
+}
+
 async function loadInvStations(){
   // تحميل المحطات إذا لم تكن محملة
   if(!allStations.length) await loadStations();
@@ -5211,6 +5299,9 @@ function renderInvList(){
   const list=allInventory.filter(x=>{
     if(distF&&x.district!==distF)return false;
     if(stF&&String(x.id)!==String(stF))return false;
+    // فلترة حسب نوع الموقع
+    const locType = x.location_type || 'gov_stations';
+    if(_currentInvType && locType !== _currentInvType) return false;
     return true;
   });
   const tb=document.getElementById('inv-list-body');
@@ -5242,7 +5333,15 @@ function filterInv(){renderInvList();}
 function openInvForm(id){
   const m=id?allInventory.find(x=>x.id===id)||{}:{};
   document.getElementById('inv-eid').value=id||'';
-  document.getElementById('inv-ttl').textContent=id?'تعديل جرد محطة':'إضافة جرد محطة';
+  document.getElementById('inv-ttl').textContent=id?'تعديل بيانات الموقع':'إضافة جرد موقع';
+  // ضبط نوع الموقع
+  const locTypeSel = document.getElementById('inv-location-type');
+  if(locTypeSel){ locTypeSel.value = m.location_type || _currentInvType || 'gov_stations'; updateInvLocationList(); }
+  // ضبط الاسم المخصص لو مو محطة
+  const customInp = document.getElementById('inv-custom-name');
+  if(customInp && m.station_name && !m.station_id){ customInp.value = m.station_name; }
+  const factSel = document.getElementById('inv-factory-type');
+  if(factSel && m.factory_type){ factSel.value = m.factory_type; }
   // إعادة تعيين عدادات الصفوف
   _invDvrCount = 0;
   const ss=document.getElementById('inv-station');
@@ -5280,12 +5379,27 @@ function openInvForm(id){
 
 async function saveInv(){
   const id=parseInt(document.getElementById('inv-eid').value)||0;
-  const stId=parseInt(document.getElementById('inv-station').value)||0;
-  if(!stId){toast('اختر المحطة أولاً','err');return;}
-  const st=allStations.find(s=>s.id===stId)||{};
+  const locType=document.getElementById('inv-location-type')?.value||'gov_stations';
   const v=id=>document.getElementById(id)?.value||'';
   const camRows=getCamRows();
-  // قراءة صفوف DVR الديناميكية — فقط صفوف NVR (ليس صفوف مصدر الطاقة)
+
+  // اسم الموقع ومعرفه
+  let stId=0, stName='', district='';
+  if(locType==='gov_stations'||locType==='private_stations'){
+    stId=parseInt(document.getElementById('inv-station').value)||0;
+    if(!stId){toast('اختر الموقع أولاً','err');return;}
+    const st=allStations.find(s=>s.id===stId)||{};
+    stName=st.name||'';
+    district=st.district||'';
+  } else {
+    stName=document.getElementById('inv-custom-name')?.value?.trim()||'';
+    if(!stName){toast('أدخل اسم الموقع','err');return;}
+    const distSel=document.getElementById('inv-district-manual');
+    district=distSel?.value||v('inv-district-txt')||'';
+  }
+  // نوع المعمل
+  const factoryType = locType==='factories' ? (document.getElementById('inv-factory-type')?.value||'') : '';
+
   const dvrRows=[...document.querySelectorAll('#inv-dvr-body tr[data-dvr-idx]')].map(tr=>{
     const idx=tr.dataset.dvrIdx;
     const pwCbs=document.querySelectorAll(`.dvr-pw-cb-${idx}:checked`);
@@ -5301,7 +5415,8 @@ async function saveInv(){
   }).filter(r=>r.model||r.hdd_size||r.storage);
   const dvr1=dvrRows[0]||{};
   const body={
-    station_id:stId,station_name:st.name||'',district:st.district||'',
+    station_id:stId, station_name:stName, district,
+    location_type:locType, factory_type:factoryType,
     dvr_model:dvr1.model||'',dvr_spec:dvr1.conn||'IP شبكي',
     hdd_size:dvr1.hdd_size||'',hdd_count:dvr1.hdd_count||0,
     storage_days:dvr1.storage||'',
