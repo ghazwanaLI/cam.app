@@ -4078,8 +4078,10 @@ splashProgress(20, '');
 
 async function tryAutoLogin(){
   splashProgress(35, '');
-  document.getElementById('login-screen').style.display='none';
-  document.getElementById('app').style.display='none';
+  const loginEl = document.getElementById('login-screen');
+  const appEl = document.getElementById('app');
+  if(loginEl) loginEl.style.display='none';
+  if(appEl) appEl.style.display='none';
 
   // 1. جرب التوكن المحفوظ
   if(TOKEN){
