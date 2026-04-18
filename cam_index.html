@@ -5717,11 +5717,11 @@ async function initApp(){
   setTimeout(_saveBackup, 8000); // حفظ بعد 8 ثوانٍ من التحميل
 
   // فحص التعاميم غير المقروءة وإجبار المستخدم على قراءتها
-  setTimeout(checkUnreadCirculars, 1200);
+  // popup التعاميم ملغي
   // لو البرنامج فُتح من إشعار — أظهر التعاميم فوراً
   if(window._openCircOnLoad){
     window._openCircOnLoad = false;
-    setTimeout(checkUnreadCirculars, 800);
+    // popup التعاميم ملغي
   }
 
   // إذا جاء من مسح QR مباشر
@@ -6706,35 +6706,7 @@ function showCircularNotifPopup(c, onDone){
   });
 }
 
-async function checkUnreadCirculars(){
-  if(!CU || CU.role==='admin') return;
-  // تشتغل مرة واحدة فقط عند الدخول
-  if(window._circChecked) return;
-  window._circChecked = true;
-  try{
-    // امسح _shownCircIds فقط للتعاميم المقروءة — الغير مقروءة تظهر
-    _shownCircIds = new Set(
-      allCirculars.filter(c=>_circReads[c.id]).map(c=>c.id)
-    );
-
-    const unread = allCirculars.filter(c=>
-      userCanSeeDistrict(c.district) && !_circReads[c.id]
-    ).sort((a,b)=>a.date>b.date?1:-1);
-
-    if(!unread.length) return;
-
-    // سجّل كلهم حتى الـ polling ما يكررهم
-    unread.forEach(c=>_shownCircIds.add(c.id));
-    localStorage.setItem('_shownCircIds',JSON.stringify([..._shownCircIds].slice(-200)));
-
-    let idx=0;
-    function showNext(){
-      if(idx>=unread.length) return;
-      showCircularNotifPopup(unread[idx++], showNext);
-    }
-    showNext();
-  }catch(e){ console.error('checkUnread:',e); }
-}
+async function checkUnreadCirculars(){ /* ملغي */ }
 function renderCirculars(){
   const distF=document.getElementById('f-circ-district')?.value||'';
   const typeF=document.getElementById('f-circ-type')?.value||'';
