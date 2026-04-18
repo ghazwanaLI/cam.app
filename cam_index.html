@@ -1344,6 +1344,8 @@ window.addEventListener('load',function(){
               <button onclick="openHandoverModal('deliver')" style="background:rgba(22,163,74,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📦 تسليم يدوي</button>
               <button onclick="openHandoverModal('receive')" style="background:rgba(220,38,38,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📥 استلام يدوي</button>
               <button onclick="exportHandoverCSV()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">📊 تصدير CSV</button>
+              <button onclick="printHandoverReport('district')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🖨️ تقرير القاطع</button>
+              <button onclick="printHandoverReport('person')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🖨️ تقرير المخول</button>
             </div>
           </div>
           <!-- إحصاء سريع -->
@@ -5661,9 +5663,9 @@ async function initApp(){
     // بطاقة الصيانة — للجميع
     const dmc=document.getElementById('dash-maint-card');
     if(dmc) dmc.style.display='';
-    // استلام وتسليم — مدير فقط
+    // استلام وتسليم — للجميع
     const navHandover=document.getElementById('nav-handover');
-    if(navHandover) navHandover.style.display=isAdmin?'':'none';
+    if(navHandover) navHandover.style.display='';
     // إخفاء المستخدمون والإحصائيات عن المخولين
     const navUsers=document.getElementById('nav-users');
     if(navUsers) navUsers.style.display=isAdmin?'':'none';
@@ -9658,6 +9660,79 @@ function printHandover(id){
   w.document.close();
 }
 
+
+function printHandoverReport(groupBy){
+  const data = allHandover || [];
+  if(!data.length){ toast('لا توجد بيانات للطباعة','err'); return; }
+
+  // تجميع البيانات حسب القاطع أو المخول
+  const groups = {};
+  data.forEach(x=>{
+    const key = groupBy==='district' ? (x.district||'غير محدد') : (x.person||'غير محدد');
+    if(!groups[key]) groups[key] = [];
+    groups[key].push(x);
+  });
+
+  const today = new Date().toLocaleDateString('ar-IQ');
+  let html = '<!DOCTYPE html><html dir="rtl"><head><meta charset="UTF-8">';
+  html += '<style>body{font-family:Arial,sans-serif;padding:16px;direction:rtl;font-size:12px}';
+  html += 'h1{font-size:16px;font-weight:900;margin:0 0 4px}';
+  html += 'h2{font-size:14px;font-weight:800;margin:20px 0 8px;padding:6px 10px;background:#f1f5f9;border-right:4px solid #0891b2}';
+  html += 'table{width:100%;border-collapse:collapse;margin-bottom:16px}';
+  html += 'td,th{border:1px solid #333;padding:4px 8px;font-size:11px}';
+  html += 'th{background:#d0d0d0;font-weight:800;text-align:center}';
+  html += '.total{font-weight:800;background:#f8fafc}';
+  html += '.np{margin-bottom:12px;display:flex;gap:8px}';
+  html += '@media print{.np{display:none!important}@page{margin:8mm}}';
+  html += '</style></head><body>';
+
+  html += '<div class="np">';
+  html += '<button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button>';
+  html += '<button onclick="window.close()" style="background:#f1f5f9;color:#374151;border:1px solid #d1d5db;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">✕ إغلاق</button>';
+  html += '</div>';
+
+  html += '<div style="text-align:center;border-bottom:2px solid #000;padding-bottom:8px;margin-bottom:16px">';
+  html += '<h1>تقرير الاستلام والتسليم — مجمّع حسب '+(groupBy==='district'?'القاطع':'المخول')+'</h1>';
+  html += '<div style="font-size:11px;color:#555">شركة توزيع المنتجات النفطية / فرع صلاح الدين — بتاريخ '+today+'</div>';
+  html += '</div>';
+
+  Object.keys(groups).sort().forEach(key=>{
+    const rows = groups[key];
+    const totalQty = rows.reduce((s,x)=>{
+      const items = Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+      return s + items.reduce((a,r)=>a+(+r.qty||0),0);
+    },0);
+
+    html += '<h2>'+(groupBy==='district'?'📍 القاطع: ':'👤 المخول: ')+key+' — ('+rows.length+' عملية | '+totalQty+' جهاز)</h2>';
+    html += '<table><thead><tr><th>#</th><th>التاريخ</th><th>النوع</th>';
+    if(groupBy==='district') html += '<th>المخول</th>';
+    else html += '<th>القاطع</th>';
+    html += '<th>الأجهزة</th><th>الكمية</th><th>ملاحظات</th></tr></thead><tbody>';
+
+    rows.forEach((x,i)=>{
+      const items = Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
+      const devs = items.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
+      const qty = items.reduce((a,r)=>a+(+r.qty||0),0);
+      const type = x.op_type==='deliver'?'📦 تسليم':'📥 استلام';
+      const col2 = groupBy==='district' ? (x.person||'—') : (x.district||'—');
+      html += '<tr><td style="text-align:center">'+(i+1)+'</td>';
+      html += '<td>'+x.date+'</td><td style="text-align:center">'+type+'</td>';
+      html += '<td>'+col2+'</td><td>'+devs+'</td>';
+      html += '<td style="text-align:center">'+qty+'</td>';
+      html += '<td>'+(x.notes||'')+'</td></tr>';
+    });
+
+    html += '<tr class="total"><td colspan="5" style="text-align:right">المجموع</td>';
+    html += '<td style="text-align:center">'+totalQty+'</td><td></td></tr>';
+    html += '</tbody></table>';
+  });
+
+  html += '</body></html>';
+  const w = window.open('','_blank','width=800,height=600');
+  w.document.write(html);
+  w.document.close();
+}
+
 function exportHandoverCSV(){
   if(!allHandover.length){toast('لا توجد بيانات','err');return;}
   const rows=[['التاريخ','النوع','المخول','القاطع','الأجهزة','الكمية','ملاحظات']];
@@ -9760,10 +9835,13 @@ function updateMobNav(){
   const dr=document.getElementById('drawer-role');
   if(dr) dr.textContent=isAdmin?'🔑 مدير النظام':'👤 مخول قاطع';
   // إظهار/إخفاء عناصر الـ drawer
-  ['drw-users','drw-logs','drw-handover'].forEach(id=>{
+  ['drw-users','drw-logs'].forEach(id=>{
     const e=document.getElementById(id);
     if(e) e.style.display=isAdmin?'':'none';
   });
+  // الاستلام والتسليم للجميع
+  const drwHandover=document.getElementById('drw-handover');
+  if(drwHandover) drwHandover.style.display='';
   // bottom nav field
   const bnField=document.getElementById('bn-field');
   const drwField=document.getElementById('drw-field');
