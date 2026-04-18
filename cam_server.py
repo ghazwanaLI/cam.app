@@ -136,42 +136,29 @@ def init_pg():
         "CREATE TABLE IF NOT EXISTS cam_logs (id SERIAL PRIMARY KEY, user_name TEXT, user_fullname TEXT, action TEXT, details TEXT, ip TEXT, created_at TIMESTAMP DEFAULT NOW())",
     ]: cur.execute(sql)
     c.commit()
+    # تحميل البيانات الحالية
     cur.execute("SELECT value FROM cam_store WHERE key='data'")
     row = cur.fetchone()
+    BACKUP_DATA = '{"users": [{"id": 1, "fullname": "مدير النظام", "username": "admin", "password": "40510175845988f13f6162ed8526f0b09f73384467fa855e1e79b44a56562a58", "role": "admin", "active": true, "district": "", "perms": {"view": true, "edit": true, "del": true, "files": true, "reports": true}}], "delegates": [{"id": 1, "district": "الشرقاط", "name": "مثنى مسلط احمد", "phone": ""}, {"id": 2, "district": "بيجي", "name": "مثنى فياض علي", "phone": ""}, {"id": 3, "district": "تكريت", "name": "شاكر محمود حسين", "phone": ""}, {"id": 4, "district": "سامراء", "name": "محمد زكي اسماعيل", "phone": ""}, {"id": 5, "district": "العلم", "name": "احمد حامد هايس", "phone": ""}, {"id": 6, "district": "بلد", "name": "عبدالرزاق حسن", "phone": ""}, {"id": 7, "district": "الدجيل", "name": "ايهاب خميس ردام", "phone": ""}, {"id": 8, "district": "الدجيل", "name": "اسعد سعيد حاتم", "phone": ""}, {"id": 9, "district": "امرلي الطوز", "name": "سيف الدين", "phone": ""}], "stations": [{"id": 1, "name": "محطة اشور", "district": "الشرقاط", "type": "حكومية", "cam_working": 28, "cam_broken": 2}, {"id": 2, "name": "محطة مكحول", "district": "بيجي", "type": "حكومية", "cam_working": 30, "cam_broken": 2}, {"id": 3, "name": "محطة الشهيد بدر", "district": "بيجي", "type": "حكومية", "cam_working": 32, "cam_broken": 8}, {"id": 4, "name": "محطة الحجاج", "district": "بيجي", "type": "حكومية", "cam_working": 38, "cam_broken": 4}, {"id": 5, "name": "محطة فتح الفتوح", "district": "تكريت", "type": "حكومية", "cam_working": 22, "cam_broken": 8}, {"id": 6, "name": "محطة تكريت القديمة", "district": "تكريت", "type": "حكومية", "cam_working": 32, "cam_broken": 10}, {"id": 7, "name": "محطة تكريت الجديدة", "district": "تكريت", "type": "حكومية", "cam_working": 22, "cam_broken": 4}, {"id": 9, "name": "محطة سامراء الجديدة", "district": "سامراء", "type": "حكومية", "cam_working": 32, "cam_broken": 0}, {"id": 10, "name": "مركز توزيع سامراء", "district": "سامراء", "type": "حكومية", "cam_working": 16, "cam_broken": 0}, {"id": 11, "name": "محطة الشهيدة أمية", "district": "العلم", "type": "حكومية"}, {"id": 12, "name": "محطة الدور", "district": "الدور", "type": "حكومية"}, {"id": 13, "name": "محطة الانوار", "district": "الدور", "type": "حكومية"}, {"id": 14, "name": "محطة بلد", "district": "بلد", "type": "حكومية", "cam_working": 24, "cam_broken": 0}, {"id": 15, "name": "محطة اريحا", "district": "بلد", "type": "حكومية"}, {"id": 16, "name": "محطة الدجيل", "district": "الدجيل", "type": "حكومية"}, {"id": 17, "name": "محطة الطوز القديمة", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 18, "name": "محطة الطوز الجديدة", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 19, "name": "مركز توزيع الطوز", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 21, "name": "شعبة توزيع سامراء", "district": "سامراء", "type": "حكومية", "cam_working": 16, "cam_broken": 0}, {"id": 22, "name": "مقر شعبة توزيع الشرقاط", "district": "الشرقاط", "type": "حكومية", "cam_working": 8, "cam_broken": 8}, {"id": 23, "name": "مقر الفرع/مصفى بيجي", "district": "بيجي", "type": "حكومية", "cam_working": 50, "cam_broken": 10}, {"id": 24, "name": "مستودع الشمال", "district": "بيجي", "type": "حكومية", "cam_working": 4, "cam_broken": 0}, {"id": 25, "name": "مصفى الصينية", "district": "بيجي", "type": "حكومية", "cam_working": 5, "cam_broken": 0}, {"id": 26, "name": "مستودع الجديد", "district": "بيجي", "type": "حكومية", "cam_working": 5, "cam_broken": 0}, {"id": 27, "name": "مستودع الارسال", "district": "بيجي", "type": "حكومية", "cam_working": 4, "cam_broken": 0}, {"id": 28, "name": "مقر شعبة توزيع الدجيل", "district": "الدجيل", "type": "حكومية"}, {"id": 29, "name": "مقر الفرع -تكريت", "district": "تكريت", "type": "حكومية", "cam_working": 58, "cam_broken": 10}, {"id": 30, "name": "مقر قسم التفتيش", "district": "سامراء", "type": "حكومية", "cam_working": 0, "cam_broken": 16, "main_cam_count": 16, "main_cam_type": "", "main_hdd_count": 4, "main_hdd_size": "8تيرا", "main_record_days": "أكثر من 90 يوم", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 31, "name": "محطة سامراء القديمة", "district": "سامراء", "type": "حكومية", "cam_working": 25, "cam_broken": 5}, {"id": 32, "name": "محطة البوطعمة الاهلية", "district": "بيجي", "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 8, "main_cam_type": "هيكفجن", "main_hdd_count": 2, "main_hdd_size": "8", "main_record_days": "90 يوم", "sanda_cam_count": 8, "sanda_cam_type": "هيكفجن", "sanda_hdd_count": 2, "sanda_hdd_size": "8 تيرا", "sanda_record_days": "90 يوم", "sanda_notes": ""}, {"id": 34, "name": "محطة الصخرة الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 24, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 35, "name": "محطة بادية الحجاج", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 36, "name": "محطة هيبة العمران", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 37, "name": "العباسي الاهلية", "district": "سامراء", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 1, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 38, "name": "ارض الدجيل الاهلية", "district": "الدجيل", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 40, "name": "الحمرة الاهلية", "district": "تكريت", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 41, "name": "درة بيجي", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 20, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 42, "name": "محطة الصخرة الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 43, "name": "محطة اشور", "district": "الشرقاط", "districts": [], "type": "حكومية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 44, "name": "البندري الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 45, "name": "الملك الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 46, "name": "امواج البحر", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 24, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 47, "name": "الشراع الاهلبة", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 15, "cam_broken": 1, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 48, "name": "مقر الفرع / تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 60, "cam_broken": 3, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 49, "name": "مقر الهيأة الغربية / تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 10, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 50, "name": "بناية مقر شعبة التفتيش /تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 10, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 51, "name": "عين البنية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 18, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 52, "name": "القلعة الاهلية", "district": "الشرقاط / الايمن", "districts": [], "type": "أهلية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}], "tours": [{"id": 28, "date": "2026-04-09", "district": "الشرقاط / الايمن", "station_id": 52, "station_name": "القلعة الاهلية", "visit_type": "متابعة", "notes": "للفحص", "technician": "مسؤول وحدة الكاميرات", "created_by": "مسؤول وحدة الكاميرات", "created_at": "2026-04-09 13:06"}], "maintenance": [{"id": 84, "date": "2026-04-08", "district": "بلد", "station_id": 14, "station_name": "محطة بلد", "device_type": "كاميرا(2)", "qty": 2, "reason": "قطع كيبل رئيسي/ استبدال كاميرات / اعادة توجيه كاميرات / تشغيل كاميرات", "technician": "غزون علي - عبدالرزاق محمد حسن - علي دحام", "notes": "", "created_by": "علي دحام محمود البشر", "created_at": "2026-04-08 18:09"}, {"id": 85, "date": "2026-04-09", "district": "العلم", "station_id": 11, "station_name": "محطة الشهيدة أمية", "device_type": "كاميرا(1)", "qty": 1, "reason": "قطع كيبل رئيسي/ استبدال كاميرات / اعادة توجيه كاميرات / تشغيل كاميرات", "technician": "غزوان علي مطر - علي دحام محمود", "notes": "", "created_by": "مسؤول وحدة الكاميرات", "created_at": "2026-04-09 12:11"}], "cameras": [], "files": {}, "next_user_id": 2, "next_tour_id": 29, "next_maintenance_id": 86, "next_camera_id": 1, "next_station_id": 53, "next_delegate_id": 10, "inventory": [], "next_inventory_id": 1, "circulars": [], "circular_reads": [], "push_subscriptions": {}, "next_circular_id": 1, "custom_districts": [], "notifications": [], "inv_buildings": [], "next_inv_building_id": 1, "handover": [], "next_handover_id": 1, "inv_private": [], "next_inv_private_id": 1, "next_notif_id": 1}'
     if not row:
-        # قاعدة البيانات فارغة — أدخل البيانات الافتراضية
-        cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[json.dumps(default_db(),ensure_ascii=False)])
+        cur.execute("INSERT INTO cam_store VALUES ('data',%s)",[BACKUP_DATA])
         c.commit()
-        print(f"[INIT] Created new DB with {len(STATIONS)} stations")
+        print(f"[INIT] Created DB with {len(json.loads(BACKUP_DATA).get('stations',[]))} stations")
     else:
-        # قاعدة البيانات موجودة — تحديث المحطات دائماً من STATIONS
-        try:
-            db = json.loads(row[0])
-            db_stations = {s['id']:s for s in db.get('stations',[])}
-            updated = False
-            for st in STATIONS:
-                if st['id'] not in db_stations:
-                    db.setdefault('stations',[]).append(st)
-                    updated = True
-                    print(f"[INIT] Added station: {st['name']}")
-                else:
-                    # حدّث الاسم والقاطع لو تغيّرا
-                    old = db_stations[st['id']]
-                    if old.get('name') != st['name'] or old.get('district') != st['district']:
-                        for i,s in enumerate(db['stations']):
-                            if s['id'] == st['id']:
-                                db['stations'][i].update({'name':st['name'],'district':st['district'],'type':st['type']})
-                                updated = True
-            if len(db.get('stations',[])) == 0:
-                db['stations'] = STATIONS[:]
-                updated = True
-                print(f"[INIT] Restored {len(STATIONS)} stations")
-            if updated:
-                cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(db,ensure_ascii=False)])
-                c.commit()
-                print(f"[INIT] DB updated, total stations: {len(db['stations'])}")
-        except Exception as e:
-            print(f"[INIT] Sync error: {e}")
+        existing = json.loads(row[0])
+        if len(existing.get('stations',[])) < 5:
+            backup = json.loads(BACKUP_DATA)
+            backup['users'] = existing.get('users', backup['users'])
+            backup['circulars'] = existing.get('circulars', [])
+            backup['circular_reads'] = existing.get('circular_reads', [])
+            backup['push_subscriptions'] = existing.get('push_subscriptions', {})
+            backup['maintenance'] = existing.get('maintenance', backup['maintenance'])
+            backup['tours'] = existing.get('tours', backup['tours'])
+            cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(backup,ensure_ascii=False)])
+            c.commit()
+            print(f"[INIT] Restored {len(backup['stations'])} stations")
+        else:
+            print(f"[INIT] DB OK, stations: {len(existing.get('stations',[]))}")
     cur.close(); _rel(c)
 
 def pg_load():
@@ -298,54 +285,22 @@ def get_logs(limit=100):
 DISTRICTS = ["الشرقاط / الايمن","الشرقاط الايسر","بيجي","تكريت","سامراء","العلم","الدور","بلد","الدجيل"]
 
 STATIONS = [
-    {"id":1,"name":"محطة اشور","district":"الشرقاط","type":"حكومية","cam_working":28,"cam_broken":2,"station_status":"تعمل"},
-    {"id":2,"name":"محطة مكحول","district":"بيجي","type":"حكومية","cam_working":30,"cam_broken":2,"station_status":"تعمل"},
-    {"id":3,"name":"محطة الشهيد بدر","district":"بيجي","type":"حكومية","cam_working":32,"cam_broken":8,"station_status":"تعمل"},
-    {"id":4,"name":"محطة الحجاج","district":"بيجي","type":"حكومية","cam_working":38,"cam_broken":4,"station_status":"تعمل"},
-    {"id":5,"name":"محطة فتح الفتوح","district":"تكريت","type":"حكومية","cam_working":22,"cam_broken":8,"station_status":"تعمل"},
-    {"id":6,"name":"محطة تكريت القديمة","district":"تكريت","type":"حكومية","cam_working":32,"cam_broken":10,"station_status":"تعمل"},
-    {"id":7,"name":"محطة تكريت الجديدة","district":"تكريت","type":"حكومية","cam_working":22,"cam_broken":4,"station_status":"تعمل"},
-    {"id":9,"name":"محطة سامراء الجديدة","district":"سامراء","type":"حكومية","cam_working":32,"cam_broken":0,"station_status":"تعمل"},
-    {"id":10,"name":"مركز توزيع سامراء","district":"سامراء","type":"حكومية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":11,"name":"محطة الشهيدة أمية","district":"العلم","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":12,"name":"محطة الدور","district":"الدور","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":13,"name":"محطة الانوار","district":"الدور","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":14,"name":"محطة بلد","district":"بلد","type":"حكومية","cam_working":24,"cam_broken":0,"station_status":"تعمل"},
-    {"id":15,"name":"محطة اريحا","district":"بلد","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":16,"name":"محطة الدجيل","district":"الدجيل","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":17,"name":"محطة الطوز القديمة","district":"امرلي الطوز","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":18,"name":"محطة الطوز الجديدة","district":"امرلي الطوز","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":19,"name":"مركز توزيع الطوز","district":"امرلي الطوز","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":21,"name":"شعبة توزيع سامراء","district":"سامراء","type":"حكومية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":22,"name":"مقر شعبة توزيع الشرقاط","district":"الشرقاط","type":"حكومية","cam_working":8,"cam_broken":8,"station_status":"تعمل"},
-    {"id":23,"name":"مقر الفرع/مصفى بيجي","district":"بيجي","type":"حكومية","cam_working":50,"cam_broken":10,"station_status":"تعمل"},
-    {"id":24,"name":"مستودع الشمال","district":"بيجي","type":"حكومية","cam_working":4,"cam_broken":0,"station_status":"تعمل"},
-    {"id":25,"name":"مصفى الصينية","district":"بيجي","type":"حكومية","cam_working":5,"cam_broken":0,"station_status":"تعمل"},
-    {"id":26,"name":"مستودع الجديد","district":"بيجي","type":"حكومية","cam_working":5,"cam_broken":0,"station_status":"تعمل"},
-    {"id":27,"name":"مستودع الارسال","district":"بيجي","type":"حكومية","cam_working":4,"cam_broken":0,"station_status":"تعمل"},
-    {"id":28,"name":"مقر شعبة توزيع الدجيل","district":"الدجيل","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":29,"name":"مقر الفرع -تكريت","district":"تكريت","type":"حكومية","cam_working":58,"cam_broken":10,"station_status":"تعمل"},
-    {"id":30,"name":"مقر قسم التفتيش","district":"سامراء","type":"حكومية","cam_working":0,"cam_broken":16,"station_status":"تعمل"},
-    {"id":31,"name":"محطة سامراء القديمة","district":"سامراء","type":"حكومية","cam_working":25,"cam_broken":5,"station_status":"تعمل"},
-    {"id":32,"name":"محطة البوطعمة الاهلية","district":"بيجي","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":34,"name":"محطة الصخرة الاهلية","district":"بيجي","type":"أهلية","cam_working":24,"cam_broken":0,"station_status":"تعمل"},
-    {"id":35,"name":"محطة بادية الحجاج","district":"بيجي","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":36,"name":"محطة هيبة العمران","district":"بيجي","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":37,"name":"العباسي الاهلية","district":"سامراء","type":"أهلية","cam_working":16,"cam_broken":1,"station_status":"تعمل"},
-    {"id":38,"name":"ارض الدجيل الاهلية","district":"الدجيل","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":40,"name":"الحمرة الاهلية","district":"تكريت","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":41,"name":"درة بيجي","district":"بيجي","type":"أهلية","cam_working":20,"cam_broken":0,"station_status":"تعمل"},
-    {"id":42,"name":"محطة الصخرة الاهلية","district":"بيجي","type":"أهلية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":43,"name":"محطة اشور","district":"الشرقاط","type":"حكومية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
-    {"id":44,"name":"البندري الاهلية","district":"بيجي","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":45,"name":"الملك الاهلية","district":"بيجي","type":"أهلية","cam_working":16,"cam_broken":0,"station_status":"تعمل"},
-    {"id":46,"name":"امواج البحر","district":"بيجي","type":"أهلية","cam_working":24,"cam_broken":0,"station_status":"تعمل"},
-    {"id":47,"name":"الشراع الاهلبة","district":"بيجي","type":"أهلية","cam_working":15,"cam_broken":1,"station_status":"تعمل"},
-    {"id":48,"name":"مقر الفرع / تكريت","district":"تكريت","type":"حكومية","cam_working":60,"cam_broken":3,"station_status":"تعمل"},
-    {"id":49,"name":"مقر الهيأة الغربية / تكريت","district":"تكريت","type":"حكومية","cam_working":10,"cam_broken":0,"station_status":"تعمل"},
-    {"id":50,"name":"بناية مقر شعبة التفتيش /تكريت","district":"تكريت","type":"حكومية","cam_working":10,"cam_broken":0,"station_status":"تعمل"},
-    {"id":51,"name":"عين البنية","district":"بيجي","type":"أهلية","cam_working":18,"cam_broken":0,"station_status":"تعمل"},
-    {"id":52,"name":"القلعة الاهلية","district":"الشرقاط / الايمن","type":"أهلية","cam_working":0,"cam_broken":0,"station_status":"تعمل"},
+    {"id":1,"name":"محطة اشور","district":"الشرقاط / الايمن","type":"حكومية"},
+    {"id":2,"name":"محطة مكحول","district":"بيجي","type":"حكومية"},
+    {"id":3,"name":"محطة الشهيد بدر","district":"بيجي","type":"حكومية"},
+    {"id":4,"name":"محطة الحجاج","district":"بيجي","type":"حكومية"},
+    {"id":5,"name":"محطة فتح الفتوح","district":"تكريت","type":"حكومية"},
+    {"id":6,"name":"محطة تكريت القديمة","district":"تكريت","type":"حكومية"},
+    {"id":7,"name":"محطة تكريت الجديدة","district":"تكريت","type":"حكومية"},
+    {"id":8,"name":"محطة سامراء القديمة","district":"سامراء","type":"حكومية"},
+    {"id":9,"name":"محطة سامراء الجديدة","district":"سامراء","type":"حكومية"},
+    {"id":10,"name":"مركز توزيع سامراء","district":"سامراء","type":"حكومية"},
+    {"id":11,"name":"محطة الشهيدة أمية","district":"العلم","type":"حكومية"},
+    {"id":12,"name":"محطة الدور","district":"الدور","type":"حكومية"},
+    {"id":13,"name":"محطة الانوار","district":"الدور","type":"حكومية"},
+    {"id":14,"name":"محطة بلد","district":"بلد","type":"حكومية"},
+    {"id":15,"name":"محطة اريحا","district":"بلد","type":"حكومية"},
+    {"id":16,"name":"محطة الدجيل","district":"الدجيل","type":"حكومية"},
 ]
 
 # Dynamic districts list stored in db
@@ -366,7 +321,7 @@ def default_db():
         "next_tour_id":1,
         "next_maintenance_id":1,
         "next_camera_id":1,
-        "next_station_id":53,
+        "next_station_id":17,
         "next_delegate_id":1,
         "inventory":[],
         "next_inventory_id":1,
@@ -380,29 +335,6 @@ def default_db():
         "inv_private":[],"next_inv_private_id":1,
         "next_notif_id":1,
     }
-
-
-RESTORE_DB_JSON = '{"users": [{"id": 1, "fullname": "مدير النظام", "username": "admin", "password": "40510175845988f13f6162ed8526f0b09f73384467fa855e1e79b44a56562a58", "role": "admin", "active": true, "district": "", "perms": {"view": true, "edit": true, "del": true, "files": true, "reports": true}}], "delegates": [{"id": 1, "district": "الشرقاط", "name": "مثنى مسلط احمد", "phone": ""}, {"id": 2, "district": "بيجي", "name": "مثنى فياض علي", "phone": ""}, {"id": 3, "district": "تكريت", "name": "شاكر محمود حسين", "phone": ""}, {"id": 4, "district": "سامراء", "name": "محمد زكي اسماعيل", "phone": ""}, {"id": 5, "district": "العلم", "name": "احمد حامد هايس", "phone": ""}, {"id": 6, "district": "بلد", "name": "عبدالرزاق حسن", "phone": ""}, {"id": 7, "district": "الدجيل", "name": "ايهاب خميس ردام", "phone": ""}, {"id": 8, "district": "الدجيل", "name": "اسعد سعيد حاتم", "phone": ""}, {"id": 9, "district": "امرلي الطوز", "name": "سيف الدين", "phone": ""}], "stations": [{"id": 1, "name": "محطة اشور", "district": "الشرقاط", "type": "حكومية", "cam_working": 28, "cam_broken": 2}, {"id": 2, "name": "محطة مكحول", "district": "بيجي", "type": "حكومية", "cam_working": 30, "cam_broken": 2}, {"id": 3, "name": "محطة الشهيد بدر", "district": "بيجي", "type": "حكومية", "cam_working": 32, "cam_broken": 8}, {"id": 4, "name": "محطة الحجاج", "district": "بيجي", "type": "حكومية", "cam_working": 38, "cam_broken": 4}, {"id": 5, "name": "محطة فتح الفتوح", "district": "تكريت", "type": "حكومية", "cam_working": 22, "cam_broken": 8}, {"id": 6, "name": "محطة تكريت القديمة", "district": "تكريت", "type": "حكومية", "cam_working": 32, "cam_broken": 10}, {"id": 7, "name": "محطة تكريت الجديدة", "district": "تكريت", "type": "حكومية", "cam_working": 22, "cam_broken": 4}, {"id": 9, "name": "محطة سامراء الجديدة", "district": "سامراء", "type": "حكومية", "cam_working": 32, "cam_broken": 0}, {"id": 10, "name": "مركز توزيع سامراء", "district": "سامراء", "type": "حكومية", "cam_working": 16, "cam_broken": 0}, {"id": 11, "name": "محطة الشهيدة أمية", "district": "العلم", "type": "حكومية"}, {"id": 12, "name": "محطة الدور", "district": "الدور", "type": "حكومية"}, {"id": 13, "name": "محطة الانوار", "district": "الدور", "type": "حكومية"}, {"id": 14, "name": "محطة بلد", "district": "بلد", "type": "حكومية", "cam_working": 24, "cam_broken": 0}, {"id": 15, "name": "محطة اريحا", "district": "بلد", "type": "حكومية"}, {"id": 16, "name": "محطة الدجيل", "district": "الدجيل", "type": "حكومية"}, {"id": 17, "name": "محطة الطوز القديمة", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 18, "name": "محطة الطوز الجديدة", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 19, "name": "مركز توزيع الطوز", "district": "امرلي الطوز", "type": "حكومية"}, {"id": 21, "name": "شعبة توزيع سامراء", "district": "سامراء", "type": "حكومية", "cam_working": 16, "cam_broken": 0}, {"id": 22, "name": "مقر شعبة توزيع الشرقاط", "district": "الشرقاط", "type": "حكومية", "cam_working": 8, "cam_broken": 8}, {"id": 23, "name": "مقر الفرع/مصفى بيجي", "district": "بيجي", "type": "حكومية", "cam_working": 50, "cam_broken": 10}, {"id": 24, "name": "مستودع الشمال", "district": "بيجي", "type": "حكومية", "cam_working": 4, "cam_broken": 0}, {"id": 25, "name": "مصفى الصينية", "district": "بيجي", "type": "حكومية", "cam_working": 5, "cam_broken": 0}, {"id": 26, "name": "مستودع الجديد", "district": "بيجي", "type": "حكومية", "cam_working": 5, "cam_broken": 0}, {"id": 27, "name": "مستودع الارسال", "district": "بيجي", "type": "حكومية", "cam_working": 4, "cam_broken": 0}, {"id": 28, "name": "مقر شعبة توزيع الدجيل", "district": "الدجيل", "type": "حكومية"}, {"id": 29, "name": "مقر الفرع -تكريت", "district": "تكريت", "type": "حكومية", "cam_working": 58, "cam_broken": 10}, {"id": 30, "name": "مقر قسم التفتيش", "district": "سامراء", "type": "حكومية", "cam_working": 0, "cam_broken": 16, "main_cam_count": 16, "main_cam_type": "", "main_hdd_count": 4, "main_hdd_size": "8تيرا", "main_record_days": "أكثر من 90 يوم", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 31, "name": "محطة سامراء القديمة", "district": "سامراء", "type": "حكومية", "cam_working": 25, "cam_broken": 5}, {"id": 32, "name": "محطة البوطعمة الاهلية", "district": "بيجي", "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 8, "main_cam_type": "هيكفجن", "main_hdd_count": 2, "main_hdd_size": "8", "main_record_days": "90 يوم", "sanda_cam_count": 8, "sanda_cam_type": "هيكفجن", "sanda_hdd_count": 2, "sanda_hdd_size": "8 تيرا", "sanda_record_days": "90 يوم", "sanda_notes": ""}, {"id": 34, "name": "محطة الصخرة الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 24, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 35, "name": "محطة بادية الحجاج", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 36, "name": "محطة هيبة العمران", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 37, "name": "العباسي الاهلية", "district": "سامراء", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 1, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 38, "name": "ارض الدجيل الاهلية", "district": "الدجيل", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 40, "name": "الحمرة الاهلية", "district": "تكريت", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 41, "name": "درة بيجي", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 20, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 42, "name": "محطة الصخرة الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 43, "name": "محطة اشور", "district": "الشرقاط", "districts": [], "type": "حكومية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 44, "name": "البندري الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 45, "name": "الملك الاهلية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 16, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 46, "name": "امواج البحر", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 24, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 47, "name": "الشراع الاهلبة", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 15, "cam_broken": 1, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 48, "name": "مقر الفرع / تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 60, "cam_broken": 3, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 49, "name": "مقر الهيأة الغربية / تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 10, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 50, "name": "بناية مقر شعبة التفتيش /تكريت", "district": "تكريت", "districts": [], "type": "حكومية", "cam_working": 10, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 51, "name": "عين البنية", "district": "بيجي", "districts": [], "type": "أهلية", "cam_working": 18, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}, {"id": 52, "name": "القلعة الاهلية", "district": "الشرقاط / الايمن", "districts": [], "type": "أهلية", "cam_working": 0, "cam_broken": 0, "main_cam_count": 0, "main_cam_type": "", "main_hdd_count": 0, "main_hdd_size": "", "main_record_days": "", "sanda_cam_count": 0, "sanda_cam_type": "", "sanda_hdd_count": 0, "sanda_hdd_size": "", "sanda_record_days": "", "sanda_notes": ""}], "tours": [{"id": 28, "date": "2026-04-09", "district": "الشرقاط / الايمن", "station_id": 52, "station_name": "القلعة الاهلية", "visit_type": "متابعة", "notes": "للفحص", "technician": "مسؤول وحدة الكاميرات", "created_by": "مسؤول وحدة الكاميرات", "created_at": "2026-04-09 13:06"}], "maintenance": [{"id": 84, "date": "2026-04-08", "district": "بلد", "station_id": 14, "station_name": "محطة بلد", "device_type": "كاميرا(2)", "qty": 2, "reason": "قطع كيبل رئيسي/ استبدال كاميرات / اعادة توجيه كاميرات / تشغيل كاميرات", "technician": "غزون علي - عبدالرزاق محمد حسن - علي دحام", "notes": "", "created_by": "علي دحام محمود البشر", "created_at": "2026-04-08 18:09"}, {"id": 85, "date": "2026-04-09", "district": "العلم", "station_id": 11, "station_name": "محطة الشهيدة أمية", "device_type": "كاميرا(1)", "qty": 1, "reason": "قطع كيبل رئيسي/ استبدال كاميرات / اعادة توجيه كاميرات / تشغيل كاميرات", "technician": "غزوان علي مطر - علي دحام محمود", "notes": "", "created_by": "مسؤول وحدة الكاميرات", "created_at": "2026-04-09 12:11"}], "cameras": [], "files": {}, "next_user_id": 2, "next_tour_id": 29, "next_maintenance_id": 86, "next_camera_id": 1, "next_station_id": 53, "next_delegate_id": 10, "inventory": [], "next_inventory_id": 1, "circulars": [], "circular_reads": [], "push_subscriptions": {}, "next_circular_id": 1, "custom_districts": [], "notifications": [], "inv_buildings": [], "next_inv_building_id": 1, "handover": [], "next_handover_id": 1, "inv_private": [], "next_inv_private_id": 1, "next_notif_id": 1}'
-
-def force_restore_if_empty():
-    """يستعيد البيانات لو المحطات فارغة"""
-    if not USE_DB: return
-    try:
-        db = pg_load()
-        if len(db.get('stations',[])) < 5:
-            print("[RESTORE] Stations empty, restoring from backup...")
-            restore = json.loads(RESTORE_DB_JSON)
-            # احتفظ بالمستخدمين والتعاميم الموجودة
-            restore['users'] = db.get('users', restore['users'])
-            restore['circulars'] = db.get('circulars', [])
-            restore['circular_reads'] = db.get('circular_reads', [])
-            restore['push_subscriptions'] = db.get('push_subscriptions', {})
-            c=get_conn(); cur=c.cursor()
-            cur.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(restore,ensure_ascii=False)])
-            c.commit(); cur.close(); _rel(c)
-            print(f"[RESTORE] Done! Stations: {len(restore['stations'])}")
-    except Exception as e:
-        print(f"[RESTORE] Error: {e}")
 
 sessions = {}
 
@@ -517,12 +449,6 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/stations":
             sts=db["stations"]
-            # لو المحطات فارغة في DB — استخدم STATIONS مباشرة وأضفها للـ DB
-            if not sts:
-                sts = STATIONS[:]
-                db["stations"] = sts
-                save_db(db)
-                print(f"[STATIONS] Restored {len(sts)} stations from STATIONS list")
             if u["role"]!="admin":
                 u_dists=get_user_dists(u)
                 if u_dists: sts=[s for s in sts if s.get("district") in u_dists]
@@ -724,22 +650,6 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(sw_code.strip())
             return
-
-
-        elif p=="/api/admin/restore" and u and u.get("role")=="admin":
-            try:
-                restore = json.loads(RESTORE_DB_JSON)
-                db2=pg_load()
-                restore['users'] = db2.get('users', restore['users'])
-                restore['circulars'] = db2.get('circulars', [])
-                restore['circular_reads'] = db2.get('circular_reads', [])
-                restore['push_subscriptions'] = db2.get('push_subscriptions', {})
-                c2=get_conn(); cur2=c2.cursor()
-                cur2.execute("UPDATE cam_store SET value=%s WHERE key='data'",[json.dumps(restore,ensure_ascii=False)])
-                c2.commit(); cur2.close(); _rel(c2)
-                self.send_json({"ok":True,"stations":len(restore['stations']),"msg":"تم استعادة البيانات"})
-            except Exception as e:
-                self.send_json({"error":str(e)},500)
 
         else: self.send_json({"error":"غير موجود"},404)
 
@@ -1191,7 +1101,6 @@ if __name__=="__main__":
     if USE_DB:
         print("⏳ تهيئة قاعدة البيانات...")
         init_pg()
-        force_restore_if_empty()
     server = ThreadedHTTPServer(("0.0.0.0", PORT), Handler)
     print(f"\n  📹  نظام إدارة كاميرات المراقبة")
     print(f"  ✅  السيرفر يعمل على المنفذ {PORT}")
