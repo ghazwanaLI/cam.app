@@ -4063,13 +4063,21 @@ function splashHide(){
   if(!s) return;
   s.style.transition = 'opacity .5s ease';
   s.style.opacity = '0';
-  setTimeout(() => s.remove(), 500);
+  setTimeout(() => { s.remove(); }, 500);
 }
+// إخفاء الـ splash تلقائياً بعد 8 ثواني كحد أقصى
+setTimeout(function(){
+  const s = document.getElementById('splash-screen');
+  if(s){ splashHide(); }
+  // تأكد أن الـ app ظاهر
+  const app = document.getElementById('app');
+  if(app && app.style.display==='none') app.style.display='block';
+}, 8000);
 // بدء الـ splash فور تحميل الصفحة
-splashProgress(20, 'تهيئة النظام...');
+splashProgress(20, '');
 
 async function tryAutoLogin(){
-  splashProgress(35, 'التحقق من الجلسة...');
+  splashProgress(35, '');
   document.getElementById('login-screen').style.display='none';
   document.getElementById('app').style.display='none';
 
@@ -4078,7 +4086,7 @@ async function tryAutoLogin(){
     try{
       const d=await fetch(API+'/api/me',{headers:{'Authorization':'Bearer '+TOKEN}});
       if(d.ok){ const j=await d.json(); CU=j.user; SERVER_ONLINE=true;
-        splashProgress(70,'جاري تحميل البيانات...');
+        splashProgress(70,'');
         document.getElementById('app').style.display='block'; await initApp();
         splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
     }catch(e){}
@@ -4086,12 +4094,12 @@ async function tryAutoLogin(){
   }
 
   // 2. جرب بيانات الدخول المحفوظة
-  splashProgress(50, 'جاري تسجيل الدخول...');
+  splashProgress(50, '');
   const saved=LS.get('login_creds');
   if(saved){
     const ok=await silentLoginWith(saved.u, saved.p);
     if(ok){ SERVER_ONLINE=true;
-      splashProgress(70,'جاري تحميل البيانات...');
+      splashProgress(70,'');
       document.getElementById('app').style.display='block'; await initApp();
       splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
   }
@@ -4099,18 +4107,18 @@ async function tryAutoLogin(){
   // 3. جرب الدخول التلقائي
   const autoOk=await silentLoginWith(AUTO_USER, AUTO_PASS);
   if(autoOk){ SERVER_ONLINE=true;
-    splashProgress(70,'جاري تحميل البيانات...');
+    splashProgress(70,'');
     document.getElementById('app').style.display='block'; await initApp();
     splashProgress(100,'مرحباً '+CU.fullname); setTimeout(splashHide,2500); return; }
 
   // 4. دخول كضيف
-  splashProgress(80,'وضع عدم الاتصال...');
+  splashProgress(80,'');
   SERVER_ONLINE=false;
   CU={id:0,fullname:'ضيف',username:'guest',role:'viewer',district:'',active:true,
       perms:{view:true,edit:false,del:false,files:false,reports:true}};
   document.getElementById('app').style.display='block';
   await initApp();
-  splashProgress(100,'وضع عدم الاتصال'); setTimeout(splashHide,2500);
+  splashProgress(100,''); setTimeout(splashHide,2500);
   showOfflineBanner();
 }
 
