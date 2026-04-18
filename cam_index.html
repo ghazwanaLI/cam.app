@@ -1341,8 +1341,9 @@ window.addEventListener('load',function(){
             <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:4px">🔄 استلام وتسليم الأجهزة</div>
             <div style="font-size:11px;color:rgba(255,255,255,.6)">سجل الأجهزة المستلمة والمسلّمة — يُحدَّث تلقائياً من سجل الصيانة</div>
             <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <button onclick="openHandoverModal('deliver')" style="background:rgba(22,163,74,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📦 تسليم يدوي</button>
-              <button onclick="openHandoverModal('receive')" style="background:rgba(220,38,38,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📥 استلام يدوي</button>
+              <button onclick="openHandoverModal('deliver')" id="btn-hov-deliver" style="background:rgba(22,163,74,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📦 تسليم يدوي</button>
+              <button onclick="openHandoverModal('receive')" id="btn-hov-receive" style="background:rgba(220,38,38,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📥 استلام يدوي</button>
+              <button onclick="openHandoverSubmitModal()" id="btn-hov-submit" style="background:rgba(245,158,11,.85);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">⚠️ تسليم جهاز عاطل للمدير</button>
               <button onclick="exportHandoverCSV()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">📊 تصدير CSV</button>
               <button onclick="printHandoverReport('district')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🖨️ تقرير القاطع</button>
               <button onclick="printHandoverReport('person')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🖨️ تقرير المخول</button>
@@ -9555,6 +9556,85 @@ function updateHandoverStats(){
     {bg:'#fff1f2',c:'#dc2626',icon:'📥',val:receives.length,lbl:'استلام معطوب'},
     {bg:'#eff6ff',c:'#1d4ed8',icon:'📊',val:total,lbl:'إجمالي القطع'},
   ].map(s=>`<div style="background:${s.bg};padding:12px;text-align:center"><div style="font-size:18px">${s.icon}</div><div style="font-size:22px;font-weight:900;color:${s.c}">${s.val}</div><div style="font-size:10px;color:#64748b;font-weight:700">${s.lbl}</div></div>`).join('');
+}
+
+
+function openHandoverSubmitModal(){
+  let ov = document.getElementById('ov-submit-defect');
+  if(!ov){
+    ov = document.createElement('div');
+    ov.id = 'ov-submit-defect';
+    ov.className = 'overlay';
+    ov.onclick = function(e){ if(e.target===ov) closeModal('ov-submit-defect'); };
+    ov.innerHTML = `<div class="modal" style="width:460px;direction:rtl">
+      <div class="m-title" style="background:linear-gradient(135deg,#92400e,#d97706);color:#fff;border-radius:12px 12px 0 0;padding:14px 18px">⚠️ تسليم جهاز عاطل للمدير</div>
+      <div style="padding:4px 0 10px;font-size:12px;color:#64748b;text-align:center">سيظهر هذا التسليم في تقرير الاستلام والتسليم</div>
+      <div class="fgrid">
+        <div class="fg"><label class="fl">التاريخ *</label><input class="fi" id="def-date" type="date"></div>
+        <div class="fg"><label class="fl">القاطع *</label><select class="fi" dir="rtl" id="def-district"></select></div>
+        <div class="fg full"><label class="fl">اسم الموظف / المخول *</label><input class="fi" id="def-person" type="text" placeholder="اسمك..."></div>
+      </div>
+      <div style="margin:8px 0 5px;font-size:12px;font-weight:700;color:#d97706">⚠️ الأجهزة العاطلة</div>
+      <div id="def-items"></div>
+      <button type="button" onclick="addDefItemRow()" style="background:#fffbeb;color:#d97706;border:1px solid #fde68a;padding:5px 14px;border-radius:7px;cursor:pointer;font-family:Cairo,sans-serif;font-size:11px;font-weight:700;margin-bottom:10px">➕ إضافة جهاز عاطل</button>
+      <div class="fg"><label class="fl">ملاحظات / سبب العطل</label><textarea class="fi" id="def-notes" dir="rtl" rows="2" style="resize:vertical;text-align:right" placeholder="وصف العطل..."></textarea></div>
+      <div class="m-footer">
+        <button class="btn btn-o" onclick="closeModal('ov-submit-defect')">إلغاء</button>
+        <button class="btn btn-p" onclick="saveDefectSubmit()" style="background:#d97706;border-color:#d97706">⚠️ تسليم</button>
+      </div>
+    </div>`;
+    document.body.appendChild(ov);
+  }
+  // تعبئة تلقائية
+  document.getElementById('def-date').value = new Date().toISOString().split('T')[0];
+  document.getElementById('def-person').value = CU?.fullname || '';
+  const ds = document.getElementById('def-district');
+  const userDists = getDistrictsList();
+  ds.innerHTML = '<option value="">— اختر —</option>' + userDists.map(d=>`<option value="${d}">${d}</option>`).join('');
+  if(CU?.district) { for(let o of ds.options) if(o.value===CU.district||CU.district.includes(o.value)) { o.selected=true; break; } }
+  document.getElementById('def-items').innerHTML = '';
+  addDefItemRow();
+  ov.classList.add('open');
+}
+
+function addDefItemRow(){
+  const div = document.createElement('div');
+  div.style.cssText = 'display:grid;grid-template-columns:1fr 80px 80px auto;gap:6px;align-items:center;margin-bottom:6px';
+  div.innerHTML = `<input type="text" placeholder="اسم الجهاز..." class="fi" style="font-size:12px;padding:6px 10px">
+    <input type="number" value="1" min="1" class="fi" style="font-size:12px;padding:6px;text-align:center" title="الكمية">
+    <input type="text" placeholder="نوع العطل..." class="fi" style="font-size:12px;padding:6px 8px" title="العطل">
+    <button type="button" onclick="this.closest('div').remove()" style="background:#fee2e2;border:none;border-radius:7px;width:30px;height:34px;cursor:pointer;color:#dc2626;font-size:14px;font-weight:900">✕</button>`;
+  document.getElementById('def-items').appendChild(div);
+}
+
+function getDistrictsList(){
+  try{ return DISTRICTS_LIST || []; }catch(e){ return []; }
+}
+
+async function saveDefectSubmit(){
+  const date = document.getElementById('def-date').value;
+  const district = document.getElementById('def-district').value;
+  const person = document.getElementById('def-person').value.trim();
+  const notes = document.getElementById('def-notes').value.trim();
+  if(!date||!district||!person){ toast('أدخل التاريخ والقاطع والاسم','err'); return; }
+  const rows = [...document.querySelectorAll('#def-items > div')];
+  const items = rows.map(d=>{
+    const ins = d.querySelectorAll('input');
+    return {name:(ins[0]?.value||'').trim(), qty:parseInt(ins[1]?.value)||1, status:'معطوبة', fault:(ins[2]?.value||'').trim()};
+  }).filter(r=>r.name);
+  if(!items.length){ toast('أضف جهازاً واحداً على الأقل','err'); return; }
+  try{
+    const body = {
+      op_type:'receive', date, district, person,
+      notes: (notes?'عطل: '+notes+' | ':'') + 'تسليم من الموظف للمدير',
+      items: JSON.stringify(items),
+      created_by: CU?.fullname||person
+    };
+    await api('POST','/api/handover', body);
+    closeModal('ov-submit-defect');
+    toast('✅ تم تسليم الجهاز للمدير');
+    await loadHandover();
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
 }
 
 function openHandoverModal(opType,id){
