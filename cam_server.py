@@ -517,6 +517,12 @@ class Handler(BaseHTTPRequestHandler):
 
         elif p=="/api/stations":
             sts=db["stations"]
+            # لو المحطات فارغة في DB — استخدم STATIONS مباشرة وأضفها للـ DB
+            if not sts:
+                sts = STATIONS[:]
+                db["stations"] = sts
+                save_db(db)
+                print(f"[STATIONS] Restored {len(sts)} stations from STATIONS list")
             if u["role"]!="admin":
                 u_dists=get_user_dists(u)
                 if u_dists: sts=[s for s in sts if s.get("district") in u_dists]
