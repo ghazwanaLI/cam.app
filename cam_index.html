@@ -5336,7 +5336,7 @@ function renderInvList(){
       <td style="padding:6px 6px;text-align:center;${B}">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
-        ${(x.location_type==='private_stations'||x.location_type==='factories'||x.location_type==='yards')?`<button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvPledge(${x.id})" style="padding:3px 6px;font-size:10px;color:#7c3aed;border-color:rgba(124,58,237,.4)" title="تعهد خطي">📜</button>`:''}
+        <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvPledge(${x.id})" style="padding:3px 6px;font-size:10px;color:#7c3aed;border-color:rgba(124,58,237,.4)" title="تعهد خطي">📜</button>
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();exportInvExcel(${x.id})" style="padding:3px 6px;font-size:10px;color:#16a34a" title="تصدير Excel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -5482,39 +5482,45 @@ function printInvPledge(id){
   const totalCams = camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0)||+x.cam_count||0;
   const dvrRows = (()=>{ try{ return x.dvr_rows?JSON.parse(x.dvr_rows):[]; }catch(e){ return []; } })();
   const today = new Date().toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
-  const locTypeMap = {private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
+  const locTypeMap = {gov_stations:'محطة وقود حكومية', private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
   const locTypeAr = locTypeMap[x.location_type] || x.location_type || 'موقع';
 
   let w = window.open('','_blank','width=794,height=1123');
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
-  body { font-family:'Arial',sans-serif; direction:rtl; font-size:13px; color:#000; background:#fff; padding:30px 40px; }
+  body { font-family:'Arial',sans-serif; direction:rtl; font-size:14px; color:#000; background:#fff; padding:25px 35px; font-weight:700; }
   .header { text-align:center; border-bottom:3px double #000; padding-bottom:14px; margin-bottom:20px; }
-  .header h1 { font-size:16px; font-weight:900; margin-bottom:4px; }
-  .header h2 { font-size:14px; font-weight:700; margin-bottom:3px; }
-  .header p { font-size:11px; color:#444; }
-  .pledge-box { border:2px solid #000; border-radius:6px; padding:18px 22px; margin-bottom:18px; background:#fafafa; }
-  .pledge-box h3 { font-size:14px; font-weight:900; text-align:center; margin-bottom:12px; border-bottom:1px solid #ccc; padding-bottom:8px; }
+  .header .min { font-size:20px; font-weight:900; margin-bottom:5px; letter-spacing:.5px; }
+  .header .co  { font-size:17px; font-weight:900; margin-bottom:4px; }
+  .header .br  { font-size:15px; font-weight:800; margin-bottom:3px; }
+  .header .div { font-size:13px; font-weight:800; margin-bottom:2px; color:#1e3a5f; }
+  .header .unit{ font-size:13px; font-weight:800; color:#1e3a5f; }
+  .header .date{ font-size:12px; font-weight:700; color:#444; margin-top:6px; }
+  .pledge-box { border:2.5px solid #000; border-radius:6px; padding:16px 20px; margin-bottom:16px; background:#fafafa; }
+  .pledge-box h3 { font-size:16px; font-weight:900; text-align:center; margin-bottom:12px; border-bottom:2px solid #000; padding-bottom:8px; text-decoration:underline; }
   .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; margin-bottom:14px; }
-  .info-item { display:flex; gap:6px; align-items:flex-start; font-size:12px; }
-  .info-item .lbl { font-weight:700; white-space:nowrap; min-width:90px; color:#333; }
-  .info-item .val { border-bottom:1px dotted #999; flex:1; min-height:18px; padding-bottom:2px; }
-  .pledge-text { font-size:12.5px; line-height:2.2; text-align:justify; margin-bottom:14px; border:1px solid #ddd; border-radius:4px; padding:12px 16px; background:#fff; }
-  .pledge-text p { margin-bottom:8px; }
-  .cam-table { width:100%; border-collapse:collapse; margin-bottom:14px; font-size:11px; }
-  .cam-table th { background:#1e3a5f; color:#fff; padding:6px 8px; text-align:center; border:1px solid #000; }
-  .cam-table td { padding:5px 8px; border:1px solid #555; text-align:center; }
-  .cam-table tr:nth-child(even) td { background:#f5f5f5; }
-  .sign-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:24px; }
-  .sign-box { border:1px solid #666; border-radius:4px; padding:12px; text-align:center; min-height:90px; display:flex; flex-direction:column; justify-content:space-between; }
-  .sign-box .sign-title { font-size:11px; font-weight:700; color:#333; margin-bottom:6px; }
-  .sign-box .sign-name { font-size:11px; border-top:1px solid #999; margin-top:12px; padding-top:4px; color:#666; }
-  .stamp-box { border:1.5px dashed #666; border-radius:50%; width:90px; height:90px; margin:10px auto; display:flex; align-items:center; justify-content:center; font-size:10px; color:#999; }
+  .info-item { display:flex; gap:6px; align-items:flex-start; font-size:13px; }
+  .info-item .lbl { font-weight:900; white-space:nowrap; min-width:95px; color:#000; }
+  .info-item .val { border-bottom:1.5px solid #555; flex:1; min-height:20px; padding-bottom:2px; font-weight:700; }
+  .pledge-text { font-size:13px; font-weight:700; line-height:2.4; text-align:justify; margin-bottom:14px; border:2px solid #000; border-radius:4px; padding:14px 18px; background:#fff; }
+  .pledge-text p { margin-bottom:10px; }
+  .pledge-text strong { font-weight:900; font-size:14px; }
+  .cam-table { width:100%; border-collapse:collapse; margin-bottom:14px; font-size:12px; }
+  .cam-table th { background:#1e3a5f; color:#fff; padding:7px 8px; text-align:center; border:1.5px solid #000; font-size:13px; font-weight:900; }
+  .cam-table td { padding:6px 8px; border:1.5px solid #555; text-align:center; font-weight:700; }
+  .cam-table tr:nth-child(even) td { background:#f0f4f8; }
+  .sign-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; margin-top:22px; }
+  .sign-box { border:2px solid #000; border-radius:4px; padding:12px; text-align:center; min-height:95px; display:flex; flex-direction:column; justify-content:space-between; }
+  .sign-box .sign-title { font-size:13px; font-weight:900; color:#000; margin-bottom:6px; text-decoration:underline; }
+  .sign-box .sign-name { font-size:12px; font-weight:700; border-top:1.5px solid #555; margin-top:10px; padding-top:4px; }
+  .stamp-box { border:2px dashed #555; border-radius:50%; width:85px; height:85px; margin:8px auto; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#666; }
   .np { margin-bottom:12px; display:flex; gap:8px; }
   @media print { .np{display:none!important} @page{margin:10mm; size:A4} }
-  .footer-note { font-size:10px; color:#666; border-top:1px solid #ddd; padding-top:8px; margin-top:16px; text-align:center; }
-  .title-badge { display:inline-block; background:#1e3a5f; color:#fff; padding:3px 14px; border-radius:4px; font-size:11px; margin-bottom:8px; }
+  .footer-note { font-size:11px; font-weight:700; color:#333; border-top:2px solid #000; padding-top:10px; margin-top:18px; text-align:center; }
+  .pledge-title-box { text-align:center; margin-bottom:16px; }
+  .pledge-title-box .main-title { font-size:19px; font-weight:900; border:2.5px solid #1e3a5f; display:inline-block; padding:8px 32px; border-radius:6px; }
+  .pledge-title-box .sub-title { font-size:13px; font-weight:700; margin-top:6px; color:#444; }
 </style></head><body>
 
 <div class="np">
@@ -5524,17 +5530,17 @@ function printInvPledge(id){
 
 <!-- الهيدر -->
 <div class="header">
-  <h1>الجمهورية العراقية</h1>
-  <h2>شركة توزيع المنتجات النفطية — فرع صلاح الدين</h2>
-  <h2>شعبة تقنية المعلومات / وحدة كاميرات المراقبة</h2>
-  <p>التاريخ: ${today}</p>
+  <div class="min">وزارة النفط</div>
+  <div class="co">شركة توزيع المنتجات النفطية</div>
+  <div class="br">فرع صلاح الدين</div>
+  <div class="div">شعبة تقنية المعلومات</div>
+  <div class="unit">وحدة كاميرات المراقبة</div>
+  <div class="date">التاريخ: ${today}</div>
 </div>
 
-<div style="text-align:center;margin-bottom:18px">
-  <div style="font-size:17px;font-weight:900;border:2px solid #1e3a5f;display:inline-block;padding:6px 30px;border-radius:6px">
-    تعهد خطي بصحة معلومات منظومة كاميرات المراقبة
-  </div>
-  <div style="margin-top:6px;font-size:12px;color:#555">${locTypeAr}</div>
+<div class="pledge-title-box">
+  <div class="main-title">تعهد خطي بصحة معلومات منظومة كاميرات المراقبة</div>
+  <div class="sub-title">${locTypeAr}</div>
 </div>
 
 <!-- بيانات الموقع -->
