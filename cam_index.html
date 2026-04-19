@@ -7394,9 +7394,14 @@ async function saveUser(){
 }
 function editUser(id){openUserModal(id);}
 async function delUser(id){
-  if(!confirm('حذف المستخدم؟'))return;
-  try{await api('DELETE','/api/users/'+id);toast('تم الحذف');await loadUsers();}
-  catch(e){toast('خطأ: '+e.message,'err');}
+  const u = (allUsers||[]).find(x=>x.id===id);
+  const name = u?.fullname || 'هذا المستخدم';
+  if(!confirm(`حذف المستخدم "${name}" نهائياً؟\n\nلا يمكن التراجع عن هذا الإجراء.`)) return;
+  try{
+    await api('DELETE','/api/users/'+id);
+    toast('تم حذف المستخدم ✅');
+    await loadUsers();
+  }catch(e){ toast('خطأ: '+e.message,'err'); }
 }
 
 // ══════════════════════════════════════════
