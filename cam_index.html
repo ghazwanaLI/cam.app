@@ -5352,11 +5352,29 @@ function openInvForm(id){
   // ضبط نوع الموقع
   const locTypeSel = document.getElementById('inv-location-type');
   if(locTypeSel){ locTypeSel.value = m.location_type || _currentInvType || 'gov_stations'; updateInvLocationList(); }
-  // ضبط الاسم المخصص لو مو محطة
+  // ضبط الاسم المخصص دائماً للسجلات القديمة أو المحولة
   const customInp = document.getElementById('inv-custom-name');
-  if(customInp && m.station_name && !m.station_id){ customInp.value = m.station_name; }
+  if(customInp){ customInp.value = m.station_name || ''; }
   const factSel = document.getElementById('inv-factory-type');
   if(factSel && m.factory_type){ factSel.value = m.factory_type; }
+  // القاطع للمواقع المخصصة
+  let distManual = document.getElementById('inv-district-manual');
+  if(!distManual){
+    // أضف حقل القاطع إذا غير موجود
+    const wrap = document.getElementById('inv-factory-type-wrap')?.parentNode;
+    if(wrap){
+      const dg = document.createElement('div');
+      dg.style.cssText='margin-top:6px';
+      dg.innerHTML=`<label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">📍 القاطع</label>
+        <select id="inv-district-manual" class="fi" dir="rtl" style="font-size:13px;background:#f8fafc;color:#1e293b;border:1.5px solid #cbd5e1">
+          <option value="">— اختر القاطع —</option>
+          ${(window.DISTRICTS_LIST||[]).map(d=>`<option value="${d}">${d}</option>`).join('')}
+        </select>`;
+      wrap.appendChild(dg);
+      distManual = document.getElementById('inv-district-manual');
+    }
+  }
+  if(distManual) distManual.value = m.district||'';
   // إعادة تعيين عدادات الصفوف
   _invDvrCount = 0;
   const ss=document.getElementById('inv-station');
@@ -5410,7 +5428,7 @@ async function saveInv(){
     stName=document.getElementById('inv-custom-name')?.value?.trim()||'';
     if(!stName){toast('أدخل اسم الموقع','err');return;}
     const distSel=document.getElementById('inv-district-manual');
-    district=distSel?.value||v('inv-district-txt')||'';
+    district=distSel?.value||'';
   }
   // نوع المعمل
   const factoryType = locType==='factories' ? (document.getElementById('inv-factory-type')?.value||'') : '';
