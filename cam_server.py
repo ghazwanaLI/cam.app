@@ -1038,7 +1038,7 @@ class Handler(BaseHTTPRequestHandler):
                     if db["users"][idx]["password"]!=hash_pw(body["old_password"]):
                         self.send_json({"error":"كلمة المرور الحالية غير صحيحة"},400); return
                 db["users"][idx]["password"]=hash_pw(body["password"])
-            for f in ["fullname","username","role","active","perms","district","districts"]:
+            for f in ["fullname","username","role","active","perms","district","districts","owner_location_id"]:
                 if f in body: db["users"][idx][f]=body[f]
             save_db(db); self.send_json({"ok":True})
 
