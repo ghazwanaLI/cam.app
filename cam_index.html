@@ -5484,6 +5484,10 @@ function printInvPledge(id){
   const today = new Date().toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
   const locTypeMap = {gov_stations:'محطة وقود حكومية', private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
   const locTypeAr = locTypeMap[x.location_type] || x.location_type || 'موقع';
+  const isGov = x.location_type==='gov_stations' || x.location_type==='gov_buildings' || !x.location_type;
+  // إيجاد المخول على القاطع
+  const delegate = (allDelegates||[]).find(d=>d.district && x.district && x.district.includes(d.district));
+  const delegateName = delegate ? delegate.name : '...........................';
 
   let w = window.open('','_blank','width=794,height=1123');
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
@@ -5516,7 +5520,7 @@ function printInvPledge(id){
   .sign-box .sign-name { font-size:12px; font-weight:700; border-top:1.5px solid #555; margin-top:10px; padding-top:4px; }
   .stamp-box { border:2px dashed #555; border-radius:50%; width:85px; height:85px; margin:8px auto; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; color:#666; }
   .np { margin-bottom:12px; display:flex; gap:8px; }
-  @media print { .np{display:none!important} @page{margin:10mm; size:A4} }
+  @media print { .np{display:none!important} @page{margin:8mm; size:A4 portrait} body{font-size:12px} .pledge-text{font-size:12px;line-height:2.1} .header .min{font-size:17px} .header .co{font-size:15px} .header .br{font-size:13px} .info-item{font-size:12px} }
   .footer-note { font-size:11px; font-weight:700; color:#333; border-top:2px solid #000; padding-top:10px; margin-top:18px; text-align:center; }
   .pledge-title-box { text-align:center; margin-bottom:16px; }
   .pledge-title-box .main-title { font-size:19px; font-weight:900; border:2.5px solid #1e3a5f; display:inline-block; padding:8px 32px; border-radius:6px; }
@@ -5579,17 +5583,17 @@ function printInvPledge(id){
 <!-- التوقيعات -->
 <div class="sign-grid">
   <div class="sign-box">
-    <div class="sign-title">صاحب / مسؤول الموقع</div>
-    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
-    <div style="font-size:11px">التوقيع: ........................</div>
-    <div class="stamp-box">ختم الموقع</div>
+    <div class="sign-title">\${isGov?'المخول على كاميرات القاطع':'صاحب / مسؤول الموقع'}</div>
+    <div style="margin:6px 0;font-size:12px">الاسم: \${isGov?delegateName:'...........................'}</div>
+    <div style="font-size:12px">التوقيع: ........................</div>
+    \${!isGov?'<div class="stamp-box">ختم الموقع</div>':'<div style="height:40px"></div>'}
     <div class="sign-name">التاريخ: ......./......./.........</div>
   </div>
   <div class="sign-box">
     <div class="sign-title">مسؤول وحدة الكاميرات</div>
-    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
-    <div style="font-size:11px">التوقيع: ........................</div>
-    <div style="height:50px"></div>
+    <div style="margin:6px 0;font-size:12px">الاسم: ...........................</div>
+    <div style="font-size:12px">التوقيع: ........................</div>
+    <div style="height:40px"></div>
     <div class="sign-name">التاريخ: ......./......./.........</div>
   </div>
   <div class="sign-box">
@@ -5926,8 +5930,8 @@ async function initApp(){
     ['nav-logs','admin-sect'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
     });
-    // الجولات — مدير فقط | الصيانة — للجميع
-    const showTours = isAdmin;
+    // الجولات — مدير أو من عنده صلاحية tab_tours
+    const showTours = isAdmin || CU?.perms?.tab_tours===true;
     // tab الميدانية يظهر للجميع (فيه صيانة)
     const navField=document.getElementById('nav-field-dropdown');
     if(navField) navField.style.display='';
@@ -7261,7 +7265,12 @@ function openUserModal(id){
   });
   ['tours','maint','cameras','stations','inventory','handover','circulars'].forEach(t=>{
     const el=document.getElementById('p-'+t);
-    if(el) el.classList.toggle('on', perms['tab_'+t]!==false);
+    // الجولات تبدأ مغلقة للمستخدمين الجدد — بقية التبويبات مفتوحة افتراضياً
+    if(t==='tours'){
+      el.classList.toggle('on', perms['tab_tours']===true);
+    } else {
+      el.classList.toggle('on', perms['tab_'+t]!==false);
+    }
   });
   toggleUserPerms();
   document.getElementById('ov-user').classList.add('open');
