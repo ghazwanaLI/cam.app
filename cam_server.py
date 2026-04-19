@@ -882,6 +882,8 @@ class Handler(BaseHTTPRequestHandler):
             inv_item={
                 "id":iid,"station_id":body.get("station_id"),"station_name":body.get("station_name",""),
                 "district":body.get("district",""),"status":body.get("status","مكتمل"),
+                "location_type":body.get("location_type","gov_stations"),
+                "factory_type":body.get("factory_type",""),
                 "dvr_count":body.get("dvr_count",0),"dvr_spec":body.get("dvr_spec",""),"dvr_model":body.get("dvr_model",""),
                 "hdd_count":body.get("hdd_count",0),"hdd_size":body.get("hdd_size",""),
                 "storage_days":body.get("storage_days",""),
@@ -990,6 +992,7 @@ class Handler(BaseHTTPRequestHandler):
             iid=int(p.split("/")[-1]); idx=next((i for i,x in enumerate(db.get("inventory",[])) if x["id"]==iid),None)
             if idx is None: self.send_json({"error":"غير موجود"},404); return
             fields=["station_id","station_name","district","status",
+                    "location_type","factory_type",
                     "dvr_count","dvr_spec","dvr_model","hdd_count","hdd_size","storage_days",
                     "cam_count","cam_spec","cam_res","cam_indoor","cam_outdoor","cam_rows","dvr_rows",
                     "power_source","phone","coords",
