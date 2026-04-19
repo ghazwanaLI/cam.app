@@ -5975,6 +5975,16 @@ async function initApp(){
       const navInv=document.getElementById('nav-inventory');
       if(navInv) navInv.style.display='';
       goTab('inventory', document.getElementById('nav-inventory'));
+      // إخفاء تبويبات الجرد الفرعية وإظهار نوع الموقع المحدد فقط
+      setTimeout(function(){
+        const ownerRec = allInventory.find(x=>String(x.id)===String(CU.owner_location_id));
+        const ownerType = ownerRec?.location_type || 'factories';
+        // أخفِ كل تبويبات الجرد الفرعية
+        document.querySelectorAll('.inv-type-tab').forEach(btn=>btn.style.display='none');
+        // فعّل نوع الموقع المناسب فقط
+        _currentInvType = ownerType;
+        renderInvList();
+      }, 300);
       return;
     }
     // الجولات — مدير أو من عنده صلاحية tab_tours
