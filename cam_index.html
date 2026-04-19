@@ -5401,7 +5401,12 @@ function openInvForm(id){
       distManual = document.getElementById('inv-district-manual');
     }
   }
-  if(distManual) distManual.value = m.district||'';
+  if(distManual){
+    distManual.value = m.district || (CU?.role==='owner' ? (CU?.district||'') : '');
+    // مالك الموقع — القاطع من حسابه فقط
+    if(CU?.role==='owner') distManual.disabled = true;
+    else distManual.disabled = false;
+  }
   // إعادة تعيين عدادات الصفوف
   _invDvrCount = 0;
   const ss=document.getElementById('inv-station');
@@ -5455,7 +5460,7 @@ async function saveInv(){
     stName=document.getElementById('inv-custom-name')?.value?.trim()||'';
     if(!stName){toast('أدخل اسم الموقع','err');return;}
     const distSel=document.getElementById('inv-district-manual');
-    district=distSel?.value||'';
+    district=distSel?.value||CU?.district||'';
   }
   // نوع المعمل
   const factoryType = locType==='factories' ? (document.getElementById('inv-factory-type')?.value||'') : '';
