@@ -2053,6 +2053,7 @@ window.addEventListener('load',function(){
           <button class="inv-type-tab" onclick="switchInvType('private_stations',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏪 محطات أهلية</button>
           <button class="inv-type-tab" onclick="switchInvType('gov_buildings',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏢 بنايات حكومية</button>
           <button class="inv-type-tab" onclick="switchInvType('factories',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏭 معامل القطاع الخاص</button>
+          <button class="inv-type-tab" onclick="switchInvType('yards',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🅿️ ساحات القطاع الخاص</button>
         </div>
 
         <!-- محتوى: جرد المحطات -->
@@ -3334,6 +3335,7 @@ window.addEventListener('load',function(){
           <option value="private_stations">🏪 محطات أهلية</option>
           <option value="gov_buildings">🏢 بنايات حكومية</option>
           <option value="factories">🏭 معامل القطاع الخاص</option>
+          <option value="yards">🅿️ ساحات القطاع الخاص</option>
         </select>
       </div>
 
@@ -5263,6 +5265,12 @@ function updateInvLocationList(){
     factoryWrap.style.display = '';
     if(lbl) lbl.textContent = '🏭 اسم المعمل *';
     customInp.placeholder = 'اسم المعمل...';
+  } else if(type === 'yards'){
+    stSel.style.display = 'none';
+    customInp.style.display = '';
+    factoryWrap.style.display = 'none';
+    if(lbl) lbl.textContent = '🅿️ اسم الساحة *';
+    customInp.placeholder = 'اسم الساحة...';
   }
 }
 
@@ -5299,8 +5307,14 @@ function renderInvList(){
   const list=allInventory.filter(x=>{
     if(distF&&x.district!==distF)return false;
     if(stF&&String(x.id)!==String(stF))return false;
-    // فلترة حسب نوع الموقع
-    const locType = x.location_type || 'gov_stations';
+    // فلترة حسب نوع الموقع مع كشف تلقائي للسجلات القديمة
+    let locType = x.location_type;
+    if(!locType){
+      // كشف تلقائي: لو station_id موجود — محطة حكومية، غير ذلك — حكومية افتراضي
+      const st = allStations.find(s=>s.id===x.station_id);
+      if(st){ locType = st.type==='أهلية' ? 'private_stations' : 'gov_stations'; }
+      else { locType = 'gov_stations'; }
+    }
     if(_currentInvType && locType !== _currentInvType) return false;
     return true;
   });
@@ -5322,6 +5336,7 @@ function renderInvList(){
       <td style="padding:6px 6px;text-align:center;${B}">
         ${can('edit')?`<button class="btn btn-o btn-sm" onclick="openInvForm(${x.id})" style="padding:3px 6px;font-size:10px">✏️</button>`:''}
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvSingle(${x.id})" style="padding:3px 6px;font-size:10px;color:#1d4ed8">📄</button>
+        ${(x.location_type==='private_stations'||x.location_type==='factories'||x.location_type==='yards')?`<button class="btn btn-o btn-sm" onclick="event.stopPropagation();printInvPledge(${x.id})" style="padding:3px 6px;font-size:10px;color:#7c3aed;border-color:rgba(124,58,237,.4)" title="تعهد خطي">📜</button>`:''}
         <button class="btn btn-o btn-sm" onclick="event.stopPropagation();exportInvExcel(${x.id})" style="padding:3px 6px;font-size:10px;color:#16a34a" title="تصدير Excel"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#000000" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/><line x1="2" y1="20" x2="22" y2="20"/></svg></button>
         ${can('del')?`<button class="btn btn-r btn-sm" onclick="delInv(${x.id})" style="padding:3px 6px;font-size:10px">🗑️</button>`:''}
       </td>
@@ -5439,6 +5454,135 @@ async function delInv(id){
   if(!confirm('حذف هذا الجرد؟'))return;
   try{await api('DELETE','/api/inventory/'+id);toast('تم الحذف');await loadInvStations();}
   catch(e){toast('خطأ: '+e.message,'err');}
+}
+
+
+function printInvPledge(id){
+  const x = allInventory.find(i=>String(i.id)===String(id));
+  if(!x){ toast('لم يتم إيجاد السجل','err'); return; }
+  const camRows = (()=>{ try{ return x.cam_rows?JSON.parse(x.cam_rows):[]; }catch(e){ return []; } })();
+  const totalCams = camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0)||+x.cam_count||0;
+  const dvrRows = (()=>{ try{ return x.dvr_rows?JSON.parse(x.dvr_rows):[]; }catch(e){ return []; } })();
+  const today = new Date().toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const locTypeMap = {private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
+  const locTypeAr = locTypeMap[x.location_type] || x.location_type || 'موقع';
+
+  let w = window.open('','_blank','width=794,height=1123');
+  w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Arial',sans-serif; direction:rtl; font-size:13px; color:#000; background:#fff; padding:30px 40px; }
+  .header { text-align:center; border-bottom:3px double #000; padding-bottom:14px; margin-bottom:20px; }
+  .header h1 { font-size:16px; font-weight:900; margin-bottom:4px; }
+  .header h2 { font-size:14px; font-weight:700; margin-bottom:3px; }
+  .header p { font-size:11px; color:#444; }
+  .pledge-box { border:2px solid #000; border-radius:6px; padding:18px 22px; margin-bottom:18px; background:#fafafa; }
+  .pledge-box h3 { font-size:14px; font-weight:900; text-align:center; margin-bottom:12px; border-bottom:1px solid #ccc; padding-bottom:8px; }
+  .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px 20px; margin-bottom:14px; }
+  .info-item { display:flex; gap:6px; align-items:flex-start; font-size:12px; }
+  .info-item .lbl { font-weight:700; white-space:nowrap; min-width:90px; color:#333; }
+  .info-item .val { border-bottom:1px dotted #999; flex:1; min-height:18px; padding-bottom:2px; }
+  .pledge-text { font-size:12.5px; line-height:2.2; text-align:justify; margin-bottom:14px; border:1px solid #ddd; border-radius:4px; padding:12px 16px; background:#fff; }
+  .pledge-text p { margin-bottom:8px; }
+  .cam-table { width:100%; border-collapse:collapse; margin-bottom:14px; font-size:11px; }
+  .cam-table th { background:#1e3a5f; color:#fff; padding:6px 8px; text-align:center; border:1px solid #000; }
+  .cam-table td { padding:5px 8px; border:1px solid #555; text-align:center; }
+  .cam-table tr:nth-child(even) td { background:#f5f5f5; }
+  .sign-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:20px; margin-top:24px; }
+  .sign-box { border:1px solid #666; border-radius:4px; padding:12px; text-align:center; min-height:90px; display:flex; flex-direction:column; justify-content:space-between; }
+  .sign-box .sign-title { font-size:11px; font-weight:700; color:#333; margin-bottom:6px; }
+  .sign-box .sign-name { font-size:11px; border-top:1px solid #999; margin-top:12px; padding-top:4px; color:#666; }
+  .stamp-box { border:1.5px dashed #666; border-radius:50%; width:90px; height:90px; margin:10px auto; display:flex; align-items:center; justify-content:center; font-size:10px; color:#999; }
+  .np { margin-bottom:12px; display:flex; gap:8px; }
+  @media print { .np{display:none!important} @page{margin:10mm; size:A4} }
+  .footer-note { font-size:10px; color:#666; border-top:1px solid #ddd; padding-top:8px; margin-top:16px; text-align:center; }
+  .title-badge { display:inline-block; background:#1e3a5f; color:#fff; padding:3px 14px; border-radius:4px; font-size:11px; margin-bottom:8px; }
+</style></head><body>
+
+<div class="np">
+  <button onclick="window.print()" style="background:#1d4ed8;color:#fff;border:none;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">🖨️ طباعة</button>
+  <button onclick="window.close()" style="background:#f1f5f9;color:#374151;border:1px solid #d1d5db;padding:7px 18px;border-radius:5px;cursor:pointer;font-weight:700">✕ إغلاق</button>
+</div>
+
+<!-- الهيدر -->
+<div class="header">
+  <h1>الجمهورية العراقية</h1>
+  <h2>شركة توزيع المنتجات النفطية — فرع صلاح الدين</h2>
+  <h2>شعبة تقنية المعلومات / وحدة كاميرات المراقبة</h2>
+  <p>التاريخ: ${today}</p>
+</div>
+
+<div style="text-align:center;margin-bottom:18px">
+  <div style="font-size:17px;font-weight:900;border:2px solid #1e3a5f;display:inline-block;padding:6px 30px;border-radius:6px">
+    تعهد خطي بصحة معلومات منظومة كاميرات المراقبة
+  </div>
+  <div style="margin-top:6px;font-size:12px;color:#555">${locTypeAr}</div>
+</div>
+
+<!-- بيانات الموقع -->
+<div class="pledge-box">
+  <h3>📋 بيانات الموقع</h3>
+  <div class="info-grid">
+    <div class="info-item"><span class="lbl">اسم الموقع:</span><span class="val">${x.station_name||'—'}</span></div>
+    <div class="info-item"><span class="lbl">نوع الموقع:</span><span class="val">${locTypeAr}${x.factory_type?' — '+x.factory_type:''}</span></div>
+    <div class="info-item"><span class="lbl">القاطع:</span><span class="val">${x.district||'—'}</span></div>
+    <div class="info-item"><span class="lbl">رقم الهاتف:</span><span class="val">${x.phone||'—'}</span></div>
+    <div class="info-item"><span class="lbl">إجمالي الكاميرات:</span><span class="val" style="color:#15803d;font-weight:700">${totalCams} كاميرا</span></div>
+    <div class="info-item"><span class="lbl">نوع جهاز التسجيل:</span><span class="val">${x.dvr_model||dvrRows.map(d=>d.model).filter(Boolean).join(' + ')||'—'}</span></div>
+    <div class="info-item"><span class="lbl">سعة التخزين:</span><span class="val">${x.hdd_size||dvrRows.map(d=>d.hdd_size).filter(Boolean).join(' + ')||'—'}</span></div>
+    <div class="info-item"><span class="lbl">مدة التسجيل:</span><span class="val">${x.storage_days||dvrRows.map(d=>d.storage).filter(Boolean).join(' + ')||'—'}</span></div>
+  </div>
+  ${camRows.length?`
+  <table class="cam-table">
+    <thead><tr><th>#</th><th>نوع الكاميرا</th><th>داخلية</th><th>خارجية</th><th>المجموع</th><th>الدقة</th></tr></thead>
+    <tbody>${camRows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.type||'—'}</td><td>${r.indoor||0}</td><td>${r.outdoor||0}</td><td style="font-weight:700;color:#15803d">${(+r.indoor||0)+(+r.outdoor||0)}</td><td>${r.lens||'—'}</td></tr>`).join('')}</tbody>
+  </table>`:''}
+</div>
+
+<!-- نص التعهد -->
+<div class="pledge-box">
+  <h3>📜 نص التعهد</h3>
+  <div class="pledge-text">
+    <p>أنا الموقع أدناه، صاحب / مسؤول <strong>${locTypeAr}</strong> المسمى <strong>${x.station_name||'.............'}</strong> الواقع في قاطع <strong>${x.district||'.............'}</strong>، أتعهد بما يلي:</p>
+    <p><strong>أولاً:</strong> إن جميع البيانات والمعلومات المتعلقة بمنظومة كاميرات المراقبة المثبتة في موقعنا، والمُدرجة في هذه الاستمارة، صحيحة ودقيقة ومطابقة للواقع تماماً.</p>
+    <p><strong>ثانياً:</strong> تعهدنا بعدم إزالة أو تعطيل أو تغيير أي جهاز أو كاميرا من المنظومة دون الرجوع إلى شعبة تقنية المعلومات في فرع صلاح الدين.</p>
+    <p><strong>ثالثاً:</strong> في حال حدوث أي عطل أو تغيير في المنظومة، يتم إبلاغ الجهة المختصة فوراً خلال مدة لا تتجاوز <strong>72 ساعة</strong> من حدوث التغيير.</p>
+    <p><strong>رابعاً:</strong> نوافق على تفتيش المنظومة وتدقيق بياناتها من قِبل الفرق المختصة في أي وقت تراه الشركة مناسباً.</p>
+    <p><strong>خامساً:</strong> نتحمل المسؤولية القانونية الكاملة عن أي معلومات مغلوطة أو مخالفة للواقع ترد في هذا التعهد.</p>
+  </div>
+</div>
+
+<!-- التوقيعات -->
+<div class="sign-grid">
+  <div class="sign-box">
+    <div class="sign-title">صاحب / مسؤول الموقع</div>
+    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
+    <div style="font-size:11px">التوقيع: ........................</div>
+    <div class="stamp-box">ختم الموقع</div>
+    <div class="sign-name">التاريخ: ......./......./.........</div>
+  </div>
+  <div class="sign-box">
+    <div class="sign-title">مسؤول وحدة الكاميرات</div>
+    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
+    <div style="font-size:11px">التوقيع: ........................</div>
+    <div style="height:50px"></div>
+    <div class="sign-name">التاريخ: ......./......./.........</div>
+  </div>
+  <div class="sign-box">
+    <div class="sign-title">مدير الشعبة / الفرع</div>
+    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
+    <div style="font-size:11px">التوقيع: ........................</div>
+    <div style="height:50px"></div>
+    <div class="sign-name">التاريخ: ......./......./.........</div>
+  </div>
+</div>
+
+<div class="footer-note">
+  هذا التعهد جزء لا يتجزأ من ملف منظومة كاميرات المراقبة لـ ${locTypeAr} (${x.station_name||'—'}) — يُحفظ في أرشيف شعبة تقنية المعلومات / فرع صلاح الدين
+</div>
+
+</body></html>`);
+  w.document.close();
 }
 
 function printInvSingle(id){
