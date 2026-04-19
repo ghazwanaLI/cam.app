@@ -3328,7 +3328,7 @@ window.addEventListener('load',function(){
     <div style="padding:14px 16px;display:flex;flex-direction:column;gap:12px">
 
       <!-- نوع الموقع -->
-      <div class="fg full">
+      <div class="fg full" id="inv-location-type-wrap">
         <label class="fl">🏷️ نوع الموقع *</label>
         <select class="fi" dir="rtl" id="inv-location-type" onchange="updateInvLocationList()" style="font-size:13px;background:#f8fafc;color:#1e293b;border:1.5px solid #cbd5e1">
           <option value="gov_stations">⛽ محطات حكومية</option>
@@ -3613,8 +3613,16 @@ window.addEventListener('load',function(){
       <div class="fg"><label class="fl">الدور</label>
         <select class="fi" dir="rtl" id="u-role" onchange="toggleUserPerms()">
           <option value="viewer">مخول قاطع</option>
+          <option value="owner">مالك موقع (معمل/محطة/ساحة)</option>
           <option value="admin">مدير النظام</option>
         </select>
+      </div>
+      <div class="fg full" id="u-owner-location-row" style="display:none">
+        <label class="fl">🏭 الموقع المرتبط (معمل / محطة / ساحة)</label>
+        <select class="fi" dir="rtl" id="u-owner-location" style="font-size:13px">
+          <option value="">— اختر الموقع —</option>
+        </select>
+        <div style="font-size:11px;color:#64748b;margin-top:4px">سيرى هذا المستخدم جرد موقعه فقط ولا يستطيع رؤية مواقع أخرى</div>
       </div>
       <div class="fg full" id="u-district-row">
         <label class="fl">القواطع المخصصة <span style="font-size:10px;color:var(--t3)">(يمكن اختيار أكثر من قاطع)</span>
@@ -5281,6 +5289,14 @@ async function loadInvStations(){
     const d=await api('GET','/api/inventory');
     allInventory=d.inventory||[];
     renderInvList();
+    // مالك الموقع — افتح بيانات موقعه مباشرة لو ما في سجل
+    if(CU?.role==='owner' && CU?.owner_location_id){
+      const ownerRec = allInventory.find(x=>String(x.id)===String(CU.owner_location_id));
+      if(!ownerRec){
+        // أول مرة — افتح الفورم فارغاً لتعبئة البيانات
+        setTimeout(()=>openInvForm(), 400);
+      }
+    }
     // تحديث فلتر القواطع
     const dsel=document.getElementById('f-inv-district');
     if(dsel){
@@ -5304,7 +5320,10 @@ async function loadInvStations(){
 function renderInvList(){
   const distF=document.getElementById('f-inv-district')?.value||'';
   const stF=document.getElementById('f-inv-station')?.value||'';
+  const ownerLocId = CU?.owner_location_id ? String(CU.owner_location_id) : null;
   const list=allInventory.filter(x=>{
+    // مالك الموقع يرى موقعه فقط
+    if(ownerLocId && String(x.id)!==ownerLocId) return false;
     if(distF&&x.district!==distF)return false;
     if(stF&&String(x.id)!==String(stF))return false;
     // فلترة حسب نوع الموقع مع كشف تلقائي للسجلات القديمة
@@ -5346,7 +5365,15 @@ function renderInvList(){
 function filterInv(){renderInvList();}
 
 function openInvForm(id){
+  // مالك الموقع — افتح سجله مباشرة
+  if(!id && CU?.role==='owner' && CU?.owner_location_id){
+    const ownerRec = allInventory.find(x=>String(x.id)===String(CU.owner_location_id));
+    if(ownerRec) id = ownerRec.id;
+  }
   const m=id?allInventory.find(x=>x.id===id)||{}:{};
+  // إخفاء حقل نوع الموقع لمالك الموقع
+  const locWrap = document.getElementById('inv-location-type-wrap');
+  if(locWrap) locWrap.style.display = CU?.role==='owner'?'none':'';
   document.getElementById('inv-eid').value=id||'';
   document.getElementById('inv-ttl').textContent=id?'تعديل بيانات الموقع':'إضافة جرد موقع';
   // ضبط نوع الموقع
@@ -5930,6 +5957,21 @@ async function initApp(){
     ['nav-logs','admin-sect'].forEach(id=>{
       const e=document.getElementById(id); if(e) e.style.display=isAdmin?'':'none';
     });
+    // مالك الموقع — يرى الجرد فقط
+    const isOwner = CU?.role==='owner';
+    if(isOwner){
+      // أخفِ كل التبويبات
+      ['dashboard','field','cameras','stations','coding','reports','delegates','circulars','handover','users','logs'].forEach(t=>{
+        const n=document.getElementById('nav-'+t); if(n) n.style.display='none';
+        const tp=document.getElementById('tab-'+t); if(tp) tp.style.display='none';
+      });
+      document.getElementById('nav-field-dropdown') && (document.getElementById('nav-field-dropdown').style.display='none');
+      // أظهر الجرد فقط
+      const navInv=document.getElementById('nav-inventory');
+      if(navInv) navInv.style.display='';
+      goTab('inventory', document.getElementById('nav-inventory'));
+      return;
+    }
     // الجولات — مدير أو من عنده صلاحية tab_tours
     const showTours = isAdmin || CU?.perms?.tab_tours===true;
     // tab الميدانية يظهر للجميع (فيه صيانة)
@@ -7272,6 +7314,13 @@ function openUserModal(id){
       el.classList.toggle('on', perms['tab_'+t]!==false);
     }
   });
+  // تحميل الموقع المرتبط لحساب مالك الموقع
+  if(u.role==='owner' && u.owner_location_id){
+    setTimeout(()=>{
+      const sel=document.getElementById('u-owner-location');
+      if(sel) sel.value=u.owner_location_id;
+    },100);
+  }
   toggleUserPerms();
   document.getElementById('ov-user').classList.add('open');
 }
@@ -7279,8 +7328,23 @@ function toggleUserPerms(){
   const role=document.getElementById('u-role')?.value;
   const permsDiv=document.getElementById('u-perms');
   const distRow=document.getElementById('u-district-row');
-  if(permsDiv) permsDiv.style.display=role==='admin'?'none':'grid';
-  if(distRow)  distRow.style.display=role==='admin'?'none':'block';
+  const ownerRow=document.getElementById('u-owner-location-row');
+  const isOwner = role==='owner';
+  const isAdmin = role==='admin';
+  if(permsDiv) permsDiv.style.display=(isAdmin||isOwner)?'none':'grid';
+  if(distRow)  distRow.style.display=isAdmin?'none':'block';
+  if(ownerRow) ownerRow.style.display=isOwner?'block':'none';
+  // ملء قائمة المواقع للـ owner
+  if(isOwner){
+    const sel=document.getElementById('u-owner-location');
+    if(sel && allInventory.length){
+      const pvt = allInventory.filter(x=>x.location_type==='factories'||x.location_type==='yards'||x.location_type==='private_stations'||x.location_type==='gov_buildings'||x.location_type==='gov_stations');
+      const cur = sel.value;
+      sel.innerHTML='<option value="">— اختر الموقع —</option>'+
+        pvt.map(x=>`<option value="${x.id}">${x.station_name||'—'} (${x.district||''})</option>`).join('');
+      if(cur) sel.value=cur;
+    }
+  }
 }
 async function saveUser(){
   const id=parseInt(document.getElementById('u-eid').value)||0;
@@ -7296,6 +7360,7 @@ async function saveUser(){
   const districts = checkedDistricts;
   if(!fn||!un){toast('أدخل الاسم واسم المستخدم','err');return;}
   if(!id&&!pw){toast('أدخل كلمة المرور للمستخدم الجديد','err');return;}
+  const ownerLocId = document.getElementById('u-owner-location')?.value || '';
   const perms={
     edit:  document.getElementById('p-edit')?.classList.contains('on'),
     del:   document.getElementById('p-del')?.classList.contains('on'),
@@ -7309,7 +7374,7 @@ async function saveUser(){
     tab_handover:document.getElementById('p-handover')?.classList.contains('on')!==false,
     tab_circulars:document.getElementById('p-circulars')?.classList.contains('on')!==false,
     };
-  const body={fullname:fn,username:un,role,district,districts,perms};
+  const body={fullname:fn,username:un,role,district,districts,perms,owner_location_id:ownerLocId};
   if(pw) body.password=pw;
   try{
     id?await api('PUT','/api/users/'+id,body):await api('POST','/api/users',body);
