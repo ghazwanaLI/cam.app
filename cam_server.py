@@ -918,6 +918,7 @@ class Handler(BaseHTTPRequestHandler):
                 "password":hash_pw(body.get("password","")),"role":role,"active":True,
                 "district":body.get("district",""),
                 "districts":body.get("districts",[]),
+                "owner_location_id":body.get("owner_location_id",""),
                 "perms":{"view":True,"edit":True,"del":True,"files":True,"reports":True} if role=="admin"
                     else body.get("perms",{"view":True,"edit":False,"del":False,"files":False,"reports":False})}
             db["users"].append(nu); save_db(db)
