@@ -7274,7 +7274,7 @@ function renderUsers(){
         </div>
         <div style="display:flex;gap:3px">
           ${u.id!==CU?.id?`<button onclick="editUser(${u.id})" style="background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12px">✏️</button>`:''}
-          ${u.id!==CU?.id&&isAdmin?`<button onclick="delUser(${u.id})" style="background:rgba(220,38,38,.35);border:none;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12px">🗑️</button>`:''}
+          ${u.id!==CU?.id&&CU?.role==='admin'?`<button onclick="delUser(${u.id})" style="background:rgba(220,38,38,.35);border:none;color:#fff;border-radius:7px;width:28px;height:28px;cursor:pointer;font-size:12px">🗑️</button>`:''}
         </div>
       </div>
       <div style="padding:6px 11px;background:rgba(0,0,0,.18);display:flex;gap:3px;flex-wrap:wrap;align-items:center;justify-content:space-between">
