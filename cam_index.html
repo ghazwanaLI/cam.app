@@ -2048,7 +2048,7 @@ window.addEventListener('load',function(){
       <!-- INVENTORY TAB -->
       <div id="tab-inventory" style="display:none">
         <!-- تبويبات فرعية للجرد -->
-        <div style="display:flex;gap:6px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;background:#f8fafc">
+        <div id="inv-type-tabs-bar" style="display:flex;gap:6px;padding:12px 16px 0;flex-wrap:wrap;border-bottom:1px solid #e2e8f0;background:#f8fafc">
           <button class="inv-type-tab active" onclick="switchInvType('gov_stations',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid #e2e8f0;border-bottom:none;background:#fff;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#1d4ed8">⛽ محطات حكومية</button>
           <button class="inv-type-tab" onclick="switchInvType('private_stations',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏪 محطات أهلية</button>
           <button class="inv-type-tab" onclick="switchInvType('gov_buildings',this)" style="padding:7px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;border-bottom:none;background:transparent;font-family:Cairo,sans-serif;font-size:12px;font-weight:700;cursor:pointer;color:#64748b">🏢 بنايات حكومية</button>
@@ -5289,11 +5289,16 @@ async function loadInvStations(){
     const d=await api('GET','/api/inventory');
     allInventory=d.inventory||[];
     renderInvList();
-    // مالك الموقع — افتح بيانات موقعه مباشرة لو ما في سجل
+    // مالك الموقع
     if(CU?.role==='owner' && CU?.owner_location_id){
       const ownerRec = allInventory.find(x=>String(x.id)===String(CU.owner_location_id));
+      // إخفاء كل التبويبات الفرعية وإظهار نوع الموقع فقط
+      const ownerType = ownerRec?.location_type || 'factories';
+      const tabsBar = document.getElementById('inv-type-tabs-bar');
+      if(tabsBar) tabsBar.style.display='none';
+      _currentInvType = ownerType;
+      renderInvList();
       if(!ownerRec){
-        // أول مرة — افتح الفورم فارغاً لتعبئة البيانات
         setTimeout(()=>openInvForm(), 400);
       }
     }
@@ -5975,16 +5980,7 @@ async function initApp(){
       const navInv=document.getElementById('nav-inventory');
       if(navInv) navInv.style.display='';
       goTab('inventory', document.getElementById('nav-inventory'));
-      // إخفاء تبويبات الجرد الفرعية وإظهار نوع الموقع المحدد فقط
-      setTimeout(function(){
-        const ownerRec = allInventory.find(x=>String(x.id)===String(CU.owner_location_id));
-        const ownerType = ownerRec?.location_type || 'factories';
-        // أخفِ كل تبويبات الجرد الفرعية
-        document.querySelectorAll('.inv-type-tab').forEach(btn=>btn.style.display='none');
-        // فعّل نوع الموقع المناسب فقط
-        _currentInvType = ownerType;
-        renderInvList();
-      }, 300);
+      // تبويبات الجرد تُخفى في loadInvStations
       return;
     }
     // الجولات — مدير أو من عنده صلاحية tab_tours
