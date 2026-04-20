@@ -5519,6 +5519,7 @@ function printInvPledge(id){
   const totalCams = camRows.reduce((a,r)=>a+(+r.indoor||0)+(+r.outdoor||0),0)||+x.cam_count||0;
   const dvrRows = (()=>{ try{ return x.dvr_rows?JSON.parse(x.dvr_rows):[]; }catch(e){ return []; } })();
   const today = new Date().toLocaleDateString('ar-IQ',{year:'numeric',month:'long',day:'numeric'});
+  const stationNameFallback = x.station_name||'الموقع';
   const locTypeMap = {gov_stations:'محطة وقود حكومية', private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
   const locTypeAr = locTypeMap[x.location_type] || x.location_type || 'موقع';
   const isGov = x.location_type==='gov_stations' || x.location_type==='gov_buildings' || !x.location_type;
@@ -5527,6 +5528,14 @@ function printInvPledge(id){
   const delegateName = delegate ? delegate.name : '...........................';
 
   let w = window.open('','_blank','width=794,height=1123');
+  var camTableHTML = '';
+  if(camRows.length){
+    camTableHTML = '<table class="cam-table"><thead><tr><th>#</th><th>نوع الكاميرا</th><th>داخلية</th><th>خارجية</th><th>المجموع</th><th>الدقة</th></tr></thead><tbody>';
+    camRows.forEach(function(r,i){
+      camTableHTML += '<tr><td>'+(i+1)+'</td><td>'+(r.type||'-')+'</td><td>'+(r.indoor||0)+'</td><td>'+(r.outdoor||0)+'</td><td style="font-weight:700;color:#15803d">'+((+r.indoor||0)+(+r.outdoor||0))+'</td><td>'+(r.lens||'-')+'</td></tr>';
+    });
+    camTableHTML += '</tbody></table>';
+  }
   w.document.write(`<!DOCTYPE html><html dir="rtl" lang="ar"><head><meta charset="UTF-8">
 <style>
   * { margin:0; padding:0; box-sizing:border-box; }
@@ -5588,27 +5597,23 @@ function printInvPledge(id){
 <div class="pledge-box">
   <h3>📋 بيانات الموقع</h3>
   <div class="info-grid">
-    <div class="info-item"><span class="lbl">اسم الموقع:</span><span class="val">${x.station_name||'—'}</span></div>
-    <div class="info-item"><span class="lbl">نوع الموقع:</span><span class="val">${locTypeAr}${x.factory_type?' — '+x.factory_type:''}</span></div>
-    <div class="info-item"><span class="lbl">القاطع:</span><span class="val">${x.district||'—'}</span></div>
-    <div class="info-item"><span class="lbl">رقم الهاتف:</span><span class="val">${x.phone||'—'}</span></div>
+    <div class="info-item"><span class="lbl">اسم الموقع:</span><span class="val">${x.station_name||"-"}</span></div>
+    <div class="info-item"><span class="lbl">نوع الموقع:</span><span class="val">${locTypeAr}${x.factory_type?" - "+x.factory_type:""}</span></div>
+    <div class="info-item"><span class="lbl">القاطع:</span><span class="val">${x.district||"-"}</span></div>
+    <div class="info-item"><span class="lbl">رقم الهاتف:</span><span class="val">${x.phone||"-"}</span></div>
     <div class="info-item"><span class="lbl">إجمالي الكاميرات:</span><span class="val" style="color:#15803d;font-weight:700">${totalCams} كاميرا</span></div>
-    <div class="info-item"><span class="lbl">نوع جهاز التسجيل:</span><span class="val">${x.dvr_model||dvrRows.map(d=>d.model).filter(Boolean).join(' + ')||'—'}</span></div>
-    <div class="info-item"><span class="lbl">سعة التخزين:</span><span class="val">${x.hdd_size||dvrRows.map(d=>d.hdd_size).filter(Boolean).join(' + ')||'—'}</span></div>
-    <div class="info-item"><span class="lbl">مدة التسجيل:</span><span class="val">${x.storage_days||dvrRows.map(d=>d.storage).filter(Boolean).join(' + ')||'—'}</span></div>
+    <div class="info-item"><span class="lbl">نوع جهاز التسجيل:</span><span class="val">${x.dvr_model||dvrRows.map(d=>d.model).filter(Boolean).join(" + ")||"-"}</span></div>
+    <div class="info-item"><span class="lbl">سعة التخزين:</span><span class="val">${x.hdd_size||dvrRows.map(d=>d.hdd_size).filter(Boolean).join(" + ")||"-"}</span></div>
+    <div class="info-item"><span class="lbl">مدة التسجيل:</span><span class="val">${x.storage_days||dvrRows.map(d=>d.storage).filter(Boolean).join(" + ")||"-"}</span></div>
   </div>
-  ${camRows.length?`
-  <table class="cam-table">
-    <thead><tr><th>#</th><th>نوع الكاميرا</th><th>داخلية</th><th>خارجية</th><th>المجموع</th><th>الدقة</th></tr></thead>
-    <tbody>${camRows.map((r,i)=>`<tr><td>${i+1}</td><td>${r.type||'—'}</td><td>${r.indoor||0}</td><td>${r.outdoor||0}</td><td style="font-weight:700;color:#15803d">${(+r.indoor||0)+(+r.outdoor||0)}</td><td>${r.lens||'—'}</td></tr>`).join('')}</tbody>
-  </table>`:''}
+  "+camTableHTML+"
 </div>
 
 <!-- نص التعهد -->
 <div class="pledge-box">
   <h3>📜 نص التعهد</h3>
   <div class="pledge-text">
-    <p>أنا الموقع أدناه، صاحب / مسؤول <strong>${locTypeAr}</strong> المسمى <strong>${x.station_name||'.............'}</strong> الواقع في قاطع <strong>${x.district||'.............'}</strong>، أتعهد بما يلي:</p>
+    <p>أنا الموقع أدناه، صاحب / مسؤول <strong>${locTypeAr}</strong> المسمى <strong>${x.station_name||"..........."}</strong> الواقع في قاطع <strong>${x.district||"..........."}</strong>، أتعهد بما يلي:</p>
     <p><strong>أولاً:</strong> إن جميع البيانات والمعلومات المتعلقة بمنظومة كاميرات المراقبة المثبتة في موقعنا، والمُدرجة في هذه الاستمارة، صحيحة ودقيقة ومطابقة للواقع تماماً.</p>
     <p><strong>ثانياً:</strong> تعهدنا بعدم إزالة أو تعطيل أو تغيير أي جهاز أو كاميرا من المنظومة دون الرجوع إلى شعبة تقنية المعلومات في فرع صلاح الدين.</p>
     <p><strong>ثالثاً:</strong> في حال حدوث أي عطل أو تغيير في المنظومة، يتم إبلاغ الجهة المختصة فوراً خلال مدة لا تتجاوز <strong>72 ساعة</strong> من حدوث التغيير.</p>
@@ -5620,10 +5625,10 @@ function printInvPledge(id){
 <!-- التوقيعات -->
 <div class="sign-grid">
   <div class="sign-box">
-    <div class="sign-title">\${isGov?'المخول على كاميرات القاطع':'صاحب / مسؤول الموقع'}</div>
-    <div style="margin:6px 0;font-size:12px">الاسم: \${isGov?delegateName:'...........................'}</div>
+    <div class="sign-title" id="sign1title"></div>
+    <div style="margin:6px 0;font-size:12px" id="sign1name"></div>
     <div style="font-size:12px">التوقيع: ........................</div>
-    \${!isGov?'<div class="stamp-box">ختم الموقع</div>':'<div style="height:40px"></div>'}
+    <div style="height:40px"></div>
     <div class="sign-name">التاريخ: ......./......./.........</div>
   </div>
   <div class="sign-box">
@@ -5635,19 +5640,25 @@ function printInvPledge(id){
   </div>
   <div class="sign-box">
     <div class="sign-title">مدير الشعبة / الفرع</div>
-    <div style="margin:8px 0;font-size:11px">الاسم: ...........................</div>
-    <div style="font-size:11px">التوقيع: ........................</div>
-    <div style="height:50px"></div>
+    <div style="margin:6px 0;font-size:12px">الاسم: ...........................</div>
+    <div style="font-size:12px">التوقيع: ........................</div>
+    <div style="height:40px"></div>
     <div class="sign-name">التاريخ: ......./......./.........</div>
   </div>
 </div>
 
 <div class="footer-note">
-  هذا التعهد جزء لا يتجزأ من ملف منظومة كاميرات المراقبة لـ ${locTypeAr} (${x.station_name||'—'}) — يُحفظ في أرشيف شعبة تقنية المعلومات / فرع صلاح الدين
+  هذا التعهد جزء لا يتجزأ من ملف منظومة كاميرات المراقبة - يحفظ في ارشيف شعبة تقنية المعلومات / فرع صلاح الدين
 </div>
 
 </body></html>`);
   w.document.close();
+  setTimeout(function(){
+    var t=w.document.getElementById('sign1title');
+    var n=w.document.getElementById('sign1name');
+    if(t) t.textContent=isGov?'المخول على كاميرات القاطع':'صاحب الموقع';
+    if(n) n.textContent='الاسم: '+(isGov?delegateName:'...............................');
+  },100);
 }
 
 function printInvSingle(id){
