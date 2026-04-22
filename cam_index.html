@@ -377,6 +377,7 @@ tr:hover td{background:rgba(30,58,95,.03);}
 }
 
 /* ── iPhone / Android صغير 320-600 ── */
+.table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 @media(max-width:600px){
   .main{margin-top:100px;}
   .content{padding:8px 8px 80px;}
@@ -1341,8 +1342,8 @@ window.addEventListener('load',function(){
             <div style="font-size:17px;font-weight:900;color:#fff;margin-bottom:4px">🔄 استلام وتسليم الأجهزة</div>
             <div style="font-size:11px;color:rgba(255,255,255,.6)">سجل الأجهزة المستلمة والمسلّمة — يُحدَّث تلقائياً من سجل الصيانة</div>
             <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
-              <button onclick="openHandoverModal('deliver')" id="btn-hov-deliver" style="background:rgba(22,163,74,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📦 تسليم يدوي</button>
-              <button onclick="openHandoverModal('receive')" id="btn-hov-receive" style="background:rgba(220,38,38,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📥 استلام يدوي</button>
+              <button onclick="openHandoverModal('deliver')" id="btn-hov-deliver" style="background:rgba(22,163,74,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📦 تسليم جهاز للمكلف</button>
+              <button onclick="openHandoverModal('receive')" id="btn-hov-receive" style="background:rgba(220,38,38,.8);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">📥 استلام جهاز من المكلف</button>
               <button onclick="openHandoverSubmitModal()" id="btn-hov-submit" style="background:rgba(245,158,11,.85);color:#fff;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px;font-weight:700">⚠️ تسليم جهاز عاطل للمدير</button>
               <button onclick="exportHandoverCSV()" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">📊 تصدير CSV</button>
               <button onclick="printHandoverReport('district')" style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);padding:8px 12px;border-radius:8px;cursor:pointer;font-family:Cairo,sans-serif;font-size:12px">🖨️ تقرير القاطع</button>
@@ -2072,7 +2073,7 @@ window.addEventListener('load',function(){
               </div>
             </div>
             <!-- جدول القائمة -->
-            <div class="table-wrap">
+            <div class="table-wrap" style="overflow-x:auto;-webkit-overflow-scrolling:touch">
               <table id="inv-list-table" style="direction:rtl;width:100%;border-collapse:collapse">
                 <thead>
                   <tr style="background:linear-gradient(135deg,#0f4c81,#1d6fa8);color:#fff">
@@ -5541,12 +5542,12 @@ function printInvPledge(id){
   * { margin:0; padding:0; box-sizing:border-box; }
   body { font-family:'Arial',sans-serif; direction:rtl; font-size:11px; color:#000; background:#fff; padding:12px 18px; font-weight:700; }
   .header { text-align:center; border-bottom:2px double #000; padding-bottom:6px; margin-bottom:10px; }
-  .header .min { font-size:14px; font-weight:900; margin-bottom:2px; }
-  .header .co  { font-size:12px; font-weight:900; margin-bottom:2px; }
-  .header .br  { font-size:11px; font-weight:800; margin-bottom:1px; }
-  .header .div { font-size:10px; font-weight:800; margin-bottom:1px; color:#1e3a5f; }
-  .header .unit{ font-size:10px; font-weight:800; color:#1e3a5f; }
-  .header .date{ font-size:10px; font-weight:700; color:#444; margin-top:4px; }
+  .header .min { font-size:13px; font-weight:900; margin-bottom:2px; }
+  .header .co  { font-size:13px; font-weight:900; margin-bottom:2px; }
+  .header .br  { font-size:13px; font-weight:900; margin-bottom:1px; }
+  .header .div { font-size:13px; font-weight:900; margin-bottom:1px; color:#1e3a5f; }
+  .header .unit{ font-size:13px; font-weight:900; color:#1e3a5f; }
+  .header .date{ font-size:11px; font-weight:700; color:#444; margin-top:4px; }
   .pledge-box { border:1.5px solid #000; border-radius:4px; padding:8px 12px; margin-bottom:8px; background:#fafafa; }
   .pledge-box h3 { font-size:12px; font-weight:900; text-align:center; margin-bottom:6px; border-bottom:1px solid #000; padding-bottom:4px; text-decoration:underline; }
   .info-grid { display:grid; grid-template-columns:1fr 1fr; gap:5px 14px; margin-bottom:8px; }
@@ -5566,7 +5567,7 @@ function printInvPledge(id){
   .sign-box .sign-name { font-size:10px; font-weight:700; border-top:1px solid #555; margin-top:6px; padding-top:3px; }
   .stamp-box { border:1.5px dashed #555; border-radius:50%; width:55px; height:55px; margin:4px auto; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#666; }
   .np { margin-bottom:8px; display:flex; gap:8px; }
-  @media print { .np{display:none!important} @page{margin:6mm; size:A4 portrait} }
+  @media print { .np{display:none!important} @page{margin:6mm; size:A4 portrait; margin-bottom:10mm} .footer-note{display:none!important} } @page { size:A4; margin:6mm; }
   .footer-note { font-size:9px; font-weight:700; color:#333; border-top:1.5px solid #000; padding-top:6px; margin-top:10px; text-align:center; }
   .pledge-title-box { text-align:center; margin-bottom:10px; }
   .pledge-title-box .main-title { font-size:13px; font-weight:900; border:2px solid #1e3a5f; display:inline-block; padding:5px 20px; border-radius:4px; }
@@ -5606,7 +5607,7 @@ function printInvPledge(id){
     <div class="info-item"><span class="lbl">سعة التخزين:</span><span class="val">${x.hdd_size||dvrRows.map(d=>d.hdd_size).filter(Boolean).join(" + ")||"-"}</span></div>
     <div class="info-item"><span class="lbl">مدة التسجيل:</span><span class="val">${x.storage_days||dvrRows.map(d=>d.storage).filter(Boolean).join(" + ")||"-"}</span></div>
   </div>
-  "+camTableHTML+"
+  ${camTableHTML}
 </div>
 
 <!-- نص التعهد -->
@@ -10149,7 +10150,7 @@ function printHandoverReport(groupBy){
       const items = Array.isArray(x.items)?x.items:(x.items?JSON.parse(x.items):[]);
       const devs = items.map(r=>r.name+(r.qty>1?' ('+r.qty+')':'')).join('، ');
       const qty = items.reduce((a,r)=>a+(+r.qty||0),0);
-      const type = x.op_type==='deliver'?'📦 تسليم':'📥 استلام';
+      const type = x.op_type==='deliver'?'📦 تسليم للمكلف':'📥 استلام من المكلف';
       const col2 = groupBy==='district' ? (x.person||'—') : (x.district||'—');
       html += '<tr><td style="text-align:center">'+(i+1)+'</td>';
       html += '<td>'+x.date+'</td><td style="text-align:center">'+type+'</td>';
