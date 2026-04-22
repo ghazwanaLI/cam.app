@@ -5524,9 +5524,14 @@ function printInvPledge(id){
   const locTypeMap = {gov_stations:'محطة وقود حكومية', private_stations:'محطة وقود أهلية', factories:'معمل قطاع خاص', yards:'ساحة قطاع خاص', gov_buildings:'بناية حكومية'};
   const locTypeAr = locTypeMap[x.location_type] || x.location_type || 'موقع';
   const isGov = x.location_type==='gov_stations' || x.location_type==='gov_buildings' || !x.location_type;
-  // إيجاد المخول على القاطع
-  const delegate = (allDelegates||[]).find(d=>d.district && x.district && x.district.includes(d.district));
-  const delegateName = delegate ? delegate.name : '...........................';
+  // إيجاد المكلف من حسابات المستخدمين حسب القاطع
+  const allUsers_pledge = window.allUsers || [];
+  const delegateUser = allUsers_pledge.find(u=>
+    u.role!=='admin' && u.role!=='owner' && u.active!==false &&
+    u.district && x.district &&
+    (x.district===u.district || (u.districts&&u.districts.some&&u.districts.some(d=>x.district.includes(d)||d.includes(x.district))))
+  );
+  const delegateName = delegateUser ? delegateUser.fullname : '';
 
   let w = window.open('','_blank','width=794,height=1123');
   var camTableHTML = '';
@@ -7247,6 +7252,7 @@ async function loadUsers(){
   try{
     const d=await api('GET','/api/users');
     allUsers=d.users||[];
+    window.allUsers = allUsers; // للاستخدام في التعهد
     renderUsers();
   }catch(e){toast('خطأ في تحميل المستخدمين','err');}
 }
