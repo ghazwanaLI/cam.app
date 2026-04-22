@@ -5401,7 +5401,7 @@ function openInvForm(id){
       dg.innerHTML=`<label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:3px">📍 القاطع</label>
         <select id="inv-district-manual" class="fi" dir="rtl" style="font-size:13px;background:#f8fafc;color:#1e293b;border:1.5px solid #cbd5e1">
           <option value="">— اختر القاطع —</option>
-          ${(window.DISTRICTS_LIST||[]).map(d=>`<option value="${d}">${d}</option>`).join('')}
+          ${(window.DISTRICTS_LIST&&DISTRICTS_LIST.length?DISTRICTS_LIST:['الشرقاط / الايمن','بيجي','تكريت','سامراء','العلم','الدور','بلد','الدجيل','امرلي الطوز']).map(d=>`<option value="${d}">${d}</option>`).join('')}
         </select>`;
       wrap.appendChild(dg);
       distManual = document.getElementById('inv-district-manual');
@@ -5567,8 +5567,8 @@ function printInvPledge(id){
   .sign-box .sign-name { font-size:10px; font-weight:700; border-top:1px solid #555; margin-top:6px; padding-top:3px; }
   .stamp-box { border:1.5px dashed #555; border-radius:50%; width:55px; height:55px; margin:4px auto; display:flex; align-items:center; justify-content:center; font-size:9px; font-weight:700; color:#666; }
   .np { margin-bottom:8px; display:flex; gap:8px; }
-  @media print { .np{display:none!important} @page{margin:6mm; size:A4 portrait; margin-bottom:10mm} .footer-note{display:none!important} } @page { size:A4; margin:6mm; }
-  .footer-note { font-size:9px; font-weight:700; color:#333; border-top:1.5px solid #000; padding-top:6px; margin-top:10px; text-align:center; }
+  @media print { .np{display:none!important} @page{margin:6mm; size:A4 portrait} }
+  .footer-note { font-size:11px; font-weight:900; color:#000; border-top:2px solid #000; padding-top:8px; margin-top:12px; text-align:center; }
   .pledge-title-box { text-align:center; margin-bottom:10px; }
   .pledge-title-box .main-title { font-size:13px; font-weight:900; border:2px solid #1e3a5f; display:inline-block; padding:5px 20px; border-radius:4px; }
   .pledge-title-box .sub-title { font-size:10px; font-weight:700; margin-top:4px; color:#444; }
@@ -5614,11 +5614,11 @@ function printInvPledge(id){
 <div class="pledge-box">
   <h3>📜 نص التعهد</h3>
   <div class="pledge-text">
-    <p>أنا الموقع أدناه، صاحب / مسؤول <strong>${locTypeAr}</strong> المسمى <strong>${x.station_name||"..........."}</strong> الواقع في قاطع <strong>${x.district||"..........."}</strong>، أتعهد بما يلي:</p>
+    <p>أنا الموقع أدناه، مالك/ مسؤول <strong>${locTypeAr}</strong> المسمى <strong>${x.station_name||"..........."}</strong> الواقع في قاطع <strong>${x.district||"..........."}</strong>، أتعهد بما يلي:</p>
     <p><strong>أولاً:</strong> إن جميع البيانات والمعلومات المتعلقة بمنظومة كاميرات المراقبة المثبتة في موقعنا، والمُدرجة في هذه الاستمارة، صحيحة ودقيقة ومطابقة للواقع تماماً.</p>
     <p><strong>ثانياً:</strong> تعهدنا بعدم إزالة أو تعطيل أو تغيير أي جهاز أو كاميرا من المنظومة دون الرجوع إلى شعبة تقنية المعلومات في فرع صلاح الدين.</p>
     <p><strong>ثالثاً:</strong> في حال حدوث أي عطل أو تغيير في المنظومة، يتم إبلاغ الجهة المختصة فوراً خلال مدة لا تتجاوز <strong>72 ساعة</strong> من حدوث التغيير.</p>
-    <p><strong>رابعاً:</strong> نوافق على تفتيش المنظومة وتدقيق بياناتها من قِبل الفرق المختصة في أي وقت تراه الشركة مناسباً.</p>
+    <p><strong>رابعاً:</strong> نوافق على تفتيش المنظومة وتدقيق بياناتها من قِبل الفرق المختصة في أي وقت تراه إدارة الفرع مناسباً.</p>
     <p><strong>خامساً:</strong> نتحمل المسؤولية القانونية الكاملة عن أي معلومات مغلوطة أو مخالفة للواقع ترد في هذا التعهد.</p>
   </div>
 </div>
